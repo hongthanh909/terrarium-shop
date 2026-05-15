@@ -1,4 +1,4 @@
-# 🌱 Terrarium Shop - E-commerce Platform
+# Tiệm Rêu Decor - E-commerce Platform
 
 Next.js Full-stack E-commerce platform for terrarium plants, built with Supabase, Prisma, and shadcn/ui.
 
