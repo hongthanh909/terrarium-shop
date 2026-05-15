@@ -1,0 +1,591 @@
+// Prisma Schema - Terrarium Shop
+// Based on DataModel.md (25 tables)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// ENUMS
+// ============================================
+
+enum CategoryStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum ProductType {
+  PRODUCT
+  COMBO
+  CUSTOM_BUILDER
+}
+
+enum ProductStatus {
+  DRAFT
+  ACTIVE
+  OUT_OF_STOCK
+}
+
+enum VariantType {
+  SIZE
+  TYPE
+  DECOR
+  ACCESSORY
+}
+
+enum ComboType {
+  DIY
+  GIFT
+  CARE
+}
+
+enum CustomerLoyaltyTier {
+  BRONZE
+  SILVER
+  GOLD
+  PLATINUM
+}
+
+enum CustomerExperienceLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+}
+
+enum CustomerHomeEnvironment {
+  APARTMENT
+  HOUSE
+  OFFICE
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  SHIPPED
+  DELIVERED
+  CANCELLED
+  REFUNDED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
+
+enum ShippingMethod {
+  GHN_STANDARD
+  GHN_EXPRESS
+  GRAB
+}
+
+enum PaymentMethod {
+  COD
+  MOMO
+  BANK_TRANSFER
+}
+
+enum DiscountType {
+  PERCENTAGE
+  FIXED
+  FREE_SHIPPING
+}
+
+enum DiscountCampaignStatus {
+  ACTIVE
+  INACTIVE
+  EXPIRED
+  SOLD_OUT
+}
+
+enum DiscountApplicableTo {
+  ALL
+  CATEGORIES
+  PRODUCTS
+  COMBOS
+}
+
+enum ReviewStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum LoyaltyPointSource {
+  ORDER
+  REVIEW
+  BIRTHDAY
+  MANUAL
+}
+
+enum CareItemStatus {
+  ACTIVE
+  PAUSED
+  COMPLETED
+}
+
+// ============================================
+// 1. CORE: Sản phẩm & Danh mục
+// ============================================
+
+model Category {
+  id              String         @id @default(cuid())
+  slug            String         @unique
+  name            String
+  parentId        String?
+  metaTitle       String?
+  metaDescription String?
+  image           String?
+  status          CategoryStatus @default(ACTIVE)
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  // Relations
+  parent          Category?      @relation("CategoryTree", fields: [parentId], references: [id])
+  children        Category[]     @relation("CategoryTree")
+  products        Product[]
+  // discountApplicables removed - not needed for Category
+
+  @@map("categories")
+}
+
+model Product {
+  id            String         @id @default(cuid())
+  slug          String         @unique
+  name          String
+  basePrice     Decimal        @db.Decimal(10, 2)
+  type          ProductType    @default(PRODUCT)
+  inventory     Int            @default(0)
+  featured      Boolean        @default(false)
+  pinnedUntil   DateTime?
+  categoryId    String
+  status        ProductStatus  @default(DRAFT)
+  images        String[]
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  // Relations
+  category      Category           @relation(fields: [categoryId], references: [id])
+  variants      ProductVariant[]
+  variantOptions ProductVariantOption[]
+  careGuide     CareGuide?
+  reviews       Review[]
+  votes         ProductVote[]
+  wishlistItems Wishlist[]
+  // orderItems removed - OrderItem stores snapshot, no reverse relation
+  // careItems     CustomerCareItem[]
+  seoMeta       SeoMeta?
+  // discountApplicables removed - not implemented
+
+  @@map("products")
+}
+
+model ProductVariant {
+  id               String       @id @default(cuid())
+  productId        String
+  variantType      VariantType
+  value            String
+  priceAdjustment  Decimal      @default(0) @db.Decimal(10, 2)
+  inventory        Int          @default(0)
+  sku              String?      @unique
+
+  // Relations
+  product          Product      @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@map("product_variants")
+}
+
+model ProductVariantOption {
+  id            String       @id @default(cuid())
+  productId     String
+  variantType   VariantType
+  options       String[]
+  image         String?
+
+  // Relations
+  product       Product      @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@map("product_variant_options")
+}
+
+model Combo {
+  id       String    @id @default(cuid())
+  type     ComboType
+  name     String
+  price    Decimal   @db.Decimal(10, 2)
+  features String[]
+  image    String
+  status   CategoryStatus @default(ACTIVE)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  items     ComboItem[]
+  // discountApplicables removed - not implemented
+
+  @@map("combos")
+}
+
+model ComboItem {
+  id      String  @id @default(cuid())
+  comboId String
+  productId String
+  quantity  Int
+
+  // Relations
+  combo   Combo   @relation(fields: [comboId], references: [id], onDelete: Cascade)
+  // product removed - ComboItem doesn't need direct product relation
+
+  @@map("combo_items")
+}
+
+model CareGuide {
+  id             String  @id @default(cuid())
+  productId      String  @unique
+  watering       String
+  sunlight       String
+  temperature    String
+  humidity       String
+  commonIssues   String?
+  videoUrl       String?
+
+  // Relations
+  product        Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@map("care_guides")
+}
+
+// ============================================
+// 2. CUSTOMERS: Khách hàng
+// ============================================
+
+model Customer {
+  id              String             @id @default(cuid())
+  email           String             @unique
+  phone           String?
+  passwordHash    String?
+  name            String?
+  loyaltyPoints   Int                @default(0)
+  loyaltyTier     CustomerLoyaltyTier @default(BRONZE)
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+
+  // Relations
+  orders          Order[]
+  carePreferences CustomerCarePreference?
+  addresses       CustomerAddress[]
+  wishlist        Wishlist[]
+  reviews         Review[]
+  votes           ProductVote[]
+  careItems       CustomerCareItem[]
+  loyaltyPointsHistory LoyaltyPoint[]
+
+  @@map("customers")
+}
+
+model CustomerCarePreference {
+  id                    String           @id @default(cuid())
+  customerId            String           @unique
+  favoritePlants        String[]
+  experienceLevel       CustomerExperienceLevel @default(BEGINNER)
+  homeEnvironment       CustomerHomeEnvironment @default(APARTMENT)
+  careReminderEnabled   Boolean          @default(false)
+
+  // Relations
+  customer              Customer         @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@map("customer_care_preferences")
+}
+
+model CustomerAddress {
+  id           String  @id @default(cuid())
+  customerId   String
+  name         String
+  phone        String
+  province     String
+  district     String
+  ward         String
+  fullAddress  String
+  isDefault    Boolean @default(false)
+
+  // Relations
+  customer     Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@unique([customerId, isDefault])
+  @@map("customer_addresses")
+}
+
+model Wishlist {
+  id        String   @id @default(cuid())
+  customerId String
+  productId String
+  createdAt DateTime @default(now())
+
+  // Relations
+  customer  Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([customerId, productId])
+  @@map("wishlists")
+}
+
+// ============================================
+// 3. ORDERS: Đơn hàng
+// ============================================
+
+model Order {
+  id               String        @id @default(cuid())
+  orderNumber      String        @unique
+  customerId       String
+  subtotal         Decimal       @db.Decimal(10, 2)
+  shippingFee      Decimal       @db.Decimal(10, 2)
+  discount         Decimal       @default(0) @db.Decimal(10, 2)
+  total            Decimal       @db.Decimal(10, 2)
+  shippingMethod   ShippingMethod
+  paymentMethod    PaymentMethod
+  paymentStatus    PaymentStatus @default(PENDING)
+  status           OrderStatus   @default(PENDING)
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  // Relations
+  customer         Customer          @relation(fields: [customerId], references: [id])
+  items            OrderItem[]
+  shippingInfo     ShippingInfo?
+  statusLogs       OrderStatusLog[]
+  discounts        OrderDiscount[]
+  shippingTracking ShippingTracking?
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id            String   @id @default(cuid())
+  orderId       String
+  productId     String
+  productName   String
+  productImage  String
+  variants      Json     // { "SIZE": "M", "TYPE": "Suối" }
+  quantity      Int
+  price         Decimal  @db.Decimal(10, 2)
+  customOptions Json?    // { "hasLight": true }
+
+  // Relations
+  order         Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  // product removed - OrderItem stores snapshot, no relation needed
+
+  @@map("order_items")
+}
+
+model ShippingInfo {
+  id            String  @id @default(cuid())
+  orderId       String  @unique
+  trackingNumber String?
+  trackingUrl   String?
+
+  // Relations
+  order         Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@map("shipping_infos")
+}
+
+model OrderStatusLog {
+  id        String   @id @default(cuid())
+  orderId   String
+  status    OrderStatus
+  note      String?
+  createdAt DateTime @default(now())
+
+  // Relations
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@map("order_status_logs")
+}
+
+// ============================================
+// 4. VOUCHER SYSTEM: Giảm giá
+// ============================================
+
+model DiscountCampaign {
+  id                   String                @id @default(cuid())
+  code                 String                @unique
+  type                 DiscountType
+  value                Decimal               @db.Decimal(10, 2)
+  minOrderAmount       Decimal?              @db.Decimal(10, 2)
+  maxDiscountAmount    Decimal?              @db.Decimal(10, 2)
+  startsAt             DateTime
+  expiresAt            DateTime
+  usageLimit           Int?
+  usageCount           Int                   @default(0)
+  status               DiscountCampaignStatus @default(INACTIVE)
+  applicableTo         DiscountApplicableTo
+  description          String?
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+
+  // Relations
+  applicables          DiscountApplicable[]
+  orderDiscounts       OrderDiscount[]
+
+  @@map("discount_campaigns")
+}
+
+model DiscountApplicable {
+  id          String  @id @default(cuid())
+  campaignId  String
+  targetType  String  // CATEGORY, PRODUCT, COMBO
+  targetId    String
+
+  // Relations
+  campaign    DiscountCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  @@map("discount_applicables")
+}
+
+model OrderDiscount {
+  id             String  @id @default(cuid())
+  orderId        String
+  campaignId     String
+  discountAmount Decimal @db.Decimal(10, 2)
+  appliedCode    String
+
+  // Relations
+  order          Order              @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  campaign       DiscountCampaign   @relation(fields: [campaignId], references: [id])
+
+  @@map("order_discounts")
+}
+
+// ============================================
+// 5. REVIEWS & EXPLORE: Đánh giá & Khám phá
+// ============================================
+
+model Review {
+  id        String   @id @default(cuid())
+  productId String
+  customerId String
+  rating    Int
+  title     String?
+  content   String
+  images    String[]
+  verified  Boolean  @default(false)
+  approved  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  product   Product  @relation(fields: [productId], references: [id])
+  customer  Customer @relation(fields: [customerId], references: [id])
+
+  @@map("reviews")
+}
+
+model ProductVote {
+  id        String   @id @default(cuid())
+  productId String
+  customerId String
+  votedAt   DateTime @default(now())
+
+  // Relations
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  customer  Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, customerId])
+  @@map("product_votes")
+}
+
+// ============================================
+// 6. CARE & LOYALTY: Chăm sóc & Điểm
+// ============================================
+
+model CustomerCareItem {
+  id              String         @id @default(cuid())
+  customerId      String
+  productId       String
+  purchasedAt     DateTime
+  careSchedule    Json           // { "watering": "weekly" }
+  lastWateredAt   DateTime?
+  lastPrunedAt    DateTime?
+  status          CareItemStatus @default(ACTIVE)
+
+  // Relations
+  customer Customer       @relation(fields: [customerId], references: [id])
+  // product removed - no reverse relation needed
+
+  @@map("customer_care_items")
+}
+
+model LoyaltyPoint {
+  id        String            @id @default(cuid())
+  customerId String
+  points    Int
+  source    LoyaltyPointSource
+  orderId   String?
+  expiresAt DateTime?
+  createdAt DateTime          @default(now())
+
+  // Relations
+  customer  Customer          @relation(fields: [customerId], references: [id])
+  // order removed - optional relation not needed
+
+  @@map("loyalty_points")
+}
+
+// ============================================
+// 7. CONTENT & SYSTEM: Nội dung & Hệ thống
+// ============================================
+
+model BlogPost {
+  id            String    @id @default(cuid())
+  slug          String    @unique
+  title         String
+  content       String
+  published     Boolean   @default(false)
+  publishedAt   DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@map("blog_posts")
+}
+
+model BlogCategory {
+  id        String   @id @default(cuid())
+  slug      String   @unique
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("blog_categories")
+}
+
+model SeoMeta {
+  id              String  @id @default(cuid())
+  productId       String  @unique
+  metaTitle       String?
+  metaDescription String?
+  ogImage         String?
+
+  // Relations
+  product         Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@map("seo_meta")
+}
+
+model ShippingTracking {
+  id        String  @id @default(cuid())
+  orderId   String  @unique
+  ghnOrderId String?
+  status    String?
+  timeline  Json?   // Lịch sử vận chuyển
+
+  // Relations
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@map("shipping_trackings")
+}
