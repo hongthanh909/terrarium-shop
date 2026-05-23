@@ -2,47 +2,54 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
 
+// Public paths - không cần authentication
+const PUBLIC_PATHS = [
+  "/",
+  "/login",
+  "/register",
+  "/products",
+  "/blog",
+  "/contact",
+  "/consult",
+  "/policies",
+  "/api/auth",
+  "/api/products",
+  "/api/blog",
+];
+
+// Admin paths - chỉ admin mới truy cập được
+const ADMIN_PATHS = [
+  "/admin",
+  "/api/admin",
+];
+
 export async function middleware(request: NextRequest) {
+  const pathname = request.nextUrl.pathname;
   const token = await getToken({ req: request as any, secret: process.env.NEXTAUTH_SECRET });
-  const path = request.nextUrl.pathname;
 
-  // Protect /admin routes (pages)
-  // /admin/login is the login page, so we don't protect it here
-  if (path.startsWith("/admin") && path !== "/admin/login") {
-    if (!token) {
-      return NextResponse.redirect(new URL("/admin/login", request.url));
+  // Check if path is public
+  const isPublic = PUBLIC_PATHS.some((pattern) => {
+    if (pattern.includes("[")) {
+      const prefix = pattern.split("[")[0];
+      return pathname.startsWith(prefix);
     }
-    
-    if (token.role !== "ADMIN") {
-      return NextResponse.redirect(new URL("/", request.url));
-    }
+    return pathname === pattern || pathname.startsWith(pattern);
+  });
+
+  if (isPublic) {
+    return NextResponse.next();
   }
 
-  // Protect /api/admin routes (API endpoints)
-  if (path.startsWith("/api/admin")) {
-    if (!token || token.role !== "ADMIN") {
-      return NextResponse.json(
-        { error: "Unauthorized. Admin access required." },
-        { status: 401 }
-      );
-    }
+  // If not public, require authentication
+  if (!token) {
+    return NextResponse.redirect(new URL("/admin/login", request.url));
   }
 
-  // Protect /orders and /profile routes
-  if (path.startsWith("/orders") || path.startsWith("/profile")) {
-    if (!token) {
-      return NextResponse.redirect(new URL("/login", request.url));
-    }
-  }
+  // Check admin routes
+  const isAdminPath = ADMIN_PATHS.some((pattern) => pathname.startsWith(pattern));
 
-  // Redirect logged in users away from auth pages
-  if (path === "/admin/login" || path === "/login" || path === "/register") {
-    if (token) {
-      if (token.role === "ADMIN") {
-        return NextResponse.redirect(new URL("/admin", request.url));
-      }
-      return NextResponse.redirect(new URL("/", request.url));
-    }
+  if (isAdminPath && token.role !== "ADMIN") {
+    return NextResponse.redirect(new URL("/", request.url));
   }
 
   return NextResponse.next();
@@ -50,13 +57,7 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    "/admin/:path*",
-    "/api/admin/:path*",
-    "/orders/:path*",
-    "/profile/:path*",
-    "/login",
-    "/admin/login",
-    "/register"
+    // Match all paths except static files
+    "/((?!_next/static|_next/image|favicon.ico).*)",
   ],
 };
-

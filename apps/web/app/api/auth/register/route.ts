@@ -38,8 +38,9 @@ export async function POST(request: NextRequest) {
       email: newCustomer.email,
       name: newCustomer.name,
       role: newCustomer.role,
-      message: "Đăng ký thành công. Vui lòng đăng nhập."
+      message: "Đăng ký thành công"
     });
+
   } catch (error) {
     console.error("Register error:", error);
     return NextResponse.json({ error: "Lỗi máy chủ nội bộ" }, { status: 500 });
