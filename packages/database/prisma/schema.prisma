@@ -6,8 +6,9 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 // ============================================
@@ -130,6 +131,11 @@ enum CareItemStatus {
   COMPLETED
 }
 
+enum UserRole {
+  CUSTOMER
+  ADMIN
+}
+
 // ============================================
 // 1. CORE: Sản phẩm & Danh mục
 // ============================================
@@ -178,6 +184,7 @@ model Product {
   reviews       Review[]
   votes         ProductVote[]
   wishlistItems Wishlist[]
+  weeklyFeatured WeeklyFeatured[]
   // orderItems removed - OrderItem stores snapshot, no reverse relation
   // careItems     CustomerCareItem[]
   seoMeta       SeoMeta?
@@ -271,6 +278,7 @@ model Customer {
   phone           String?
   passwordHash    String?
   name            String?
+  role            UserRole           @default(CUSTOMER)
   loyaltyPoints   Int                @default(0)
   loyaltyTier     CustomerLoyaltyTier @default(BRONZE)
   createdAt       DateTime           @default(now())
@@ -548,8 +556,12 @@ model BlogPost {
   content       String
   published     Boolean   @default(false)
   publishedAt   DateTime?
+  categoryId    String?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
+
+  // Relations
+  category      BlogCategory? @relation(fields: [categoryId], references: [id])
 
   @@map("blog_posts")
 }
@@ -561,7 +573,68 @@ model BlogCategory {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  // Relations
+  posts     BlogPost[]
+
   @@map("blog_categories")
+}
+
+// ============================================
+// 8. SYSTEM: Policies, Contact, Settings
+// ============================================
+
+model Policy {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  title       String
+  content     String
+  type        String   @default("policy") // policy, faq, warranty, shipping, returns, privacy
+  order       Int       @default(0)
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@map("policies")
+}
+
+model WeeklyFeatured {
+  id          String   @id @default(cuid())
+  weekStart   DateTime // Start of week (Monday)
+  productId   String
+  reason      String?  // Why this product is featured
+  isActive    Boolean  @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // Relations
+  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([weekStart, productId])
+  @@map("weekly_featured")
+}
+
+model ContactInfo {
+  id          String   @id @default(cuid())
+  type        String   // email, phone, address, social, working_hours
+  label       String
+  value       String
+  orderIndex  Int       @default(0)
+  isActive    Boolean  @default(true)
+  metadata    Json?    // { "icon": "Mail", "url": "..." }
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@map("contact_info")
+}
+
+model SiteSetting {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  value       Json
+  description String?
+  updatedAt   DateTime  @updatedAt
+
+  @@map("site_settings")
 }
 
 model SeoMeta {
@@ -588,4 +661,20 @@ model ShippingTracking {
   order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
 
   @@map("shipping_trackings")
+}
+
+// ============================================
+// 12. AUDIT LOGGING
+// ============================================
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String   // ID của admin
+  action    String   // CREATE, UPDATE, DELETE, BULK_DELETE, v.v.
+  entity    String   // Product, Category, Order, BlogPost, v.v.
+  entityId  String   // ID của thực thể bị tác động
+  details   Json?    // Chi tiết thay đổi (JSON)
+  createdAt DateTime @default(now())
+
+  @@map("audit_logs")
 }

@@ -1,0 +1,54 @@
+import { z } from "zod";
+
+// Shared schemas
+export const categoryStatusSchema = z.enum(["ACTIVE", "INACTIVE"]);
+export const productStatusSchema = z.enum(["DRAFT", "ACTIVE", "OUT_OF_STOCK"]);
+export const productTypeSchema = z.enum(["PRODUCT", "COMBO", "CUSTOM_BUILDER"]);
+
+// Categories Validation
+export const createCategorySchema = z.object({
+  name: z.string().min(2, "Name must be at least 2 characters").max(100),
+  slug: z.string().min(2, "Slug must be at least 2 characters").regex(/^[a-z0-9-]+$/, "Slug can only contain lowercase letters, numbers, and hyphens"),
+  metaDescription: z.string().max(500).optional().nullable(),
+  parentId: z.string().optional().nullable(),
+  status: categoryStatusSchema.optional().default("ACTIVE"),
+});
+
+export const updateCategorySchema = createCategorySchema.partial().extend({
+  id: z.string().optional(), // In case it's passed in body, though usually in path param
+});
+
+// Products Validation
+const variantOptionSchema = z.object({
+  variantType: z.string().min(1),
+  options: z.array(z.string().min(1)).min(1, "At least one option is required"),
+  image: z.string().url().optional(),
+});
+
+export const careGuideSchema = z.object({
+  watering: z.string().optional().default(""),
+  sunlight: z.string().optional().default(""),
+  temperature: z.string().optional().default(""),
+  humidity: z.string().optional().default(""),
+  commonIssues: z.string().optional().nullable(),
+  videoUrl: z.string().url().optional().nullable(),
+});
+
+export const createProductSchema = z.object({
+  name: z.string().min(2, "Name must be at least 2 characters"),
+  slug: z.string().regex(/^[a-z0-9-]+$/, "Invalid slug format"),
+  description: z.string().optional().nullable(),
+  basePrice: z.number().or(z.string().regex(/^\d+$/).transform(Number)),
+  compareAtPrice: z.number().or(z.string().regex(/^\d+$/).transform(Number)).optional().nullable(),
+  inventory: z.number().int().min(0).default(0),
+  type: productTypeSchema.optional().default("PRODUCT"),
+  status: productStatusSchema.optional().default("DRAFT"),
+  categoryId: z.string().min(1, "Category is required"),
+  isFeatured: z.boolean().optional().default(false),
+  images: z.array(z.string().url("Must be a valid URL")).min(1, "At least one image is required"),
+  variants: z.array(z.any()).optional(),
+  variantOptions: z.array(variantOptionSchema).optional(),
+  careGuideData: careGuideSchema.optional().nullable(),
+});
+
+export const updateProductSchema = createProductSchema.partial();

@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx prisma *)",
+      "Bash(export DATABASE_URL=\"postgresql://postgres.xgblmwclsluvekiwvyxs:WnH5CMLsmVb4wWHK@aws-1-ap-northeast-2.pooler.supabase.com:6543/postgres?pgbouncer=true\")",
+      "Bash(timeout 60)"
+    ]
+  }
+}

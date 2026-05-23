@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -5,47 +7,50 @@
 @layer base {
   :root {
     --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    --foreground: 220 14% 25%;
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 220 14% 25%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 142 76% 36%;
-    --primary-foreground: 355.7 100% 97.3%;
-    --secondary: 120 43% 88%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 142 76% 36%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 142 76% 36%;
-    --radius: 0.5rem;
+    --popover-foreground: 220 14% 25%;
+    /* #425733 forest green - brand primary */
+    --primary: 95 26% 27%;
+    --primary-foreground: 0 0% 100%;
+    /* #e3ebdd sage light - brand secondary */
+    --secondary: 94 26% 89%;
+    --secondary-foreground: 95 26% 22%;
+    --muted: 94 15% 95%;
+    --muted-foreground: 215 15% 55%;
+    --accent: 95 26% 27%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 75% 60%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 94 15% 85%;
+    --input: 94 15% 85%;
+    --ring: 95 26% 27%;
+    /* Larger border radius for softer look */
+    --radius: 0.875rem;
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 142 76% 36%;
-    --primary-foreground: 355.7 100% 97.3%;
-    --secondary: 120 43% 20%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 142 76% 36%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 142 76% 36%;
+    --background: 220 10% 12%;
+    --foreground: 210 20% 95%;
+    --card: 220 10% 14%;
+    --card-foreground: 210 20% 95%;
+    --popover: 220 10% 14%;
+    --popover-foreground: 210 20% 95%;
+    --primary: 95 30% 40%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 95 15% 22%;
+    --secondary-foreground: 94 25% 85%;
+    --muted: 215 15% 20%;
+    --muted-foreground: 215 10% 65%;
+    --accent: 95 30% 40%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 65% 55%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 215 15% 22%;
+    --input: 215 15% 22%;
+    --ring: 95 30% 40%;
   }
 }
 
@@ -55,5 +60,64 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-family: 'Inter', var(--font-inter), -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Inter', var(--font-inter), -apple-system, BlinkMacSystemFont, sans-serif;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.25;
+  }
+}
+
+@layer utilities {
+  /* Soft shadow utilities */
+  .shadow-soft {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04), 0 4px 16px rgba(0, 0, 0, 0.03);
+  }
+  .shadow-soft-lg {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06), 0 8px 24px rgba(0, 0, 0, 0.04);
+  }
+  .shadow-soft-xl {
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08), 0 16px 32px rgba(0, 0, 0, 0.05);
+  }
+
+  /* === CARD UNIFORM SIZE === */
+  /* Tất cả product card trong grid đều có cùng height */
+  .product-card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+  .product-card-image {
+    aspect-ratio: 1 / 1; /* Luôn vuông */
+    width: 100%;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+  .product-card-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 1rem;
+  }
+  .product-card-actions {
+    margin-top: auto;
+    padding-top: 0.75rem;
+  }
+
+  /* === INTERACTIVE TRANSITIONS (motion.duration.fast = 200ms) === */
+  a, button {
+    transition-duration: 200ms;
+  }
+  /* Focus ring toàn cục */
+  *:focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
+    border-radius: 4px;
   }
 }
