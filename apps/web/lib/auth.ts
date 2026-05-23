@@ -1,74 +1,68 @@
-import { NextAuthOptions } from "next-auth";
-import CredentialsProvider from "next-auth/providers/credentials";
-import { PrismaClient } from "@prisma/client";
-import bcrypt from "bcryptjs";
+import { SignJWT, verifyJWT } from 'jose';
+import { cookies } from 'next/headers';
 
-const prisma = new PrismaClient();
+export interface TokenPayload {
+  userId: string;
+  email: string;
+  role: 'CUSTOMER' | 'ADMIN';
+}
 
-export const authOptions: NextAuthOptions = {
-  providers: [
-    CredentialsProvider({
-      name: "Credentials",
-      credentials: {
-        email: { label: "Email", type: "email" },
-        password: { label: "Password", type: "password" },
-      },
-      async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
-          throw new Error("Vui lòng nhập email và mật khẩu.");
-        }
+const JWT_SECRET = new TextEncoder().encode(
+  process.env.JWT_SECRET || 'your-secret-key-change-in-production'
+);
 
-        const user = await prisma.customer.findUnique({
-          where: { email: credentials.email },
-        });
+// Sign JWT token using jose
+export async function signToken(payload: TokenPayload): Promise<string> {
+  return new SignJWT(payload)
+    .setProtectedHeader({ alg: 'HS256' })
+    .setIssuedAt()
+    .setExpirationTime('7d')
+    .sign(JWT_SECRET);
+}
 
-        if (!user || !user.passwordHash) {
-          throw new Error("Tài khoản không tồn tại.");
-        }
+// Verify JWT token using jose
+export async function verifyToken(token: string): Promise<TokenPayload | null> {
+  try {
+    const { payload } = await verifyJWT(token, JWT_SECRET, {
+      algorithms: ['HS256'],
+    });
+    return payload as TokenPayload;
+  } catch (error) {
+    console.error('Token verification error:', error);
+    return null;
+  }
+}
 
-        const isValid = await bcrypt.compare(credentials.password, user.passwordHash);
+// Set HTTP-only cookie
+export function setAuthCookie(token: string) {
+  const cookieStore = cookies();
+  cookieStore.set('auth_token', token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    maxAge: 60 * 60 * 24 * 7,  // 7 days
+    path: '/',
+  });
+}
 
-        if (!isValid) {
-          throw new Error("Mật khẩu không chính xác.");
-        }
+// Clear auth cookie (logout)
+export function clearAuthCookie() {
+  const cookieStore = cookies();
+  cookieStore.set('auth_token', '', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    expires: new Date(0),
+    path: '/',
+  });
+}
 
-        if (user.role !== "ADMIN") {
-          throw new Error("Bạn không có quyền truy cập quản trị.");
-        }
+// Get current user from cookie
+export async function getCurrentUser(): Promise<TokenPayload | null> {
+  const cookieStore = await cookies();
+  const token = cookieStore.get('auth_token')?.value;
 
-        return {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          role: user.role,
-        };
-      },
-    }),
-  ],
-  session: {
-    strategy: "jwt",
-    maxAge: 30 * 24 * 60 * 60, // 30 days
-  },
-  callbacks: {
-    async jwt({ token, user }) {
-      if (user) {
-        token.id = user.id;
-        token.role = (user as any).role;
-      }
-      return token;
-    },
-    async session({ session, token }) {
-      if (token) {
-        if (session.user) {
-          (session.user as any).id = token.id;
-          (session.user as any).role = token.role;
-        }
-      }
-      return session;
-    },
-  },
-  pages: {
-    signIn: "/admin/login",
-  },
-  secret: process.env.NEXTAUTH_SECRET,
-};
+  if (!token) return null;
+
+  return verifyToken(token);
+}
