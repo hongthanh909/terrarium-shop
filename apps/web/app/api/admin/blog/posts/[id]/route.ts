@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 import { verifyAdminRequest, unauthorizedResponse } from "@/lib/admin-auth";
 import { logAdminAction } from "@/lib/audit";
-
-const prisma = new PrismaClient();
 
 // PUT - Update a blog post
 export async function PUT(

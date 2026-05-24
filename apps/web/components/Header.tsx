@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { ShoppingCart, Leaf, User, X, Minus, Plus, ShoppingBag, ChevronDown } from "lucide-react";
+import { ShoppingCart, Leaf, User, X, Minus, Plus, ShoppingBag, ChevronDown, LogOut, Package } from "lucide-react";
 import { useCartStore } from "@/lib/store/cartStore";
 import { useState, useEffect } from "react";
+import { useSession, signOut } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -18,6 +19,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
@@ -25,21 +27,11 @@ export default function Header() {
   const { getCartCount, items, removeItem, updateQuantity } = useCartStore();
   const [cartOpen, setCartOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [user, setUser] = useState<any>(null);
+  const { data: session } = useSession();
 
   useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 20);
-    };
+    const handleScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener("scroll", handleScroll);
-
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      try {
-        setUser(JSON.parse(storedUser));
-      } catch (e) {}
-    }
-
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
@@ -129,15 +121,60 @@ export default function Header() {
 
             {/* Actions */}
             <div className="flex items-center gap-2">
-              <Link href={user ? "/orders" : "/login"} title={user ? "Đơn hàng của tôi" : "Đăng nhập"}>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="rounded-full w-10 h-10 hover:bg-[#e3ebdd]/60"
-                >
-                  <User className={`w-5 h-5 ${user ? "text-[#425733] fill-[#e3ebdd]" : "text-[hsl(220,14%,45%)]"}`} />
-                </Button>
-              </Link>
+              {/* User menu */}
+              {session ? (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="rounded-full w-10 h-10 hover:bg-[#e3ebdd]/60"
+                      title={session.user?.name || "Tài khoản"}
+                    >
+                      <div className="w-7 h-7 rounded-full bg-[#425733] text-white flex items-center justify-center text-xs font-bold">
+                        {session.user?.name?.charAt(0)?.toUpperCase() || "U"}
+                      </div>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="rounded-xl shadow-soft border-0 min-w-[180px]">
+                    <div className="px-3 py-2">
+                      <p className="font-semibold text-sm text-gray-800 truncate">{session.user?.name}</p>
+                      <p className="text-xs text-gray-400 truncate">{session.user?.email}</p>
+                    </div>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild>
+                      <Link href="/profile" className="cursor-pointer flex items-center gap-2">
+                        <User className="w-4 h-4" /> Tài khoản
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link href="/orders" className="cursor-pointer flex items-center gap-2">
+                        <Package className="w-4 h-4" /> Đơn hàng
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onClick={() => signOut({ callbackUrl: "/" })}
+                      className="cursor-pointer text-red-500 focus:text-red-600 focus:bg-red-50 flex items-center gap-2"
+                    >
+                      <LogOut className="w-4 h-4" /> Đăng xuất
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              ) : (
+                <Link href="/login">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="rounded-full hover:bg-[#e3ebdd]/60 text-sm font-semibold text-[hsl(220,14%,45%)] hover:text-[#425733]"
+                  >
+                    <User className="w-4 h-4 mr-1.5" />
+                    Đăng nhập
+                  </Button>
+                </Link>
+              )}
+
+              {/* Cart */}
               <Button
                 variant="ghost"
                 size="icon"

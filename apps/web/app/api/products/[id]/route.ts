@@ -1,11 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 import { verifyAdminRequest, unauthorizedResponse } from "@/lib/admin-auth";
 import { logAdminAction } from "@/lib/audit";
 import { updateProductSchema } from "@/lib/validations";
+import { supabaseAdmin } from "@/lib/supabase";
 import { z } from "zod";
 
-const prisma = new PrismaClient();
+/** Extract file path from Supabase public URL */
+function extractStoragePath(url: string): string | null {
+  try {
+    // URL format: https://xxx.supabase.co/storage/v1/object/public/product-images/filename.jpg
+    const match = url.match(/\/storage\/v1\/object\/public\/[^/]+\/(.+)$/);
+    return match ? match[1] : null;
+  } catch {
+    return null;
+  }
+}
 
 export async function GET(
   request: NextRequest,
@@ -185,15 +195,36 @@ export async function DELETE(
 
     const { id } = params;
 
-    const product = await prisma.product.findUnique({ where: { id }});
+    const product = await prisma.product.findUnique({
+      where: { id },
+      select: { name: true, images: true },
+    });
+
     if (!product) {
       return NextResponse.json({ error: "Product not found" }, { status: 404 });
     }
 
-    // Delete product (cascade will handle related records)
-    await prisma.product.delete({
-      where: { id },
-    });
+    // ─── Xóa ảnh trong Supabase Storage ────────────────────────────────────────
+    if (product.images && product.images.length > 0) {
+      const bucket = process.env.NEXT_PUBLIC_SUPABASE_BUCKET_NAME || "product-images";
+      const filePaths = product.images
+        .map(extractStoragePath)
+        .filter((p): p is string => p !== null);
+
+      if (filePaths.length > 0) {
+        const { error: storageError } = await supabaseAdmin.storage
+          .from(bucket)
+          .remove(filePaths);
+
+        if (storageError) {
+          // Log nhưng không block việc xóa DB
+          console.warn("Storage cleanup warning:", storageError.message);
+        }
+      }
+    }
+
+    // ─── Xóa product (cascade xóa variants, reviews, v.v.) ───────────────────
+    await prisma.product.delete({ where: { id } });
 
     await logAdminAction(admin.id, "DELETE", "Product", id, {
       name: product.name,

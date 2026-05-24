@@ -1,9 +1,8 @@
+import { prisma } from "@/lib/prisma";
 import { NextRequest } from "next/server";
 import { errorResponse, successResponse } from "@/lib/api-helpers";
-import { PrismaClient } from "@prisma/client";
 const PayOS = require("@payos/node");
 
-const prisma = new PrismaClient();
 
 const payos = new PayOS(
   process.env.PAYOS_CLIENT_ID as string,

@@ -1,9 +1,8 @@
+import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
 import { verifyAdminRequest, unauthorizedResponse } from "@/lib/admin-auth";
 import { logAdminAction } from "@/lib/audit";
 
-const prisma = new PrismaClient();
 
 // GET - List all blog posts (including unpublished) for admin
 export async function GET(request: NextRequest) {

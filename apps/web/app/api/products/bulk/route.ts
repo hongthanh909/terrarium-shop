@@ -1,9 +1,18 @@
+import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
 import { verifyAdminRequest, unauthorizedResponse } from "@/lib/admin-auth";
 import { logAdminAction } from "@/lib/audit";
+import { supabaseAdmin } from "@/lib/supabase";
 
-const prisma = new PrismaClient();
+/** Extract file path from Supabase public URL */
+function extractStoragePath(url: string): string | null {
+  try {
+    const match = url.match(/\/storage\/v1\/object\/public\/[^/]+\/(.+)$/);
+    return match ? match[1] : null;
+  } catch {
+    return null;
+  }
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -20,18 +29,36 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get info before deletion
+    // Get info + images before deletion
     const products = await prisma.product.findMany({
       where: { id: { in: ids } },
-      select: { id: true, name: true },
+      select: { id: true, name: true, images: true },
     });
 
-    // Delete products (cascade will handle relations)
+    // ─── Xóa ảnh trong Supabase Storage ────────────────────────────────────────
+    const allImages = products.flatMap((p) => p.images || []);
+    if (allImages.length > 0) {
+      const bucket = process.env.NEXT_PUBLIC_SUPABASE_BUCKET_NAME || "product-images";
+      const filePaths = allImages
+        .map(extractStoragePath)
+        .filter((p): p is string => p !== null);
+
+      if (filePaths.length > 0) {
+        const { error: storageError } = await supabaseAdmin.storage
+          .from(bucket)
+          .remove(filePaths);
+
+        if (storageError) {
+          console.warn("Bulk storage cleanup warning:", storageError.message);
+        }
+      }
+    }
+
+    // ─── Xóa products trong DB ────────────────────────────────────────────────
     await prisma.product.deleteMany({
       where: { id: { in: ids } },
     });
 
-    // Log action
     await logAdminAction(admin.id, "BULK_DELETE", "Product", "multiple", {
       deletedIds: ids,
       deletedNames: products.map((p) => p.name),

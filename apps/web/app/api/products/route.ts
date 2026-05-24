@@ -1,9 +1,8 @@
+import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
 import { createProductSchema } from "@/lib/validations";
 import { z } from "zod";
 
-const prisma = new PrismaClient();
 
 export async function GET(request: NextRequest) {
   try {
@@ -168,6 +167,8 @@ export async function POST(request: NextRequest) {
             sunlight: careGuideData.sunlight || "",
             temperature: careGuideData.temperature || "",
             humidity: careGuideData.humidity || "",
+            commonIssues: careGuideData.commonIssues ?? null,
+            videoUrl: careGuideData.videoUrl ?? null,
             productId: newProduct.id,
           },
         });

@@ -1,11 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 import { verifyAdminRequest, unauthorizedResponse } from "@/lib/admin-auth";
 import { logAdminAction } from "@/lib/audit";
 import { updateCategorySchema } from "@/lib/validations";
 import { z } from "zod";
-
-const prisma = new PrismaClient();
 
 export async function PUT(
   request: NextRequest,

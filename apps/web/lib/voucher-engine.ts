@@ -1,6 +1,6 @@
+import { prisma } from "@/lib/prisma";
 import { PrismaClient, DiscountType, DiscountApplicableTo } from "@prisma/client";
 
-const prisma = new PrismaClient();
 
 export interface ValidationResult {
   valid: boolean;

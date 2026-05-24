@@ -47,9 +47,8 @@ export default function CreateProductPage() {
     sunlight: "",
     temperature: "",
     humidity: "",
-    soilType: "",
-    fertilizer: "",
-    notes: "",
+    commonIssues: "",
+    videoUrl: "",
   });
 
   useEffect(() => {
@@ -198,9 +197,8 @@ export default function CreateProductPage() {
           sunlight: careGuide.sunlight,
           temperature: careGuide.temperature,
           humidity: careGuide.humidity,
-          soilType: careGuide.soilType,
-          fertilizer: careGuide.fertilizer,
-          notes: careGuide.notes,
+          commonIssues: careGuide.commonIssues || null,
+          videoUrl: careGuide.videoUrl || null,
         },
       };
 
@@ -443,58 +441,56 @@ export default function CreateProductPage() {
 
         {/* Care Guide */}
         <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-xl font-semibold mb-4">Care Guide</h3>
+          <div className="flex items-center gap-3 mb-5">
+            <span className="text-2xl">🌿</span>
+            <h3 className="text-xl font-semibold">Hướng Dẫn Chăm Sóc</h3>
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <FormField
-              label="Watering"
+              label="Tưới nước"
               type="text"
               value={careGuide.watering}
               onChange={(e) => setCareGuide({ ...careGuide, watering: e.target.value })}
-              placeholder="e.g., Mist weekly"
+              placeholder="VD: Tưới 2-3 lần/tuần, tránh đọng nước"
             />
             <FormField
-              label="Sunlight"
+              label="Ánh sáng"
               type="text"
               value={careGuide.sunlight}
               onChange={(e) => setCareGuide({ ...careGuide, sunlight: e.target.value })}
-              placeholder="e.g., Indirect light"
+              placeholder="VD: Ánh sáng gián tiếp, tránh nắng trực tiếp"
             />
             <FormField
-              label="Temperature"
+              label="Nhiệt độ"
               type="text"
               value={careGuide.temperature}
               onChange={(e) => setCareGuide({ ...careGuide, temperature: e.target.value })}
-              placeholder="e.g., 18-24°C"
+              placeholder="VD: 18-25°C"
             />
             <FormField
-              label="Humidity"
+              label="Độ ẩm"
               type="text"
               value={careGuide.humidity}
               onChange={(e) => setCareGuide({ ...careGuide, humidity: e.target.value })}
-              placeholder="e.g., High (60-80%)"
-            />
-            <FormField
-              label="Soil Type"
-              type="text"
-              value={careGuide.soilType}
-              onChange={(e) => setCareGuide({ ...careGuide, soilType: e.target.value })}
-              placeholder="e.g., Well-draining mix"
-            />
-            <FormField
-              label="Fertilizer"
-              type="text"
-              value={careGuide.fertilizer}
-              onChange={(e) => setCareGuide({ ...careGuide, fertilizer: e.target.value })}
-              placeholder="e.g., Monthly during growing season"
+              placeholder="VD: 60-80%"
             />
             <div className="md:col-span-2">
               <FormField
-                label="Additional Notes"
+                label="Vấn đề thường gặp & cách xử lý"
                 multiline
                 rows={3}
-                value={careGuide.notes}
-                onChange={(e) => setCareGuide({ ...careGuide, notes: e.target.value })}
-                placeholder="Any additional care instructions..."
+                value={careGuide.commonIssues}
+                onChange={(e) => setCareGuide({ ...careGuide, commonIssues: e.target.value })}
+                placeholder="VD: Lá vàng → giảm tưới; Mốc trắng → tăng thông thoáng"
+              />
+            </div>
+            <div className="md:col-span-2">
+              <FormField
+                label="Video hướng dẫn (URL)"
+                type="url"
+                value={careGuide.videoUrl}
+                onChange={(e) => setCareGuide({ ...careGuide, videoUrl: e.target.value })}
+                placeholder="https://youtube.com/..."
               />
             </div>
           </div>

@@ -7,20 +7,17 @@
 
 ### 🔒 AUTH & SECURITY (Ưu tiên cao nhất)
 
-- [ ] **Hash password với bcrypt** — Hiện đang lưu plain-text trong `passwordHash` (CỰC KỲ NGUY HIỂM)
-  - File: `apps/web/app/api/auth/register/route.ts` — `passwordHash: password`
-  - File: `apps/web/app/api/auth/login/route.ts` — `customer.passwordHash !== password`
-  - Fix: `npm install bcryptjs @types/bcryptjs` → dùng `bcrypt.hash()` / `bcrypt.compare()`
+- [x] **Hash password với bcrypt** — register dùng `bcrypt.hash()`, login dùng `bcrypt.compare()`
+  - File: `apps/web/app/api/auth/register/route.ts` ✅
+  - File: `apps/web/app/api/auth/login/route.ts` ✅ (vừa tạo)
 
-- [ ] **JWT Cookie-based Auth** — Hiện dùng localStorage (không an toàn, XSS-prone)
-  - Thay bằng HTTP-only cookie với JWT signed
-  - Fix: `npm install jsonwebtoken @types/jsonwebtoken`
-  - Tạo: `apps/web/lib/auth.ts` — helper `signToken()` + `verifyToken()`
-  - API login/register → `response.cookies.set('token', jwt, { httpOnly: true, secure: true })`
+- [/] **JWT Cookie-based Auth** — Admin dùng NextAuth JWT ✅. Customer vẫn dùng localStorage (cần nâng cấp lên HTTP-only cookie ở phase sau)
+  - Admin auth: NextAuth + JWT session ✅
+  - Customer auth: localStorage (tạm thời, cần nâng cấp)
 
-- [ ] **Auth Middleware** — Chặn truy cập `/admin/*` nếu không phải ADMIN
-  - Tạo: `apps/web/middleware.ts` — check cookie token, kiểm tra role
-  - Redirect về `/login` nếu chưa login / `/` nếu không phải ADMIN
+- [x] **Auth Middleware** — `middleware.ts` đã bảo vệ `/admin/*` bằng NextAuth token
+  - Redirect về `/admin/login` nếu chưa login
+  - Redirect về `/` nếu không phải ADMIN
 
 - [ ] **Zod Validation cho tất cả API** — Hiện chưa validate input
   - Áp dụng: tất cả route.ts dùng `zod.parse()` trước khi xử lý

@@ -2,62 +2,65 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
 
-// Public paths - không cần authentication
-const PUBLIC_PATHS = [
-  "/",
-  "/login",
-  "/register",
-  "/products",
-  "/blog",
-  "/contact",
-  "/consult",
-  "/policies",
-  "/api/auth",
-  "/api/products",
-  "/api/blog",
-];
+// ─── Admin paths — chỉ role=ADMIN mới truy cập ───────────────────────────────
+const ADMIN_PATHS = ["/admin", "/api/admin"];
 
-// Admin paths - chỉ admin mới truy cập được
-const ADMIN_PATHS = [
-  "/admin",
-  "/api/admin",
-];
+// ─── Customer-only paths — cần login ─────────────────────────────────────────
+const CUSTOMER_PROTECTED_PATHS = ["/orders", "/account", "/profile"];
 
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
-  const token = await getToken({ req: request as any, secret: process.env.NEXTAUTH_SECRET });
 
-  // Check if path is public
-  const isPublic = PUBLIC_PATHS.some((pattern) => {
-    if (pattern.includes("[")) {
-      const prefix = pattern.split("[")[0];
-      return pathname.startsWith(prefix);
-    }
-    return pathname === pattern || pathname.startsWith(pattern);
-  });
+  // ─── 1. Chỉ chạy middleware cho admin & customer-protected paths ──────────────
+  //    Tất cả paths khác → pass through ngay, không cần getToken()
+  const isAdminPath = ADMIN_PATHS.some((p) => pathname.startsWith(p));
+  const isCustomerProtected = CUSTOMER_PROTECTED_PATHS.some((p) =>
+    pathname.startsWith(p)
+  );
 
-  if (isPublic) {
+  // Không phải protected path → next() ngay, không tốn thời gian getToken()
+  if (!isAdminPath && !isCustomerProtected) {
     return NextResponse.next();
   }
 
-  // If not public, require authentication
-  if (!token) {
-    return NextResponse.redirect(new URL("/admin/login", request.url));
+  // ─── 2. Chỉ gọi getToken() khi cần ──────────────────────────────────────────
+  const token = await getToken({
+    req: request as any,
+    secret: process.env.NEXTAUTH_SECRET,
+  });
+
+  // ─── 3. Admin routes ─────────────────────────────────────────────────────────
+  if (isAdminPath) {
+    if (!token) {
+      return NextResponse.redirect(new URL("/admin/login", request.url));
+    }
+    if (token.role !== "ADMIN") {
+      return NextResponse.redirect(new URL("/", request.url));
+    }
+    const response = NextResponse.next();
+    response.headers.set("x-user-id", token.id as string);
+    response.headers.set("x-user-role", token.role as string);
+    return response;
   }
 
-  // Check admin routes
-  const isAdminPath = ADMIN_PATHS.some((pattern) => pathname.startsWith(pattern));
-
-  if (isAdminPath && token.role !== "ADMIN") {
-    return NextResponse.redirect(new URL("/", request.url));
+  // ─── 4. Customer-protected routes ────────────────────────────────────────────
+  if (isCustomerProtected && !token) {
+    const loginUrl = new URL("/login", request.url);
+    loginUrl.searchParams.set("callbackUrl", pathname);
+    return NextResponse.redirect(loginUrl);
   }
 
   return NextResponse.next();
 }
 
 export const config = {
+  // Chỉ chạy middleware trên admin & customer-protected paths
+  // KHÔNG chạy trên _next, static files, favicon, public API
   matcher: [
-    // Match all paths except static files
-    "/((?!_next/static|_next/image|favicon.ico).*)",
+    "/admin/:path*",
+    "/api/admin/:path*",
+    "/orders/:path*",
+    "/account/:path*",
+    "/profile/:path*",
   ],
 };
