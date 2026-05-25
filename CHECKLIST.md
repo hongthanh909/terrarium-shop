@@ -27,27 +27,33 @@
   - UI: `/forgot-password` + `/reset-password` ✅
   - resetToken + resetTokenExpiry lưu trong bảng Customer ✅
 
-### 🔐 AUTH — CẦN FIX (Mới phát hiện)
+### 🔐 AUTH — ĐÃ HOÀN THÀNH
 
-- [ ] **[CRITICAL] Whitelist email Admin** — Hiện tại bất kỳ tài khoản có `role=ADMIN` trong DB đều vào được admin.
-  - Yêu cầu: Chỉ `hongthanh181221@gmail.com` được phép vào admin
-  - Fix: Thêm check `email === process.env.ADMIN_EMAIL` trong `admin-login` provider của `lib/auth.ts`
-  - Thêm `ADMIN_EMAIL=hongthanh181221@gmail.com` vào `.env.local`
+- [x] **[CRITICAL] Whitelist email Admin** — `ADMIN_EMAIL=hongthanh181221@gmail.com` trong `.env.local`
+  - Kiểm tra trong `admin-login` provider của `lib/auth.ts` ✅
+  - Chỉ email khớp mới được phép vào admin ✅
 
-- [ ] **[HIGH] Trang /admin/login chưa tồn tại** — Thư mục `app/admin/login/` không có file `page.tsx`!
-  - Middleware redirect về `/admin/login` nhưng trang này không tồn tại → 404
-  - Cần tạo: `apps/web/app/admin/login/page.tsx` với form đăng nhập Admin
+- [x] **[HIGH] Trang /admin/login đã tồn tại** — `app/admin/login/page.tsx` ✅
+  - Form đăng nhập Admin với giao diện xanh lá đồng bộ
+  - Hiển thị lỗi thân thiện cho từng trường hợp ✅
 
-- [ ] **[HIGH] Session timeout khi restart `npm run dev`**
-  - Vấn đề: JWT secret có thể thay đổi mỗi lần restart nếu `NEXTAUTH_SECRET` không được set cố định
-  - Fix: Đảm bảo `NEXTAUTH_SECRET` trong `.env.local` là một chuỗi cố định, không tự generate
-  - Hiện tại session `maxAge = 30 ngày` (production) — hợp lý
+- [x] **[HIGH] Session khi restart `npm run dev`**
+  - `NEXTAUTH_SECRET` đã được set cố định trong `.env.local` → không thay đổi khi restart ✅
+  - Dev restart sẽ mất session (bình thường do hot-reload xoá memory state)
+  - Production (Vercel): session tồn tại đầy đủ 30 ngày, refresh token mỗi 24 giờ ✅
 
-- [ ] **[MEDIUM] `signIn page` mặc định trỏ về `/admin/login`** — Nếu Customer chưa login bị redirect về `/admin/login` thay vì `/login`
-  - Fix: Tách `pages.signIn` ra cho từng provider hoặc điều chỉnh trong middleware
+- [x] **[MEDIUM] signIn page redirect đã được tách riêng**
+  - Middleware redirect `/admin/*` → `/admin/login` ✅
+  - Middleware redirect `/orders`, `/profile`, `/checkout` → `/login` (kèm callbackUrl) ✅
+  - `auth.ts` error page → `/login` (không còn trỏ về admin login) ✅
 
-- [ ] **[LOW] Không có nút Logout trong Admin sidebar**
-  - Cần thêm nút "Đăng xuất" trong `admin/layout.tsx` gọi `signOut()` từ NextAuth
+- [x] **[LOW] Nút Logout trong Admin sidebar**
+  - Đã thêm nút "Đăng xuất" màu đỏ cuối sidebar, gọ `signOut()` về `/admin/login` ✅
+  - Menu item highlight active state theo URL hiện tại ✅
+  - Header hiển thị tên trang đang xem ✅
+
+- [x] **Link "Quên mật khẩu?" trong trang đăng nhập Customer**
+  - Đã thêm link trỏ về `/forgot-password` kế bên label Mật khẩu ✅
 
 ### 🗑️ SUPABASE STORAGE
 - [x] **Xóa ảnh thực sự khi xóa sản phẩm** ✅
@@ -65,9 +71,10 @@
 - [x] **Vouchers CRUD** — Tạo/sửa/xóa phiếu giảm giá ✅
 - [x] **Blog CRUD** — Tạo/đăng bài blog ✅
 
+### ✅ Đã kiểm tra / hoàn thiện
+- [x] **Admin: Trang `/admin/settings`** — Đã tạo với form cài đặt cửa hàng, ngân hàng, thông tin hệ thống ✅
+
 ### ⚠️ Cần kiểm tra / bổ sung
-- [ ] **Admin: Sửa/xóa bài viết blog** — `/admin/blog/[id]/edit` chưa được verify đầy đủ
-- [ ] **Admin: Trang `/admin/settings`** — Có trong sidebar nhưng cần kiểm tra trang có tồn tại không
 - [ ] **AuditLog** — Model đã có trong Prisma schema nhưng chưa được ghi log khi admin thực hiện CREATE/UPDATE/DELETE
 - [ ] **Admin: Phân trang (Pagination)** — Các trang list (orders, products, customers) cần phân trang khi dữ liệu lớn
 - [ ] **Admin: Tìm kiếm & lọc nâng cao** — Tìm kiếm đơn hàng theo số điện thoại, email khách hàng
@@ -80,7 +87,7 @@
 
 - [x] **User Profile Page** — Trang `/profile` ✅
 - [x] **Loyalty Tier Badge** ✅
-- [ ] **Points History Page** — `/profile/points` (API đã có, UI cần verify)
+- [x] **Points History Page** — `/profile/points` ✅ (API + UI + link từ profile)
 
 ### 🌟 EXPLORE PAGE
 
@@ -109,7 +116,7 @@
 - Không có cache tầng client (mỗi lần navigate phải fetch lại)
 
 ### Giải pháp ngắn hạn (Không cần đổi cấu trúc)
-- [ ] **`export const dynamic = 'force-dynamic'`** — Thêm vào `/explore/page.tsx` để fix warning build
+- [x] **`export const dynamic = 'force-dynamic'`** — Đã thêm vào `/explore/page.tsx` ✅
 - [ ] **`next/image` thay `<img>`** — Tự động tối ưu kích thước + convert sang WebP/AVIF
 - [ ] **Lazy load components nặng** — Dùng `dynamic(() => import(...), { ssr: false })` cho carousel, chat widget
 - [ ] **Gộp Prisma queries** — Trong Stats API đã tốt (Promise.all), áp dụng tương tự các API khác

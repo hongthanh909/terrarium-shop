@@ -89,7 +89,8 @@ export const authOptions: NextAuthOptions = {
 
   session: {
     strategy: "jwt",
-    maxAge: 30 * 24 * 60 * 60, // 30 ngày
+    maxAge: 30 * 24 * 60 * 60, // 30 ngày (production)
+    updateAge: 24 * 60 * 60,   // Refresh token mỗi 24 giờ (tránh stale session)
   },
 
   callbacks: {
@@ -110,10 +111,11 @@ export const authOptions: NextAuthOptions = {
   },
 
   pages: {
-    // Không set signIn mặc định — Middleware sẽ redirect đúng chỗ:
+    // Middleware redirect đúng chỗ:
     // - /admin/* → /admin/login
     // - /orders, /profile, /checkout → /login
-    error: "/admin/login",
+    // error page cho customer auth (NextAuth default error)
+    error: "/login",
   },
 
   secret: process.env.NEXTAUTH_SECRET,

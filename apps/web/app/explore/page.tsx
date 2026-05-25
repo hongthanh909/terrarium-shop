@@ -3,6 +3,9 @@ import { ExploreClient } from "./ExploreClient";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
+// Force dynamic rendering — trang này dùng getServerSession (headers)
+export const dynamic = "force-dynamic";
+
 export default async function ExplorePage() {
   try {
     const session = await getServerSession(authOptions);
