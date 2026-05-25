@@ -4,6 +4,8 @@ import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 
+export const dynamic = "force-dynamic";
+
 const updateProfileSchema = z.object({
   name: z.string().min(2, "Tên phải có ít nhất 2 ký tự").max(100).optional(),
   phone: z.string().regex(/^[0-9+\s-]{9,15}$/, "Số điện thoại không hợp lệ").optional().nullable(),

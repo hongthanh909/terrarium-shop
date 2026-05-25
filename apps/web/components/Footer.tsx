@@ -1,9 +1,7 @@
-"use client";
-
 import Link from "next/link";
 import { Leaf, Mail, Phone, MapPin, Clock, Facebook, Instagram, Twitter, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useEffect, useState } from "react";
+import { prisma } from "@/lib/prisma";
 
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   Mail,
@@ -30,44 +28,11 @@ const getIconForLabel = (label: string): React.ComponentType<{ className?: strin
   return MessageCircle; // Default fallback
 };
 
-export default function Footer() {
-  const [contactData, setContactData] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetch("/api/contact")
-      .then((res) => res.json())
-      .then((data) => {
-        setContactData(data);
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
-  }, []);
-
-  if (loading) {
-    return (
-      <footer className="bg-gradient-to-b from-[#e3ebdd] to-white pt-16 pb-8">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="animate-pulse space-y-8">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-12">
-              {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="space-y-4">
-                  <div className="h-6 bg-muted rounded w-32" />
-                  <div className="space-y-2">
-                    <div className="h-4 bg-muted rounded" />
-                    <div className="h-4 bg-muted rounded w-3/4" />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </footer>
-    );
-  }
-
-  // New format: array of ContactInfo records
-  const contactList = Array.isArray(contactData) ? contactData : [];
+export default async function Footer() {
+  const contactList = await prisma.contactInfo.findMany({
+    where: { isActive: true },
+    orderBy: { orderIndex: "asc" },
+  }).catch(() => []);
 
   // Extract by type
   const emails = contactList.filter((c: any) => c.type === "email");

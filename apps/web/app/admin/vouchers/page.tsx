@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Plus, Edit, Trash2, Save, X } from "lucide-react";
 import Link from "next/link";
@@ -24,8 +25,14 @@ interface DiscountCampaign {
 
 export default function AdminVouchersPage() {
   const router = useRouter();
-  const [campaigns, setCampaigns] = useState<DiscountCampaign[]>([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
+  const { data: campaigns = [], isLoading: loading } = useQuery({
+    queryKey: ["admin-vouchers"],
+    queryFn: async () => {
+      const response = await fetch("/api/discount-campaigns");
+      return response.json();
+    },
+  });
   const [showModal, setShowModal] = useState(false);
   const [editingCampaign, setEditingCampaign] = useState<DiscountCampaign | null>(null);
 
@@ -42,22 +49,6 @@ export default function AdminVouchersPage() {
     applicableTo: "ALL",
     description: "",
   });
-
-  useEffect(() => {
-    fetchCampaigns();
-  }, []);
-
-  const fetchCampaigns = async () => {
-    try {
-      const response = await fetch("/api/discount-campaigns");
-      const data = await response.json();
-      setCampaigns(data);
-    } catch (error) {
-      console.error("Error fetching campaigns:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleOpenModal = (campaign?: DiscountCampaign) => {
     if (campaign) {
@@ -118,7 +109,7 @@ export default function AdminVouchersPage() {
       if (response.ok) {
         toast.success(editingCampaign ? "Cập nhật phiếu giảm giá!" : "Tạo phiếu giảm giá!");
         handleCloseModal();
-        fetchCampaigns();
+        queryClient.invalidateQueries({ queryKey: ["admin-vouchers"] });
       } else {
         const error = await response.json();
         toast.error(error.error || "Không thể lưu phiếu giảm giá");
@@ -139,7 +130,7 @@ export default function AdminVouchersPage() {
 
       if (response.ok) {
         toast.success("Xóa phiếu giảm giá thành công!");
-        fetchCampaigns();
+        queryClient.invalidateQueries({ queryKey: ["admin-vouchers"] });
       } else {
         toast.error("Không thể xóa phiếu giảm giá");
       }
@@ -217,7 +208,7 @@ export default function AdminVouchersPage() {
             </tr>
           </thead>
           <tbody className="divide-y">
-            {campaigns.map((campaign) => (
+            {campaigns.map((campaign: any) => (
               <tr key={campaign.id} className="hover:bg-gray-50">
                 <td className="px-6 py-4 font-medium">{campaign.code}</td>
                 <td className="px-6 py-4">

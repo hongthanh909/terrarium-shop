@@ -5,6 +5,10 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft, Save } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
+import dynamic from "next/dynamic";
+
+const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
+import "react-quill/dist/quill.snow.css";
 
 interface BlogCategory {
   id: string;
@@ -130,14 +134,23 @@ export default function CreateBlogPostPage() {
 
         <div>
           <label className="block text-sm font-medium mb-1">Nội dung *</label>
-          <textarea
-            value={formData.content}
-            onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-            required
-            rows={12}
-            className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#6d8c5a]"
-            placeholder="Nhập nội dung bài viết (hỗ trợ HTML)"
-          />
+          <div className="bg-white">
+            <ReactQuill
+              theme="snow"
+              value={formData.content}
+              onChange={(content) => setFormData({ ...formData, content })}
+              className="h-96 mb-12"
+              modules={{
+                toolbar: [
+                  [{ header: [1, 2, 3, false] }],
+                  ["bold", "italic", "underline", "strike", "blockquote"],
+                  [{ list: "ordered" }, { list: "bullet" }],
+                  ["link", "image"],
+                  ["clean"],
+                ],
+              }}
+            />
+          </div>
         </div>
 
         <div className="flex items-center gap-2">

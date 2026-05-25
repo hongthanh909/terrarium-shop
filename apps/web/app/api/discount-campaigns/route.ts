@@ -1,5 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
+import { verifyAdminRequest, unauthorizedResponse } from "@/lib/admin-auth";
+import { logAdminAction } from "@/lib/audit";
 
 
 export async function GET(request: NextRequest) {
@@ -29,6 +31,9 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    const admin = await verifyAdminRequest(request);
+    if (!admin) return unauthorizedResponse();
+
     const body = await request.json();
     const {
       code,
@@ -96,6 +101,12 @@ export async function POST(request: NextRequest) {
       include: {
         applicables: true,
       },
+    });
+
+    await logAdminAction(admin.id, "CREATE", "DiscountCampaign", campaign.id, {
+      code: campaign.code,
+      type: campaign.type,
+      value: campaign.value,
     });
 
     return NextResponse.json(campaign);

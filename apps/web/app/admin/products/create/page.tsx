@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowLeft, Plus, X, Save, Upload, Image as ImageIcon } from "lucide-react";
 import { toast } from "sonner";
 import { FormField } from "@/components/admin/ui/FormField";
@@ -59,7 +60,8 @@ export default function CreateProductPage() {
     try {
       const response = await fetch("/api/categories");
       const data = await response.json();
-      setCategories(data);
+      // API trả { categories: [...], pagination: {...} } hoặc array trực tiếp
+      setCategories(Array.isArray(data) ? data : (data.categories ?? []));
     } catch (error) {
       console.error("Error fetching categories:", error);
     }
@@ -300,9 +302,11 @@ export default function CreateProductPage() {
               <div key={index} className="relative">
                 {image ? (
                   <div className="relative">
-                    <img
+                    <Image
                       src={image}
                       alt={`Product image ${index + 1}`}
+                      width={400}
+                      height={128}
                       className="w-full h-32 object-cover rounded-lg border"
                     />
                     <button

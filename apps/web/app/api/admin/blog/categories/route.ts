@@ -1,5 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
+import { verifyAdminRequest, unauthorizedResponse } from "@/lib/admin-auth";
+import { logAdminAction } from "@/lib/audit";
 
 
 // GET - List all blog categories
@@ -29,6 +31,9 @@ export async function GET() {
 // POST - Create a new blog category
 export async function POST(request: NextRequest) {
   try {
+    const admin = await verifyAdminRequest(request);
+    if (!admin) return unauthorizedResponse();
+
     const body = await request.json();
     const { name, slug } = body;
 
@@ -44,6 +49,11 @@ export async function POST(request: NextRequest) {
         name,
         slug,
       },
+    });
+
+    await logAdminAction(admin.id, "CREATE", "BlogCategory", category.id, {
+      name: category.name,
+      slug: category.slug,
     });
 
     return NextResponse.json(category, { status: 201 });

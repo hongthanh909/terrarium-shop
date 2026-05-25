@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { ShoppingCart, Leaf, User, X, Minus, Plus, ShoppingBag, ChevronDown, LogOut, Package } from "lucide-react";
+import { ShoppingCart, Leaf, User, X, Minus, Plus, ShoppingBag, ChevronDown, LogOut, Package, LayoutDashboard } from "lucide-react";
 import { useCartStore } from "@/lib/store/cartStore";
 import { useState, useEffect } from "react";
 import { useSession, signOut } from "next-auth/react";
@@ -28,9 +28,13 @@ export default function Header() {
   const { getCartCount, items, removeItem, updateQuantity } = useCartStore();
   const [cartOpen, setCartOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const { data: session } = useSession();
 
   useEffect(() => {
+    // Rehydrate Zustand store from localStorage (needed because skipHydration: true)
+    useCartStore.persist.rehydrate();
+    setMounted(true);
     const handleScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
@@ -141,8 +145,18 @@ export default function Header() {
                     <div className="px-3 py-2">
                       <p className="font-semibold text-sm text-gray-800 truncate">{session.user?.name}</p>
                       <p className="text-xs text-gray-400 truncate">{session.user?.email}</p>
+                      {(session.user as any)?.role === "ADMIN" && (
+                        <span className="inline-block mt-1 text-[10px] font-bold uppercase tracking-wider bg-[#425733] text-white px-2 py-0.5 rounded-full">Admin</span>
+                      )}
                     </div>
                     <DropdownMenuSeparator />
+                    {(session.user as any)?.role === "ADMIN" && (
+                      <DropdownMenuItem asChild>
+                        <Link href="/admin" className="cursor-pointer flex items-center gap-2 text-[#425733] font-semibold focus:bg-[#e3ebdd]">
+                          <LayoutDashboard className="w-4 h-4" /> Quản lý
+                        </Link>
+                      </DropdownMenuItem>
+                    )}
                     <DropdownMenuItem asChild>
                       <Link href="/profile" className="cursor-pointer flex items-center gap-2">
                         <User className="w-4 h-4" /> Tài khoản
@@ -183,7 +197,7 @@ export default function Header() {
                 onClick={() => setCartOpen(true)}
               >
                 <ShoppingCart className="w-5 h-5 text-[hsl(220,14%,45%)]" />
-                {getCartCount() > 0 && (
+                {mounted && getCartCount() > 0 && (
                   <span className="absolute -top-0.5 -right-0.5 w-5 h-5 bg-[#425733] text-[#ffffff] text-xs font-bold rounded-full flex items-center justify-center shadow-soft">
                     {getCartCount()}
                   </span>

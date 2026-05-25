@@ -1,17 +1,15 @@
 import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { verifyAdminRequest, unauthorizedResponse } from "@/lib/admin-auth";
+import { logAdminAction } from "@/lib/audit";
 
 export async function POST(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session || (session.user as any).role !== "ADMIN") {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const admin = await verifyAdminRequest(request);
+    if (!admin) return unauthorizedResponse();
 
     const { id } = params;
     const body = await request.json();
@@ -29,6 +27,12 @@ export async function POST(
           weekStart: weekStart,
         },
       });
+
+      await logAdminAction(admin.id, "DELETE", "WeeklyFeatured", id, {
+        action: "UNSET_WEEKLY",
+        weekStart: weekStart.toISOString(),
+      });
+
       return NextResponse.json({ message: "Đã gỡ khỏi Weekly Featured" });
     }
 
@@ -58,6 +62,12 @@ export async function POST(
         reason: reason || null,
         isActive: true,
       },
+    });
+
+    await logAdminAction(admin.id, "UPDATE", "WeeklyFeatured", id, {
+      action: "SET_WEEKLY",
+      weekStart: weekStart.toISOString(),
+      reason: reason || null,
     });
 
     return NextResponse.json(weekly);

@@ -4,6 +4,8 @@ import { createProductSchema } from "@/lib/validations";
 import { z } from "zod";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { verifyAdminRequest, unauthorizedResponse } from "@/lib/admin-auth";
+import { logAdminAction } from "@/lib/audit";
 
 
 export async function GET(request: NextRequest) {
@@ -132,6 +134,9 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    const admin = await verifyAdminRequest(request);
+    if (!admin) return unauthorizedResponse();
+
     const body = await request.json();
     
     // Validate request body
@@ -213,6 +218,11 @@ export async function POST(request: NextRequest) {
           variantOptions: true,
         },
       });
+    });
+
+    await logAdminAction(admin.id, "CREATE", "Product", product!.id, {
+      name: product!.name,
+      slug: product!.slug,
     });
 
     return NextResponse.json(product, { status: 201 });

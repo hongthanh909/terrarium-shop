@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -50,8 +51,7 @@ type TabType = "info" | "password" | "orders";
 export default function ProfilePage() {
   const { data: session, status } = useSession();
   const router = useRouter();
-  const [profile, setProfile] = useState<ProfileData | null>(null);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState<TabType>("info");
   const [saving, setSaving] = useState(false);
 
@@ -70,28 +70,18 @@ export default function ProfilePage() {
     }
   }, [status, router]);
 
-  useEffect(() => {
-    if (status === "authenticated") {
-      fetchProfile();
-    }
-  }, [status]);
-
-  const fetchProfile = async () => {
-    try {
+  const { data: profile = null, isLoading: loading } = useQuery<ProfileData | null>({
+    queryKey: ["customer-profile"],
+    queryFn: async () => {
       const res = await fetch("/api/profile");
-      if (res.ok) {
-        const data = await res.json();
-        setProfile(data);
-        setName(data.name || "");
-        setPhone(data.phone || "");
-      }
-    } catch (err) {
-      console.error(err);
-      toast.error("Không thể tải thông tin tài khoản");
-    } finally {
-      setLoading(false);
-    }
-  };
+      if (!res.ok) throw new Error("Failed to fetch profile");
+      const data = await res.json();
+      setName(data.name || "");
+      setPhone(data.phone || "");
+      return data;
+    },
+    enabled: status === "authenticated",
+  });
 
   const handleUpdateInfo = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -103,8 +93,7 @@ export default function ProfilePage() {
         body: JSON.stringify({ name, phone: phone || null }),
       });
       if (res.ok) {
-        const updated = await res.json();
-        setProfile((prev) => prev ? { ...prev, name: updated.name, phone: updated.phone } : prev);
+        queryClient.invalidateQueries({ queryKey: ["customer-profile"] });
         toast.success("Cập nhật thông tin thành công!");
       } else {
         const err = await res.json();

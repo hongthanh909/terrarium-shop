@@ -6,6 +6,18 @@ import { NextRequest, NextResponse } from "next/server";
 const toNum = (v: number | string): number =>
   typeof v === "number" ? v : parseFloat(v);
 
+// Helper: serialize order Decimal fields to number
+const serializeOrder = (order: any) => ({
+  ...order,
+  subtotal: Number(order.subtotal),
+  shippingFee: Number(order.shippingFee),
+  discount: Number(order.discount),
+  total: Number(order.total),
+  items: order.items?.map((item: any) => ({
+    ...item,
+    price: Number(item.price),
+  })),
+});
 
 import { z } from "zod";
 
@@ -20,7 +32,7 @@ const orderItemSchema = z.object({
 });
 
 const createOrderSchema = z.object({
-  customerId: z.string().min(1, "Missing customer ID"),
+  customerId: z.string().min(1).nullable().optional(),
   items: z.array(orderItemSchema).min(1, "Order must have at least 1 item"),
   shippingInfo: z.any().optional(),
   shippingMethod: z.enum(["GHN_STANDARD", "GHN_EXPRESS", "GRAB"]).default("GHN_STANDARD"),
@@ -64,7 +76,7 @@ export async function POST(request: NextRequest) {
       const newOrder = await tx.order.create({
         data: {
           orderNumber,
-          customerId,
+          ...(customerId ? { customerId } : {}),
           subtotal: toNum(subtotal),
           shippingFee: toNum(shippingFee),
           discount: toNum(discount),
@@ -73,7 +85,7 @@ export async function POST(request: NextRequest) {
           paymentMethod,
           status: "PENDING",
           paymentStatus: paymentMethod === "COD" ? "PENDING" : "PAID",
-        },
+        } as any,
       });
 
       // Create order items
@@ -174,7 +186,7 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ error: "Order not found" }, { status: 404 });
       }
 
-      return NextResponse.json(order);
+      return NextResponse.json(serializeOrder(order));
     }
 
     if (customerId) {
@@ -189,7 +201,7 @@ export async function GET(request: NextRequest) {
         },
       });
 
-      return NextResponse.json(orders);
+      return NextResponse.json(orders.map(serializeOrder));
     }
 
     return NextResponse.json({ error: "Customer ID or Order ID required" }, { status: 400 });

@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { ArrowLeft, Plus, Edit, Trash2, Search } from "lucide-react";
 import { toast } from "sonner";
@@ -22,15 +23,12 @@ interface Category {
 }
 
 export default function AdminCategoriesPage() {
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [parentCategories, setParentCategories] = useState<Category[]>([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   
   // Pagination & Bulk Actions
   const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
   const [limit] = useState(10);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
@@ -42,36 +40,33 @@ export default function AdminCategoriesPage() {
     status: "ACTIVE",
   });
 
-  useEffect(() => {
-    fetchCategories();
-  }, []);
-
-  const fetchCategories = async (pageNum = page) => {
-    setLoading(true);
-    try {
-      const response = await fetch(`/api/categories?status=all&page=${pageNum}&limit=${limit}`);
+  const { data: categoriesData, isLoading: loading } = useQuery({
+    queryKey: ["admin-categories", page, limit],
+    queryFn: async () => {
+      const response = await fetch(`/api/categories?status=all&page=${page}&limit=${limit}`);
       const data = await response.json();
       
       if (data.categories) {
-        setCategories(data.categories);
-        setParentCategories(data.categories.filter((c: Category) => !c.parentId));
-        setTotalPages(data.pagination.totalPages || 1);
+        return {
+          categories: data.categories as Category[],
+          totalPages: data.pagination.totalPages || 1,
+        };
       } else {
-        setCategories(data);
-        setParentCategories(data.filter((c: Category) => !c.parentId));
-        setTotalPages(1);
+        return {
+          categories: data as Category[],
+          totalPages: 1,
+        };
       }
-    } catch (error) {
-      console.error("Error fetching categories:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+    },
+  });
+
+  const categories = categoriesData?.categories ?? [];
+  const parentCategories = categories.filter((c) => !c.parentId);
+  const totalPages = categoriesData?.totalPages ?? 1;
 
   const handlePageChange = (newPage: number) => {
     if (newPage > 0 && newPage <= totalPages) {
       setPage(newPage);
-      fetchCategories(newPage);
       setSelectedIds([]);
     }
   };
@@ -104,7 +99,7 @@ export default function AdminCategoriesPage() {
       if (response.ok) {
         toast.success(`Đã xóa ${selectedIds.length} danh mục thành công!`);
         setSelectedIds([]);
-        fetchCategories();
+        queryClient.invalidateQueries({ queryKey: ["admin-categories"] });
       } else {
         toast.error("Không thể xóa danh mục");
       }
@@ -128,7 +123,7 @@ export default function AdminCategoriesPage() {
         toast.success("Tạo danh mục thành công!");
         setShowCreateModal(false);
         setFormData({ name: "", slug: "", metaDescription: "", parentId: "", status: "ACTIVE" });
-        fetchCategories();
+        queryClient.invalidateQueries({ queryKey: ["admin-categories"] });
       } else {
         toast.error("Không thể tạo danh mục");
       }
@@ -147,8 +142,7 @@ export default function AdminCategoriesPage() {
       });
 
       if (response.ok) {
-        setCategories(categories.filter((c) => c.id !== id));
-        setParentCategories(parentCategories.filter((c) => c.id !== id));
+        queryClient.invalidateQueries({ queryKey: ["admin-categories"] });
         toast.success("Xóa danh mục thành công!");
       } else {
         toast.error("Không thể xóa danh mục");

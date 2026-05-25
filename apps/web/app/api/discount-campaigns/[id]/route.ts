@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { verifyAdminRequest, unauthorizedResponse } from "@/lib/admin-auth";
+import { logAdminAction } from "@/lib/audit";
 
 export async function GET(
   request: NextRequest,
@@ -35,6 +37,9 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
+    const admin = await verifyAdminRequest(request);
+    if (!admin) return unauthorizedResponse();
+
     const body = await request.json();
     const {
       code,
@@ -112,6 +117,12 @@ export async function PUT(
       },
     });
 
+    await logAdminAction(admin.id, "UPDATE", "DiscountCampaign", params.id, {
+      code: campaign.code,
+      type: campaign.type,
+      value: campaign.value,
+    });
+
     return NextResponse.json(campaign);
   } catch (error) {
     console.error("Error updating discount campaign:", error);
@@ -127,8 +138,15 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
+    const admin = await verifyAdminRequest(request);
+    if (!admin) return unauthorizedResponse();
+
     const campaign = await prisma.discountCampaign.delete({
       where: { id: params.id },
+    });
+
+    await logAdminAction(admin.id, "DELETE", "DiscountCampaign", params.id, {
+      code: campaign.code,
     });
 
     return NextResponse.json({ success: true, campaign });

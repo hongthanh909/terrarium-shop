@@ -1,6 +1,8 @@
 import { prisma } from "@/lib/prisma";
 import { BlogClient } from "./BlogClient";
 
+export const revalidate = 60; // Cache for 60 seconds
+
 export default async function BlogPage() {
   const [posts, categories] = await Promise.all([
     prisma.blogPost.findMany({

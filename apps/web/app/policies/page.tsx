@@ -1,38 +1,21 @@
-"use client";
-
-import { useEffect, useState } from "react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Leaf } from "lucide-react";
+import { prisma } from "@/lib/prisma";
 
-interface Policy {
-  id: string;
-  slug: string;
-  title: string;
-  content: string;
-  type: string;
-  order: number;
-}
+export const revalidate = 3600; // Cache for 1 hour
 
-export default function PoliciesPage() {
-  const [policies, setPolicies] = useState<Policy[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetch("/api/policies")
-      .then((res) => res.json())
-      .then((data) => {
-        setPolicies(Array.isArray(data) ? data : []);
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
-  }, []);
+export default async function PoliciesPage() {
+  const policies = await prisma.policy.findMany({
+    where: { isActive: true },
+    orderBy: { order: "asc" },
+  });
 
   // Group policies by type for better organization
   const groupedPolicies = policies.reduce((acc, policy) => {
     if (!acc[policy.type]) acc[policy.type] = [];
     acc[policy.type].push(policy);
     return acc;
-  }, {} as Record<string, Policy[]>);
+  }, {} as Record<string, typeof policies>);
 
   const typeLabels: Record<string, string> = {
     warranty: "Bảo hành",
@@ -42,23 +25,6 @@ export default function PoliciesPage() {
     faq: "Câu hỏi thường gặp",
     policy: "Chính sách khác",
   };
-
-  if (loading) {
-    return (
-      <main className="min-h-screen bg-[hsl(0,0%,100%)] py-12 px-6">
-        <div className="max-w-4xl mx-auto">
-          <div className="animate-pulse space-y-4">
-            <div className="h-8 bg-[#e3ebdd] rounded w-1/3" />
-            <div className="space-y-3">
-              {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="h-16 bg-[#e3ebdd] rounded" />
-              ))}
-            </div>
-          </div>
-        </div>
-      </main>
-    );
-  }
 
   return (
     <main className="min-h-screen bg-[hsl(0,0%,100%)] py-12 px-6">

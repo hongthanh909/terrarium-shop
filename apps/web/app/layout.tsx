@@ -5,6 +5,7 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import dynamic from 'next/dynamic';
 import AuthProvider from '@/components/AuthProvider';
+import QueryProvider from '@/lib/query-provider';
 
 const ChatWidget = dynamic(() => import('@/components/ChatWidget'), {
   ssr: false,
@@ -55,10 +56,12 @@ export default function RootLayout({
     <html lang="vi" className={inter.variable}>
       <body className={`${inter.className} antialiased min-h-screen flex flex-col`}>
         <AuthProvider>
-          <Header />
-          <main className="flex-1">{children}</main>
-          <Footer />
-          <ChatWidget />
+          <QueryProvider>
+            <Header />
+            <main className="flex-1">{children}</main>
+            <Footer />
+            <ChatWidget />
+          </QueryProvider>
         </AuthProvider>
       </body>
     </html>

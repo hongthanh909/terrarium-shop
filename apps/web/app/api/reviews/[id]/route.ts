@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { verifyAdminRequest, unauthorizedResponse } from "@/lib/admin-auth";
+import { logAdminAction } from "@/lib/audit";
 
 
 export async function GET(
@@ -47,6 +49,9 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
+    const admin = await verifyAdminRequest(request);
+    if (!admin) return unauthorizedResponse();
+
     const body = await request.json();
     const { approved } = body;
 
@@ -55,6 +60,11 @@ export async function PUT(
       data: {
         ...(approved !== undefined && { approved }),
       },
+    });
+
+    await logAdminAction(admin.id, "UPDATE", "Review", params.id, {
+      approved,
+      action: approved ? "APPROVE" : "REJECT",
     });
 
     return NextResponse.json(review);
@@ -72,8 +82,22 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
+    const admin = await verifyAdminRequest(request);
+    if (!admin) return unauthorizedResponse();
+
+    const review = await prisma.review.findUnique({
+      where: { id: params.id },
+      select: { productId: true, customerId: true, rating: true },
+    });
+
     await prisma.review.delete({
       where: { id: params.id },
+    });
+
+    await logAdminAction(admin.id, "DELETE", "Review", params.id, {
+      productId: review?.productId,
+      customerId: review?.customerId,
+      rating: review?.rating,
     });
 
     return NextResponse.json({ success: true });

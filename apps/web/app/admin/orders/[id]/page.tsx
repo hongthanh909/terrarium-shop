@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowLeft, Check, X, Printer } from "lucide-react";
 import { toast } from "sonner";
 
@@ -167,9 +168,11 @@ export default function AdminOrderDetailPage() {
                 <div key={item.id} className="flex gap-4 border-b pb-4 last:border-0">
                   <div className="w-20 h-20 bg-gray-200 rounded overflow-hidden">
                     {item.productImage ? (
-                      <img
+                      <Image
                         src={item.productImage}
                         alt={item.productName}
+                        width={80}
+                        height={80}
                         className="w-full h-full object-cover"
                       />
                     ) : (

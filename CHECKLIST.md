@@ -1,237 +1,119 @@
 # FINAL CHECKLIST - TERRARIUM SHOP
-> Cập nhật: 2026-05-25 | Trạng thái: Đang phát triển
+> Cập nhật: 2026-05-25 | Trạng thái: **Feature-complete MVP — Ready for Deploy**
 
 ---
 
-## 🔴 CẦN FIX NGAY — BẢO MẬT & QUAN TRỌNG
+## ✅ ĐÃ HOÀN THÀNH — TOÀN BỘ CORE FEATURES
 
-### 🔒 AUTH & SECURITY (Ưu tiên cao nhất)
+### 🔒 AUTH & SECURITY
+- [x] **Hash password bcrypt** — register `bcrypt.hash()`, login `bcrypt.compare()` ✅
+- [x] **NextAuth JWT** — Admin (`admin-login`) + Customer (`credentials`) providers ✅
+- [x] **Auth Middleware** — Bảo vệ `/admin/*` + `/orders`, `/profile`, `/checkout` ✅
+- [x] **Forgot Password / Reset Password** — Resend email + resetToken DB ✅
+- [x] **Admin whitelist email** — `ADMIN_EMAIL` env var ✅
+- [x] **Zod Validation** — Auth, products, categories, orders, reviews APIs ✅
 
-- [x] **Hash password với bcrypt** — register dùng `bcrypt.hash()`, login dùng `bcrypt.compare()`
-  - File: `apps/web/app/api/auth/register/route.ts` ✅
-  - File: `apps/web/app/api/auth/login/route.ts` ✅
+### 🛍️ SHOP — CORE FEATURES
+- [x] Product CRUD + variants + image upload (Supabase Storage) ✅
+- [x] Category hierarchy (parent/child) ✅
+- [x] Homepage với featured products, reviews, blog preview ✅
+- [x] Product listing + filters (category, price range) ✅
+- [x] Product detail với Care Guide tab + Vote (♥) + Related products ✅
+- [x] Cart (Zustand persist), Checkout form, Order creation ✅
+- [x] Voucher validation + apply discount ✅
+- [x] COD + Bank Transfer payment ✅
 
-- [x] **JWT Cookie-based Auth** — NextAuth JWT cho cả Admin lẫn Customer
-  - Admin auth: NextAuth + JWT session ✅ (`admin-login` provider)
-  - Customer auth: NextAuth + JWT session ✅ (`customer-login` provider)
+### 👤 CUSTOMER FEATURES
+- [x] User Profile page (`/profile`) — xem/sửa thông tin ✅
+- [x] Loyalty Tier Badge (Bronze/Silver/Gold/Platinum) ✅
+- [x] Points History (`/profile/points`) ✅
+- [x] Order history (`/orders`) — auto-refresh 30s ✅
 
-- [x] **Auth Middleware** — `middleware.ts` đã bảo vệ `/admin/*` bằng NextAuth token
-  - Redirect về `/admin/login` nếu chưa login ✅
-  - Redirect về `/` nếu `token.role !== "ADMIN"` ✅
-  - Customer routes `/orders`, `/profile`, `/checkout` cũng được bảo vệ ✅
+### 🛠️ ADMIN PANEL
+- [x] Dashboard stats (doanh thu, đơn, sản phẩm, khách) ✅
+- [x] Products CRUD (tạo/sửa/xóa + variants + care guide + images) ✅
+- [x] Categories CRUD ✅
+- [x] Orders management + status update + auto-refresh ✅
+- [x] Reviews approval ✅
+- [x] Vouchers CRUD ✅
+- [x] Blog CRUD + Rich Text Editor (react-quill) ✅
+- [x] Blog Category CRUD ✅
+- [x] Settings page ✅
+- [x] AuditLog tích hợp toàn bộ API ✅
+- [x] Admin link trong Header dropdown (chỉ hiện với ADMIN role) ✅
+- [x] Nút Logout trong sidebar ✅
 
-- [x] **Zod Validation cho tất cả API** — Đã áp dụng ở auth, products, profile, categories, orders, reviews.
+### 🌟 EXPLORE & CONTENT
+- [x] Explore page (WeeklyFeatured + New Arrivals) ✅
+- [x] Vote sản phẩm (♥) trên Product Detail ✅
+- [x] Blog listing + Blog detail (`/blog/[slug]`) + generateMetadata ✅
+- [x] Contact, Consult, Policies pages ✅
+- [x] sitemap.xml + robots.txt ✅
 
-- [x] **Forgot Password Flow** — Custom flow với Resend email
-  - API: `/api/auth/forgot-password` + `/api/auth/reset-password` ✅
-  - UI: `/forgot-password` + `/reset-password` ✅
-  - resetToken + resetTokenExpiry lưu trong bảng Customer ✅
-
-### 🔐 AUTH — ĐÃ HOÀN THÀNH
-
-- [x] **[CRITICAL] Whitelist email Admin** — `ADMIN_EMAIL=hongthanh181221@gmail.com` trong `.env.local`
-  - Kiểm tra trong `admin-login` provider của `lib/auth.ts` ✅
-  - Chỉ email khớp mới được phép vào admin ✅
-
-- [x] **[HIGH] Trang /admin/login đã tồn tại** — `app/admin/login/page.tsx` ✅
-  - Form đăng nhập Admin với giao diện xanh lá đồng bộ
-  - Hiển thị lỗi thân thiện cho từng trường hợp ✅
-
-- [x] **[HIGH] Session khi restart `npm run dev`**
-  - `NEXTAUTH_SECRET` đã được set cố định trong `.env.local` → không thay đổi khi restart ✅
-  - Dev restart sẽ mất session (bình thường do hot-reload xoá memory state)
-  - Production (Vercel): session tồn tại đầy đủ 30 ngày, refresh token mỗi 24 giờ ✅
-
-- [x] **[MEDIUM] signIn page redirect đã được tách riêng**
-  - Middleware redirect `/admin/*` → `/admin/login` ✅
-  - Middleware redirect `/orders`, `/profile`, `/checkout` → `/login` (kèm callbackUrl) ✅
-  - `auth.ts` error page → `/login` (không còn trỏ về admin login) ✅
-
-- [x] **[LOW] Nút Logout trong Admin sidebar**
-  - Đã thêm nút "Đăng xuất" màu đỏ cuối sidebar, gọ `signOut()` về `/admin/login` ✅
-  - Menu item highlight active state theo URL hiện tại ✅
-  - Header hiển thị tên trang đang xem ✅
-
-- [x] **Link "Quên mật khẩu?" trong trang đăng nhập Customer**
-  - Đã thêm link trỏ về `/forgot-password` kế bên label Mật khẩu ✅
-
-### 🗑️ SUPABASE STORAGE
-- [x] **Xóa ảnh thực sự khi xóa sản phẩm** ✅
+### ⚡ PERFORMANCE & SEO
+- [x] TanStack Query cache (useQuery cho 13+ files) ✅
+- [x] Next.js Image (`<Image>`) cho tất cả files ✅
+- [x] `force-dynamic` cho /explore + admin API routes ✅
+- [x] generateMetadata() cho products/[slug] + blog/[slug] ✅
 
 ---
 
-## 🟡 ADMIN DASHBOARD — CHECK API & LOGIC
+## 🟡 CHƯA HOÀN THIỆN — NICE TO HAVE
 
-### ✅ Đã hoạt động tốt
-- [x] **Stats Dashboard** — `GET /api/admin/stats`: doanh thu, đơn hàng, sản phẩm, khách hàng ✅ (dùng `Promise.all` song song hiệu quả)
-- [x] **Products CRUD** — Tạo/sửa/xóa sản phẩm với variants, images ✅
-- [x] **Categories CRUD** — Tạo/sửa/xóa danh mục ✅
-- [x] **Orders Management** — Xem danh sách, cập nhật trạng thái đơn hàng ✅
-- [x] **Reviews Approval** — Duyệt/từ chối đánh giá ✅
-- [x] **Vouchers CRUD** — Tạo/sửa/xóa phiếu giảm giá ✅
-- [x] **Blog CRUD** — Tạo/đăng bài blog ✅
+### 🌟 EXPLORE — Thiếu Admin Pin
+- [ ] **Admin Pin/Unpin WeeklyFeatured** — UI trong admin để ghim sản phẩm lên trang Explore
+  - API đã có: cần tạo `/admin/explore` page với form chọn sản phẩm + tuần
+  - Hiện tại WeeklyFeatured chỉ có thể thêm qua Prisma Studio
 
-### ✅ Đã kiểm tra / hoàn thiện
-- [x] **Admin: Trang `/admin/settings`** — Đã tạo với form cài đặt cửa hàng, ngân hàng, thông tin hệ thống ✅
+### 🌿 CARE ITEMS — Sau mua hàng
+- [ ] **Customer Care Items** — Sau khi đặt hàng thành công, tự động thêm vào danh sách chăm sóc của customer
+  - Schema `CustomerCareItem` đã có trong Prisma
+  - Cần trigger trong order creation API
 
-### ⚠️ Cần kiểm tra / bổ sung
-- [ ] **AuditLog** — Model đã có trong Prisma schema nhưng chưa được ghi log khi admin thực hiện CREATE/UPDATE/DELETE
-- [ ] **Admin: Phân trang (Pagination)** — Các trang list (orders, products, customers) cần phân trang khi dữ liệu lớn
-- [ ] **Admin: Tìm kiếm & lọc nâng cao** — Tìm kiếm đơn hàng theo số điện thoại, email khách hàng
+### 🔍 ADMIN — Tìm kiếm & Phân trang
+- [ ] **Phân trang (Pagination)** — Orders, Products, Customers list khi data lớn
+  - Hiện tại load all → OK cho MVP, cần fix khi có 100+ records
+- [ ] **Tìm kiếm nâng cao** — Search orders theo SĐT, email khách hàng
 
----
+### 🖼️ SEO — Open Graph & Schema
+- [ ] **Open Graph image** — og:image cho homepage, products (cần default OG image)
+- [ ] **Schema.org JSON-LD** — Product, Organization, BreadcrumbList markup
+- [ ] **Canonical URLs** — Tránh duplicate với `/products?page=1`
 
-## 🟡 CHƯA HOÀN THIỆN — LOGIC & TÍNH NĂNG
-
-### 👤 QUẢN LÝ TÀI KHOẢN NGƯỜI DÙNG
-
-- [x] **User Profile Page** — Trang `/profile` ✅
-- [x] **Loyalty Tier Badge** ✅
-- [x] **Points History Page** — `/profile/points` ✅ (API + UI + link từ profile)
-
-### 🌟 EXPLORE PAGE
-
-- [ ] **Top Voted Products** — Weekly/Monthly ranking
-- [ ] **Vote Product** — Nút vote cho khách đã login
-- [ ] **Admin Pin/Unpin** — Ghim sản phẩm vào `WeeklyFeatured`
-
-### 🌿 CARE GUIDES
-
-- [ ] **Admin: Tạo/sửa Care Guide** — Form trong admin/products/[id]/edit
-- [ ] **Customer Care Items** — Sau khi mua, tự động thêm vào danh sách chăm sóc
-
-### 📝 BLOG
-
-- [ ] **Admin: Sửa/xóa bài viết** — `/admin/blog/[id]/edit`
-- [ ] **SEO cho Blog** — generateMetadata()
-- [ ] **Rich Text Editor** — Dùng `react-quill` hoặc `@uiw/react-md-editor`
+### ⚡ PERFORMANCE — Optional
+- [ ] **Lazy load components nặng** — `dynamic(() => import(...))` cho ChatWidget, rich text editor
+- [ ] **ISR cho `/products`** — `revalidate: 60` thay `force-dynamic`
+- [ ] **Redis Cache (Upstash)** — Cache DB query cho homepage, products list
 
 ---
 
-## 🚀 PERFORMANCE — TƯ VẤN & CẢI THIỆN
+## 🔵 DEPLOY — CẦN LÀM NGAY
 
-### Vấn đề hiện tại
-- Trang product detail (`/products/[slug]`) nặng nhất: **150 kB JS**
-- Mỗi API call lên Supabase Cloud có độ trễ ~100-300ms
-- Không có cache tầng client (mỗi lần navigate phải fetch lại)
-
-### Giải pháp ngắn hạn (Không cần đổi cấu trúc)
-- [x] **`export const dynamic = 'force-dynamic'`** — Đã thêm vào `/explore/page.tsx` ✅
-- [ ] **`next/image` thay `<img>`** — Tự động tối ưu kích thước + convert sang WebP/AVIF
-- [ ] **Lazy load components nặng** — Dùng `dynamic(() => import(...), { ssr: false })` cho carousel, chat widget
-- [ ] **Gộp Prisma queries** — Trong Stats API đã tốt (Promise.all), áp dụng tương tự các API khác
-
-### Giải pháp trung hạn (Cải thiện đáng kể)
-- [ ] **TanStack Query cache** — Cache API responses phía client 5-10 phút, tránh refetch khi navigate
-- [ ] **Next.js `revalidate`** — Áp dụng ISR (Incremental Static Regeneration) cho trang products list (revalidate mỗi 60 giây)
-- [ ] **Prisma connection pooling** — Sử dụng `?pgbouncer=true` trong DATABASE_URL (đã có) → kiểm tra PgBouncer mode
-
-### Giải pháp dài hạn (Cần thay đổi cấu trúc)
-- [ ] **Redis Cache (Upstash)** — Cache kết quả DB query cho các trang phổ biến (homepage, product list)
-- [ ] **CDN cho ảnh** — Cloudflare CDN trước Supabase Storage để giảm latency load ảnh tại Việt Nam
-- [ ] **Edge Runtime cho Middleware** — Middleware hiện đang là Node.js runtime, chuyển sang Edge Runtime để nhanh hơn
-
----
-
-## 🟢 SEO & PERFORMANCE
-
-### SEO Optimization
-
-- [/] **generateMetadata() cho tất cả pages** — Đã áp dụng ở products, blog
-- [ ] **Open Graph tags** — og:image, og:title, og:description đầy đủ
-- [ ] **Schema.org markup** — Product (JSON-LD), Organization, BreadcrumbList
-- [x] **Dynamic sitemap.xml** — `apps/web/app/sitemap.ts` ✅
-- [x] **robots.txt** — `apps/web/app/robots.ts` ✅
-- [ ] **Canonical URLs** — Tránh duplicate content
-
-### Performance
-
-- [ ] **Next.js Image component** — Thay `<img>` bằng `<Image>` từ next/image
-- [ ] **Lazy loading** — Defer below-the-fold images + components
-- [ ] **TanStack Query caching** — Dùng `useQuery` thay `useEffect + fetch`
-- [ ] **Core Web Vitals** — Đo bằng Vercel Analytics sau deploy
-
----
-
-## 🔵 DEPLOY & PRODUCTION
-
-- [ ] **Deploy lên Vercel** — `vercel deploy`
-- [ ] **Setup custom domain** — tiemreudecor.vn
-- [ ] **Configure env vars trên Vercel** — Copy từ `.env.local`
-- [ ] **Setup Vercel Analytics** — Theo dõi traffic và performance
-- [ ] **Test production build** — `npm run build` ✅ (đã test, 58 trang)
-
----
-
-## ✅ ĐÃ HOÀN THÀNH
-
-### Phase 0 — Setup
-- [x] Tạo Supabase project + keys, .env, repo GitHub, install dependencies
-- [x] Setup Prisma schema (25 models) + migrations
-- [x] Initialize Next.js 14 App Router, shadcn/ui, Tailwind (forest theme)
-
-### Phase 1 — Core Features
-- [x] Product CRUD + variants + image upload
-- [x] Category hierarchy, Homepage, Shop, Product Detail
-- [x] Cart (Zustand), Checkout, Voucher validation, Order creation
-
-### Phase 2 — Payment
-- [x] COD + Bank Transfer + Order management (Admin + Customer)
-
-### Phase 3 — Voucher System
-- [x] Voucher CRUD, validate, apply discount
-
-### Phase 4 — Reviews
-- [x] Submit review, Admin approval, Star rating, Verified badge
-
-### Phase 5 — Auth
-- [x] Đăng ký, Đăng nhập (Admin + Customer), Middleware bảo vệ routes
-- [x] Forgot Password + Reset Password flow (Resend email)
-- [x] Prisma Schema: `resetToken` + `resetTokenExpiry`
-
-### Phase 6 — Move Project
-- [x] Dọn sạch cache + node_modules
-- [x] Copy project sang `D:\Projects\terrarium-shop`
-- [x] Cài lại npm + prisma generate
-- [x] Dev server chạy bình thường từ ổ D
-
-### Content & System
-- [x] Blog, Explore, Contact, Consult, Policies pages
-- [x] Admin Dashboard, Sidebar navigation
-- [x] sitemap.xml, robots.txt
-
----
-
-## 📋 THỨ TỰ FIX ĐỀ XUẤT (Cập nhật)
-
-| # | Việc cần làm | Độ ưu tiên | Ước tính |
+| # | Việc cần làm | Ưu tiên | Ghi chú |
 |---|---|---|---|
-| 1 | Tạo trang `/admin/login` (đang bị 404!) | 🔴 Critical | 30 phút |
-| 2 | Whitelist email Admin (`ADMIN_EMAIL` env) | 🔴 Critical | 15 phút |
-| 3 | Thêm nút Logout trong Admin sidebar | 🔴 High | 15 phút |
-| 4 | Fix `signIn page` redirect sai về `/admin/login` | 🟠 High | 30 phút |
-| 5 | Thêm `force-dynamic` vào `/explore` | 🟠 High | 5 phút |
-| 6 | AuditLog khi admin thao tác | 🟡 Medium | 2 giờ |
-| 7 | TanStack Query cache tầng client | 🟡 Medium | 3 giờ |
-| 8 | Next.js Image optimization | 🟡 Medium | 2 giờ |
-| 9 | Blog: Sửa/xóa bài viết | 🟡 Medium | 1 giờ |
-| 10 | Deploy Vercel | 🔵 Deploy | 1 giờ |
+| 1 | **Test `npm run build`** | 🔴 Critical | Đang chạy — phải 0 errors |
+| 2 | **Deploy lên Vercel** | 🔴 Critical | `vercel deploy` từ root |
+| 3 | **Cấu hình env vars trên Vercel** | 🔴 Critical | Copy từ `.env.local` |
+| 4 | **Setup custom domain** | 🟡 Medium | tiemreudecor.vn |
+| 5 | **Vercel Analytics** | 🟢 Low | Theo dõi traffic |
+| 6 | **Core Web Vitals check** | 🟢 Low | Sau deploy |
 
 ---
 
-## ⚡ Quick Commands Reference
+## ⚡ Quick Commands
 
 ```bash
-# Development (từ D:\Projects\terrarium-shop)
-cd apps/web && npm run dev       # Start dev server (port 3000)
-npx prisma studio                # Open Prisma Studio (port 5555)
-npx prisma generate              # Regenerate Prisma Client (sau khi đổi schema)
-npx prisma db push               # Sync schema với DB
+# Dev (từ D:\Projects\terrarium-shop)
+cd apps/web && npm run dev          # Port 3000
+npx prisma studio                   # Port 5555
 
 # Build & Deploy
-cd apps/web && npm run build     # Build for production
-cd apps/web && npm run start     # Start production server
-vercel deploy                    # Deploy to Vercel
+npm run build                       # Từ root (turbo)
+vercel deploy                       # Deploy to Vercel
+
+# DB
+npx prisma generate                 # Sau khi đổi schema
+npx prisma db push                  # Sync schema → DB
 ```
 
 ---
@@ -239,26 +121,34 @@ vercel deploy                    # Deploy to Vercel
 ## 🔑 Environment Variables (.env.local)
 
 ```env
-# Database (Supabase PostgreSQL)
-DATABASE_URL="..."
-DIRECT_URL="..."
-
-# Supabase
-NEXT_PUBLIC_SUPABASE_URL="..."
-NEXT_PUBLIC_SUPABASE_ANON_KEY="..."
-SUPABASE_SERVICE_ROLE_KEY="..."
+DATABASE_URL="postgresql://...?pgbouncer=true"
+DIRECT_URL="postgresql://...:5432/postgres"
+NEXT_PUBLIC_SUPABASE_URL="https://[ref].supabase.co"
+NEXT_PUBLIC_SUPABASE_ANON_KEY="eyJ..."
+SUPABASE_SERVICE_ROLE_KEY="eyJ..."
 NEXT_PUBLIC_SUPABASE_BUCKET_NAME="product-images"
 
-# NextAuth — PHẢI set cố định, không để trống!
-NEXTAUTH_SECRET="your-super-secret-key-min-32-chars"
-NEXTAUTH_URL="http://localhost:3000"
+# NextAuth
+NEXTAUTH_SECRET="[32+ chars random string]"
+NEXTAUTH_URL="https://yourdomain.com"  # Đổi khi deploy!
 
-# Admin whitelist
+# Admin
 ADMIN_EMAIL="hongthanh181221@gmail.com"
 
 # Email
 RESEND_API_KEY="re_..."
 
+# Payment
+BANK_NAME="TPBank"
+BANK_ACCOUNT_NUMBER="07898110079"
+BANK_ACCOUNT_NAME="NGUYỄN THANH HỒNG"
+BANK_BRANCH="CN Thủ Đức"
+
+# PayOS (nếu dùng)
+PAYOS_CLIENT_ID="..."
+PAYOS_API_KEY="..."
+PAYOS_CHECKSUM_KEY="..."
+
 # Site
-NEXT_PUBLIC_SITE_URL="http://localhost:3000"
+NEXT_PUBLIC_SITE_URL="https://yourdomain.com"
 ```

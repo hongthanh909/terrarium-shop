@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, CreditCard, Truck, Check } from "lucide-react";
 import { useCartStore, CartItem } from "@/lib/store/cartStore";
@@ -137,9 +138,26 @@ export default function CheckoutPage() {
   };
 
   if (orderCreated) {
+    const bankName = process.env.NEXT_PUBLIC_BANK_NAME || "TPBank";
+    const bankAccount = process.env.NEXT_PUBLIC_BANK_ACCOUNT_NUMBER || "07898110079";
+    const bankOwner = process.env.NEXT_PUBLIC_BANK_ACCOUNT_NAME || "NGUYEN THANH HONG";
+    const bankBin = process.env.NEXT_PUBLIC_BANK_BIN || "12345678"; // TPBank BIN = 23895
+    const transferAmount = total;
+    const transferContent = `TT ${orderId.slice(-8).toUpperCase()}`;
+    // VietQR dynamic URL
+    const qrUrl = `https://img.vietqr.io/image/${bankBin}-${bankAccount}-compact2.png?amount=${transferAmount}&addInfo=${encodeURIComponent(transferContent)}&accountName=${encodeURIComponent(bankOwner)}`;
+
+    const STATUS_STEPS = [
+      { key: "PENDING",    label: "Chờ xác nhận",  desc: "Đơn hàng đã được tiếp nhận" },
+      { key: "CONFIRMED",  label: "Đã xác nhận",   desc: "Shop đã xác nhận đơn" },
+      { key: "PROCESSING", label: "Đang đóng gói", desc: "Sản phẩm đang được chuẩn bị" },
+      { key: "SHIPPING",   label: "Đang giao",      desc: "Đơn hàng đang trên đường đến bạn" },
+      { key: "DELIVERED",  label: "Đã giao",        desc: "Giao hàng thành công" },
+    ];
+
     return (
       <main className="min-h-screen bg-background py-8 px-6">
-        <div className="max-w-2xl mx-auto">
+        <div className="max-w-2xl mx-auto space-y-6">
           <Card className="text-center">
             <CardHeader>
               <div className="w-20 h-20 bg-[#e3ebdd] rounded-full flex items-center justify-center mx-auto mb-6">
@@ -148,53 +166,121 @@ export default function CheckoutPage() {
               <CardTitle className="text-3xl">Đặt Hàng Thành Công!</CardTitle>
               <CardDescription className="mt-4">
                 <p className="text-muted-foreground mb-2">Cảm ơn bạn đã mua hàng. Đơn hàng của bạn đã được tiếp nhận.</p>
-                <p className="text-sm text-muted-foreground">Mã đơn hàng: {orderId}</p>
+                <p className="text-sm font-mono bg-muted rounded px-2 py-1 inline-block">#{orderId}</p>
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {/* Payment Instructions */}
-              {formData.paymentMethod === "BANK_TRANSFER" && (
-                <Card className="bg-blue-50 border-blue-200">
-                  <CardHeader>
-                    <CardTitle className="text-lg flex items-center gap-2">
-                      <CreditCard className="w-5 h-5 text-blue-600" />
-                      Hướng Dẫn Chuyển Khoản
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-sm text-muted-foreground mb-3">Vui lòng chuyển khoản tổng số tiền đến tài khoản ngân hàng của chúng tôi:</p>
-                    <div className="bg-white rounded p-4 text-sm space-y-1 text-left">
-                      <p className="font-semibold">{process.env.NEXT_PUBLIC_BANK_NAME || "TPBank"}</p>
-                      <p className="text-muted-foreground">Số tài khoản: <span className="font-mono font-semibold text-gray-800">{process.env.NEXT_PUBLIC_BANK_ACCOUNT_NUMBER || "07898110079"}</span></p>
-                      <p className="text-muted-foreground">Chủ tài khoản: <span className="font-semibold text-gray-800">{process.env.NEXT_PUBLIC_BANK_ACCOUNT_NAME || "NGUYỄN THANH HỒNG"}</span></p>
-                      <p className="text-muted-foreground">Chi nhánh: {process.env.NEXT_PUBLIC_BANK_BRANCH || "CN Thủ Đức"}</p>
-                      <p className="text-muted-foreground">Nội dung CK: <span className="font-semibold text-blue-700">{orderId || "Mã đơn hàng"}</span></p>
-                    </div>
-                    <p className="text-sm text-muted-foreground mt-3">Lưu ý: Đơn hàng sẽ được xử lý sau khi chúng tôi xác nhận thanh toán.</p>
-                  </CardContent>
-                </Card>
-              )}
-
-              {formData.paymentMethod === "COD" && (
-                <Card className="bg-[#f0f4ec] border-[#c8d5be]">
-                  <CardHeader>
-                    <CardTitle className="text-lg flex items-center gap-2">
-                      <Truck className="w-5 h-5 text-[#425733]" />
-                      Thanh Toán Khi Nhận Hàng
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-sm text-muted-foreground">Vui lòng chuẩn bị đúng số tiền khi nhận hàng. Đơn vị vận chuyển sẽ liên hệ bạn để xếp lịch giao hàng.</p>
-                  </CardContent>
-                </Card>
-              )}
-
               <Button className="w-full" asChild>
-                <Link href="/orders">Xem Đơn Hàng</Link>
+                <Link href="/orders">Xem Đơn Hàng Của Tôi</Link>
               </Button>
               <Button variant="outline" className="w-full" asChild>
                 <Link href="/products">Tiếp Tục Mua Sắm</Link>
               </Button>
+            </CardContent>
+          </Card>
+
+          {/* Bank Transfer QR */}
+          {formData.paymentMethod === "BANK_TRANSFER" && (
+            <Card className="border-blue-200 bg-blue-50">
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <CreditCard className="w-5 h-5 text-blue-600" />
+                  Hướng Dẫn Chuyển Khoản
+                </CardTitle>
+                <CardDescription>Vui lòng chuyển khoản để hoàn tất đơn hàng</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex justify-center">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={qrUrl}
+                    alt="QR chuyển khoản"
+                    className="w-52 h-52 rounded-xl border-4 border-white shadow-lg"
+                    onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                  />
+                </div>
+                <div className="bg-white rounded-xl p-4 text-sm space-y-2 text-left">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Ngân hàng:</span>
+                    <span className="font-semibold">{bankName}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Số tài khoản:</span>
+                    <span className="font-mono font-semibold">{bankAccount}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Chủ tài khoản:</span>
+                    <span className="font-semibold">{bankOwner}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Số tiền:</span>
+                    <span className="font-bold text-blue-700">{total.toLocaleString("vi-VN")}₫</span>
+                  </div>
+                  <div className="flex justify-between items-center border-t pt-2 mt-2">
+                    <span className="text-muted-foreground">Nội dung CK:</span>
+                    <span className="font-bold text-blue-700 bg-blue-100 px-2 py-0.5 rounded font-mono">{transferContent}</span>
+                  </div>
+                </div>
+                <p className="text-xs text-muted-foreground text-center">⚠️ Vui lòng ghi đúng nội dung chuyển khoản để đơn hàng được xử lý nhanh nhất</p>
+              </CardContent>
+            </Card>
+          )}
+
+          {formData.paymentMethod === "COD" && (
+            <Card className="bg-[#f0f4ec] border-[#c8d5be]">
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Truck className="w-5 h-5 text-[#425733]" />
+                  Thanh Toán Khi Nhận Hàng
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <div className="flex justify-between text-sm text-muted-foreground">
+                  <span>Tạm tính</span>
+                  <span>{subtotal.toLocaleString("vi-VN")}₫</span>
+                </div>
+                <div className="flex justify-between text-sm text-muted-foreground">
+                  <span>Phí vận chuyển</span>
+                  <span>{shippingFee.toLocaleString("vi-VN")}₫</span>
+                </div>
+                {discount > 0 && (
+                  <div className="flex justify-between text-sm text-[#425733]">
+                    <span>Giảm giá</span>
+                    <span>-{discount.toLocaleString("vi-VN")}₫</span>
+                  </div>
+                )}
+                <div className="flex justify-between font-bold text-base pt-2 border-t border-[#c8d5be]">
+                  <span>Tổng cộng</span>
+                  <span className="text-[#425733]">{total.toLocaleString("vi-VN")}₫</span>
+                </div>
+                <p className="text-sm text-muted-foreground pt-1">Vui lòng chuẩn bị đúng số tiền khi nhận hàng. Đơn vị vận chuyển sẽ liên hệ bạn để xếp lịch giao hàng.</p>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Order Timeline */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Tiến Trình Đơn Hàng</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="relative">
+                {STATUS_STEPS.map((step, index) => (
+                  <div key={step.key} className="flex gap-4 pb-4 last:pb-0">
+                    <div className="flex flex-col items-center">
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${index === 0 ? "bg-[#425733] text-white" : "bg-muted text-muted-foreground"}`}>
+                        {index === 0 ? <Check className="w-4 h-4" /> : index + 1}
+                      </div>
+                      {index < STATUS_STEPS.length - 1 && <div className="w-0.5 flex-1 bg-muted mt-1" />}
+                    </div>
+                    <div className="pb-4">
+                      <p className={`text-sm font-semibold ${index === 0 ? "text-[#425733]" : "text-muted-foreground"}`}>{step.label}</p>
+                      <p className="text-xs text-muted-foreground">{step.desc}</p>
+                      {index === 0 && <p className="text-xs text-[#425733] font-medium mt-0.5">✓ Hoàn thành</p>}
+                    </div>
+                  </div>
+                ))}
+              </div>
             </CardContent>
           </Card>
         </div>
@@ -367,7 +453,7 @@ export default function CheckoutPage() {
                 <div className="space-y-4 mb-6 max-h-64 overflow-y-auto">
                   {items.map((item: CartItem) => (
                     <div key={item.id} className="flex gap-4">
-                      <img src={item.productImage} alt={item.productName} className="w-16 h-16 object-cover rounded" />
+                      <Image src={item.productImage} alt={item.productName} width={64} height={64} className="w-16 h-16 object-cover rounded" />
                       <div className="flex-1">
                         <p className="font-semibold text-sm">{item.productName}</p>
                         {item.variants && Object.keys(item.variants).length > 0 && (
@@ -382,22 +468,22 @@ export default function CheckoutPage() {
                 <Separator />
                 <div className="space-y-2 mt-4">
                   <div className="flex justify-between text-muted-foreground">
-                    <span>Subtotal</span>
+                    <span>Tạm tính</span>
                     <span>{subtotal.toLocaleString("vi-VN")}₫</span>
                   </div>
                   <div className="flex justify-between text-muted-foreground">
-                    <span>Shipping</span>
+                    <span>Phí vận chuyển</span>
                     <span>{shippingFee.toLocaleString("vi-VN")}₫</span>
                   </div>
                   {discount > 0 && (
                     <div className="flex justify-between text-[#425733] font-medium">
-                      <span>Discount</span>
+                      <span>Giảm giá</span>
                       <span>-{discount.toLocaleString("vi-VN")}₫</span>
                     </div>
                   )}
                   <Separator />
                   <div className="flex justify-between font-bold text-lg pt-2">
-                    <span>Total</span>
+                    <span>Tổng cộng</span>
                     <span className="text-primary">{total.toLocaleString("vi-VN")}₫</span>
                   </div>
                 </div>

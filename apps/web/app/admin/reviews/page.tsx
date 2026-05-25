@@ -1,7 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowLeft, Check, X, Star, Eye } from "lucide-react";
 import { toast } from "sonner";
 
@@ -28,16 +30,12 @@ interface Review {
 }
 
 export default function AdminReviewsPage() {
-  const [reviews, setReviews] = useState<Review[]>([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
   const [filter, setFilter] = useState<"ALL" | "PENDING" | "APPROVED" | "REJECTED">("PENDING");
 
-  useEffect(() => {
-    fetchReviews();
-  }, [filter]);
-
-  const fetchReviews = async () => {
-    try {
+  const { data: reviews = [], isLoading: loading } = useQuery({
+    queryKey: ["admin-reviews", filter],
+    queryFn: async () => {
       let url = "/api/reviews";
       if (filter === "ALL") {
         url += "?status=all";
@@ -50,14 +48,9 @@ export default function AdminReviewsPage() {
         url += `?status=${statusMap[filter]}`;
       }
       const response = await fetch(url);
-      const data = await response.json();
-      setReviews(data);
-    } catch (error) {
-      console.error("Error fetching reviews:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+      return response.json();
+    },
+  });
 
   const handleApprove = async (id: string) => {
     try {
@@ -69,7 +62,7 @@ export default function AdminReviewsPage() {
 
       if (response.ok) {
         toast.success("Đã duyệt đánh giá!");
-        fetchReviews();
+        queryClient.invalidateQueries({ queryKey: ["admin-reviews"] });
       } else {
         toast.error("Không thể duyệt đánh giá");
       }
@@ -89,7 +82,7 @@ export default function AdminReviewsPage() {
 
       if (response.ok) {
         toast.success("Đã từ chối đánh giá!");
-        fetchReviews();
+        queryClient.invalidateQueries({ queryKey: ["admin-reviews"] });
       } else {
         toast.error("Không thể từ chối đánh giá");
       }
@@ -153,7 +146,7 @@ export default function AdminReviewsPage() {
           {reviews.length === 0 ? (
             <p className="text-center text-gray-500 py-12">Không tìm thấy đánh giá</p>
           ) : (
-            reviews.map((review) => (
+            reviews.map((review: any) => (
               <div key={review.id} className="border rounded-lg p-6">
                 <div className="flex justify-between items-start mb-4">
                   <div>
@@ -181,11 +174,13 @@ export default function AdminReviewsPage() {
 
                 {review.images && review.images.length > 0 && (
                   <div className="flex gap-2 mb-4">
-                    {review.images.map((img, idx) => (
-                      <img
+                    {review.images.map((img: string, idx: number) => (
+                      <Image
                         key={idx}
                         src={img}
                         alt={`Ảnh đánh giá ${idx + 1}`}
+                        width={80}
+                        height={80}
                         className="w-20 h-20 object-cover rounded"
                       />
                     ))}

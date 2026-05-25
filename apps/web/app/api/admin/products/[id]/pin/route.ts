@@ -1,17 +1,15 @@
 import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { verifyAdminRequest, unauthorizedResponse } from "@/lib/admin-auth";
+import { logAdminAction } from "@/lib/audit";
 
 export async function POST(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session || (session.user as any).role !== "ADMIN") {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const admin = await verifyAdminRequest(request);
+    if (!admin) return unauthorizedResponse();
 
     const { id } = params;
     const body = await request.json();
@@ -24,6 +22,11 @@ export async function POST(
       data: {
         pinnedUntil: pinnedUntil ? new Date(pinnedUntil) : null,
       },
+    });
+
+    await logAdminAction(admin.id, "UPDATE", "Product", id, {
+      action: pinnedUntil ? "PIN" : "UNPIN",
+      pinnedUntil: pinnedUntil || null,
     });
 
     return NextResponse.json(product);

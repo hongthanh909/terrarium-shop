@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus, Edit, Trash2, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
@@ -23,43 +24,40 @@ interface BlogCategory {
 }
 
 export default function AdminBlogPage() {
-  const [posts, setPosts] = useState<BlogPost[]>([]);
-  const [categories, setCategories] = useState<BlogCategory[]>([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
   const [limit] = useState(10);
 
-  useEffect(() => {
-    fetchBlogData();
-  }, []);
-
-  const fetchBlogData = async (pageNum = page) => {
-    setLoading(true);
-    try {
-      const [postsRes, categoriesRes] = await Promise.all([
-        fetch(`/api/admin/blog/posts?page=${pageNum}&limit=${limit}`),
-        fetch("/api/admin/blog/categories"),
-      ]);
-      const [postsData, categoriesData] = await Promise.all([
-        postsRes.json(),
-        categoriesRes.json(),
-      ]);
-      
-      if (postsData.posts) {
-        setPosts(postsData.posts);
-        setTotalPages(postsData.pagination.totalPages || 1);
+  const { data: postsData, isLoading: postsLoading } = useQuery({
+    queryKey: ["admin-blog-posts", page, limit],
+    queryFn: async () => {
+      const response = await fetch(`/api/admin/blog/posts?page=${page}&limit=${limit}`);
+      const data = await response.json();
+      if (data.posts) {
+        return {
+          posts: data.posts as BlogPost[],
+          totalPages: data.pagination.totalPages || 1,
+        };
       } else {
-        setPosts(postsData);
-        setTotalPages(1);
+        return {
+          posts: data as BlogPost[],
+          totalPages: 1,
+        };
       }
-      setCategories(categoriesData);
-    } catch (error) {
-      console.error("Error fetching blog data:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+    },
+  });
+
+  const { data: categories = [], isLoading: categoriesLoading } = useQuery({
+    queryKey: ["admin-blog-categories"],
+    queryFn: async () => {
+      const response = await fetch("/api/admin/blog/categories");
+      return response.json();
+    },
+  });
+
+  const posts = postsData?.posts ?? [];
+  const totalPages = postsData?.totalPages ?? 1;
+  const loading = postsLoading || categoriesLoading;
 
   const handleDelete = async (id: string) => {
     if (!confirm("Bạn có chắc chắn muốn xóa bài viết này?")) return;
@@ -69,7 +67,7 @@ export default function AdminBlogPage() {
       });
       if (response.ok) {
         toast.success("Xóa bài viết thành công!");
-        fetchBlogData();
+        queryClient.invalidateQueries({ queryKey: ["admin-blog-posts"] });
       }
     } catch (error) {
       console.error("Error deleting post:", error);
@@ -80,7 +78,6 @@ export default function AdminBlogPage() {
   const handlePageChange = (newPage: number) => {
     if (newPage > 0 && newPage <= totalPages) {
       setPage(newPage);
-      fetchBlogData(newPage);
     }
   };
 
@@ -201,7 +198,7 @@ export default function AdminBlogPage() {
         <h3 className="text-xl font-bold text-gray-800 mb-4">Danh Mục Blog</h3>
         <div className="bg-white rounded-lg shadow overflow-hidden">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4">
-            {categories.map((cat) => (
+            {categories.map((cat: any) => (
               <div key={cat.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                 <span className="font-medium">{cat.name}</span>
                 <Link

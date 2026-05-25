@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -28,8 +29,6 @@ interface PointsData {
 export default function PointsHistoryPage() {
   const { status } = useSession();
   const router = useRouter();
-  const [data, setData] = useState<PointsData | null>(null);
-  const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
 
   useEffect(() => {
@@ -38,26 +37,15 @@ export default function PointsHistoryPage() {
     }
   }, [status, router]);
 
-  useEffect(() => {
-    if (status === "authenticated") {
-      fetchPoints();
-    }
-  }, [status, page]);
-
-  const fetchPoints = async () => {
-    try {
-      setLoading(true);
+  const { data, isLoading: loading } = useQuery<PointsData>({
+    queryKey: ["customer-points", page],
+    queryFn: async () => {
       const res = await fetch(`/api/profile/points?page=${page}&limit=10`);
-      if (res.ok) {
-        const json = await res.json();
-        setData(json);
-      }
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
+      if (!res.ok) throw new Error("Failed to fetch points");
+      return res.json();
+    },
+    enabled: status === "authenticated",
+  });
 
   if (status === "loading" || (loading && !data)) {
     return (

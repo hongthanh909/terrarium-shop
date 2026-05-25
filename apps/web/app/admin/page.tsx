@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import {
   Package,
@@ -112,24 +112,19 @@ function StatCard({
 }
 
 export default function AdminDashboard() {
-  const [stats, setStats] = useState<Stats | null>(null);
-  const [recentOrders, setRecentOrders] = useState<RecentOrder[]>([]);
-  const [topProducts, setTopProducts] = useState<TopProduct[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { data, isLoading: loading, error } = useQuery({
+    queryKey: ["admin-stats"],
+    queryFn: async () => {
+      const res = await fetch("/api/admin/stats");
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      return data;
+    },
+  });
 
-  useEffect(() => {
-    fetch("/api/admin/stats")
-      .then((r) => r.json())
-      .then((data) => {
-        if (data.error) throw new Error(data.error);
-        setStats(data.stats);
-        setRecentOrders(data.recentOrders);
-        setTopProducts(data.topProducts);
-      })
-      .catch((e) => setError(e.message))
-      .finally(() => setLoading(false));
-  }, []);
+  const stats = data?.stats ?? null;
+  const recentOrders = data?.recentOrders ?? [];
+  const topProducts = data?.topProducts ?? [];
 
   if (loading) {
     return (
@@ -142,7 +137,7 @@ export default function AdminDashboard() {
   if (error) {
     return (
       <div className="p-6 bg-red-50 rounded-xl text-red-700 text-sm">
-        ⚠️ Không thể tải thống kê: {error}
+        ⚠️ Không thể tải thống kê: {error.message}
       </div>
     );
   }
@@ -225,7 +220,7 @@ export default function AdminDashboard() {
             <div className="p-10 text-center text-gray-400 text-sm">Chưa có đơn hàng nào</div>
           ) : (
             <div className="divide-y divide-gray-50">
-              {recentOrders.map((order) => (
+              {recentOrders.map((order: any) => (
                 <Link
                   key={order.id}
                   href={`/admin/orders/${order.id}`}
@@ -261,7 +256,7 @@ export default function AdminDashboard() {
             <div className="p-10 text-center text-gray-400 text-sm">Chưa có dữ liệu</div>
           ) : (
             <div className="divide-y divide-gray-50">
-              {topProducts.map((product, index) => (
+              {topProducts.map((product: any, index: number) => (
                 <div key={product.slug} className="flex items-center gap-3 px-6 py-4">
                   <span className="w-6 h-6 rounded-full bg-[#e3ebdd] text-[#425733] text-xs font-bold flex items-center justify-center shrink-0">
                     {index + 1}

@@ -1,7 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
+import Image from "next/image";
 import { Plus, Edit, Trash2, Eye, Search, Filter, Pin, Star } from "lucide-react";
 import { toast } from "sonner";
 
@@ -24,29 +26,20 @@ interface Product {
 }
 
 export default function AdminProductsPage() {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
+  const { data: products = [], isLoading: loading } = useQuery({
+    queryKey: ["admin-products"],
+    queryFn: async () => {
+      const response = await fetch("/api/products?status=all");
+      const data = await response.json();
+      return data.products || data;
+    },
+  });
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [minPrice, setMinPrice] = useState<string>("");
   const [maxPrice, setMaxPrice] = useState<string>("");
-
-  useEffect(() => {
-    fetchProducts();
-  }, []);
-
-  const fetchProducts = async () => {
-    try {
-      const response = await fetch("/api/products?status=all");
-      const data = await response.json();
-      setProducts(data.products || data);
-    } catch (error) {
-      console.error("Error fetching products:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleDelete = async (id: string) => {
     if (!confirm("Bạn có chắc chắn muốn xóa sản phẩm này?")) return;
@@ -57,7 +50,7 @@ export default function AdminProductsPage() {
       });
 
       if (response.ok) {
-        setProducts(products.filter((p) => p.id !== id));
+        queryClient.invalidateQueries({ queryKey: ["admin-products"] });
         toast.success("Xóa sản phẩm thành công!");
       } else {
         toast.error("Không thể xóa sản phẩm");
@@ -80,7 +73,7 @@ export default function AdminProductsPage() {
 
       if (response.ok) {
         toast.success(currentlyPinned ? "Đã bỏ ghim sản phẩm" : "Đã ghim sản phẩm trong 7 ngày");
-        fetchProducts();
+        queryClient.invalidateQueries({ queryKey: ["admin-products"] });
       } else {
         toast.error("Không thể thay đổi trạng thái ghim");
       }
@@ -102,7 +95,7 @@ export default function AdminProductsPage() {
 
       if (response.ok) {
         toast.success("Đã đặt làm Sản Phẩm Của Tuần!");
-        fetchProducts();
+        queryClient.invalidateQueries({ queryKey: ["admin-products"] });
       } else {
         toast.error("Không thể thay đổi Sản Phẩm Của Tuần");
       }
@@ -113,7 +106,7 @@ export default function AdminProductsPage() {
 
   const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.checked) {
-      setSelectedIds(filteredProducts.map((p) => p.id));
+      setSelectedIds(filteredProducts.map((p: any) => p.id));
     } else {
       setSelectedIds([]);
     }
@@ -139,7 +132,7 @@ export default function AdminProductsPage() {
       if (response.ok) {
         toast.success(`Đã xóa ${selectedIds.length} sản phẩm thành công!`);
         setSelectedIds([]);
-        fetchProducts();
+        queryClient.invalidateQueries({ queryKey: ["admin-products"] });
       } else {
         toast.error("Không thể xóa sản phẩm");
       }
@@ -149,7 +142,7 @@ export default function AdminProductsPage() {
     }
   };
 
-  const filteredProducts = products.filter((product) => {
+  const filteredProducts = products.filter((product: any) => {
     const matchesSearch =
       product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       product.slug.toLowerCase().includes(searchQuery.toLowerCase());
@@ -294,7 +287,7 @@ export default function AdminProductsPage() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {filteredProducts.map((product) => (
+              {filteredProducts.map((product: any) => (
                 <tr key={product.id} className={`hover:bg-gray-50 ${selectedIds.includes(product.id) ? 'bg-[#f8faf7]' : ''}`}>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <input
@@ -308,9 +301,11 @@ export default function AdminProductsPage() {
                     <div className="flex items-center">
                       <div className="w-12 h-12 flex-shrink-0 bg-gray-200 rounded">
                         {product.images.length > 0 ? (
-                          <img
+                          <Image
                             src={product.images[0]}
                             alt={product.name}
+                            width={48}
+                            height={48}
                             className="w-full h-full object-cover rounded"
                           />
                         ) : (

@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { ArrowLeft, Search, Eye } from "lucide-react";
 import { toast } from "sonner";
@@ -35,48 +36,42 @@ interface Order {
 }
 
 export default function AdminOrdersPage() {
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [totalOrders, setTotalOrders] = useState(0);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
 
-  useEffect(() => {
-    fetchOrders(page);
-  }, [page]);
-
-  const fetchOrders = async (currentPage: number) => {
-    try {
-      setLoading(true);
-      const response = await fetch(`/api/admin/orders?page=${currentPage}&limit=10`);
+  const { data: ordersData, isLoading: loading } = useQuery({
+    queryKey: ["admin-orders", page],
+    queryFn: async () => {
+      const response = await fetch(`/api/admin/orders?page=${page}&limit=10`);
       const data = await response.json();
-      setOrders(data.orders || []);
-      if (data.pagination) {
-        setTotalPages(data.pagination.totalPages);
-        setTotalOrders(data.pagination.total);
-      }
-    } catch (error) {
-      console.error("Error fetching orders:", error);
-      setOrders([]);
-    } finally {
-      setLoading(false);
-    }
-  };
+      return {
+        orders: data.orders || [],
+        totalPages: data.pagination?.totalPages || 1,
+        totalOrders: data.pagination?.total || 0,
+      };
+    },
+    refetchInterval: 30000, // Auto-refresh mỗi 30 giây để đồng bộ đơn mới
+    refetchIntervalInBackground: false,
+  });
+
+  const orders = ordersData?.orders ?? [];
+  const totalPages = ordersData?.totalPages ?? 1;
+  const totalOrders = ordersData?.totalOrders ?? 0;
 
   const handleUpdateStatus = async (orderId: string, newStatus: string) => {
     try {
-      const response = await fetch(`/api/orders/${orderId}`, {
+      const response = await fetch(`/api/admin/orders`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: newStatus }),
+        body: JSON.stringify({ orderId, status: newStatus }),
       });
 
       if (response.ok) {
-        fetchOrders(page);
+        queryClient.invalidateQueries({ queryKey: ["admin-orders"] });
         toast.success("Cập nhật trạng thái đơn hàng thành công!");
       } else {
         toast.error("Không thể cập nhật trạng thái đơn hàng");
@@ -87,7 +82,7 @@ export default function AdminOrdersPage() {
     }
   };
 
-  const filteredOrders = orders.filter((order) => {
+  const filteredOrders = orders.filter((order: any) => {
     const matchesSearch =
       order.orderNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
       order.customer?.name?.toLowerCase().includes(searchQuery.toLowerCase());
@@ -220,7 +215,7 @@ export default function AdminOrdersPage() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {filteredOrders.map((order) => (
+              {filteredOrders.map((order: any) => (
                 <tr key={order.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm font-medium text-gray-900">{order.orderNumber}</div>
@@ -234,7 +229,7 @@ export default function AdminOrdersPage() {
                       {order.items?.length || 0} sản phẩm
                     </div>
                     <div className="text-xs text-gray-500">
-                      {order.items?.slice(0, 2).map((item) => item.productName).join(", ")}
+                      {order.items?.slice(0, 2).map((item: any) => item.productName).join(", ")}
                       {order.items?.length > 2 && ` +${order.items.length - 2} sản phẩm khác`}
                     </div>
                   </td>
