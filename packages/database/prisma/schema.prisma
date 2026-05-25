@@ -281,6 +281,8 @@ model Customer {
   role            UserRole           @default(CUSTOMER)
   loyaltyPoints   Int                @default(0)
   loyaltyTier     CustomerLoyaltyTier @default(BRONZE)
+  resetToken      String?            @unique
+  resetTokenExpiry DateTime?
   createdAt       DateTime           @default(now())
   updatedAt       DateTime           @updatedAt
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, useInView } from "framer-motion";
-import { useRef } from "react";
+import { useRef, memo } from "react";
 
 interface ScrollRevealProps {
   children: React.ReactNode;
@@ -11,7 +11,15 @@ interface ScrollRevealProps {
   width?: "fit-content" | "100%";
 }
 
-export function ScrollReveal({
+const variants = {
+  up: { hidden: { opacity: 0, y: 30 }, visible: { opacity: 1, y: 0 } },
+  down: { hidden: { opacity: 0, y: -30 }, visible: { opacity: 1, y: 0 } },
+  left: { hidden: { opacity: 0, x: 30 }, visible: { opacity: 1, x: 0 } },
+  right: { hidden: { opacity: 0, x: -30 }, visible: { opacity: 1, x: 0 } },
+  none: { hidden: { opacity: 0 }, visible: { opacity: 1 } },
+};
+
+export const ScrollReveal = memo(function ScrollReveal({
   children,
   delay = 0,
   direction = "up",
@@ -19,33 +27,22 @@ export function ScrollReveal({
   width = "100%",
 }: ScrollRevealProps) {
   const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, margin: "-10% 0px" });
+  const isInView = useInView(ref, { once: true, margin: "-5% 0px" });
 
-  const getVariants = () => {
-    switch (direction) {
-      case "up":
-        return { hidden: { opacity: 0, y: 50 }, visible: { opacity: 1, y: 0 } };
-      case "down":
-        return { hidden: { opacity: 0, y: -50 }, visible: { opacity: 1, y: 0 } };
-      case "left":
-        return { hidden: { opacity: 0, x: 50 }, visible: { opacity: 1, x: 0 } };
-      case "right":
-        return { hidden: { opacity: 0, x: -50 }, visible: { opacity: 1, x: 0 } };
-      default:
-        return { hidden: { opacity: 0 }, visible: { opacity: 1 } };
-    }
-  };
+  const isFullHeight = className.includes("h-full");
 
   return (
     <div ref={ref} style={{ width }} className={className}>
       <motion.div
-        variants={getVariants()}
+        variants={variants[direction]}
         initial="hidden"
         animate={isInView ? "visible" : "hidden"}
-        transition={{ duration: 0.6, delay: delay, ease: "easeOut" }}
+        transition={{ duration: 0.45, delay, ease: [0.25, 0.1, 0.25, 1] }}
+        style={{ willChange: "opacity, transform" }}
+        className={isFullHeight ? "h-full" : undefined}
       >
         {children}
       </motion.div>
     </div>
   );
-}
+});

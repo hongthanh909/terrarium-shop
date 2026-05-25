@@ -84,6 +84,8 @@ export async function GET() {
       pinned,
       topVoted: topVoted.map((p) => ({ ...p, voteCount: p._count.votes })),
       newArrivals,
+    }, {
+      headers: { "Cache-Control": "public, s-maxage=120, stale-while-revalidate=600" },
     });
   } catch (error) {
     console.error("Error fetching explore data:", error);

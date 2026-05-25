@@ -1,15 +1,30 @@
 import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
+import { z } from "zod";
+
+const registerSchema = z.object({
+  email: z.string().email("Email không hợp lệ"),
+  password: z.string().min(6, "Mật khẩu phải có ít nhất 6 ký tự"),
+  name: z.string().min(2, "Tên phải có ít nhất 2 ký tự").max(100),
+  phone: z.string().regex(/^[0-9+\s-]{9,15}$/, "Số điện thoại không hợp lệ").optional().nullable(),
+});
 
 
 export async function POST(request: NextRequest) {
   try {
-    const { email, password, name, phone } = await request.json();
-    
-    if (!email || !password || !name) {
-      return NextResponse.json({ error: "Vui lòng điền đầy đủ các trường bắt buộc" }, { status: 400 });
+    const body = await request.json();
+    const validated = registerSchema.safeParse(body);
+
+    if (!validated.success) {
+      return NextResponse.json(
+        { error: validated.error.errors[0].message },
+        { status: 400 }
+      );
     }
+
+    const { email, password, name, phone } = validated.data;
+
 
     const existing = await prisma.customer.findUnique({
       where: { email }

@@ -1,14 +1,20 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Save } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
 
+interface BlogCategory {
+  id: string;
+  name: string;
+}
+
 export default function CreateBlogPostPage() {
   const router = useRouter();
   const [saving, setSaving] = useState(false);
+  const [categories, setCategories] = useState<BlogCategory[]>([]);
   const [formData, setFormData] = useState({
     title: "",
     slug: "",
@@ -16,6 +22,30 @@ export default function CreateBlogPostPage() {
     categoryId: "",
     published: false,
   });
+
+  useEffect(() => {
+    fetch("/api/blog/categories")
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data)) setCategories(data);
+      })
+      .catch(() => {
+        // fallback silently — category is optional
+      });
+  }, []);
+
+  // Auto-generate slug from title
+  const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const title = e.target.value;
+    const slug = title
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9\s-]/g, "")
+      .replace(/\s+/g, "-")
+      .replace(/-+/g, "-");
+    setFormData({ ...formData, title, slug });
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,14 +59,15 @@ export default function CreateBlogPostPage() {
       });
 
       if (response.ok) {
-        toast.success("Post created!");
+        toast.success("Bài viết đã được tạo!");
         router.push("/admin/blog");
       } else {
-        toast.error("Failed to create post");
+        const err = await response.json();
+        toast.error(err.error || "Lỗi khi tạo bài viết");
       }
     } catch (error) {
       console.error("Error:", error);
-      toast.error("Error creating post");
+      toast.error("Lỗi khi tạo bài viết");
     } finally {
       setSaving(false);
     }
@@ -50,20 +81,21 @@ export default function CreateBlogPostPage() {
           className="inline-flex items-center text-[#425733] hover:text-[#425733] mb-4"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Blog
+          Quay lại Blog
         </Link>
-        <h2 className="text-3xl font-bold text-gray-800">Create New Post</h2>
+        <h2 className="text-3xl font-bold text-gray-800">Tạo Bài Viết Mới</h2>
       </div>
 
       <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow p-6 space-y-4">
         <div>
-          <label className="block text-sm font-medium mb-1">Title *</label>
+          <label className="block text-sm font-medium mb-1">Tiêu đề *</label>
           <input
             type="text"
             value={formData.title}
-            onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+            onChange={handleTitleChange}
             required
             className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#6d8c5a]"
+            placeholder="Nhập tiêu đề bài viết"
           />
         </div>
 
@@ -74,33 +106,37 @@ export default function CreateBlogPostPage() {
             value={formData.slug}
             onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
             required
-            className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#6d8c5a]"
-            placeholder="my-blog-post"
+            className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#6d8c5a] font-mono text-sm"
+            placeholder="tieu-de-bai-viet"
           />
+          <p className="text-xs text-gray-500 mt-1">Tự động tạo từ tiêu đề, có thể chỉnh sửa</p>
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-1">Category</label>
+          <label className="block text-sm font-medium mb-1">Danh mục</label>
           <select
             value={formData.categoryId}
             onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })}
             className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#6d8c5a]"
           >
-            <option value="">Select Category</option>
-            <option value="1">Care Guides</option>
-            <option value="2">Tips</option>
-            <option value="3">News</option>
+            <option value="">-- Chọn danh mục --</option>
+            {categories.map((cat) => (
+              <option key={cat.id} value={cat.id}>
+                {cat.name}
+              </option>
+            ))}
           </select>
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-1">Content *</label>
+          <label className="block text-sm font-medium mb-1">Nội dung *</label>
           <textarea
             value={formData.content}
             onChange={(e) => setFormData({ ...formData, content: e.target.value })}
             required
-            rows={10}
+            rows={12}
             className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#6d8c5a]"
+            placeholder="Nhập nội dung bài viết (hỗ trợ HTML)"
           />
         </div>
 
@@ -113,7 +149,7 @@ export default function CreateBlogPostPage() {
             className="w-4 h-4"
           />
           <label htmlFor="published" className="text-sm font-medium">
-            Publish immediately
+            Xuất bản ngay
           </label>
         </div>
 
@@ -122,7 +158,7 @@ export default function CreateBlogPostPage() {
             href="/admin/blog"
             className="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
           >
-            Cancel
+            Huỷ
           </Link>
           <button
             type="submit"
@@ -130,7 +166,7 @@ export default function CreateBlogPostPage() {
             className="flex items-center gap-2 bg-[#425733] text-white px-6 py-3 rounded-full font-semibold shadow-soft hover:-translate-y-0.5 hover:shadow-[0_4px_20px_rgba(66,87,51,0.4)] hover:bg-[#364a29] disabled:bg-gray-400"
           >
             <Save className="w-5 h-5" />
-            {saving ? "Saving..." : "Save Post"}
+            {saving ? "Đang lưu..." : "Lưu Bài Viết"}
           </button>
         </div>
       </form>

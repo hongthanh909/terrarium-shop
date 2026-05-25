@@ -28,9 +28,9 @@ const mockPolicies: Record<string, { title: string; content: string; updatedAt: 
       <h2 class="text-2xl font-bold mb-4">3. Quy trình bảo hành</h2>
       <p class="mb-4">Để được bảo hành, khách hàng cần:</p>
       <ol class="list-decimal pl-6 mb-4 space-y-2">
-        <li>Liên hệ hotline 0909.xxx.xxx hoặc email support@terrariumshop.vn</li>
+        <li>Liên hệ qua trang Liên Hệ hoặc email support@tiemreudecor.vn</li>
         <li>Cung cấp hóa đơn/mã đơn hàng và mô tả lỗi</li>
-        <li>Gửi sản phẩm về địa chỉ: 123 Đường ABC, Quận XYZ, TP.HCM</li>
+        <li>Gửi sản phẩm về địa chỉ được hướng dẫn qua email</li>
         <li>Chúng tôi sẽ kiểm tra và phản hồi trong vòng 3-5 ngày làm việc</li>
       </ol>
 

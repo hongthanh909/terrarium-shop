@@ -192,8 +192,8 @@ export default async function Home() {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
               {featuredProducts.map((product: any, index: number) => (
-                <ScrollReveal key={product.id} direction="up" delay={index * 0.1}>
-                  <Link href={`/products/${product.slug}`}>
+                <ScrollReveal key={product.id} direction="up" delay={index * 0.1} className="h-full">
+                  <Link href={`/products/${product.slug}`} className="block h-full">
                     <Card className="overflow-hidden hover:shadow-soft-xl transition-all duration-300 hover:-translate-y-1 group border-0 rounded-2xl h-full flex flex-col">
                       <CardContent className="p-0 flex flex-col h-full">
                         <div className="aspect-square relative overflow-hidden rounded-t-2xl">
@@ -215,7 +215,7 @@ export default async function Home() {
                           <Badge variant="secondary" className="text-xs w-fit mb-3 font-semibold bg-[#e3ebdd] text-[#425733]">
                             {product.category.name}
                           </Badge>
-                          <h3 className="font-bold text-[hsl(220,14%,25%)] mb-1 group-hover:text-[#425733] transition-colors line-clamp-2">
+                          <h3 className="font-bold text-[hsl(220,14%,25%)] mb-1 group-hover:text-[#425733] transition-colors line-clamp-2 min-h-[3rem]">
                             {product.name}
                           </h3>
                           <p className="text-xl font-bold text-[#425733] mt-auto pt-2">
@@ -356,10 +356,10 @@ export default async function Home() {
                 const thumbnail = fallbackImages[index % 3];
 
                 return (
-                  <ScrollReveal key={post.id} direction="up" delay={index * 0.1}>
-                    <Link href={`/blog/${post.slug}`}>
+                  <ScrollReveal key={post.id} direction="up" delay={index * 0.1} className="h-full">
+                    <Link href={`/blog/${post.slug}`} className="block h-full">
                       <Card className="overflow-hidden hover:shadow-soft-xl transition-all duration-300 hover:-translate-y-1 group border-0 rounded-2xl h-full flex flex-col">
-                        <CardContent className="p-0 flex-1 flex flex-col">
+                        <CardContent className="p-0 flex flex-col h-full">
                           <div className="aspect-video relative overflow-hidden bg-[#f0f4ec]">
                             <Image
                               src={thumbnail}
@@ -376,7 +376,7 @@ export default async function Home() {
                                 {post.category.name}
                               </Badge>
                             )}
-                            <h3 className="font-bold text-xl text-[hsl(220,14%,25%)] mb-3 line-clamp-2 group-hover:text-[#425733] transition-colors">
+                            <h3 className="font-bold text-xl text-[hsl(220,14%,25%)] mb-3 line-clamp-2 group-hover:text-[#425733] transition-colors min-h-[3.5rem]">
                               {post.title}
                             </h3>
                             <p className="text-sm text-[hsl(220,14%,45%)] line-clamp-3 mb-4 flex-1">

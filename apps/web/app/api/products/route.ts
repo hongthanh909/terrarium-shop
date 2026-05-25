@@ -2,6 +2,8 @@ import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 import { createProductSchema } from "@/lib/validations";
 import { z } from "zod";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 
 
 export async function GET(request: NextRequest) {
@@ -33,6 +35,9 @@ export async function GET(request: NextRequest) {
               },
             },
           },
+          _count: {
+            select: { votes: true }
+          }
         },
       });
 
@@ -40,7 +45,31 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ error: "Product not found" }, { status: 404 });
       }
 
-      return NextResponse.json(product);
+      const session = await getServerSession(authOptions);
+      const customerId = (session?.user as any)?.id;
+      let userVoted = false;
+
+      if (customerId) {
+        const vote = await prisma.productVote.findUnique({
+          where: {
+            productId_customerId: {
+              productId: product.id,
+              customerId,
+            }
+          }
+        });
+        userVoted = !!vote;
+      }
+
+      const productWithVote = {
+        ...product,
+        voteCount: product._count?.votes || 0,
+        userVoted
+      };
+
+      return NextResponse.json(productWithVote, {
+        headers: { "Cache-Control": "public, s-maxage=120, stale-while-revalidate=600" },
+      });
     }
     const status = searchParams.get("status");
 
@@ -89,6 +118,8 @@ export async function GET(request: NextRequest) {
         total,
         totalPages: Math.ceil(total / limit),
       },
+    }, {
+      headers: { "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300" },
     });
   } catch (error) {
     console.error("Error fetching products:", error);

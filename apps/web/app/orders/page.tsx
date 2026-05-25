@@ -2,7 +2,9 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowLeft, Package, TrendingUp } from "lucide-react";
+import { useSession } from "next-auth/react";
 
 interface Order {
   id: string;
@@ -27,15 +29,17 @@ export default function MyOrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const { data: session } = useSession();
 
   useEffect(() => {
-    fetchOrders();
-  }, []);
+    if (session) fetchOrders();
+    else setLoading(false);
+  }, [session]);
 
   const fetchOrders = async () => {
     try {
-      // In real app, get customerId from auth or session
-      const customerId = "customer_123"; // Demo hardcoded
+      const customerId = (session?.user as any)?.id;
+      if (!customerId) { setLoading(false); return; }
       const response = await fetch(`/api/orders?customerId=${customerId}`);
       const data = await response.json();
       setOrders(data);
@@ -77,9 +81,9 @@ export default function MyOrdersPage() {
             className="inline-flex items-center text-[#425733] hover:text-[#425733] mb-4"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Home
+            Trang chủ
           </Link>
-          <h1 className="text-3xl font-bold text-gray-800">My Orders</h1>
+          <h1 className="text-3xl font-bold text-gray-800">Đơn Hàng Của Tôi</h1>
         </div>
 
         {/* Stats */}
@@ -87,7 +91,7 @@ export default function MyOrdersPage() {
           <div className="bg-white rounded-lg shadow p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-500 text-sm mb-1">Total Orders</p>
+                <p className="text-gray-500 text-sm mb-1">Tổng đơn hàng</p>
                 <p className="text-3xl font-bold text-gray-800">{orders.length}</p>
               </div>
               <div className="bg-blue-100 p-3 rounded-full">
@@ -98,7 +102,7 @@ export default function MyOrdersPage() {
           <div className="bg-white rounded-lg shadow p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-500 text-sm mb-1">Total Spent</p>
+                <p className="text-gray-500 text-sm mb-1">Tổng chi tiêu</p>
                 <p className="text-3xl font-bold text-gray-800">
                   {totalSpent.toLocaleString("vi-VN")}₫
                 </p>
@@ -113,18 +117,18 @@ export default function MyOrdersPage() {
         {/* Orders List */}
         {loading ? (
           <div className="bg-white rounded-lg shadow p-8 text-center text-gray-500">
-            Loading orders...
+            Đang tải đơn hàng...
           </div>
         ) : orders.length === 0 ? (
           <div className="bg-white rounded-lg shadow p-8 text-center">
             <Package className="w-16 h-16 mx-auto text-gray-300 mb-4" />
-            <h2 className="text-xl font-semibold text-gray-700 mb-2">No Orders Yet</h2>
-            <p className="text-gray-500 mb-4">You haven&apos;t placed any orders yet.</p>
+            <h2 className="text-xl font-semibold text-gray-700 mb-2">Chưa Có Đơn Hàng</h2>
+            <p className="text-gray-500 mb-4">Bạn chưa có đơn hàng nào.</p>
             <Link
               href="/products"
-              className="inline-block bg-[#425733] text-white px-6 py-3 rounded-lg hover:bg-[#425733]"
+              className="inline-block bg-[#425733] text-white px-6 py-3 rounded-lg hover:bg-[#364a29]"
             >
-              Start Shopping
+              Mua Sắm Ngay
             </Link>
           </div>
         ) : (

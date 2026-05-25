@@ -33,7 +33,9 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ error: "Category not found" }, { status: 404 });
       }
 
-      return NextResponse.json(category);
+      return NextResponse.json(category, {
+        headers: { "Cache-Control": "public, s-maxage=300, stale-while-revalidate=3600" },
+      });
     }
 
     let whereClause: any = {};
@@ -67,6 +69,8 @@ export async function GET(request: NextRequest) {
         total,
         totalPages: Math.ceil(total / limit),
       }
+    }, {
+      headers: { "Cache-Control": "public, s-maxage=300, stale-while-revalidate=3600" },
     });
   } catch (error) {
     console.error("Error fetching categories:", error);

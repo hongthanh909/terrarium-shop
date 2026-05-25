@@ -183,7 +183,7 @@ export default function Footer() {
               ) : (
                 <li className="flex items-center gap-2">
                   <Phone className="w-4 h-4 text-[#425733]" />
-                  <span>0909.xxx.xxx</span>
+                  <span>Liên hệ qua trang Liên Hệ</span>
                 </li>
               )}
               {addresses.length > 0 ? (

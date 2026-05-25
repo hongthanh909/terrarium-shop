@@ -3,8 +3,13 @@ import { Inter } from 'next/font/google';
 import './globals.css';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import ChatWidget from '@/components/ChatWidget';
+import dynamic from 'next/dynamic';
 import AuthProvider from '@/components/AuthProvider';
+
+const ChatWidget = dynamic(() => import('@/components/ChatWidget'), {
+  ssr: false,
+  loading: () => null,
+});
 
 const inter = Inter({
   subsets: ['latin', 'latin-ext'],

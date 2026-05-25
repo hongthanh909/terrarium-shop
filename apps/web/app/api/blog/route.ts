@@ -30,7 +30,9 @@ export async function GET(request: Request) {
       }),
     ]);
 
-    return NextResponse.json({ posts, categories });
+    return NextResponse.json({ posts, categories }, {
+      headers: { "Cache-Control": "public, s-maxage=300, stale-while-revalidate=3600" },
+    });
   } catch (error) {
     console.error("Error fetching blog posts:", error);
     return NextResponse.json(

@@ -211,6 +211,15 @@ export default function ProfilePage() {
               </div>
             </div>
           )}
+          
+          <div className="mt-4 pt-4 border-t border-white/10 flex justify-end">
+            <Link 
+              href="/profile/points" 
+              className="text-sm text-white/90 hover:text-white flex items-center gap-1 font-medium transition-colors bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-full"
+            >
+              Xem lịch sử điểm <ChevronRight className="w-4 h-4" />
+            </Link>
+          </div>
         </div>
 
         {/* ─── Tabs ──────────────────────────────────────────────────────────────── */}

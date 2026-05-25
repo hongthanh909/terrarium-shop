@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, CreditCard, Truck, Check } from "lucide-react";
 import { useCartStore, CartItem } from "@/lib/store/cartStore";
+import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -15,6 +16,7 @@ import { Separator } from "@/components/ui/separator";
 export default function CheckoutPage() {
   const router = useRouter();
   const { items, getCartTotal, clearCart } = useCartStore();
+  const { data: session } = useSession();
 
   const [formData, setFormData] = useState({
     name: "",
@@ -44,12 +46,33 @@ export default function CheckoutPage() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleApplyVoucher = () => {
-    if (formData.voucherCode.toUpperCase() === "SAVE10") {
-      setDiscount(Math.floor(subtotal * 0.1));
-      setVoucherApplied(true);
-    } else {
-      alert("Invalid voucher code. Try SAVE10 for 10% off!");
+  const handleApplyVoucher = async () => {
+    if (!formData.voucherCode.trim()) return;
+    try {
+      const response = await fetch("/api/validate-voucher", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          code: formData.voucherCode,
+          subtotal,
+          cartItems: items.map((item: CartItem) => ({
+            productId: item.productId,
+            categoryId: "",
+            price: item.price,
+            quantity: item.quantity,
+          })),
+          customerId: (session?.user as any)?.id,
+        }),
+      });
+      const data = await response.json();
+      if (data.valid && data.discountAmount) {
+        setDiscount(data.discountAmount);
+        setVoucherApplied(true);
+      } else {
+        alert(data.error || data.message || "Mã giảm giá không hợp lệ");
+      }
+    } catch {
+      alert("Lỗi khi kiểm tra mã giảm giá. Vui lòng thử lại.");
     }
   };
 
@@ -65,7 +88,7 @@ export default function CheckoutPage() {
 
     try {
       const orderData = {
-        customerId: "customer_123",
+        customerId: (session?.user as any)?.id || null,
         items: items.map((item: CartItem) => ({
           productId: item.productId,
           productName: item.productName,
@@ -122,10 +145,10 @@ export default function CheckoutPage() {
               <div className="w-20 h-20 bg-[#e3ebdd] rounded-full flex items-center justify-center mx-auto mb-6">
                 <Check className="w-10 h-10 text-[#425733]" />
               </div>
-              <CardTitle className="text-3xl">Order Placed Successfully!</CardTitle>
+              <CardTitle className="text-3xl">Đặt Hàng Thành Công!</CardTitle>
               <CardDescription className="mt-4">
-                <p className="text-muted-foreground mb-2">Thank you for your purchase. Your order has been received.</p>
-                <p className="text-sm text-muted-foreground">Order ID: {orderId}</p>
+                <p className="text-muted-foreground mb-2">Cảm ơn bạn đã mua hàng. Đơn hàng của bạn đã được tiếp nhận.</p>
+                <p className="text-sm text-muted-foreground">Mã đơn hàng: {orderId}</p>
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -135,18 +158,19 @@ export default function CheckoutPage() {
                   <CardHeader>
                     <CardTitle className="text-lg flex items-center gap-2">
                       <CreditCard className="w-5 h-5 text-blue-600" />
-                      Bank Transfer Instructions
+                      Hướng Dẫn Chuyển Khoản
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-sm text-muted-foreground mb-3">Please transfer the total amount to our bank account:</p>
-                    <div className="bg-white rounded p-4 text-sm space-y-1">
-                      <p className="font-semibold">Vietcombank</p>
-                      <p className="text-muted-foreground">Account Number: 1234567890</p>
-                      <p className="text-muted-foreground">Account Name: Terrarium Shop</p>
-                      <p className="text-muted-foreground">Branch: Hanoi</p>
+                    <p className="text-sm text-muted-foreground mb-3">Vui lòng chuyển khoản tổng số tiền đến tài khoản ngân hàng của chúng tôi:</p>
+                    <div className="bg-white rounded p-4 text-sm space-y-1 text-left">
+                      <p className="font-semibold">{process.env.NEXT_PUBLIC_BANK_NAME || "TPBank"}</p>
+                      <p className="text-muted-foreground">Số tài khoản: <span className="font-mono font-semibold text-gray-800">{process.env.NEXT_PUBLIC_BANK_ACCOUNT_NUMBER || "07898110079"}</span></p>
+                      <p className="text-muted-foreground">Chủ tài khoản: <span className="font-semibold text-gray-800">{process.env.NEXT_PUBLIC_BANK_ACCOUNT_NAME || "NGUYỄN THANH HỒNG"}</span></p>
+                      <p className="text-muted-foreground">Chi nhánh: {process.env.NEXT_PUBLIC_BANK_BRANCH || "CN Thủ Đức"}</p>
+                      <p className="text-muted-foreground">Nội dung CK: <span className="font-semibold text-blue-700">{orderId || "Mã đơn hàng"}</span></p>
                     </div>
-                    <p className="text-sm text-muted-foreground mt-3">Note: Your order will be processed after we receive your payment.</p>
+                    <p className="text-sm text-muted-foreground mt-3">Lưu ý: Đơn hàng sẽ được xử lý sau khi chúng tôi xác nhận thanh toán.</p>
                   </CardContent>
                 </Card>
               )}
@@ -156,20 +180,20 @@ export default function CheckoutPage() {
                   <CardHeader>
                     <CardTitle className="text-lg flex items-center gap-2">
                       <Truck className="w-5 h-5 text-[#425733]" />
-                      Cash on Delivery
+                      Thanh Toán Khi Nhận Hàng
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-sm text-muted-foreground">Please prepare the exact amount when your order arrives. Our delivery partner will contact you to schedule the delivery.</p>
+                    <p className="text-sm text-muted-foreground">Vui lòng chuẩn bị đúng số tiền khi nhận hàng. Đơn vị vận chuyển sẽ liên hệ bạn để xếp lịch giao hàng.</p>
                   </CardContent>
                 </Card>
               )}
 
               <Button className="w-full" asChild>
-                <Link href="/orders">View My Orders</Link>
+                <Link href="/orders">Xem Đơn Hàng</Link>
               </Button>
               <Button variant="outline" className="w-full" asChild>
-                <Link href="/products">Continue Shopping</Link>
+                <Link href="/products">Tiếp Tục Mua Sắm</Link>
               </Button>
             </CardContent>
           </Card>
@@ -182,10 +206,10 @@ export default function CheckoutPage() {
     return (
       <main className="min-h-screen bg-background py-8 px-6">
         <div className="max-w-2xl mx-auto text-center">
-          <h1 className="text-3xl font-bold mb-4">Your Cart is Empty</h1>
-          <p className="text-muted-foreground mb-8">Add some products to your cart first!</p>
+          <h1 className="text-3xl font-bold mb-4">Giỏ Hàng Trống</h1>
+          <p className="text-muted-foreground mb-8">Hãy thêm sản phẩm vào giỏ hàng trước!</p>
           <Button asChild>
-            <Link href="/products">Browse Products</Link>
+            <Link href="/products">Xem Sản Phẩm</Link>
           </Button>
         </div>
       </main>
@@ -198,30 +222,30 @@ export default function CheckoutPage() {
         <div className="mb-6">
           <Link href="/products" className="inline-flex items-center text-muted-foreground hover:text-primary">
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Products
+            Quay lại Sản Phẩm
           </Link>
         </div>
 
-        <h1 className="text-3xl font-bold mb-8">Checkout</h1>
+        <h1 className="text-3xl font-bold mb-8">Thanh Toán</h1>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>Customer Information</CardTitle>
+                <CardTitle>Thông Tin Khách Hàng</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="name">Full Name *</Label>
-                    <Input id="name" name="name" value={formData.name} onChange={handleInputChange} required placeholder="John Doe" />
+                    <Label htmlFor="name">Họ tên *</Label>
+                    <Input id="name" name="name" value={formData.name} onChange={handleInputChange} required placeholder="Nguyễn Văn A" />
                   </div>
                   <div>
                     <Label htmlFor="email">Email *</Label>
-                    <Input id="email" name="email" type="email" value={formData.email} onChange={handleInputChange} required placeholder="john@example.com" />
+                    <Input id="email" name="email" type="email" value={formData.email} onChange={handleInputChange} required placeholder="email@example.com" />
                   </div>
                   <div>
-                    <Label htmlFor="phone">Phone *</Label>
+                    <Label htmlFor="phone">Số điện thoại *</Label>
                     <Input id="phone" name="phone" type="tel" value={formData.phone} onChange={handleInputChange} required placeholder="090 123 4567" />
                   </div>
                 </div>
@@ -232,26 +256,26 @@ export default function CheckoutPage() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Truck className="w-5 h-5" />
-                  Shipping Address
+                  Địa Chỉ Giao Hàng
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="md:col-span-2">
-                    <Label htmlFor="address">Address *</Label>
-                    <Input id="address" name="address" value={formData.address} onChange={handleInputChange} required placeholder="House number, street name" />
+                    <Label htmlFor="address">Địa chỉ *</Label>
+                    <Input id="address" name="address" value={formData.address} onChange={handleInputChange} required placeholder="Số nhà, tên đường" />
                   </div>
                   <div>
-                    <Label htmlFor="province">Province/City *</Label>
-                    <Input id="province" name="province" value={formData.province} onChange={handleInputChange} required placeholder="Ho Chi Minh City" />
+                    <Label htmlFor="province">Tỉnh/Thành *</Label>
+                    <Input id="province" name="province" value={formData.province} onChange={handleInputChange} required placeholder="TP. Hồ Chí Minh" />
                   </div>
                   <div>
-                    <Label htmlFor="district">District *</Label>
-                    <Input id="district" name="district" value={formData.district} onChange={handleInputChange} required placeholder="District 1" />
+                    <Label htmlFor="district">Quận/Huyện *</Label>
+                    <Input id="district" name="district" value={formData.district} onChange={handleInputChange} required placeholder="Quận 1" />
                   </div>
                   <div>
-                    <Label htmlFor="ward">Ward *</Label>
-                    <Input id="ward" name="ward" value={formData.ward} onChange={handleInputChange} required placeholder="Ward 5" />
+                    <Label htmlFor="ward">Phường/Xã *</Label>
+                    <Input id="ward" name="ward" value={formData.ward} onChange={handleInputChange} required placeholder="Phường 5" />
                   </div>
                 </div>
               </CardContent>
@@ -259,15 +283,15 @@ export default function CheckoutPage() {
 
             <Card>
               <CardHeader>
-                <CardTitle>Shipping Method</CardTitle>
+                <CardTitle>Phương Thức Vận Chuyển</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 <label className="flex items-center justify-between p-4 border rounded-lg cursor-pointer hover:bg-muted/50">
                   <div className="flex items-center gap-3">
-                    <input type="radio" name="shippingMethod" value="GHN_STANDARD" checked={formData.shippingMethod === "GHN_STANDARD"} onChange={handleInputChange} className="h-4 w-4" />
+                    <input type="radio" name="shippingMethod" value="GHN_STANDARD" checked={formData.shippingMethod === "GHN_STANDARD"} onChange={(e) => { handleInputChange(e); setShippingFee(30000); }} className="h-4 w-4" />
                     <div>
-                      <p className="font-semibold">Standard Shipping</p>
-                      <p className="text-sm text-muted-foreground">3-5 business days</p>
+                      <p className="font-semibold">Giao Hàng Tiêu Chuẩn</p>
+                      <p className="text-sm text-muted-foreground">3-5 ngày làm việc</p>
                     </div>
                   </div>
                   <p className="font-semibold">{shippingFee.toLocaleString("vi-VN")}₫</p>
@@ -276,8 +300,8 @@ export default function CheckoutPage() {
                   <div className="flex items-center gap-3">
                     <input type="radio" name="shippingMethod" value="GHN_EXPRESS" checked={formData.shippingMethod === "GHN_EXPRESS"} onChange={(e) => { handleInputChange(e); setShippingFee(50000); }} className="h-4 w-4" />
                     <div>
-                      <p className="font-semibold">Express Shipping</p>
-                      <p className="text-sm text-muted-foreground">1-2 business days</p>
+                      <p className="font-semibold">Giao Hàng Nhanh</p>
+                      <p className="text-sm text-muted-foreground">1-2 ngày làm việc</p>
                     </div>
                   </div>
                   <p className="font-semibold">50,000₫</p>
@@ -289,22 +313,22 @@ export default function CheckoutPage() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <CreditCard className="w-5 h-5" />
-                  Payment Method
+                  Phương Thức Thanh Toán
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 <label className="flex items-start p-4 border rounded-lg cursor-pointer hover:bg-muted/50">
                   <input type="radio" name="paymentMethod" value="COD" checked={formData.paymentMethod === "COD"} onChange={handleInputChange} className="mt-1 mr-3 h-4 w-4" />
                   <div>
-                    <p className="font-semibold">Cash on Delivery (COD)</p>
-                    <p className="text-sm text-muted-foreground">Pay when you receive your order</p>
+                    <p className="font-semibold">Thanh Toán Khi Nhận Hàng (COD)</p>
+                    <p className="text-sm text-muted-foreground">Thanh toán khi nhận được đơn hàng</p>
                   </div>
                 </label>
                 <label className="flex items-start p-4 border rounded-lg cursor-pointer hover:bg-muted/50">
                   <input type="radio" name="paymentMethod" value="BANK_TRANSFER" checked={formData.paymentMethod === "BANK_TRANSFER"} onChange={handleInputChange} className="mt-1 mr-3 h-4 w-4" />
                   <div>
-                    <p className="font-semibold">Bank Transfer</p>
-                    <p className="text-sm text-muted-foreground">Transfer to our bank account before delivery</p>
+                    <p className="font-semibold">Chuyển Khoản Ngân Hàng</p>
+                    <p className="text-sm text-muted-foreground">Chuyển khoản trước khi giao hàng</p>
                   </div>
                 </label>
               </CardContent>
@@ -312,32 +336,32 @@ export default function CheckoutPage() {
 
             <Card>
               <CardHeader>
-                <CardTitle>Voucher Code</CardTitle>
+                <CardTitle>Mã Giảm Giá</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="flex gap-4">
-                  <Input name="voucherCode" value={formData.voucherCode} onChange={handleInputChange} placeholder="Enter voucher code" disabled={voucherApplied} />
+                  <Input name="voucherCode" value={formData.voucherCode} onChange={handleInputChange} placeholder="Nhập mã giảm giá" disabled={voucherApplied} />
                   <Button onClick={handleApplyVoucher} disabled={voucherApplied} variant={voucherApplied ? "secondary" : "default"}>
-                    {voucherApplied ? "Applied" : "Apply"}
+                    {voucherApplied ? "Đã áp dụng" : "Áp dụng"}
                   </Button>
                 </div>
                 {voucherApplied && (
                   <Badge variant="default" className="mt-2 bg-[#425733]">
-                    Voucher applied! {discount.toLocaleString("vi-VN")}₫ discount
+                    Đã áp dụng! Giảm {discount.toLocaleString("vi-VN")}₫
                   </Badge>
                 )}
               </CardContent>
             </Card>
 
             <Button type="submit" size="lg" className="w-full" disabled={loading} onClick={handleSubmit as any}>
-              {loading ? "Processing..." : `Place Order - ${total.toLocaleString("vi-VN")}₫`}
+              {loading ? "Đang xử lý..." : `Đặt Hàng - ${total.toLocaleString("vi-VN")}₫`}
             </Button>
           </div>
 
           <div className="lg:col-span-1">
             <Card className="sticky top-6">
               <CardHeader>
-                <CardTitle>Order Summary</CardTitle>
+                <CardTitle>Tổng Đơn Hàng</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4 mb-6 max-h-64 overflow-y-auto">

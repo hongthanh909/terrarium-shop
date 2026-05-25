@@ -1,28 +1,60 @@
 import { prisma } from "@/lib/prisma";
+import { Prisma } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 
+// Helper: normalize number | string → number
+const toNum = (v: number | string): number =>
+  typeof v === "number" ? v : parseFloat(v);
+
+
+import { z } from "zod";
+
+const orderItemSchema = z.object({
+  productId: z.string(),
+  productName: z.string(),
+  productImage: z.string(),
+  variants: z.any().optional(),
+  quantity: z.number().int().positive(),
+  price: z.number().or(z.string()),
+  customOptions: z.any().optional(),
+});
+
+const createOrderSchema = z.object({
+  customerId: z.string().min(1, "Missing customer ID"),
+  items: z.array(orderItemSchema).min(1, "Order must have at least 1 item"),
+  shippingInfo: z.any().optional(),
+  shippingMethod: z.enum(["GHN_STANDARD", "GHN_EXPRESS", "GRAB"]).default("GHN_STANDARD"),
+  paymentMethod: z.enum(["COD", "MOMO", "BANK_TRANSFER"]).default("COD"),
+  subtotal: z.number().or(z.string()),
+  shippingFee: z.number().or(z.string()),
+  discount: z.number().or(z.string()).default(0),
+  total: z.number().or(z.string()),
+});
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
+    
+    const validated = createOrderSchema.safeParse(body);
+    if (!validated.success) {
+      return NextResponse.json(
+        { error: validated.error.errors[0].message },
+        { status: 400 }
+      );
+    }
+
     const {
       customerId,
       items,
       shippingInfo,
-      shippingMethod = "GHN_STANDARD",
-      paymentMethod = "COD",
+      shippingMethod,
+      paymentMethod,
       subtotal,
       shippingFee,
-      discount = 0,
+      discount,
       total,
-    } = body;
+    } = validated.data;
 
-    if (!customerId || !items || items.length === 0) {
-      return NextResponse.json(
-        { error: "Missing required fields" },
-        { status: 400 }
-      );
-    }
 
     // Generate order number
     const orderNumber = `ORD-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
@@ -33,10 +65,10 @@ export async function POST(request: NextRequest) {
         data: {
           orderNumber,
           customerId,
-          subtotal: parseFloat(subtotal),
-          shippingFee: parseFloat(shippingFee),
-          discount: parseFloat(discount),
-          total: parseFloat(total),
+          subtotal: toNum(subtotal),
+          shippingFee: toNum(shippingFee),
+          discount: toNum(discount),
+          total: toNum(total),
           shippingMethod,
           paymentMethod,
           status: "PENDING",
@@ -54,7 +86,7 @@ export async function POST(request: NextRequest) {
           variants: JSON.stringify(item.variants || {}),
           quantity: item.quantity,
           price: parseFloat(item.price),
-          customOptions: item.customOptions ? JSON.stringify(item.customOptions) : null,
+          customOptions: item.customOptions ? JSON.stringify(item.customOptions) : Prisma.JsonNull,
         })),
       });
 
@@ -75,7 +107,7 @@ export async function POST(request: NextRequest) {
         });
 
         if (customer) {
-          const pointsEarned = Math.floor(parseFloat(total) / 100000); // 1 point per 100k VND
+          const pointsEarned = Math.floor(toNum(total) / 100000); // 1 point per 100k VND
 
           await tx.customer.update({
             where: { id: customerId },

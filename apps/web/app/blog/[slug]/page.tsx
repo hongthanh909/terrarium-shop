@@ -1,65 +1,52 @@
-"use client";
-
-import { useState, useEffect } from "react";
+import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Calendar, Tag } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Metadata } from "next";
+import { prisma } from "@/lib/prisma";
 
-interface BlogPost {
-  id: string;
-  slug: string;
-  title: string;
-  content: string;
-  published: boolean;
-  publishedAt: string | null;
-  category: {
-    id: string;
-    slug: string;
-    name: string;
-  } | null;
+interface Props {
+  params: { slug: string };
 }
 
-export default function BlogPostPage({ params }: { params: { slug: string } }) {
-  const [post, setPost] = useState<BlogPost | null>(null);
-  const [loading, setLoading] = useState(true);
+// BUG-15 fix: generate per-post metadata for SEO
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const post = await getPost(params.slug);
+  if (!post) return { title: "Bài viết không tìm thấy" };
 
-  useEffect(() => {
-    fetchPost();
-  }, [params.slug]);
+  const description = post.content
+    .replace(/<[^>]+>/g, "") // strip HTML tags
+    .slice(0, 160)
+    .trim();
 
-  const fetchPost = async () => {
-    try {
-      const response = await fetch(`/api/blog/${params.slug}`);
-      const data = await response.json();
-      setPost(data);
-    } catch (error) {
-      console.error("Error fetching blog post:", error);
-    } finally {
-      setLoading(false);
-    }
+  return {
+    title: `${post.title} | Blog - Tiệm Rêu Decor`,
+    description,
+    openGraph: {
+      title: post.title,
+      description,
+      type: "article",
+      publishedTime: post.publishedAt?.toISOString(),
+    },
   };
+}
 
-  if (loading) {
-    return (
-      <main className="min-h-screen bg-[hsl(0,0%,100%)] py-8 px-6">
-        <div className="max-w-3xl mx-auto text-center py-12">
-          <p className="text-[hsl(220,14%,45%)]">Đang tải...</p>
-        </div>
-      </main>
-    );
+async function getPost(slug: string) {
+  try {
+    return await prisma.blogPost.findUnique({
+      where: { slug, published: true },
+      include: { category: true },
+    });
+  } catch {
+    return null;
   }
+}
+
+export default async function BlogPostPage({ params }: Props) {
+  const post = await getPost(params.slug);
 
   if (!post) {
-    return (
-      <main className="min-h-screen bg-[hsl(0,0%,100%)] py-8 px-6">
-        <div className="max-w-3xl mx-auto text-center py-12">
-          <p className="text-[hsl(220,14%,45%)]">Bài viết không tồn tại.</p>
-          <Button asChild className="mt-4">
-            <Link href="/blog">Về trang Blog</Link>
-          </Button>
-        </div>
-      </main>
-    );
+    notFound();
   }
 
   return (
@@ -100,7 +87,7 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
 
           <div className="prose prose-lg max-w-none">
             <div
-              className="text-[hsl(220,14%,35%)] leading-relaxed whitespace-pre-wrap"
+              className="text-[hsl(220,14%,35%)] leading-relaxed"
               dangerouslySetInnerHTML={{ __html: post.content }}
             />
           </div>
@@ -109,7 +96,7 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
         {/* Divider */}
         <hr className="my-12 border-[#e3ebdd]" />
 
-        {/* Related Posts (placeholder) */}
+        {/* Related Posts */}
         <div className="text-center">
           <p className="text-[hsl(220,14%,45%)] mb-4">
             Thích bài viết này? Khám phá thêm tại
@@ -124,5 +111,9 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
 }
 
 function Badge({ children, className }: { children: React.ReactNode; className?: string }) {
-  return <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${className}`}>{children}</span>;
+  return (
+    <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${className}`}>
+      {children}
+    </span>
+  );
 }

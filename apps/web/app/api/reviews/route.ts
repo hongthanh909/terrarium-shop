@@ -55,26 +55,32 @@ export async function GET(request: NextRequest) {
   }
 }
 
+import { z } from "zod";
+
+const createReviewSchema = z.object({
+  productId: z.string().min(1, "Missing product ID"),
+  customerId: z.string().min(1, "Missing customer ID"),
+  rating: z.number().min(1).max(5, "Rating must be between 1 and 5"),
+  title: z.string().optional().nullable(),
+  content: z.string().min(3, "Review content is too short"),
+  images: z.array(z.string()).optional().default([]),
+  verified: z.boolean().optional().default(false),
+});
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { productId, customerId, rating, title, content, images, verified } = body;
-
-    // Validate required fields
-    if (!productId || !customerId || !rating) {
+    
+    const validated = createReviewSchema.safeParse(body);
+    if (!validated.success) {
       return NextResponse.json(
-        { error: "Missing required fields: productId, customerId, rating" },
+        { error: validated.error.errors[0].message },
         { status: 400 }
       );
     }
 
-    // Validate rating range
-    if (rating < 1 || rating > 5) {
-      return NextResponse.json(
-        { error: "Rating must be between 1 and 5" },
-        { status: 400 }
-      );
-    }
+    const { productId, customerId, rating, title, content, images, verified } = validated.data;
+
 
     // Check if customer already reviewed this product
     const existingReview = await prisma.review.findFirst({

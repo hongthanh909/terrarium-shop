@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { ShoppingCart, Leaf, User, X, Minus, Plus, ShoppingBag, ChevronDown, LogOut, Package } from "lucide-react";
 import { useCartStore } from "@/lib/store/cartStore";
 import { useState, useEffect } from "react";
@@ -271,9 +272,11 @@ function CartItems({ items, removeItem, updateQuantity }: { items: any[]; remove
         >
           <div className="w-18 h-18 flex-shrink-0 rounded-xl overflow-hidden bg-[#eaf0e5]">
             {item.productImage ? (
-              <img
+              <Image
                 src={item.productImage}
                 alt={item.productName}
+                width={64}
+                height={64}
                 className="w-16 h-16 object-cover"
               />
             ) : (

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
@@ -16,7 +16,19 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
-export default function AuthPage() {
+export default function AuthPageWrapper() {
+  return (
+    <Suspense fallback={
+      <main className="min-h-screen flex items-center justify-center">
+        <div className="w-10 h-10 border-4 border-[#425733] border-t-transparent rounded-full animate-spin" />
+      </main>
+    }>
+      <AuthPage />
+    </Suspense>
+  );
+}
+
+function AuthPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") || "/";

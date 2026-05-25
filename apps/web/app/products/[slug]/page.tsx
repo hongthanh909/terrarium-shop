@@ -6,8 +6,10 @@ import { useParams, useRouter } from "next/navigation";
 import {
   ArrowLeft, ShoppingBag, Minus, Plus, Star,
   Droplets, Sun, Thermometer, Wind, AlertTriangle, Play,
-  Package, Leaf
+  Package, Leaf, Heart
 } from "lucide-react";
+import { useSession } from "next-auth/react";
+import { toast } from "sonner";
 import { useCartStore, CartItem } from "@/lib/store/cartStore";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -53,6 +55,8 @@ interface Product {
   variants: ProductVariant[];
   variantOptions: ProductVariantOption[];
   careGuide?: CareGuide | null;
+  voteCount?: number;
+  userVoted?: boolean;
 }
 
 interface RelatedProduct {
@@ -79,7 +83,9 @@ export default function ProductPage() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [cartOpen, setCartOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<TabType>("details");
+  const [isVoting, setIsVoting] = useState(false);
 
+  const { data: session } = useSession();
   const { addItem, items, getCartTotal, getCartCount, removeItem, updateQuantity } = useCartStore();
 
   useEffect(() => {
@@ -134,6 +140,47 @@ export default function ProductPage() {
       variants: selectedVariants,
     });
     setCartOpen(true);
+  };
+
+  const handleVote = async () => {
+    if (!session) {
+      toast.error("Vui lòng đăng nhập để bình chọn");
+      router.push("/login");
+      return;
+    }
+
+    if (!product || isVoting) return;
+    setIsVoting(true);
+
+    try {
+      const res = await fetch(`/api/products/${product.id}/vote`, {
+        method: "POST",
+      });
+
+      if (!res.ok) {
+        throw new Error("Lỗi khi bình chọn");
+      }
+
+      const data = await res.json();
+      setProduct(prev => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          userVoted: data.voted,
+          voteCount: (prev.voteCount || 0) + (data.voted ? 1 : -1)
+        };
+      });
+      
+      if (data.voted) {
+        toast.success("Đã thêm vào mục yêu thích!");
+      } else {
+        toast.info("Đã bỏ bình chọn sản phẩm.");
+      }
+    } catch (error) {
+      toast.error("Có lỗi xảy ra, vui lòng thử lại sau.");
+    } finally {
+      setIsVoting(false);
+    }
   };
 
   if (loading) {
@@ -277,7 +324,24 @@ export default function ProductPage() {
 
           {/* Product Info */}
           <div>
-            <Badge variant="secondary" className="mb-2">{product.category.name}</Badge>
+            <div className="flex justify-between items-start mb-2">
+              <Badge variant="secondary">{product.category.name}</Badge>
+              <button
+                onClick={handleVote}
+                disabled={isVoting}
+                className="flex items-center gap-1 p-2 -mt-2 -mr-2 rounded-full hover:bg-muted transition-colors disabled:opacity-50 group"
+                aria-label="Yêu thích"
+              >
+                <Heart 
+                  className={`w-6 h-6 transition-colors ${product.userVoted ? 'fill-red-500 text-red-500' : 'text-muted-foreground group-hover:text-red-500'}`} 
+                />
+                {product.voteCount !== undefined && product.voteCount > 0 && (
+                  <span className={`text-sm font-medium ${product.userVoted ? 'text-red-500' : 'text-muted-foreground'}`}>
+                    {product.voteCount}
+                  </span>
+                )}
+              </button>
+            </div>
             <h1 className="text-4xl font-bold mb-4">{product.name}</h1>
             <div className="text-3xl font-bold text-primary mb-6">
               {finalPrice.toLocaleString("vi-VN")}₫
@@ -486,9 +550,9 @@ export default function ProductPage() {
                 <Link key={(relatedProduct as any).id} href={`/products/${relatedProduct.slug}`}>
                   <Card className="overflow-hidden hover:shadow-lg transition-shadow group h-full">
                     <CardContent className="p-0">
-                      <div className="aspect-square bg-muted flex items-center justify-center">
+                      <div className="aspect-square bg-muted flex items-center justify-center relative">
                         {relatedProduct.images.length > 0 ? (
-                          <img src={relatedProduct.images[0]} alt={relatedProduct.name} className="w-full h-full object-cover" />
+                          <Image src={relatedProduct.images[0]} alt={relatedProduct.name} fill sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw" className="object-cover" />
                         ) : (
                           <span className="text-muted-foreground">Chưa có ảnh</span>
                         )}

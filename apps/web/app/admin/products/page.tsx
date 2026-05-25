@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Plus, Edit, Trash2, Eye, Search, Filter } from "lucide-react";
+import { Plus, Edit, Trash2, Eye, Search, Filter, Pin, Star } from "lucide-react";
 import { toast } from "sonner";
 
 interface Product {
@@ -20,6 +20,7 @@ interface Product {
   };
   images: string[];
   createdAt: string;
+  pinnedUntil: string | null;
 }
 
 export default function AdminProductsPage() {
@@ -64,6 +65,49 @@ export default function AdminProductsPage() {
     } catch (error) {
       console.error("Error deleting product:", error);
       toast.error("Lỗi khi xóa sản phẩm");
+    }
+  };
+
+  const handlePin = async (id: string, currentlyPinned: boolean) => {
+    try {
+      const response = await fetch(`/api/admin/products/${id}/pin`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          pinnedUntil: currentlyPinned ? null : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString() // 7 days 
+        }),
+      });
+
+      if (response.ok) {
+        toast.success(currentlyPinned ? "Đã bỏ ghim sản phẩm" : "Đã ghim sản phẩm trong 7 ngày");
+        fetchProducts();
+      } else {
+        toast.error("Không thể thay đổi trạng thái ghim");
+      }
+    } catch (error) {
+      toast.error("Lỗi khi ghim sản phẩm");
+    }
+  };
+
+  const handleSetWeekly = async (id: string) => {
+    try {
+      const reason = prompt("Nhập lý do sản phẩm này nổi bật trong tuần (Tùy chọn):", "");
+      if (reason === null) return; // User cancelled
+
+      const response = await fetch(`/api/admin/products/${id}/weekly`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reason }),
+      });
+
+      if (response.ok) {
+        toast.success("Đã đặt làm Sản Phẩm Của Tuần!");
+        fetchProducts();
+      } else {
+        toast.error("Không thể thay đổi Sản Phẩm Của Tuần");
+      }
+    } catch (error) {
+      toast.error("Lỗi khi đặt Sản Phẩm Của Tuần");
     }
   };
 
@@ -302,6 +346,20 @@ export default function AdminProductsPage() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <div className="flex justify-end gap-2">
+                      <button
+                        onClick={() => handleSetWeekly(product.id)}
+                        className="text-amber-500 hover:text-amber-700 p-1"
+                        title="Đặt làm Weekly Featured"
+                      >
+                        <Star className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handlePin(product.id, !!product.pinnedUntil && new Date(product.pinnedUntil) > new Date())}
+                        className={`p-1 ${!!product.pinnedUntil && new Date(product.pinnedUntil) > new Date() ? 'text-[#425733] fill-[#425733]' : 'text-gray-400 hover:text-[#425733]'}`}
+                        title={!!product.pinnedUntil && new Date(product.pinnedUntil) > new Date() ? "Bỏ ghim" : "Ghim 7 ngày"}
+                      >
+                        <Pin className="w-4 h-4" />
+                      </button>
                       <Link
                         href={`/products/${product.slug}`}
                         target="_blank"

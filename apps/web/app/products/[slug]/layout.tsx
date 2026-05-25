@@ -57,4 +57,10 @@ export async function generateMetadata({
   }
 }
 
-export { default } from "./page";
+export default function ProductSlugLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return <>{children}</>;
+}

@@ -36,6 +36,12 @@ export const authOptions: NextAuthOptions = {
           throw new Error("Bạn không có quyền truy cập quản trị.");
         }
 
+        // Whitelist: chỉ email được cấu hình mới được vào Admin
+        const allowedAdminEmail = process.env.ADMIN_EMAIL;
+        if (allowedAdminEmail && user.email !== allowedAdminEmail) {
+          throw new Error("Tài khoản này không được phép truy cập trang quản trị.");
+        }
+
         return {
           id: user.id,
           email: user.email,
@@ -104,7 +110,9 @@ export const authOptions: NextAuthOptions = {
   },
 
   pages: {
-    signIn: "/admin/login",  // Trang login mặc định cho admin
+    // Không set signIn mặc định — Middleware sẽ redirect đúng chỗ:
+    // - /admin/* → /admin/login
+    // - /orders, /profile, /checkout → /login
     error: "/admin/login",
   },
 

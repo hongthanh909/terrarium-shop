@@ -1,7 +1,6 @@
 /** @type {import('next').NextConfig} */
 module.exports = {
-  // Tắt strict mode trong dev để tránh double render
-  reactStrictMode: false,
+  reactStrictMode: true,
 
   // Tối ưu package imports (tree-shaking tốt hơn = ít module compile hơn)
   experimental: {
@@ -24,6 +23,10 @@ module.exports = {
   },
 
   images: {
+    formats: ['image/avif', 'image/webp'],
+    deviceSizes: [640, 750, 828, 1080, 1200],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256],
+    minimumCacheTTL: 3600,
     remotePatterns: [
       {
         protocol: 'https',

@@ -1,19 +1,22 @@
 import { prisma } from "@/lib/prisma";
 import { NextRequest } from "next/server";
 import { errorResponse, successResponse } from "@/lib/api-helpers";
-const PayOS = require("@payos/node");
 
-
-const payos = new PayOS(
-  process.env.PAYOS_CLIENT_ID as string,
-  process.env.PAYOS_API_KEY as string,
-  process.env.PAYOS_CHECKSUM_KEY as string
-);
+function getPayOS() {
+  // Lazy init to avoid module-scope crash when env vars are missing
+  const PayOS = require("@payos/node");
+  return new PayOS(
+    process.env.PAYOS_CLIENT_ID as string,
+    process.env.PAYOS_API_KEY as string,
+    process.env.PAYOS_CHECKSUM_KEY as string
+  );
+}
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
 
+    const payos = getPayOS();
     // Verify webhook data with PayOS checksum
     const webhookData = payos.verifyPaymentWebhookData(body);
 
