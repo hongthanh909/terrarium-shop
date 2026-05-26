@@ -6,6 +6,7 @@ import Footer from '@/components/Footer';
 import dynamic from 'next/dynamic';
 import AuthProvider from '@/components/AuthProvider';
 import QueryProvider from '@/lib/query-provider';
+import { headers } from 'next/headers';
 
 const ChatWidget = dynamic(() => import('@/components/ChatWidget'), {
   ssr: false,
@@ -26,7 +27,7 @@ export const metadata: Metadata = {
   },
   description:
     "Khám phá bộ sưu tập terrarium và moss art thủ công tại Tiệm Rêu Décor. Giao hàng toàn quốc, chăm sóc tận tâm.",
-  keywords: ["terrarium", "moss art", "cây cảnh mini", "tiệu cảnh", "trang trí nội thất", "mua terrarium", "tiệm rêu décor"],
+  keywords: ["terrarium", "moss art", "cây cảnh mini", "tiểu cảnh", "trang trí nội thất", "mua terrarium", "tiệm rêu décor"],
   authors: [{ name: "Tiệm Rêu Décor" }],
   openGraph: {
     title: "Tiệm Rêu Décor - Terrarium & Moss Art Thủ Công",
@@ -47,20 +48,26 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  // Ẩn Header/Footer/ChatWidget trên admin pages
+  // Middleware set header x-pathname để detect
+  const headersList = await headers();
+  const pathname = headersList.get('x-pathname') || '';
+  const isAdmin = pathname.startsWith('/admin');
+
   return (
     <html lang="vi" className={inter.variable}>
       <body className={`${inter.className} antialiased min-h-screen flex flex-col`}>
         <AuthProvider>
           <QueryProvider>
-            <Header />
-            <main className="flex-1">{children}</main>
-            <Footer />
-            <ChatWidget />
+            {!isAdmin && <Header />}
+            <main className={isAdmin ? 'block' : 'flex-1'}>{children}</main>
+            {!isAdmin && <Footer />}
+            {!isAdmin && <ChatWidget />}
           </QueryProvider>
         </AuthProvider>
       </body>

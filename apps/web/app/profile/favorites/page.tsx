@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Heart, ShoppingBag, ArrowLeft, Leaf } from "lucide-react";
+import { Heart, ShoppingBag, ArrowLeft, Loader2, Leaf } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useCartStore } from "@/lib/store/cartStore";
@@ -92,18 +92,11 @@ export default function FavoritesPage() {
         </div>
       </div>
 
-      {/* Loading skeleton */}
+      {/* Loading state */}
       {loading && (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 animate-pulse">
-          {[...Array(8)].map((_, i) => (
-            <div key={i} className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
-              <div className="aspect-square bg-gray-100" />
-              <div className="p-3 space-y-2">
-                <div className="h-4 bg-gray-100 rounded w-3/4" />
-                <div className="h-4 bg-gray-100 rounded w-1/2" />
-              </div>
-            </div>
-          ))}
+        <div className="flex flex-col items-center justify-center py-32 gap-4">
+          <Loader2 className="w-12 h-12 text-[#425733] animate-spin" />
+          <p className="text-sm text-[#6d8c5a] font-medium">Đang tải danh sách yêu thích...</p>
         </div>
       )}
 

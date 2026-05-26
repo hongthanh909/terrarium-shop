@@ -8,12 +8,14 @@ export const dynamic = "force-dynamic";
 export async function GET(request: NextRequest) {
   try {
     const token = await getToken({ req: request as any, secret: process.env.NEXTAUTH_SECRET });
-    if (!token?.id) {
+    if (!token?.id && !token?.sub) {
       return NextResponse.json({ error: "Chưa đăng nhập" }, { status: 401 });
     }
 
+    const customerId = (token.id || token.sub) as string;
+
     const votes = await prisma.productVote.findMany({
-      where: { customerId: token.id as string },
+      where: { customerId },
       include: {
         product: {
           select: {
@@ -32,7 +34,7 @@ export async function GET(request: NextRequest) {
           },
         },
       },
-      orderBy: { createdAt: "desc" },
+      orderBy: { votedAt: "desc" },
     });
 
     // Chỉ trả về sản phẩm còn ACTIVE
@@ -45,8 +47,9 @@ export async function GET(request: NextRequest) {
       }));
 
     return NextResponse.json(products);
-  } catch (error) {
-    console.error("Error fetching favorites:", error);
-    return NextResponse.json({ error: "Lỗi server" }, { status: 500 });
+  } catch (error: any) {
+    console.error("[Favorites API] Error:", error?.message);
+    console.error("[Favorites API] Detail:", JSON.stringify(error, null, 2));
+    return NextResponse.json({ error: "Lỗi server", detail: error?.message }, { status: 500 });
   }
 }

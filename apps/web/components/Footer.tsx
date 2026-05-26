@@ -133,8 +133,8 @@ export default async function Footer() {
               ) : (
                 <li className="flex items-center gap-2">
                   <Mail className="w-4 h-4 text-[#425733]" />
-                  <a href="mailto:hello@tiemreudecor.vn" className="hover:text-[#425733] transition-colors">
-                    hello@tiemreudecor.vn
+                  <a href="mailto:tiemreudecor@gmail.com" className="hover:text-[#425733] transition-colors">
+                    tiemreudecor@gmail.com
                   </a>
                 </li>
               )}
@@ -148,7 +148,7 @@ export default async function Footer() {
               ) : (
                 <li className="flex items-center gap-2">
                   <Phone className="w-4 h-4 text-[#425733]" />
-                  <span>Liên hệ qua trang Liên Hệ</span>
+                  <a href="tel:0706668296" className="hover:text-[#425733] transition-colors">0706.668.296</a>
                 </li>
               )}
               {addresses.length > 0 ? (
@@ -161,7 +161,7 @@ export default async function Footer() {
               ) : (
                 <li className="flex items-start gap-2">
                   <MapPin className="w-4 h-4 text-[#425733] mt-0.5" />
-                  <span>TP. Hồ Chí Minh</span>
+                  <span>32/16 Hẻm 32 Đường Tam Đa, Phường Long Trường, TP.HCM</span>
                 </li>
               )}
               {workingHours.length > 0 ? (
@@ -174,7 +174,7 @@ export default async function Footer() {
               ) : (
                 <li className="flex items-center gap-2">
                   <Clock className="w-4 h-4 text-[#425733]" />
-                  <span>Thứ 2 - Chủ nhật: 9:00 - 21:00</span>
+                  <span>Thứ 2 - 7 (9h00 - 17h30)</span>
                 </li>
               )}
             </ul>
