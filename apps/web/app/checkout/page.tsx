@@ -141,13 +141,20 @@ export default function CheckoutPage() {
 
         if (payRes.ok) {
           const payData = await payRes.json();
-          clearCart();
-          // Redirect sang trang thanh toán PayOS
-          window.location.href = payData.data?.checkoutUrl || payData.checkoutUrl;
-          return;
+          const checkoutUrl = payData.data?.checkoutUrl || payData.checkoutUrl;
+          console.log("[PayOS] Response:", payData);
+          if (checkoutUrl) {
+            clearCart();
+            window.location.href = checkoutUrl;
+            return;
+          } else {
+            console.error("[PayOS] No checkoutUrl in response:", payData);
+            alert("PayOS không trả về link thanh toán. Xem console để biết chi tiết.");
+          }
         } else {
-          // PayOS lỗi → fallback hiển thị thông tin chuyển khoản thủ công
-          console.error("PayOS error, showing manual transfer info");
+          const errData = await payRes.json().catch(() => ({}));
+          console.error("[PayOS] API Error:", payRes.status, errData);
+          alert(`PayOS lỗi ${payRes.status}: ${errData.error || JSON.stringify(errData)}`);
         }
       }
 
