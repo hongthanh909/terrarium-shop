@@ -84,7 +84,8 @@ export async function POST(request: NextRequest) {
           shippingMethod,
           paymentMethod,
           status: "PENDING",
-          paymentStatus: paymentMethod === "COD" ? "PENDING" : "PAID",
+          // BANK_TRANSFER = PENDING (chờ PayOS webhook xác nhận), COD = PENDING (trả khi nhận)
+          paymentStatus: "PENDING",
         } as any,
       });
 
