@@ -64,6 +64,9 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
+  .font-dancing {
+    font-family: var(--font-dancing), 'Dancing Script', cursive;
+  }
   h1, h2, h3, h4, h5, h6 {
     font-family: 'Inter', var(--font-inter), -apple-system, BlinkMacSystemFont, sans-serif;
     font-weight: 700;

@@ -47,11 +47,25 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
       {/* Sidebar */}
       <aside className="fixed left-0 top-0 h-full w-64 bg-[#425733] text-white flex flex-col">
-        {/* Logo */}
-        <div className="p-6 border-b border-[#364a29]">
-          <Link href="/" className="flex items-center gap-2 text-xl font-bold">
-            <Leaf className="w-8 h-8 text-[#e3ebdd]" />
-            <span>Quản Trị Terrarium</span>
+        {/* Logo — đồng bộ trang chủ */}
+        <div className="px-5 py-5 border-b border-[#364a29]">
+          <Link href="/" className="flex flex-col group">
+            <span
+              className="text-[22px] text-white group-hover:text-[#e3ebdd] transition-colors leading-tight"
+              style={{ fontFamily: "'Dancing Script', cursive", fontWeight: 600 }}
+            >
+              tiệm Rêu Décor
+            </span>
+            <div className="flex items-center gap-1.5 mt-0.5">
+              <div className="flex-1 h-px bg-[#8ba57a]" />
+              <span
+                className="text-[9px] tracking-wider text-[#c8d5be] whitespace-nowrap"
+                style={{ fontFamily: "'Dancing Script', cursive", fontWeight: 400 }}
+              >
+                Admin Dashboard
+              </span>
+              <div className="w-4 h-px bg-[#8ba57a]" />
+            </div>
           </Link>
         </div>
 
