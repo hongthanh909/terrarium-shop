@@ -1,6 +1,6 @@
 # Testing Log — Tiệm Rêu Décor
 
-> Cập nhật lần cuối: 2026-05-26
+> Cập nhật lần cuối: 2026-05-26 (08:19)
 
 ---
 
@@ -78,3 +78,72 @@
 ### Admin
 - [ ] `/admin/orders` — Thấy đơn bị hủy bởi user (CANCELLED)
 - [ ] `/admin/orders` — Đổi trạng thái → DELIVERED → điểm tự động cộng
+
+---
+
+## 💡 REQ-008 — Hệ Thống Thông Báo UI (Đang lên kế hoạch)
+
+> **Vấn đề hiện tại:** Toàn bộ thông báo đang dùng `alert()` / `confirm()` mặc định của trình duyệt (hộp thoại xấu, không khớp giao diện).
+
+### Các Ideas Đề Xuất
+
+---
+
+#### 🥇 Idea A — Nâng cấp Toast (Sonner) — **ĐỀ XUẤT CHÍNH**
+> Dự án đã cài `sonner`. Thay toàn bộ `alert()` bằng toast đẹp.
+
+| Tình huống | Loại Toast | Nội dung |
+|-----------|-----------|---------|
+| Đặt hàng thành công | ✅ Success (xanh lá) | "Đặt hàng thành công! Mã đơn #XYZ" + nút [Xem đơn] |
+| Thêm vào giỏ | ✅ Success | "Đã thêm [Tên sản phẩm] vào giỏ hàng" |
+| Hủy đơn thành công | ✅ Success | "Đã hủy đơn hàng thành công" |
+| Lỗi API | ❌ Error (đỏ) | "Không thể thực hiện. Vui lòng thử lại" |
+| Admin: Lưu sản phẩm | ✅ Success | "Sản phẩm đã được lưu thành công" |
+| Admin: Xóa danh mục | ✅ Success | "Đã xóa danh mục" |
+| Loading khi submit | 🔄 Loading | "Đang xử lý..." → tự đổi sang ✅/❌ |
+
+**Vị trí toast:** Góc dưới bên phải (bottom-right)
+**Thời gian tự ẩn:** 4 giây
+
+---
+
+#### 🥈 Idea B — Custom Confirm Dialog (Thay browser confirm)
+> Thay hộp thoại `confirm("Bạn có chắc...")` bằng modal đẹp theo brand.
+
+- Nền tối mờ (backdrop)
+- Box trắng bo góc, có icon cảnh báo ⚠️
+- Màu nút đồng bộ: "Xác nhận" xanh lá `#425733`, "Hủy" xám
+- Có animation slide-down khi mở
+
+---
+
+#### 🥉 Idea C — Overlay Loading khi Submit
+> Khi bấm "Đặt hàng" / "Lưu" / "Xóa", hiện overlay mờ + spinner → sau đó chuyển sang ✅ animate.
+
+```
+[Bấm Đặt hàng]
+     ↓
+[Overlay tối + spinner xoay]
+     ↓
+[Icon ✅ to dần + text "Thành công!"]
+     ↓
+[Tự chuyển sang trang xác nhận]
+```
+
+---
+
+### Phương án Triển khai Đề xuất
+Kết hợp **Idea A + Idea B** là tối ưu nhất:
+- **Idea A (Toast):** Cho tất cả thông báo thành công / lỗi / loading
+- **Idea B (Custom Dialog):** Cho xác nhận nguy hiểm (hủy đơn, xóa sản phẩm/danh mục)
+- Idea C (Loading Overlay): Có thể thêm sau nếu muốn premium hơn
+
+**Files cần thay đổi:**
+- `app/checkout/page.tsx` — thay `alert()` khi đặt hàng lỗi
+- `app/orders/page.tsx` — thay `confirm()` hủy đơn
+- `app/admin/products/create/page.tsx` — toast khi thêm sản phẩm
+- `app/admin/products/[id]/edit/page.tsx` — toast khi lưu/xóa sản phẩm
+- `app/admin/categories/page.tsx` — toast khi xóa danh mục
+- Tạo mới `components/ui/ConfirmDialog.tsx` — component dùng chung
+
+**Trạng thái:** ⏳ Chờ xác nhận từ bạn để triển khai

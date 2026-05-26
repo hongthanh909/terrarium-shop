@@ -144,7 +144,7 @@ export default function CheckoutPage() {
     const bankName = process.env.NEXT_PUBLIC_BANK_NAME || "TPBank";
     const bankAccount = process.env.NEXT_PUBLIC_BANK_ACCOUNT_NUMBER || "07898110079";
     const bankOwner = process.env.NEXT_PUBLIC_BANK_ACCOUNT_NAME || "NGUYEN THANH HONG";
-    const bankBin = process.env.NEXT_PUBLIC_BANK_BIN || "23895"; // TPBank BIN thực tế
+    const bankBin = process.env.NEXT_PUBLIC_BANK_BIN || "970423"; // TPBank BIN trong hệ thống Napas/VietQR
     const transferAmount = finalTotal; // Dùng finalTotal — được lưu trước khi clearCart()
     const transferContent = `TT ${orderId.slice(-8).toUpperCase()}`;
     // VietQR dynamic URL — amount đã bao gồm subtotal + phí ship - giảm giá
@@ -193,14 +193,29 @@ export default function CheckoutPage() {
                 <CardDescription>Vui lòng chuyển khoản để hoàn tất đơn hàng</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="flex justify-center">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={qrUrl}
-                    alt="QR chuyển khoản"
-                    className="w-52 h-52 rounded-xl border-4 border-white shadow-lg"
-                    onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
-                  />
+                <div className="flex justify-center mb-4">
+                  <div className="relative">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={qrUrl}
+                      alt="QR chuyển khoản"
+                      className="w-52 h-52 rounded-xl border-4 border-white shadow-lg"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.style.display = "none";
+                        const fallback = target.nextElementSibling as HTMLElement;
+                        if (fallback) fallback.style.display = "flex";
+                      }}
+                    />
+                    <div
+                      className="w-52 h-52 rounded-xl border-4 border-white shadow-lg bg-gray-100 items-center justify-center flex-col gap-2 text-center p-4"
+                      style={{ display: "none" }}
+                    >
+                      <p className="text-2xl">🏦</p>
+                      <p className="text-xs text-gray-500">QR chưa tải được.</p>
+                      <p className="text-xs text-gray-400">Vui lòng nhập thủ công theo thông tin dưới</p>
+                    </div>
+                  </div>
                 </div>
                 <div className="bg-white rounded-xl p-4 text-sm space-y-2 text-left">
                   <div className="flex justify-between">
