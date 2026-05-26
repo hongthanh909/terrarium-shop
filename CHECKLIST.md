@@ -21,7 +21,10 @@
 - [x] Product detail với Care Guide tab + Vote (♥) + Related products ✅
 - [x] Cart (Zustand persist), Checkout form, Order creation ✅
 - [x] Voucher validation + apply discount ✅
-- [x] COD + Bank Transfer payment ✅
+- [x] COD payment ✅
+- [x] **PayOS integration** (BANK_TRANSFER) — redirect tới PayOS, webhook tự cập nhật PAID ✅
+- [x] `/checkout/pending` — trang QR chờ + đồng hồ 30 phút + fallback VietQR ✅
+- [x] Tự hủy đơn sau 30 phút chưa thanh toán ✅
 
 ### 👤 CUSTOMER FEATURES
 - [x] User Profile page (`/profile`) — xem/sửa thông tin ✅

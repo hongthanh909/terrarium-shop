@@ -5,7 +5,8 @@ import { errorResponse, successResponse } from "@/lib/api-helpers";
 export const dynamic = "force-dynamic";
 
 async function getPayOS() {
-  const { default: PayOS } = await import("@payos/node");
+  // @payos/node uses NAMED export { PayOS }, not default export!
+  const { PayOS } = await import("@payos/node");
   return new PayOS(
     process.env.PAYOS_CLIENT_ID as string,
     process.env.PAYOS_API_KEY as string,
