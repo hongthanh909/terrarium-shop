@@ -2,11 +2,10 @@ import { prisma } from "@/lib/prisma";
 import { NextRequest } from "next/server";
 import { errorResponse, successResponse } from "@/lib/api-helpers";
 
-function getPayOS() {
-  // @payos/node is an ESM package — require() returns the module object,
-  // the actual class is at .default
-  const PayOSModule = require("@payos/node");
-  const PayOS = PayOSModule.default || PayOSModule;
+export const dynamic = "force-dynamic";
+
+async function getPayOS() {
+  const { default: PayOS } = await import("@payos/node");
   return new PayOS(
     process.env.PAYOS_CLIENT_ID as string,
     process.env.PAYOS_API_KEY as string,
@@ -18,7 +17,7 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
 
-    const payos = getPayOS();
+    const payos = await getPayOS();
     // Verify webhook data with PayOS checksum
     const webhookData = payos.verifyPaymentWebhookData(body);
 

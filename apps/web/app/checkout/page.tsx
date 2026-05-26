@@ -131,38 +131,46 @@ export default function CheckoutPage() {
 
       const order = await response.json();
 
-      // Bước 2: Nếu chọn Chuyển khoản → gọi PayOS tạo link thanh toán → redirect
+      // Bước 2: Nếu chọn Chuyển khoản
       if (formData.paymentMethod === "BANK_TRANSFER") {
-        const payRes = await fetch("/api/payment/create-payment-link", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ orderId: order.id }),
-        });
+        // Thử PayOS trước
+        try {
+          const payRes = await fetch("/api/payment/create-payment-link", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ orderId: order.id }),
+          });
 
-        if (payRes.ok) {
-          const payData = await payRes.json();
-          const checkoutUrl = payData.data?.checkoutUrl || payData.checkoutUrl;
-          console.log("[PayOS] Response:", payData);
-          if (checkoutUrl) {
-            clearCart();
-            window.location.href = checkoutUrl;
-            return;
-          } else {
-            console.error("[PayOS] No checkoutUrl in response:", payData);
-            alert("PayOS không trả về link thanh toán. Xem console để biết chi tiết.");
+          if (payRes.ok) {
+            const payData = await payRes.json();
+            const checkoutUrl = payData.checkoutUrl;
+            if (checkoutUrl) {
+              clearCart();
+              window.location.href = checkoutUrl; // → PayOS page
+              return;
+            }
           }
-        } else {
-          const errData = await payRes.json().catch(() => ({}));
-          console.error("[PayOS] API Error:", payRes.status, errData);
-          alert(`PayOS lỗi ${payRes.status}: ${errData.error || JSON.stringify(errData)}`);
+        } catch (payErr) {
+          console.warn("[PayOS] Failed, falling back to VietQR pending page:", payErr);
         }
+
+        // PayOS lỗi → redirect sang trang QR chờ thanh toán của chúng ta
+        clearCart();
+        const params = new URLSearchParams({
+          orderId: order.id,
+          orderNumber: order.orderNumber,
+          total: String(total),
+        });
+        router.push(`/checkout/pending?${params.toString()}`);
+        return;
       }
 
-      // COD hoặc PayOS fallback → hiển thị trang thành công
+      // COD → hiển thị trang thành công bình thường
       setOrderId(order.id);
       setFinalTotal(total);
       setOrderCreated(true);
       clearCart();
+
     } catch (error) {
       console.error("Error creating order:", error);
       alert("Có lỗi xảy ra. Vui lòng thử lại.");

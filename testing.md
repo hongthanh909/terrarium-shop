@@ -68,8 +68,23 @@
 - **Bugs phát sinh và đã fix:**
   - ❌ `[PayOS] CLIENT_ID: thiếu` → `.env` ở root không được đọc khi chạy từ `apps/web` → ✅ Thêm PayOS keys vào `apps/web/.env.local`
   - ❌ `"Order is already paid"` → orders route set `paymentStatus = PAID` ngay khi tạo đơn BANK_TRANSFER → ✅ Fix thành `PENDING`, webhook PayOS sẽ cập nhật sau
-  - ❌ `"PayOS is not a constructor"` → `@payos/node` là ESM package, `require()` trả về module object không phải class → ✅ Fix dùng `PayOSModule.default || PayOSModule`
-- **Trạng thái:** ✅ ĐÃ FIX TOÀN BỘ — chờ test thực tế
+  - ❌ `"PayOS is not a constructor"` (lần 1) → `require()` không lấy được ESM class → ✅ Fix dùng `PayOSModule.default || PayOSModule`
+  - ❌ `"PayOS is not a constructor"` (lần 2) → vẫn lỗi, `require()` hoàn toàn không tương thích → ✅ Fix dùng `await import("@payos/node")`
+  - ❌ Alert popup khó chịu khi PayOS lỗi → ✅ Xóa tất cả `alert()`, redirect sang trang QR riêng
+- **Trạng thái:** ✅ ĐÃ FIX TOÀN BỘ
+
+### [REQ-009] Trang thanh toán QR chờ + Tự hủy sau 30 phút
+- **Yêu cầu:**
+  - Không hiện alert khi PayOS lỗi
+  - Tạo trang chờ QR đẹp riêng (`/checkout/pending`)
+  - Tự hủy đơn sau 30 phút nếu chưa thanh toán
+  - Chỉ hiện "Thành công" khi PayOS xác nhận (webhook)
+- **Giải pháp:**
+  1. `app/checkout/pending/page.tsx` [MỚI] — VietQR QR + đồng hồ 30 phút + polling 12s
+  2. `app/api/orders/[id]/status/route.ts` [MỚI] — trả về payment status + tự hủy nếu hết hạn
+  3. Flow: PayOS thành công → redirect PayOS, PayOS lỗi → redirect pending page
+  4. COD → hiện trang success ngư cũ
+- **Trạng thái:** ✅ ĐÃ THỰC HIỆN
 
 ---
 
@@ -82,15 +97,12 @@
 - [x] Header dropdown → có mục "❤️ Yêu thích"
 - [x] `/profile/favorites` — Danh sách sản phẩm đã tym
 - [x] `/orders` — Nút "Hủy đơn" hiện khi status PENDING, ẩn khi CONFIRMED+
-- [ ] `/checkout` — Chọn Chuyển khoản → redirect sang PayOS → thanh toán → về success
-- [ ] `/checkout/success` — Trang xác nhận thanh toán PayOS thành công
-- [ ] `/checkout/payment` — Trang fallback khi hủy thanh toán
+- [ ] `/checkout` — Chọn Chuyển khoản → redirect sang PayOS (nếu OK) hoặc `/checkout/pending` (fallback)
+- [ ] `/checkout/pending` — QR hiển đúng số tiền, đồng hồ 30 phút chạy đúng
+- [ ] `/checkout/pending` — Khi thanh toán xong → tự chuyển sang `/checkout/success`
+- [ ] `/checkout/pending` — Sau 30 phút chưa TT → đơn tự hủy
+- [ ] `/checkout/success` — Hiển thị đúng sau khi PayOS xác nhận
 - [ ] `/profile/points` — Điểm hiển thị đúng sau khi đơn DELIVERED
-
-### Admin
-- [ ] `/admin/orders` — Thấy đơn bị hủy bởi user (CANCELLED)
-- [ ] `/admin/orders` — Đổi trạng thái → DELIVERED → điểm tự động cộng
-- [ ] `/admin/orders` — Đơn Chuyển khoản tự đổi trạng thái PAID sau khi PayOS webhook
 
 ---
 

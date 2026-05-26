@@ -4,11 +4,8 @@ import { errorResponse, successResponse } from "@/lib/api-helpers";
 
 export const dynamic = "force-dynamic";
 
-function getPayOS() {
-  // @payos/node is an ESM package — require() returns the module object,
-  // the actual class is at .default
-  const PayOSModule = require("@payos/node");
-  const PayOS = PayOSModule.default || PayOSModule;
+async function getPayOS() {
+  const { default: PayOS } = await import("@payos/node");
   return new PayOS(
     process.env.PAYOS_CLIENT_ID as string,
     process.env.PAYOS_API_KEY as string,
@@ -72,7 +69,7 @@ export async function POST(req: NextRequest) {
       }
     });
 
-    const payos = getPayOS();
+    const payos = await getPayOS();
     const paymentLinkRes = await payos.createPaymentLink(body);
 
     console.log("[PayOS] Success:", paymentLinkRes.checkoutUrl);
