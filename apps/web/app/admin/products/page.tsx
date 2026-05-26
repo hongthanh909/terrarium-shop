@@ -6,6 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Plus, Edit, Trash2, Eye, Search, Filter, Pin, Star } from "lucide-react";
 import { toast } from "sonner";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 
 interface Product {
   id: string;
@@ -40,10 +41,14 @@ export default function AdminProductsPage() {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [minPrice, setMinPrice] = useState<string>("");
   const [maxPrice, setMaxPrice] = useState<string>("");
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [confirmBulkDelete, setConfirmBulkDelete] = useState(false);
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Bạn có chắc chắn muốn xóa sản phẩm này?")) return;
+    setConfirmDeleteId(id);
+  };
 
+  const doDelete = async (id: string) => {
     try {
       const response = await fetch(`/api/products/${id}`, {
         method: "DELETE",
@@ -58,6 +63,8 @@ export default function AdminProductsPage() {
     } catch (error) {
       console.error("Error deleting product:", error);
       toast.error("Lỗi khi xóa sản phẩm");
+    } finally {
+      setConfirmDeleteId(null);
     }
   };
 
@@ -120,8 +127,10 @@ export default function AdminProductsPage() {
 
   const handleBulkDelete = async () => {
     if (selectedIds.length === 0) return;
-    if (!confirm(`Bạn có chắc muốn xóa ${selectedIds.length} sản phẩm đã chọn?`)) return;
+    setConfirmBulkDelete(true);
+  };
 
+  const doBulkDelete = async () => {
     try {
       const response = await fetch("/api/products/bulk", {
         method: "POST",
@@ -139,6 +148,8 @@ export default function AdminProductsPage() {
     } catch (error) {
       console.error("Error bulk deleting:", error);
       toast.error("Lỗi khi xóa sản phẩm");
+    } finally {
+      setConfirmBulkDelete(false);
     }
   };
 
@@ -390,6 +401,28 @@ export default function AdminProductsPage() {
       <div className="mt-4 text-sm text-gray-600">
         Hiển thị {filteredProducts.length} trong tổng số {products.length} sản phẩm
       </div>
+
+      {/* Confirm delete single */}
+      <ConfirmDialog
+        open={!!confirmDeleteId}
+        onOpenChange={(open) => !open && setConfirmDeleteId(null)}
+        title="Xóa sản phẩm"
+        description="Bạn có chắc chắn muốn xóa sản phẩm này? Hành động này không thể hoàn tác."
+        confirmLabel="Xóa"
+        variant="danger"
+        onConfirm={() => confirmDeleteId && doDelete(confirmDeleteId)}
+      />
+
+      {/* Confirm bulk delete */}
+      <ConfirmDialog
+        open={confirmBulkDelete}
+        onOpenChange={setConfirmBulkDelete}
+        title={`Xóa ${selectedIds.length} sản phẩm`}
+        description={`Bạn có chắc muốn xóa ${selectedIds.length} sản phẩm đã chọn? Hành động này không thể hoàn tác.`}
+        confirmLabel="Xóa tất cả"
+        variant="danger"
+        onConfirm={doBulkDelete}
+      />
     </div>
   );
 }

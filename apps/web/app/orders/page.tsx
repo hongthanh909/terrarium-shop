@@ -8,6 +8,7 @@ import { ArrowLeft, Package, TrendingUp, Clock, CheckCircle, Truck, XCircle, Ale
 import { useSession } from "next-auth/react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 
 interface Order {
   id: string;
@@ -61,6 +62,7 @@ const PAYMENT_METHOD_LABELS: Record<string, string> = {
 export default function MyOrdersPage() {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [cancellingId, setCancellingId] = useState<string | null>(null);
+  const [confirmCancelId, setConfirmCancelId] = useState<string | null>(null);
   const { data: session } = useSession();
   const customerId = (session?.user as any)?.id;
   const queryClient = useQueryClient();
@@ -77,9 +79,12 @@ export default function MyOrdersPage() {
     refetchIntervalInBackground: false,
   });
 
-  const handleCancelOrder = async (orderId: string, e: React.MouseEvent) => {
-    e.stopPropagation(); // Không collapse card
-    if (!confirm("Bạn chắc chắn muốn hủy đơn hàng này?")) return;
+  const handleCancelOrder = async (orderId: string, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    setConfirmCancelId(orderId);
+  };
+
+  const doCancel = async (orderId: string) => {
     setCancellingId(orderId);
     try {
       const res = await fetch(`/api/orders/${orderId}/cancel`, { method: "PATCH" });
@@ -94,6 +99,7 @@ export default function MyOrdersPage() {
       toast.error("Có lỗi xảy ra, vui lòng thử lại");
     } finally {
       setCancellingId(null);
+      setConfirmCancelId(null);
     }
   };
 
@@ -396,6 +402,18 @@ export default function MyOrdersPage() {
           </div>
         )}
       </div>
+
+      {/* Custom Confirm Dialog thay confirm() */}
+      <ConfirmDialog
+        open={!!confirmCancelId}
+        onOpenChange={(open) => !open && setConfirmCancelId(null)}
+        title="Hủy đơn hàng"
+        description="Bạn chắc chắn muốn hủy đơn hàng này? Hành động này không thể hoàn tác."
+        confirmLabel={cancellingId ? "Đang hủy..." : "Hủy đơn"}
+        cancelLabel="Giữ lại"
+        variant="danger"
+        onConfirm={() => confirmCancelId && doCancel(confirmCancelId)}
+      />
     </main>
   );
 }

@@ -72,7 +72,6 @@ export default function AdminOrderDetailPage() {
   };
 
   const handleUpdateStatus = async (newStatus: string) => {
-    if (!confirm(`Update order status to ${newStatus}?`)) return;
 
     setUpdating(true);
     try {
@@ -96,7 +95,6 @@ export default function AdminOrderDetailPage() {
   };
 
   const handleUpdatePaymentStatus = async (newStatus: string) => {
-    if (!confirm(`Update payment status to ${newStatus}?`)) return;
 
     setUpdating(true);
     try {

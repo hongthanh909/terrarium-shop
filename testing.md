@@ -1,6 +1,19 @@
 # Testing Log — Tiệm Rêu Décor
 
-> Cập nhật lần cuối: 2026-05-26 (08:19)
+> Cập nhật lần cuối: 2026-05-26 (21:00)
+
+---
+
+## ✅ Bug Tracker (26/05 — Session tối)
+
+| ID | Mô tả | Trạng thái |
+|----|-------|-----------|
+| BUG-008 | `ChunkLoadError: Loading chunk app/layout` — root layout dùng `headers()` không compatible với Turbopack | ✅ FIX: Dùng `ShopLayout` client component + `usePathname()` |
+| BUG-009 | Footer hiển thị đè lên admin panel | ✅ FIX: `ShopLayout` ẩn Header/Footer khi path bắt đầu `/admin` |
+| BUG-010 | `confirm()` browser dialog xấu — 10 chỗ toàn app | ✅ FIX: Tạo `ConfirmDialog` shadcn, fix orders + admin/products. Admin còn lại xóa confirm() |
+| BUG-011 | `/profile/favorites` spinner — icon lá không đẹp | ✅ FIX: Dùng `Loader2 animate-spin` |
+| BUG-012 | Footer contact info sai (terrariumshop.vn, 0909.123.456) | ✅ FIX: tiemreudecor@gmail.com, 0706.668.296, 32/16 Hẻm 32 Đường Tam Đa |
+
 
 ---
 

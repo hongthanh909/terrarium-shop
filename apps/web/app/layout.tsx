@@ -1,37 +1,49 @@
-import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
-import './globals.css';
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
-import dynamic from 'next/dynamic';
-import AuthProvider from '@/components/AuthProvider';
-import QueryProvider from '@/lib/query-provider';
-import { headers } from 'next/headers';
+import type { Metadata } from "next";
+import { Inter } from "next/font/google";
+import "./globals.css";
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
+import dynamic from "next/dynamic";
+import AuthProvider from "@/components/AuthProvider";
+import QueryProvider from "@/lib/query-provider";
+import ShopLayout from "./ShopLayout";
 
-const ChatWidget = dynamic(() => import('@/components/ChatWidget'), {
+// ChatWidget lazy-loaded để tránh SSR issues
+const ChatWidget = dynamic(() => import("@/components/ChatWidget"), {
   ssr: false,
   loading: () => null,
 });
 
 const inter = Inter({
-  subsets: ['latin', 'latin-ext'],
-  variable: '--font-inter',
-  display: 'swap',
+  subsets: ["latin", "latin-ext"],
+  variable: "--font-inter",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://tiemreudecor.com"),
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_SITE_URL || "https://tiemreudecor.com"
+  ),
   title: {
     default: "Tiệm Rêu Décor - Terrarium & Moss Art Thủ Công",
     template: "%s | Tiệm Rêu Décor",
   },
   description:
     "Khám phá bộ sưu tập terrarium và moss art thủ công tại Tiệm Rêu Décor. Giao hàng toàn quốc, chăm sóc tận tâm.",
-  keywords: ["terrarium", "moss art", "cây cảnh mini", "tiểu cảnh", "trang trí nội thất", "mua terrarium", "tiệm rêu décor"],
+  keywords: [
+    "terrarium",
+    "moss art",
+    "cây cảnh mini",
+    "tiểu cảnh",
+    "trang trí nội thất",
+    "mua terrarium",
+    "tiệm rêu décor",
+  ],
   authors: [{ name: "Tiệm Rêu Décor" }],
   openGraph: {
     title: "Tiệm Rêu Décor - Terrarium & Moss Art Thủ Công",
-    description: "Khám phá bộ sưu tập terrarium và moss art thủ công. Giao hàng toàn quốc.",
+    description:
+      "Khám phá bộ sưu tập terrarium và moss art thủ công. Giao hàng toàn quốc.",
     type: "website",
     locale: "vi_VN",
     siteName: "Tiệm Rêu Décor",
@@ -48,26 +60,33 @@ export const metadata: Metadata = {
   },
 };
 
-export default async function RootLayout({
+/**
+ * Root layout — Server Component (không dùng headers() để tránh ChunkLoadError).
+ * ShopLayout (client) sẽ tự detect admin path bằng usePathname().
+ */
+export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  // Ẩn Header/Footer/ChatWidget trên admin pages
-  // Middleware set header x-pathname để detect
-  const headersList = await headers();
-  const pathname = headersList.get('x-pathname') || '';
-  const isAdmin = pathname.startsWith('/admin');
-
   return (
     <html lang="vi" className={inter.variable}>
-      <body className={`${inter.className} antialiased min-h-screen flex flex-col`}>
+      <body
+        className={`${inter.className} antialiased min-h-screen flex flex-col`}
+      >
         <AuthProvider>
           <QueryProvider>
-            {!isAdmin && <Header />}
-            <main className={isAdmin ? 'block' : 'flex-1'}>{children}</main>
-            {!isAdmin && <Footer />}
-            {!isAdmin && <ChatWidget />}
+            {/*
+             * ShopLayout nhận Header, Footer, ChatWidget dưới dạng Server Component props.
+             * Khi isAdmin=true → chỉ render children, ẩn Header/Footer/Chat.
+             */}
+            <ShopLayout
+              header={<Header />}
+              footer={<Footer />}
+              chat={<ChatWidget />}
+            >
+              {children}
+            </ShopLayout>
           </QueryProvider>
         </AuthProvider>
       </body>

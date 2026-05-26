@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -60,18 +60,17 @@ export default function AdminBlogPage() {
   const loading = postsLoading || categoriesLoading;
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Bạn có chắc chắn muốn xóa bài viết này?")) return;
     try {
       const response = await fetch(`/api/admin/blog/posts/${id}`, {
         method: "DELETE",
       });
       if (response.ok) {
-        toast.success("Xóa bài viết thành công!");
+        toast.success("XĂ³a bĂ i viáº¿t thĂ nh cĂ´ng!");
         queryClient.invalidateQueries({ queryKey: ["admin-blog-posts"] });
       }
     } catch (error) {
       console.error("Error deleting post:", error);
-      toast.error("Lỗi khi xóa bài viết");
+      toast.error("Lá»—i khi xĂ³a bĂ i viáº¿t");
     }
   };
 
@@ -82,7 +81,7 @@ export default function AdminBlogPage() {
   };
 
   if (loading) {
-    return <div className="text-center py-12">Đang tải...</div>;
+    return <div className="text-center py-12">Äang táº£i...</div>;
   }
 
   return (
@@ -93,16 +92,16 @@ export default function AdminBlogPage() {
           className="inline-flex items-center text-[#425733] hover:text-[#425733] mb-4"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
-          Quay Lại Admin
+          Quay Láº¡i Admin
         </Link>
         <div className="flex justify-between items-center">
-          <h2 className="text-3xl font-bold text-gray-800">Bài Viết Blog</h2>
+          <h2 className="text-3xl font-bold text-gray-800">BĂ i Viáº¿t Blog</h2>
           <Link
             href="/admin/blog/create"
             className="flex items-center gap-2 bg-[#425733] text-white px-6 py-3 rounded-full font-semibold shadow-soft hover:-translate-y-0.5 hover:shadow-[0_4px_20px_rgba(66,87,51,0.4)] hover:bg-[#364a29]"
           >
             <Plus className="w-5 h-5" />
-            Bài Viết Mới
+            BĂ i Viáº¿t Má»›i
           </Link>
         </div>
       </div>
@@ -111,11 +110,11 @@ export default function AdminBlogPage() {
         <table className="w-full">
           <thead className="bg-gray-50 border-b">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tiêu Đề</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Danh Mục</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Trạng Thái</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Xuất Bản</th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Hành Động</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">TiĂªu Äá»</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Danh Má»¥c</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tráº¡ng ThĂ¡i</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Xuáº¥t Báº£n</th>
+              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">HĂ nh Äá»™ng</th>
             </tr>
           </thead>
           <tbody className="divide-y">
@@ -123,7 +122,7 @@ export default function AdminBlogPage() {
               <tr key={post.id} className="hover:bg-gray-50">
                 <td className="px-6 py-4 font-medium">{post.title}</td>
                 <td className="px-6 py-4 text-sm text-gray-500">
-                  {post.category?.name || "Chưa phân loại"}
+                  {post.category?.name || "ChÆ°a phĂ¢n loáº¡i"}
                 </td>
                 <td className="px-6 py-4">
                   <span
@@ -133,7 +132,7 @@ export default function AdminBlogPage() {
                         : "bg-gray-100 text-gray-800"
                     }`}
                   >
-                    {post.published ? "Đã Xuất Bản" : "Bản Nháp"}
+                    {post.published ? "ÄĂ£ Xuáº¥t Báº£n" : "Báº£n NhĂ¡p"}
                   </span>
                 </td>
                 <td className="px-6 py-4 text-sm text-gray-500">
@@ -162,7 +161,7 @@ export default function AdminBlogPage() {
             {posts.length === 0 && (
               <tr>
                 <td colSpan={5} className="px-6 py-12 text-center text-gray-500">
-                  Chưa có bài viết. Nhấn "Bài Viết Mới" để tạo một bài viết.
+                  ChÆ°a cĂ³ bĂ i viáº¿t. Nháº¥n "BĂ i Viáº¿t Má»›i" Ä‘á»ƒ táº¡o má»™t bĂ i viáº¿t.
                 </td>
               </tr>
             )}
@@ -177,7 +176,7 @@ export default function AdminBlogPage() {
               disabled={page === 1}
               className="px-4 py-2 border rounded-lg hover:bg-white bg-transparent disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
-              Trang trước
+              Trang trÆ°á»›c
             </button>
             <span className="text-gray-600 font-medium">
               Trang {page} / {totalPages}
@@ -187,7 +186,7 @@ export default function AdminBlogPage() {
               disabled={page === totalPages}
               className="px-4 py-2 border rounded-lg hover:bg-white bg-transparent disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
-              Trang tiếp
+              Trang tiáº¿p
             </button>
           </div>
         )}
@@ -195,7 +194,7 @@ export default function AdminBlogPage() {
 
       {/* Categories Section */}
       <div className="mt-8">
-        <h3 className="text-xl font-bold text-gray-800 mb-4">Danh Mục Blog</h3>
+        <h3 className="text-xl font-bold text-gray-800 mb-4">Danh Má»¥c Blog</h3>
         <div className="bg-white rounded-lg shadow overflow-hidden">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4">
             {categories.map((cat: any) => (
@@ -205,7 +204,7 @@ export default function AdminBlogPage() {
                   href={`/admin/blog/categories/${cat.id}/edit`}
                   className="text-[#425733] hover:text-blue-800 text-sm"
                 >
-                  Chỉnh sửa
+                  Chá»‰nh sá»­a
                 </Link>
               </div>
             ))}
@@ -214,7 +213,7 @@ export default function AdminBlogPage() {
               className="flex items-center justify-center p-3 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 hover:border-[#6d8c5a] hover:text-[#425733]"
             >
               <Plus className="w-4 h-4 mr-2" />
-              Thêm Danh Mục
+              ThĂªm Danh Má»¥c
             </Link>
           </div>
         </div>

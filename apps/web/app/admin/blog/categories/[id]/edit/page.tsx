@@ -89,8 +89,6 @@ export default function EditBlogCategoryPage() {
   };
 
   const handleDelete = async () => {
-    if (!confirm("Bạn có chắc chắn muốn xóa danh mục này? Các bài viết trong danh mục sẽ không bị xóa nhưng sẽ mất phân loại.")) return;
-    
     try {
       const response = await fetch(`/api/admin/blog/categories/${id}`, {
         method: "DELETE",

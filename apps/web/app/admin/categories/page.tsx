@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -87,8 +87,6 @@ export default function AdminCategoriesPage() {
 
   const handleBulkDelete = async () => {
     if (selectedIds.length === 0) return;
-    if (!confirm(`Bạn có chắc muốn xóa ${selectedIds.length} danh mục đã chọn?`)) return;
-
     try {
       const response = await fetch("/api/categories/bulk", {
         method: "POST",
@@ -97,15 +95,15 @@ export default function AdminCategoriesPage() {
       });
 
       if (response.ok) {
-        toast.success(`Đã xóa ${selectedIds.length} danh mục thành công!`);
+        toast.success(`ÄĂ£ xĂ³a ${selectedIds.length} danh má»¥c thĂ nh cĂ´ng!`);
         setSelectedIds([]);
         queryClient.invalidateQueries({ queryKey: ["admin-categories"] });
       } else {
-        toast.error("Không thể xóa danh mục");
+        toast.error("KhĂ´ng thá»ƒ xĂ³a danh má»¥c");
       }
     } catch (error) {
       console.error("Error bulk deleting:", error);
-      toast.error("Lỗi khi xóa danh mục");
+      toast.error("Lá»—i khi xĂ³a danh má»¥c");
     }
   };
 
@@ -120,22 +118,20 @@ export default function AdminCategoriesPage() {
       });
 
       if (response.ok) {
-        toast.success("Tạo danh mục thành công!");
+        toast.success("Táº¡o danh má»¥c thĂ nh cĂ´ng!");
         setShowCreateModal(false);
         setFormData({ name: "", slug: "", metaDescription: "", parentId: "", status: "ACTIVE" });
         queryClient.invalidateQueries({ queryKey: ["admin-categories"] });
       } else {
-        toast.error("Không thể tạo danh mục");
+        toast.error("KhĂ´ng thá»ƒ táº¡o danh má»¥c");
       }
     } catch (error) {
       console.error("Error creating category:", error);
-      toast.error("Lỗi khi tạo danh mục");
+      toast.error("Lá»—i khi táº¡o danh má»¥c");
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Bạn có chắc chắn muốn xóa danh mục này?")) return;
-
     try {
       const response = await fetch(`/api/categories/${id}`, {
         method: "DELETE",
@@ -143,13 +139,13 @@ export default function AdminCategoriesPage() {
 
       if (response.ok) {
         queryClient.invalidateQueries({ queryKey: ["admin-categories"] });
-        toast.success("Xóa danh mục thành công!");
+        toast.success("XĂ³a danh má»¥c thĂ nh cĂ´ng!");
       } else {
-        toast.error("Không thể xóa danh mục");
+        toast.error("KhĂ´ng thá»ƒ xĂ³a danh má»¥c");
       }
     } catch (error) {
       console.error("Error deleting category:", error);
-      toast.error("Lỗi khi xóa danh mục");
+      toast.error("Lá»—i khi xĂ³a danh má»¥c");
     }
   };
 
@@ -166,15 +162,15 @@ export default function AdminCategoriesPage() {
     <div>
       <div className="flex justify-between items-center mb-8">
         <div>
-          <h2 className="text-3xl font-bold text-gray-800 mb-2">Danh Mục</h2>
-          <p className="text-gray-600">Quản lý danh mục sản phẩm</p>
+          <h2 className="text-3xl font-bold text-gray-800 mb-2">Danh Má»¥c</h2>
+          <p className="text-gray-600">Quáº£n lĂ½ danh má»¥c sáº£n pháº©m</p>
         </div>
         <button
           onClick={() => setShowCreateModal(true)}
           className="flex items-center gap-2 bg-[#425733] text-white px-6 py-3 rounded-full font-semibold shadow-soft hover:-translate-y-0.5 hover:shadow-[0_4px_20px_rgba(66,87,51,0.4)] hover:bg-[#364a29] transition-colors"
         >
           <Plus className="w-5 h-5" />
-          Thêm Danh Mục Mới
+          ThĂªm Danh Má»¥c Má»›i
         </button>
       </div>
 
@@ -184,7 +180,7 @@ export default function AdminCategoriesPage() {
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
           <input
             type="text"
-            placeholder="Tìm kiếm danh mục..."
+            placeholder="TĂ¬m kiáº¿m danh má»¥c..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#6d8c5a]"
@@ -193,14 +189,14 @@ export default function AdminCategoriesPage() {
         {selectedIds.length > 0 && (
           <div className="flex items-center gap-4 w-full md:w-auto">
             <span className="text-sm text-gray-600 font-medium">
-              Đã chọn {selectedIds.length} mục
+              ÄĂ£ chá»n {selectedIds.length} má»¥c
             </span>
             <button
               onClick={handleBulkDelete}
               className="flex items-center gap-2 bg-red-50 text-red-600 px-4 py-2 rounded-lg hover:bg-red-100 transition-colors"
             >
               <Trash2 className="w-4 h-4" />
-              Xóa đã chọn
+              XĂ³a Ä‘Ă£ chá»n
             </button>
           </div>
         )}
@@ -215,7 +211,7 @@ export default function AdminCategoriesPage() {
             onChange={handleSelectAll}
             className="w-5 h-5 rounded border-gray-300 text-[#425733] focus:ring-[#425733]"
           />
-          <span className="text-sm font-medium text-gray-700">Chọn tất cả trên trang này</span>
+          <span className="text-sm font-medium text-gray-700">Chá»n táº¥t cáº£ trĂªn trang nĂ y</span>
         </div>
       )}
 
@@ -224,7 +220,7 @@ export default function AdminCategoriesPage() {
         <div className="text-center py-12 text-gray-500">Loading categories...</div>
       ) : filteredCategories.length === 0 ? (
         <div className="text-center py-12 text-gray-500">
-          Không tìm thấy danh mục. Nhấn "Thêm Danh Mục Mới" để tạo một danh mục.
+          KhĂ´ng tĂ¬m tháº¥y danh má»¥c. Nháº¥n "ThĂªm Danh Má»¥c Má»›i" Ä‘á»ƒ táº¡o má»™t danh má»¥c.
         </div>
       ) : (
         <div className="space-y-6">
@@ -241,7 +237,7 @@ export default function AdminCategoriesPage() {
                   <div>
                     <h3 className="text-lg font-semibold">{category.name}</h3>
                     <p className="text-sm text-gray-500">
-                      {category.slug} - {category._count?.products || 0} sản phẩm
+                      {category.slug} - {category._count?.products || 0} sáº£n pháº©m
                     </p>
                   </div>
                 </div>
@@ -270,7 +266,7 @@ export default function AdminCategoriesPage() {
                         <div>
                           <div className="font-medium text-sm">{child.name}</div>
                           <div className="text-xs text-gray-500">
-                            {child._count?.products || 0} sản phẩm
+                            {child._count?.products || 0} sáº£n pháº©m
                           </div>
                         </div>
                         <div className="flex gap-2">
@@ -303,7 +299,7 @@ export default function AdminCategoriesPage() {
                 disabled={page === 1}
                 className="px-4 py-2 border rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
-                Trang trước
+                Trang trÆ°á»›c
               </button>
               <span className="text-gray-600 font-medium">
                 Trang {page} / {totalPages}
@@ -313,7 +309,7 @@ export default function AdminCategoriesPage() {
                 disabled={page === totalPages}
                 className="px-4 py-2 border rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
-                Trang tiếp
+                Trang tiáº¿p
               </button>
             </div>
           )}
@@ -324,10 +320,10 @@ export default function AdminCategoriesPage() {
       {showCreateModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <h3 className="text-xl font-semibold mb-4">Tạo Danh Mục Mới</h3>
+            <h3 className="text-xl font-semibold mb-4">Táº¡o Danh Má»¥c Má»›i</h3>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-1">Tên *</label>
+                <label className="block text-sm font-medium mb-1">TĂªn *</label>
                 <input
                   type="text"
                   value={formData.name}
@@ -337,7 +333,7 @@ export default function AdminCategoriesPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">Đường dẫn *</label>
+                <label className="block text-sm font-medium mb-1">ÄÆ°á»ng dáº«n *</label>
                 <input
                   type="text"
                   value={formData.slug}
@@ -348,13 +344,13 @@ export default function AdminCategoriesPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">Danh Mục Cha</label>
+                <label className="block text-sm font-medium mb-1">Danh Má»¥c Cha</label>
                 <select
                   value={formData.parentId}
                   onChange={(e) => setFormData({ ...formData, parentId: e.target.value })}
                   className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#6d8c5a]"
                 >
-                  <option value="">Không (Danh mục gốc)</option>
+                  <option value="">KhĂ´ng (Danh má»¥c gá»‘c)</option>
                   {parentCategories
                     .filter((c) => c.id !== formData.parentId)
                     .map((c) => (
@@ -365,7 +361,7 @@ export default function AdminCategoriesPage() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">Mô Tả (Meta)</label>
+                <label className="block text-sm font-medium mb-1">MĂ´ Táº£ (Meta)</label>
                 <textarea
                   value={formData.metaDescription}
                   onChange={(e) => setFormData({ ...formData, metaDescription: e.target.value })}
@@ -379,13 +375,13 @@ export default function AdminCategoriesPage() {
                   onClick={() => setShowCreateModal(false)}
                   className="px-4 py-2 border rounded-lg hover:bg-gray-50"
                 >
-                  Hủy
+                  Há»§y
                 </button>
                 <button
                   type="submit"
                   className="px-4 py-2 bg-[#425733] text-white px-6 py-3 rounded-full font-semibold shadow-soft hover:-translate-y-0.5 hover:shadow-[0_4px_20px_rgba(66,87,51,0.4)] hover:bg-[#364a29]"
                 >
-                  Tạo
+                  Táº¡o
                 </button>
               </div>
             </form>

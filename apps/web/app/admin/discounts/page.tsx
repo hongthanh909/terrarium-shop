@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -110,36 +110,34 @@ export default function AdminDiscountsPage() {
       });
 
       if (response.ok) {
-        toast.success(editingCampaign ? "Chiến dịch được cập nhật!" : "Chiến dịch được tạo!");
+        toast.success(editingCampaign ? "Chiáº¿n dá»‹ch Ä‘Æ°á»£c cáº­p nháº­t!" : "Chiáº¿n dá»‹ch Ä‘Æ°á»£c táº¡o!");
         handleCloseModal();
         queryClient.invalidateQueries({ queryKey: ["admin-discounts"] });
       } else {
         const error = await response.json();
-        toast.error(error.error || "Không thể lưu chiến dịch");
+        toast.error(error.error || "KhĂ´ng thá»ƒ lÆ°u chiáº¿n dá»‹ch");
       }
     } catch (error) {
       console.error("Error saving campaign:", error);
-      toast.error("Lỗi khi lưu chiến dịch");
+      toast.error("Lá»—i khi lÆ°u chiáº¿n dá»‹ch");
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Bạn có chắc chắn muốn xóa chiến dịch này?")) return;
-
     try {
       const response = await fetch(`/api/discount-campaigns/${id}`, {
         method: "DELETE",
       });
 
       if (response.ok) {
-        toast.success("Xóa chiến dịch thành công!");
+        toast.success("XĂ³a chiáº¿n dá»‹ch thĂ nh cĂ´ng!");
         queryClient.invalidateQueries({ queryKey: ["admin-discounts"] });
       } else {
-        toast.error("Không thể xóa chiến dịch");
+        toast.error("KhĂ´ng thá»ƒ xĂ³a chiáº¿n dá»‹ch");
       }
     } catch (error) {
       console.error("Error deleting campaign:", error);
-      toast.error("Lỗi khi xóa chiến dịch");
+      toast.error("Lá»—i khi xĂ³a chiáº¿n dá»‹ch");
     }
   };
 
@@ -163,7 +161,7 @@ export default function AdminDiscountsPage() {
       case "PERCENTAGE":
         return "%";
       case "FIXED":
-        return "₫";
+        return "â‚«";
       case "FREE_SHIPPING":
         return "Free Ship";
       default:
@@ -183,16 +181,16 @@ export default function AdminDiscountsPage() {
           className="inline-flex items-center text-[#425733] hover:text-[#425733] mb-4"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
-          Quay Lại Admin
+          Quay Láº¡i Admin
         </Link>
         <div className="flex justify-between items-center">
-          <h2 className="text-3xl font-bold text-gray-800">Chiến Dịch Giảm Giá</h2>
+          <h2 className="text-3xl font-bold text-gray-800">Chiáº¿n Dá»‹ch Giáº£m GiĂ¡</h2>
           <button
             onClick={() => handleOpenModal()}
             className="flex items-center gap-2 bg-[#425733] text-white px-6 py-3 rounded-full font-semibold shadow-soft hover:-translate-y-0.5 hover:shadow-[0_4px_20px_rgba(66,87,51,0.4)] hover:bg-[#364a29]"
           >
             <Plus className="w-5 h-5" />
-            Chiến Dịch Mới
+            Chiáº¿n Dá»‹ch Má»›i
           </button>
         </div>
       </div>
@@ -223,7 +221,7 @@ export default function AdminDiscountsPage() {
                   {campaign.type === "PERCENTAGE"
                     ? `${campaign.value}%`
                     : campaign.type === "FIXED"
-                    ? `${Number(campaign.value).toLocaleString("vi-VN")}₫`
+                    ? `${Number(campaign.value).toLocaleString("vi-VN")}â‚«`
                     : "Free Shipping"}
                 </td>
                 <td className="px-6 py-4">
@@ -259,7 +257,7 @@ export default function AdminDiscountsPage() {
             {campaigns.length === 0 && (
               <tr>
                 <td colSpan={7} className="px-6 py-12 text-center text-gray-500">
-                  Chưa có chiến dịch. Nhấn "Chiến Dịch Mới" để tạo.
+                  ChÆ°a cĂ³ chiáº¿n dá»‹ch. Nháº¥n "Chiáº¿n Dá»‹ch Má»›i" Ä‘á»ƒ táº¡o.
                 </td>
               </tr>
             )}
@@ -278,10 +276,10 @@ export default function AdminDiscountsPage() {
                   <X className="w-6 h-6" />
                 </button>
               </div>
-              <h3 className="text-xl font-bold mb-4">{editingCampaign ? "Chỉnh Sửa Chiến Dịch" : "Chiến Dịch Mới"}</h3>
+              <h3 className="text-xl font-bold mb-4">{editingCampaign ? "Chá»‰nh Sá»­a Chiáº¿n Dá»‹ch" : "Chiáº¿n Dá»‹ch Má»›i"}</h3>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium mb-1">Mã Chiến Dịch *</label>
+                  <label className="block text-sm font-medium mb-1">MĂ£ Chiáº¿n Dá»‹ch *</label>
                   <input
                     type="text"
                     value={formData.code}
@@ -294,19 +292,19 @@ export default function AdminDiscountsPage() {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium mb-1">Loại *</label>
+                    <label className="block text-sm font-medium mb-1">Loáº¡i *</label>
                     <select
                       value={formData.type}
                       onChange={(e) => setFormData({ ...formData, type: e.target.value })}
                       className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#6d8c5a]"
                     >
-                      <option value="PERCENTAGE">Phần Trăm (%)</option>
-                      <option value="FIXED">Số Tiền Cố Định (₫)</option>
-                      <option value="FREE_SHIPPING">Miễn Phí Vận Chuyển</option>
+                      <option value="PERCENTAGE">Pháº§n TrÄƒm (%)</option>
+                      <option value="FIXED">Sá»‘ Tiá»n Cá»‘ Äá»‹nh (â‚«)</option>
+                      <option value="FREE_SHIPPING">Miá»…n PhĂ­ Váº­n Chuyá»ƒn</option>
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium mb-1">Giá Trị *</label>
+                    <label className="block text-sm font-medium mb-1">GiĂ¡ Trá»‹ *</label>
                     <input
                       type="number"
                       value={formData.value}
@@ -322,7 +320,7 @@ export default function AdminDiscountsPage() {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium mb-1">Ngày Bắt Đầu *</label>
+                    <label className="block text-sm font-medium mb-1">NgĂ y Báº¯t Äáº§u *</label>
                     <input
                       type="datetime-local"
                       value={formData.startsAt}
@@ -332,7 +330,7 @@ export default function AdminDiscountsPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium mb-1">Ngày Kết Thúc *</label>
+                    <label className="block text-sm font-medium mb-1">NgĂ y Káº¿t ThĂºc *</label>
                     <input
                       type="datetime-local"
                       value={formData.expiresAt}
@@ -345,7 +343,7 @@ export default function AdminDiscountsPage() {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium mb-1">Đơn Hàng Tối Thiểu (₫)</label>
+                    <label className="block text-sm font-medium mb-1">ÄÆ¡n HĂ ng Tá»‘i Thiá»ƒu (â‚«)</label>
                     <input
                       type="number"
                       value={formData.minOrderAmount}
@@ -356,7 +354,7 @@ export default function AdminDiscountsPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium mb-1">Giảm Tối Đa (₫)</label>
+                    <label className="block text-sm font-medium mb-1">Giáº£m Tá»‘i Äa (â‚«)</label>
                     <input
                       type="number"
                       value={formData.maxDiscountAmount}
@@ -370,51 +368,51 @@ export default function AdminDiscountsPage() {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium mb-1">Giới Hạn Sử Dụng</label>
+                    <label className="block text-sm font-medium mb-1">Giá»›i Háº¡n Sá»­ Dá»¥ng</label>
                     <input
                       type="number"
                       value={formData.usageLimit}
                       onChange={(e) => setFormData({ ...formData, usageLimit: e.target.value })}
                       min="1"
                       className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#6d8c5a]"
-                      placeholder="Không giới hạn"
+                      placeholder="KhĂ´ng giá»›i háº¡n"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium mb-1">Trạng Thái</label>
+                    <label className="block text-sm font-medium mb-1">Tráº¡ng ThĂ¡i</label>
                     <select
                       value={formData.status}
                       onChange={(e) => setFormData({ ...formData, status: e.target.value })}
                       className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#6d8c5a]"
                     >
-                      <option value="ACTIVE">Hoạt Động</option>
-                      <option value="INACTIVE">Không Hoạt Động</option>
+                      <option value="ACTIVE">Hoáº¡t Äá»™ng</option>
+                      <option value="INACTIVE">KhĂ´ng Hoáº¡t Äá»™ng</option>
                     </select>
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-1">Áp Dụng Cho</label>
+                  <label className="block text-sm font-medium mb-1">Ăp Dá»¥ng Cho</label>
                   <select
                     value={formData.applicableTo}
                     onChange={(e) => setFormData({ ...formData, applicableTo: e.target.value })}
                     className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#6d8c5a]"
                   >
-                    <option value="ALL">Tất Cả Sản Phẩm</option>
-                    <option value="CATEGORIES">Danh Mục Cụ Thể</option>
-                    <option value="PRODUCTS">Sản Phẩm Cụ Thể</option>
-                    <option value="COMBOS">Combo Cụ Thể</option>
+                    <option value="ALL">Táº¥t Cáº£ Sáº£n Pháº©m</option>
+                    <option value="CATEGORIES">Danh Má»¥c Cá»¥ Thá»ƒ</option>
+                    <option value="PRODUCTS">Sáº£n Pháº©m Cá»¥ Thá»ƒ</option>
+                    <option value="COMBOS">Combo Cá»¥ Thá»ƒ</option>
                   </select>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-1">Mô Tả</label>
+                  <label className="block text-sm font-medium mb-1">MĂ´ Táº£</label>
                   <textarea
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                     rows={3}
                     className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#6d8c5a]"
-                    placeholder="Mô tả tùy chọn..."
+                    placeholder="MĂ´ táº£ tĂ¹y chá»n..."
                   />
                 </div>
 
@@ -424,14 +422,14 @@ export default function AdminDiscountsPage() {
                     onClick={handleCloseModal}
                     className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
                   >
-                    Hủy
+                    Há»§y
                   </button>
                   <button
                     type="submit"
                     className="flex items-center gap-2 bg-[#425733] text-white px-4 py-2 rounded-full font-semibold shadow-soft hover:-translate-y-0.5 hover:shadow-[0_4px_15px_rgba(66,87,51,0.3)] hover:bg-[#364a29]"
                   >
                     <Save className="w-4 h-4" />
-                    Lưu Chiến Dịch
+                    LÆ°u Chiáº¿n Dá»‹ch
                   </button>
                 </div>
               </form>
