@@ -63,9 +63,13 @@
   - `app/checkout/page.tsx` — nối PayOS vào submit flow
   - `app/checkout/success/page.tsx` [MỚI] — trang xác nhận thanh toán thành công
   - `app/checkout/payment/page.tsx` [MỚI] — trang fallback khi hủy thanh toán
-  - `app/api/payment/create-payment-link/route.ts` — (đã có sẵn) tạo link PayOS
-  - `app/api/payment/webhook/route.ts` — (đã có sẵn) nhận webhook xác nhận thanh toán
-- **Trạng thái:** ✅ ĐÃ THỰC HIỆN
+  - `app/api/payment/create-payment-link/route.ts` — tạo link PayOS
+  - `app/api/payment/webhook/route.ts` — nhận webhook xác nhận thanh toán
+- **Bugs phát sinh và đã fix:**
+  - ❌ `[PayOS] CLIENT_ID: thiếu` → `.env` ở root không được đọc khi chạy từ `apps/web` → ✅ Thêm PayOS keys vào `apps/web/.env.local`
+  - ❌ `"Order is already paid"` → orders route set `paymentStatus = PAID` ngay khi tạo đơn BANK_TRANSFER → ✅ Fix thành `PENDING`, webhook PayOS sẽ cập nhật sau
+  - ❌ `"PayOS is not a constructor"` → `@payos/node` là ESM package, `require()` trả về module object không phải class → ✅ Fix dùng `PayOSModule.default || PayOSModule`
+- **Trạng thái:** ✅ ĐÃ FIX TOÀN BỘ — chờ test thực tế
 
 ---
 

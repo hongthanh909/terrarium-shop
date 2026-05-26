@@ -3,8 +3,10 @@ import { NextRequest } from "next/server";
 import { errorResponse, successResponse } from "@/lib/api-helpers";
 
 function getPayOS() {
-  // Lazy init to avoid module-scope crash when env vars are missing
-  const PayOS = require("@payos/node");
+  // @payos/node is an ESM package — require() returns the module object,
+  // the actual class is at .default
+  const PayOSModule = require("@payos/node");
+  const PayOS = PayOSModule.default || PayOSModule;
   return new PayOS(
     process.env.PAYOS_CLIENT_ID as string,
     process.env.PAYOS_API_KEY as string,
