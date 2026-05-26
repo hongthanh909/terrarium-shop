@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { ShoppingCart, Leaf, User, X, Minus, Plus, ShoppingBag, ChevronDown, LogOut, Package, LayoutDashboard } from "lucide-react";
+import { ShoppingCart, Leaf, User, X, Minus, Plus, ShoppingBag, ChevronDown, LogOut, Package, LayoutDashboard, Heart } from "lucide-react";
 import { useCartStore } from "@/lib/store/cartStore";
 import { useState, useEffect } from "react";
 import { useSession, signOut } from "next-auth/react";
@@ -167,9 +167,17 @@ export default function Header() {
                         <Package className="w-4 h-4" /> Đơn hàng
                       </Link>
                     </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link href="/profile/favorites" className="cursor-pointer flex items-center gap-2">
+                        <Heart className="w-4 h-4 fill-red-400 text-red-400" /> Yêu thích
+                      </Link>
+                    </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
-                      onClick={() => signOut({ callbackUrl: "/" })}
+                      onClick={() => {
+                        useCartStore.getState().clearCart();
+                        signOut({ callbackUrl: "/" });
+                      }}
                       className="cursor-pointer text-red-500 focus:text-red-600 focus:bg-red-50 flex items-center gap-2"
                     >
                       <LogOut className="w-4 h-4" /> Đăng xuất

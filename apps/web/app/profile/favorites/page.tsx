@@ -1,0 +1,186 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import Image from "next/image";
+import { Heart, ShoppingBag, ArrowLeft, Leaf } from "lucide-react";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { useCartStore } from "@/lib/store/cartStore";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+
+interface FavoriteProduct {
+  id: string;
+  slug: string;
+  name: string;
+  basePrice: number;
+  images: string[];
+  category: { name: string };
+  _count: { votes: number };
+}
+
+export default function FavoritesPage() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
+  const { addItem } = useCartStore();
+  const [products, setProducts] = useState<FavoriteProduct[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      router.push("/login?callbackUrl=/profile/favorites");
+      return;
+    }
+    if (status === "authenticated") {
+      fetchFavorites();
+    }
+  }, [status]);
+
+  const fetchFavorites = async () => {
+    try {
+      const res = await fetch("/api/profile/favorites");
+      if (!res.ok) throw new Error("Lỗi tải danh sách yêu thích");
+      const data = await res.json();
+      setProducts(data);
+    } catch (error) {
+      toast.error("Không thể tải danh sách yêu thích");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleUnvote = async (productId: string) => {
+    try {
+      await fetch(`/api/products/${productId}/vote`, { method: "POST" });
+      setProducts((prev) => prev.filter((p) => p.id !== productId));
+      toast.success("Đã bỏ khỏi danh sách yêu thích");
+    } catch {
+      toast.error("Có lỗi xảy ra");
+    }
+  };
+
+  const handleAddToCart = (product: FavoriteProduct) => {
+    addItem({
+      productId: product.id,
+      productName: product.name,
+      productImage: product.images[0] || "",
+      price: product.basePrice,
+      quantity: 1,
+    });
+    toast.success("Đã thêm vào giỏ hàng!");
+  };
+
+  return (
+    <div className="max-w-5xl mx-auto px-4 py-10">
+      {/* Header */}
+      <div className="flex items-center gap-4 mb-8">
+        <Link
+          href="/profile"
+          className="p-2 rounded-full hover:bg-[#e3ebdd] text-[#425733] transition-colors"
+        >
+          <ArrowLeft className="w-5 h-5" />
+        </Link>
+        <div>
+          <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
+            <Heart className="w-6 h-6 fill-red-500 text-red-500" />
+            Sản phẩm yêu thích
+          </h1>
+          <p className="text-sm text-gray-500 mt-0.5">
+            {loading ? "Đang tải..." : `${products.length} sản phẩm đã lưu`}
+          </p>
+        </div>
+      </div>
+
+      {/* Loading skeleton */}
+      {loading && (
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 animate-pulse">
+          {[...Array(8)].map((_, i) => (
+            <div key={i} className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+              <div className="aspect-square bg-gray-100" />
+              <div className="p-3 space-y-2">
+                <div className="h-4 bg-gray-100 rounded w-3/4" />
+                <div className="h-4 bg-gray-100 rounded w-1/2" />
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Empty state */}
+      {!loading && products.length === 0 && (
+        <div className="text-center py-20 flex flex-col items-center gap-4">
+          <div className="w-20 h-20 rounded-2xl bg-[#f0f4ec] flex items-center justify-center">
+            <Heart className="w-10 h-10 text-[#6d8c5a]" />
+          </div>
+          <p className="font-bold text-gray-700 text-lg">Chưa có sản phẩm yêu thích</p>
+          <p className="text-gray-400 text-sm max-w-xs">
+            Hãy nhấn vào biểu tượng ❤️ trên các sản phẩm để lưu vào đây.
+          </p>
+          <Button asChild className="rounded-full mt-2 bg-[#425733] hover:bg-[#364a29]">
+            <Link href="/products">Khám phá sản phẩm</Link>
+          </Button>
+        </div>
+      )}
+
+      {/* Product grid */}
+      {!loading && products.length > 0 && (
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+          {products.map((product) => (
+            <div
+              key={product.id}
+              className="group bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-md hover:-translate-y-0.5 transition-all duration-200"
+            >
+              {/* Image */}
+              <Link href={`/products/${product.slug}`} className="block relative aspect-square bg-[#f6faf4]">
+                {product.images[0] ? (
+                  <Image
+                    src={product.images[0]}
+                    alt={product.name}
+                    fill
+                    sizes="(max-width: 768px) 50vw, 25vw"
+                    className="object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <Leaf className="w-10 h-10 text-[#6d8c5a]" />
+                  </div>
+                )}
+                {/* Unvote button */}
+                <button
+                  onClick={(e) => { e.preventDefault(); handleUnvote(product.id); }}
+                  className="absolute top-2 right-2 p-2 bg-white/80 backdrop-blur rounded-full shadow hover:bg-white transition-colors"
+                  title="Bỏ yêu thích"
+                >
+                  <Heart className="w-4 h-4 fill-red-500 text-red-500" />
+                </button>
+              </Link>
+
+              {/* Info */}
+              <div className="p-3">
+                <p className="text-xs text-[#6d8c5a] font-medium mb-0.5">{product.category.name}</p>
+                <Link href={`/products/${product.slug}`}>
+                  <h3 className="text-sm font-semibold text-gray-800 line-clamp-2 hover:text-[#425733] transition-colors">
+                    {product.name}
+                  </h3>
+                </Link>
+                <p className="text-[#425733] font-bold mt-1 text-sm">
+                  {product.basePrice.toLocaleString("vi-VN")}₫
+                </p>
+
+                {/* Add to cart */}
+                <button
+                  onClick={() => handleAddToCart(product)}
+                  className="mt-2 w-full flex items-center justify-center gap-1.5 py-2 bg-[#425733] text-white text-xs font-semibold rounded-full hover:bg-[#364a29] transition-colors"
+                >
+                  <ShoppingBag className="w-3.5 h-3.5" />
+                  Thêm vào giỏ
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}

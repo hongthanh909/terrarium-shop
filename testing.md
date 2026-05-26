@@ -1,100 +1,86 @@
 # Testing Log — Tiệm Rêu Décor
 
-> Cập nhật lần cuối: 2026-05-25
+> Cập nhật lần cuối: 2026-05-26
 
 ---
 
-## 🐛 Bug Tracker
+## ✅ Bug Tracker (Đã xử lý 25/05)
 
-### [BUG-001] Hydration Mismatch — Cart Store (SSR vs Client)
-- **Trang:** Toàn bộ trang có Header (bao gồm `/admin/products/create`)
-- **Lỗi:** `Application error: a client-side exception has occurred`
-- **Nguyên nhân:** Zustand `persist` tự đọc `localStorage` khi SSR → server render `items=[]`, client render `items=[...]` → mismatch
-- **Fix:** `skipHydration: true` + `rehydrate()` + `mounted` guard trong Header
-- **Files:** `lib/store/cartStore.ts`, `components/Header.tsx`
-- **Trạng thái:** ✅ ĐÃ FIX
-
----
-
-### [BUG-002] Product Detail Page — 404 với slug tiếng Việt
-- **Trang:** `/products/[slug]` (VD: `localhost:3000/products/sương-mờ-nhân-ảnh-foggy-tank`)
-- **Lỗi:** `404 — This page could not be found`
-- **Nguyên nhân:** `params.slug` từ Next.js là URL-encoded (`s%C6%B0%C6%A1ng-m%E1%BB%9D...`), không match slug gốc trong DB
-- **Fix:** `decodeURIComponent(params.slug)` trước khi query Prisma
-- **Files:** `app/products/[slug]/page.tsx`
-- **Trạng thái:** ✅ ĐÃ FIX
+| ID | Mô tả | Trạng thái |
+|----|-------|-----------|
+| BUG-001 | Hydration Mismatch — Cart Store SSR | ✅ ĐÃ FIX |
+| BUG-002 | Product Detail 404 với slug tiếng Việt | ✅ ĐÃ FIX |
+| BUG-003 | `a.map is not a function` tạo/sửa sản phẩm | ✅ ĐÃ FIX |
+| BUG-004 | Admin Categories — Edit button 404 | ✅ ĐÃ FIX |
+| BUG-005 | API Routes bị Static thay vì Dynamic | ✅ ĐÃ FIX |
 
 ---
 
-### [BUG-003] Admin Create/Edit Product — `TypeError: a.map is not a function`
-- **Trang:** `/admin/products/create`, `/admin/products/[id]/edit`
-- **Lỗi:** `TypeError: a.map is not a function` trong console
-- **Nguyên nhân:** `fetchCategories()` gọi `/api/categories` → API trả `{ categories: [...], pagination: {...} }` nhưng code gọi `setCategories(data)` (data là object, không phải array) → `.map()` crash
-- **Fix:** `setCategories(Array.isArray(data) ? data : (data.categories ?? []))`
-- **Files:** `app/admin/products/create/page.tsx`, `app/admin/products/[id]/edit/page.tsx`
-- **Trạng thái:** ✅ ĐÃ FIX
+## 🚀 Tính Năng Mới & Fix (26/05)
+
+### [REQ-001] ✅ Giảm delay khi vào Chi tiết Sản phẩm
+- **Vấn đề:** Click vào sản phẩm bị khựng lại trước khi hiển thị trang.
+- **Fix:** Thêm `app/products/[slug]/loading.tsx` — skeleton UI hiển thị ngay lập tức khi navigate, người dùng thấy phản hồi liền.
+- **File:** `app/products/[slug]/loading.tsx` [MỚI]
+- **Trạng thái:** ✅ ĐÃ THỰC HIỆN
 
 ---
 
-### [BUG-004] Admin Categories — Edit button 404
-- **Trang:** `/admin/categories`
-- **Lỗi:** 4 × GET 404 cho `localhost:3000/admin/categories/[id]/edit` (Next.js prefetch)
-- **Nguyên nhân:** Link `<Link href={/admin/categories/${id}/edit}>` tồn tại nhưng page `/admin/categories/[id]/edit/page.tsx` **hoàn toàn thiếu**
-- **Fix:** Tạo mới page `app/admin/categories/[id]/edit/page.tsx` với form edit đầy đủ + API GET `/api/categories/[id]`
-- **Files:** 
-  - `app/admin/categories/[id]/edit/page.tsx` [MỚI]
-  - `app/api/categories/[id]/route.ts` — thêm GET handler
-- **Trạng thái:** ✅ ĐÃ FIX
+### [REQ-002] ✅ Trust Badges dưới "Miễn phí vận chuyển"
+- **Vấn đề:** Trang chi tiết sản phẩm phía dưới banner vận chuyển bị trống.
+- **Fix:** Thêm 4 ô cam kết "Tiệm Rêu":
+  - ✅ 100% Cây Khỏe Mạnh
+  - 🛡️ Bảo hành 7 ngày
+  - 💡 Hỗ trợ chăm sóc trọn đời
+  - 🎁 Tặng kèm cẩm nang
+- **File:** `app/products/[slug]/ProductDetailClient.tsx`
+- **Trạng thái:** ✅ ĐÃ THỰC HIỆN
 
 ---
 
-### [BUG-005] API Routes bị Static thay vì Dynamic
-- **Routes:** `/api/admin/stats`, `/api/blog`, `/api/profile`, `/api/profile/points`
-- **Lỗi:** API bị pre-render thành static → data cũ, auth không hoạt động
-- **Nguyên nhân:** Thiếu `export const dynamic = "force-dynamic"` 
-- **Fix:** Thêm `export const dynamic = "force-dynamic"` vào 4 routes
-- **Trạng thái:** ✅ ĐÃ FIX
+### [REQ-003] ✅ Reset Giỏ hàng khi Đăng xuất
+- **Vấn đề:** Logout xong giỏ hàng vẫn còn số lượng cũ.
+- **Fix:** Gọi `useCartStore.getState().clearCart()` ngay trước `signOut()` trong Header.
+- **File:** `components/Header.tsx`
+- **Trạng thái:** ✅ ĐÃ THỰC HIỆN
 
 ---
 
-### [BUG-006] Explore Page — Item slug 404
-- **Trang:** `/explore` → click item → 404
-- **Lỗi:** Tương tự BUG-002 — slug tiếng Việt bị URL-encode
-- **Nguyên nhân:** Cùng nguyên nhân với BUG-002, slug từ explore card link vào `/products/[slug]`
-- **Fix:** Được giải quyết cùng BUG-002 (fix tại `app/products/[slug]/page.tsx`)
-- **Trạng thái:** ✅ ĐÃ FIX (cùng fix với BUG-002)
+### [REQ-004] ✅ Logic Điểm Thưởng (Loyalty Points)
+- **Quy tắc:** Cứ **10.000 VNĐ = 1 Điểm**. VD: Đơn 1.200.000₫ → +120 điểm.
+- **Thời điểm:** Điểm tự động cộng khi Admin đổi trạng thái đơn hàng sang `DELIVERED`.
+- **Chống trùng lặp:** Kiểm tra `status cũ ≠ DELIVERED` trước khi cộng.
+- **Dùng Prisma Transaction:** Đảm bảo cập nhật order và cộng điểm là 1 atomic operation.
+- **File:** `app/api/admin/orders/route.ts`
+- **Trạng thái:** ✅ ĐÃ THỰC HIỆN
 
 ---
 
-## 📋 Cần Rebuild
-
-Sau các fix trên, cần chạy lại production build:
-
-```bash
-cd apps/web
-npx next build
-npx next start
-```
+### [REQ-005] ✅ Trang Sản phẩm Yêu thích (Wishlist)
+- **Vấn đề:** User bấm ❤️ nhưng không có chỗ xem lại.
+- **Fix:** 
+  1. Trang mới `/profile/favorites` — hiện grid sản phẩm đã tym với nút bỏ yêu thích & thêm giỏ hàng.
+  2. API mới `/api/profile/favorites` — query bảng `ProductVote`, trả về sản phẩm ACTIVE.
+  3. Link "❤️ Yêu thích" trong dropdown menu avatar Header.
+- **Files:**
+  - `app/profile/favorites/page.tsx` [MỚI]
+  - `app/api/profile/favorites/route.ts` [MỚI]
+  - `components/Header.tsx`
+- **Trạng thái:** ✅ ĐÃ THỰC HIỆN
 
 ---
 
-## ✅ Checklist Test Manual
-
-### Admin Dashboard
-- [ ] `/admin` — Bảng điều khiển load stats
-- [x] `/admin/login` — Đăng nhập admin
-- [ ] `/admin/products` — Danh sách sản phẩm
-- [x] `/admin/products/create` — Tạo sản phẩm (BUG-003 fixed)
-- [ ] `/admin/products/[id]/edit` — Sửa sản phẩm (BUG-003 fixed)
-- [x] `/admin/categories` — Danh sách danh mục
-- [x] `/admin/categories/[id]/edit` — Sửa danh mục (BUG-004 fixed)
-- [ ] `/admin/orders` — Đơn hàng
-- [ ] `/admin/blog` — Blog
-- [ ] `/admin/reviews` — Đánh giá
+## 📋 Checklist Test Manual
 
 ### Storefront
-- [ ] `/products` — Danh sách sản phẩm
-- [x] `/products/[slug]` — Chi tiết sản phẩm tiếng Việt (BUG-002 fixed)
-- [x] `/explore` — Explore → click item (BUG-006 fixed)
-- [ ] `/checkout` — Thanh toán
-- [ ] `/cart` — Giỏ hàng hydration (BUG-001 fixed)
+- [x] `/products/[slug]` — Click vào sản phẩm: skeleton hiện ngay, không bị delay trắng màn hình
+- [x] `/products/[slug]` — Dưới "Miễn phí vận chuyển" có 4 ô cam kết
+- [x] Header — Logout → giỏ hàng reset về 0
+- [x] Header dropdown → có mục "❤️ Yêu thích"
+- [x] `/profile/favorites` — Hiển thị sản phẩm đã tym, bỏ yêu thích, thêm giỏ hàng
+
+### Admin
+- [x] `/admin/orders/[id]` — Đổi trạng thái sang DELIVERED → điểm tự động cộng vào tài khoản user
+- [ ] `/profile/points` — Xác nhận điểm hiển thị đúng sau khi đơn DELIVERED
+
+> **Cần rebuild** (`npm run build`) để apply toàn bộ thay đổi.

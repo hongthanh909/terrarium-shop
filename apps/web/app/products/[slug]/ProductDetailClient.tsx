@@ -373,6 +373,38 @@ export function ProductDetailClient({ initialProduct, initialRelated }: { initia
                 </p>
               </CardContent>
             </Card>
+
+            {/* Trust Badges */}
+            <div className="grid grid-cols-2 gap-3 mt-3">
+              <div className="flex items-start gap-2.5 p-3 bg-[#f6faf4] border border-[#daebd0] rounded-xl">
+                <span className="text-xl flex-shrink-0">✅</span>
+                <div>
+                  <p className="text-xs font-semibold text-[#2d4a1e]">100% Cây Khỏe Mạnh</p>
+                  <p className="text-[11px] text-[#5a7a48] leading-snug mt-0.5">Chọn lọc kỹ, đảm bảo cây sống tốt</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-2.5 p-3 bg-[#f6faf4] border border-[#daebd0] rounded-xl">
+                <span className="text-xl flex-shrink-0">🛡️</span>
+                <div>
+                  <p className="text-xs font-semibold text-[#2d4a1e]">Bảo hành 7 ngày</p>
+                  <p className="text-[11px] text-[#5a7a48] leading-snug mt-0.5">Đổi trả nếu nứt vỡ khi vận chuyển</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-2.5 p-3 bg-[#f6faf4] border border-[#daebd0] rounded-xl">
+                <span className="text-xl flex-shrink-0">💡</span>
+                <div>
+                  <p className="text-xs font-semibold text-[#2d4a1e]">Hỗ trợ trọn đời</p>
+                  <p className="text-[11px] text-[#5a7a48] leading-snug mt-0.5">Tư vấn chăm sóc miễn phí mãi mãi</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-2.5 p-3 bg-[#f6faf4] border border-[#daebd0] rounded-xl">
+                <span className="text-xl flex-shrink-0">🎁</span>
+                <div>
+                  <p className="text-xs font-semibold text-[#2d4a1e]">Tặng kèm Cẩm nang</p>
+                  <p className="text-[11px] text-[#5a7a48] leading-snug mt-0.5">Hướng dẫn chăm sóc chi tiết kèm theo</p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
