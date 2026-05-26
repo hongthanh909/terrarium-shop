@@ -38,6 +38,8 @@ export default function CheckoutPage() {
   const [loading, setLoading] = useState(false);
   const [orderCreated, setOrderCreated] = useState(false);
   const [orderId, setOrderId] = useState("");
+  // Lưu lại tổng tiền trước khi clearCart() xóa state
+  const [finalTotal, setFinalTotal] = useState(0);
 
   const subtotal = getCartTotal();
   const total = subtotal + shippingFee - discount;
@@ -124,6 +126,7 @@ export default function CheckoutPage() {
       if (response.ok) {
         const order = await response.json();
         setOrderId(order.id);
+        setFinalTotal(total); // Lưu lại tổng tiền trước khi xóa giỏ
         setOrderCreated(true);
         clearCart();
       } else {
@@ -141,10 +144,10 @@ export default function CheckoutPage() {
     const bankName = process.env.NEXT_PUBLIC_BANK_NAME || "TPBank";
     const bankAccount = process.env.NEXT_PUBLIC_BANK_ACCOUNT_NUMBER || "07898110079";
     const bankOwner = process.env.NEXT_PUBLIC_BANK_ACCOUNT_NAME || "NGUYEN THANH HONG";
-    const bankBin = process.env.NEXT_PUBLIC_BANK_BIN || "12345678"; // TPBank BIN = 23895
-    const transferAmount = total;
+    const bankBin = process.env.NEXT_PUBLIC_BANK_BIN || "23895"; // TPBank BIN thực tế
+    const transferAmount = finalTotal; // Dùng finalTotal — được lưu trước khi clearCart()
     const transferContent = `TT ${orderId.slice(-8).toUpperCase()}`;
-    // VietQR dynamic URL
+    // VietQR dynamic URL — amount đã bao gồm subtotal + phí ship - giảm giá
     const qrUrl = `https://img.vietqr.io/image/${bankBin}-${bankAccount}-compact2.png?amount=${transferAmount}&addInfo=${encodeURIComponent(transferContent)}&accountName=${encodeURIComponent(bankOwner)}`;
 
     const STATUS_STEPS = [
@@ -214,7 +217,7 @@ export default function CheckoutPage() {
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Số tiền:</span>
-                    <span className="font-bold text-blue-700">{total.toLocaleString("vi-VN")}₫</span>
+                    <span className="font-bold text-blue-700">{finalTotal.toLocaleString("vi-VN")}₫</span>
                   </div>
                   <div className="flex justify-between items-center border-t pt-2 mt-2">
                     <span className="text-muted-foreground">Nội dung CK:</span>

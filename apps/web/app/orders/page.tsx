@@ -3,9 +3,10 @@
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowLeft, Package, TrendingUp, Clock, CheckCircle, Truck, XCircle } from "lucide-react";
+import { ArrowLeft, Package, TrendingUp, Clock, CheckCircle, Truck, XCircle, AlertTriangle } from "lucide-react";
 import { useSession } from "next-auth/react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 interface Order {
   id: string;
@@ -58,8 +59,10 @@ const PAYMENT_METHOD_LABELS: Record<string, string> = {
 
 export default function MyOrdersPage() {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [cancellingId, setCancellingId] = useState<string | null>(null);
   const { data: session } = useSession();
   const customerId = (session?.user as any)?.id;
+  const queryClient = useQueryClient();
 
   const { data: orders = [], isLoading: loading } = useQuery({
     queryKey: ["customer-orders", customerId],
@@ -68,9 +71,29 @@ export default function MyOrdersPage() {
       return response.json();
     },
     enabled: !!customerId,
-    refetchInterval: 30000, // Auto-refresh mỗi 30 giây để đồng bộ với admin
+    refetchInterval: 30000,
     refetchIntervalInBackground: false,
   });
+
+  const handleCancelOrder = async (orderId: string, e: React.MouseEvent) => {
+    e.stopPropagation(); // Không collapse card
+    if (!confirm("Bạn chắc chắn muốn hủy đơn hàng này?")) return;
+    setCancellingId(orderId);
+    try {
+      const res = await fetch(`/api/orders/${orderId}/cancel`, { method: "PATCH" });
+      const data = await res.json();
+      if (res.ok) {
+        toast.success("Đã hủy đơn hàng thành công");
+        queryClient.invalidateQueries({ queryKey: ["customer-orders", customerId] });
+      } else {
+        toast.error(data.error || "Không thể hủy đơn hàng");
+      }
+    } catch {
+      toast.error("Có lỗi xảy ra, vui lòng thử lại");
+    } finally {
+      setCancellingId(null);
+    }
+  };
 
   const getStatusBadge = (status: string) => {
     const badges: Record<string, string> = {
@@ -254,7 +277,7 @@ export default function MyOrdersPage() {
                     </div>
                   </div>
 
-                  {/* Expandable order items */}
+                    {/* Expandable order items */}
                   {isExpanded && (
                     <div className="border-t px-6 py-5 bg-gray-50 rounded-b-xl">
                       <h3 className="font-semibold text-gray-800 mb-4">Sản Phẩm Đã Đặt</h3>
@@ -298,6 +321,32 @@ export default function MyOrdersPage() {
                           <span className="text-[#425733]">{order.total.toLocaleString("vi-VN")}₫</span>
                         </div>
                       </div>
+
+                      {/* Cancel button — chỉ hiện khi PENDING */}
+                      {order.status === "PENDING" && (
+                        <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-xl flex items-start gap-3">
+                          <AlertTriangle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+                          <div className="flex-1">
+                            <p className="text-sm font-semibold text-yellow-800">Đơn hàng chưa được xác nhận</p>
+                            <p className="text-xs text-yellow-600 mt-0.5">Bạn có thể hủy đơn trước khi shop xác nhận.</p>
+                          </div>
+                          <button
+                            onClick={(e) => handleCancelOrder(order.id, e)}
+                            disabled={cancellingId === order.id}
+                            className="flex-shrink-0 px-4 py-2 text-sm font-semibold text-red-600 border border-red-300 rounded-lg hover:bg-red-50 transition-colors disabled:opacity-50"
+                          >
+                            {cancellingId === order.id ? "Đang hủy..." : "Hủy đơn"}
+                          </button>
+                        </div>
+                      )}
+
+                      {/* Confirmed — cannot cancel */}
+                      {["CONFIRMED", "PROCESSING", "SHIPPING"].includes(order.status) && (
+                        <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-xl flex items-center gap-2">
+                          <CheckCircle className="w-4 h-4 text-blue-500 flex-shrink-0" />
+                          <p className="text-xs text-blue-700">Đơn hàng đã được xác nhận — không thể hủy. Vui lòng liên hệ shop để được hỗ trợ.</p>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>

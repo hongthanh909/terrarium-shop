@@ -16,71 +16,65 @@
 
 ---
 
-## 🚀 Tính Năng Mới & Fix (26/05)
+## ✅ Tính Năng Mới & Fix (26/05)
 
-### [REQ-001] ✅ Giảm delay khi vào Chi tiết Sản phẩm
-- **Vấn đề:** Click vào sản phẩm bị khựng lại trước khi hiển thị trang.
-- **Fix:** Thêm `app/products/[slug]/loading.tsx` — skeleton UI hiển thị ngay lập tức khi navigate, người dùng thấy phản hồi liền.
-- **File:** `app/products/[slug]/loading.tsx` [MỚI]
-- **Trạng thái:** ✅ ĐÃ THỰC HIỆN
-
----
-
-### [REQ-002] ✅ Trust Badges dưới "Miễn phí vận chuyển"
-- **Vấn đề:** Trang chi tiết sản phẩm phía dưới banner vận chuyển bị trống.
-- **Fix:** Thêm 4 ô cam kết "Tiệm Rêu":
-  - ✅ 100% Cây Khỏe Mạnh
-  - 🛡️ Bảo hành 7 ngày
-  - 💡 Hỗ trợ chăm sóc trọn đời
-  - 🎁 Tặng kèm cẩm nang
-- **File:** `app/products/[slug]/ProductDetailClient.tsx`
-- **Trạng thái:** ✅ ĐÃ THỰC HIỆN
+| ID | Mô tả | Trạng thái |
+|----|-------|-----------|
+| REQ-001 | Skeleton loading trang chi tiết sản phẩm | ✅ XONG |
+| REQ-002 | Trust Badges dưới "Miễn phí vận chuyển" | ✅ XONG |
+| REQ-003 | Reset giỏ hàng khi logout | ✅ XONG |
+| REQ-004 | Logic điểm thưởng tự động khi DELIVERED | ✅ XONG |
+| REQ-005 | Trang yêu thích `/profile/favorites` | ✅ XONG |
 
 ---
 
-### [REQ-003] ✅ Reset Giỏ hàng khi Đăng xuất
-- **Vấn đề:** Logout xong giỏ hàng vẫn còn số lượng cũ.
-- **Fix:** Gọi `useCartStore.getState().clearCart()` ngay trước `signOut()` trong Header.
-- **File:** `components/Header.tsx`
-- **Trạng thái:** ✅ ĐÃ THỰC HIỆN
+## 🔥 Issues & Tính Năng Mới (26/05 — Đang thực thi)
+
+### [BUG-007] Session user/admin vẫn còn sau khi restart server
+- **Vấn đề:** Khởi động lại `npm run dev`, web vẫn nhớ trạng thái đăng nhập dù chưa logout.
+- **Giải thích:** Đây là **hành vi đúng và bình thường** của NextAuth — session được lưu trong cookie trình duyệt (JWT) và database, không phải bộ nhớ server. Khi restart server, cookie trong trình duyệt vẫn còn hợp lệ.
+- **Không phải bug** — Nếu bạn muốn test với trạng thái "khách", hãy bấm Logout hoặc dùng tab ẩn danh (Ctrl+Shift+N).
+- **Trạng thái:** ℹ️ Giải thích xong, không cần fix.
 
 ---
 
-### [REQ-004] ✅ Logic Điểm Thưởng (Loyalty Points)
-- **Quy tắc:** Cứ **10.000 VNĐ = 1 Điểm**. VD: Đơn 1.200.000₫ → +120 điểm.
-- **Thời điểm:** Điểm tự động cộng khi Admin đổi trạng thái đơn hàng sang `DELIVERED`.
-- **Chống trùng lặp:** Kiểm tra `status cũ ≠ DELIVERED` trước khi cộng.
-- **Dùng Prisma Transaction:** Đảm bảo cập nhật order và cộng điểm là 1 atomic operation.
-- **File:** `app/api/admin/orders/route.ts`
-- **Trạng thái:** ✅ ĐÃ THỰC HIỆN
+### [REQ-006] Hủy đơn hàng (User) — Logic & Button
+- **Yêu cầu:**
+  - Đơn hàng ở trạng thái `PENDING` → User **có thể hủy**
+  - Đơn hàng đã `CONFIRMED` trở lên → User **không thể hủy**
+  - Thêm nút "Hủy đơn" trong chi tiết đơn hàng
+  - Admin thấy trạng thái đồng bộ khi user hủy
+- **Giải pháp:**
+  1. Thêm `PATCH /api/orders/[id]/cancel` — endpoint cho user hủy đơn, chỉ cho phép nếu status = PENDING
+  2. Thêm nút "Hủy đơn" vào phần expanded detail trong `/orders/page.tsx`
+  3. Khi hủy, update status = CANCELLED + ghi log, admin sẽ thấy qua API đang dùng
+- **Trạng thái:** 🔄 ĐANG THỰC HIỆN
 
 ---
 
-### [REQ-005] ✅ Trang Sản phẩm Yêu thích (Wishlist)
-- **Vấn đề:** User bấm ❤️ nhưng không có chỗ xem lại.
-- **Fix:** 
-  1. Trang mới `/profile/favorites` — hiện grid sản phẩm đã tym với nút bỏ yêu thích & thêm giỏ hàng.
-  2. API mới `/api/profile/favorites` — query bảng `ProductVote`, trả về sản phẩm ACTIVE.
-  3. Link "❤️ Yêu thích" trong dropdown menu avatar Header.
-- **Files:**
-  - `app/profile/favorites/page.tsx` [MỚI]
-  - `app/api/profile/favorites/route.ts` [MỚI]
-  - `components/Header.tsx`
-- **Trạng thái:** ✅ ĐÃ THỰC HIỆN
+### [REQ-007] QR thanh toán Banking — Hiển thị đúng số tiền + phí ship
+- **Vấn đề:** Ảnh 1 cho thấy thanh toán chuyển khoản chỉ hiện "50.000đ" (chỉ phí ship) thay vì tổng đơn hàng thực tế.
+- **Nguyên nhân gốc rễ:** Màn hình thanh toán thành công chỉ hiển thị QR sau khi đặt hàng xong — lúc này state `total` đã reset khi `clearCart()` được gọi. Ngoài ra `bankBin` đang dùng giá trị placeholder sai (`12345678` thay vì BIN của TPBank là `23895`).
+- **Giải pháp:**
+  1. Fix BIN ngân hàng TPBank = `23895`
+  2. Lưu `total` vào state trước khi `clearCart()` để QR hiển thị đúng
+  3. Hiển thị QR ngay trên trang xác nhận với đủ số tiền = subtotal + shippingFee - discount
+- **Trạng thái:** 🔄 ĐANG THỰC HIỆN
 
 ---
 
 ## 📋 Checklist Test Manual
 
 ### Storefront
-- [x] `/products/[slug]` — Click vào sản phẩm: skeleton hiện ngay, không bị delay trắng màn hình
-- [x] `/products/[slug]` — Dưới "Miễn phí vận chuyển" có 4 ô cam kết
+- [x] `/products/[slug]` — Skeleton loading hiển thị khi click
+- [x] `/products/[slug]` — Trust Badges dưới banner vận chuyển
 - [x] Header — Logout → giỏ hàng reset về 0
 - [x] Header dropdown → có mục "❤️ Yêu thích"
-- [x] `/profile/favorites` — Hiển thị sản phẩm đã tym, bỏ yêu thích, thêm giỏ hàng
+- [x] `/profile/favorites` — Danh sách sản phẩm đã tym
+- [ ] `/orders` — Nút "Hủy đơn" hiện khi status PENDING, ẩn khi CONFIRMED+
+- [ ] `/checkout` — QR hiển thị đúng tổng tiền (subtotal + ship) khi chọn banking
+- [ ] `/profile/points` — Điểm hiển thị đúng sau khi đơn DELIVERED
 
 ### Admin
-- [x] `/admin/orders/[id]` — Đổi trạng thái sang DELIVERED → điểm tự động cộng vào tài khoản user
-- [ ] `/profile/points` — Xác nhận điểm hiển thị đúng sau khi đơn DELIVERED
-
-> **Cần rebuild** (`npm run build`) để apply toàn bộ thay đổi.
+- [ ] `/admin/orders` — Thấy đơn bị hủy bởi user (CANCELLED)
+- [ ] `/admin/orders` — Đổi trạng thái → DELIVERED → điểm tự động cộng
