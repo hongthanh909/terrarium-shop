@@ -83,7 +83,7 @@ export default function CheckoutPage() {
     e.preventDefault();
 
     if (items.length === 0) {
-      alert("Your cart is empty!");
+      alert("Giỏ hàng trống!");
       return;
     }
 
@@ -117,24 +117,48 @@ export default function CheckoutPage() {
         total: total,
       };
 
+      // Bước 1: Tạo đơn hàng
       const response = await fetch("/api/orders", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(orderData),
       });
 
-      if (response.ok) {
-        const order = await response.json();
-        setOrderId(order.id);
-        setFinalTotal(total); // Lưu lại tổng tiền trước khi xóa giỏ
-        setOrderCreated(true);
-        clearCart();
-      } else {
-        alert("Failed to create order. Please try again.");
+      if (!response.ok) {
+        alert("Không thể tạo đơn hàng. Vui lòng thử lại.");
+        return;
       }
+
+      const order = await response.json();
+
+      // Bước 2: Nếu chọn Chuyển khoản → gọi PayOS tạo link thanh toán → redirect
+      if (formData.paymentMethod === "BANK_TRANSFER") {
+        const payRes = await fetch("/api/payment/create-payment-link", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ orderId: order.id }),
+        });
+
+        if (payRes.ok) {
+          const payData = await payRes.json();
+          clearCart();
+          // Redirect sang trang thanh toán PayOS
+          window.location.href = payData.data?.checkoutUrl || payData.checkoutUrl;
+          return;
+        } else {
+          // PayOS lỗi → fallback hiển thị thông tin chuyển khoản thủ công
+          console.error("PayOS error, showing manual transfer info");
+        }
+      }
+
+      // COD hoặc PayOS fallback → hiển thị trang thành công
+      setOrderId(order.id);
+      setFinalTotal(total);
+      setOrderCreated(true);
+      clearCart();
     } catch (error) {
       console.error("Error creating order:", error);
-      alert("An error occurred. Please try again.");
+      alert("Có lỗi xảy ra. Vui lòng thử lại.");
     } finally {
       setLoading(false);
     }

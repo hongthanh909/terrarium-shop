@@ -48,18 +48,24 @@
   1. Thêm `PATCH /api/orders/[id]/cancel` — endpoint cho user hủy đơn, chỉ cho phép nếu status = PENDING
   2. Thêm nút "Hủy đơn" vào phần expanded detail trong `/orders/page.tsx`
   3. Khi hủy, update status = CANCELLED + ghi log, admin sẽ thấy qua API đang dùng
-- **Trạng thái:** 🔄 ĐANG THỰC HIỆN
+- **Trạng thái:** ✅ ĐÃ THỰC HIỆN
 
 ---
 
-### [REQ-007] QR thanh toán Banking — Hiển thị đúng số tiền + phí ship
-- **Vấn đề:** Ảnh 1 cho thấy thanh toán chuyển khoản chỉ hiện "50.000đ" (chỉ phí ship) thay vì tổng đơn hàng thực tế.
-- **Nguyên nhân gốc rễ:** Màn hình thanh toán thành công chỉ hiển thị QR sau khi đặt hàng xong — lúc này state `total` đã reset khi `clearCart()` được gọi. Ngoài ra `bankBin` đang dùng giá trị placeholder sai (`12345678` thay vì BIN của TPBank là `23895`).
-- **Giải pháp:**
-  1. Fix BIN ngân hàng TPBank = `23895`
-  2. Lưu `total` vào state trước khi `clearCart()` để QR hiển thị đúng
-  3. Hiển thị QR ngay trên trang xác nhận với đủ số tiền = subtotal + shippingFee - discount
-- **Trạng thái:** 🔄 ĐANG THỰC HIỆN
+### [REQ-007] Tích hợp PayOS thay VietQR
+- **Vấn đề cũ:** QR VietQR tĩnh không hiện, user phải chuyển khoản thủ công, admin phải kiểm tra tay.
+- **Giải pháp:** Tích hợp **PayOS** — payment gateway thực sự:
+  1. Khi user chọn "Chuyển khoản" → tạo order → gọi PayOS API tạo link thanh toán → **redirect sang PayOS**
+  2. PayOS hiển thị QR động + form thanh toán chuyên nghiệp
+  3. User thanh toán xong → PayOS gọi **webhook** → tự cập nhật đơn sang `PAID` + `CONFIRMED`
+  4. User được redirect về `/checkout/success` hoặc `/checkout/payment` (nếu hủy)
+- **Files:**
+  - `app/checkout/page.tsx` — nối PayOS vào submit flow
+  - `app/checkout/success/page.tsx` [MỚI] — trang xác nhận thanh toán thành công
+  - `app/checkout/payment/page.tsx` [MỚI] — trang fallback khi hủy thanh toán
+  - `app/api/payment/create-payment-link/route.ts` — (đã có sẵn) tạo link PayOS
+  - `app/api/payment/webhook/route.ts` — (đã có sẵn) nhận webhook xác nhận thanh toán
+- **Trạng thái:** ✅ ĐÃ THỰC HIỆN
 
 ---
 
@@ -71,13 +77,16 @@
 - [x] Header — Logout → giỏ hàng reset về 0
 - [x] Header dropdown → có mục "❤️ Yêu thích"
 - [x] `/profile/favorites` — Danh sách sản phẩm đã tym
-- [ ] `/orders` — Nút "Hủy đơn" hiện khi status PENDING, ẩn khi CONFIRMED+
-- [ ] `/checkout` — QR hiển thị đúng tổng tiền (subtotal + ship) khi chọn banking
+- [x] `/orders` — Nút "Hủy đơn" hiện khi status PENDING, ẩn khi CONFIRMED+
+- [ ] `/checkout` — Chọn Chuyển khoản → redirect sang PayOS → thanh toán → về success
+- [ ] `/checkout/success` — Trang xác nhận thanh toán PayOS thành công
+- [ ] `/checkout/payment` — Trang fallback khi hủy thanh toán
 - [ ] `/profile/points` — Điểm hiển thị đúng sau khi đơn DELIVERED
 
 ### Admin
 - [ ] `/admin/orders` — Thấy đơn bị hủy bởi user (CANCELLED)
 - [ ] `/admin/orders` — Đổi trạng thái → DELIVERED → điểm tự động cộng
+- [ ] `/admin/orders` — Đơn Chuyển khoản tự đổi trạng thái PAID sau khi PayOS webhook
 
 ---
 
