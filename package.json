@@ -13,7 +13,8 @@
     "db:generate": "cd packages/database && npx prisma generate",
     "db:studio": "cd packages/database && npx prisma studio",
     "db:push": "cd packages/database && npx prisma db push",
-    "db:seed": "cd packages/database && npx prisma db seed"
+    "db:seed": "cd packages/database && npx prisma db seed",
+    "postinstall": "cd packages/database && npx prisma generate"
   },
   "devDependencies": {
     "turbo": "latest",

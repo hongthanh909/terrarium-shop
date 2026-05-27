@@ -11,11 +11,11 @@ export default async function PoliciesPage() {
   });
 
   // Group policies by type for better organization
-  const groupedPolicies = policies.reduce((acc, policy) => {
+  const groupedPolicies = policies.reduce<Record<string, typeof policies>>((acc, policy) => {
     if (!acc[policy.type]) acc[policy.type] = [];
     acc[policy.type].push(policy);
     return acc;
-  }, {} as Record<string, typeof policies>);
+  }, {});
 
   const typeLabels: Record<string, string> = {
     warranty: "Bảo hành",

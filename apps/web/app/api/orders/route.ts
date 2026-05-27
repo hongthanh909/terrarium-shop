@@ -99,7 +99,7 @@ export async function POST(request: NextRequest) {
           variants: JSON.stringify(item.variants || {}),
           quantity: item.quantity,
           price: parseFloat(item.price),
-          customOptions: item.customOptions ? JSON.stringify(item.customOptions) : null,
+          customOptions: item.customOptions ? JSON.stringify(item.customOptions) : undefined,
         })),
       });
 
