@@ -7,7 +7,10 @@ export const dynamic = "force-dynamic";
 async function getPayOS() {
   // @payos/node uses NAMED export { PayOS }, not default export!
   const { PayOS } = await import("@payos/node");
-  return new PayOS(
+  // Cast to any: @payos/node type definitions are wrong (claims 0-1 args, actually needs 3)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const PayOSClass = PayOS as any;
+  return new PayOSClass(
     process.env.PAYOS_CLIENT_ID as string,
     process.env.PAYOS_API_KEY as string,
     process.env.PAYOS_CHECKSUM_KEY as string
@@ -57,6 +60,9 @@ export async function POST(req: NextRequest) {
       })),
       returnUrl: `${domain}/checkout/success?order=${order.orderNumber}`,
       cancelUrl: `${domain}/checkout/payment?order=${order.orderNumber}`,
+      // ✅ FIX: webhookUrl phải được gửi kèm mỗi payment link
+      // PayOS sẽ POST về URL này khi thanh toán thành công
+      webhookUrl: `${domain}/api/payment/webhook`,
     };
 
     console.log("[PayOS] Request body:", JSON.stringify(body, null, 2));

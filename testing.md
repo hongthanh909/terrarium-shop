@@ -1,23 +1,22 @@
 # Testing Log — Tiệm Rêu Décor
 
-> Cập nhật lần cuối: 2026-05-26 (21:00)
+> Cập nhật lần cuối: 2026-05-27
 
 ---
 
-## ✅ Bug Tracker (26/05 — Session tối)
+## ✅ Bug Tracker (Đã xử lý — 26/05 tối)
 
 | ID | Mô tả | Trạng thái |
 |----|-------|-----------|
 | BUG-008 | `ChunkLoadError: Loading chunk app/layout` — root layout dùng `headers()` không compatible với Turbopack | ✅ FIX: Dùng `ShopLayout` client component + `usePathname()` |
 | BUG-009 | Footer hiển thị đè lên admin panel | ✅ FIX: `ShopLayout` ẩn Header/Footer khi path bắt đầu `/admin` |
-| BUG-010 | `confirm()` browser dialog xấu — 10 chỗ toàn app | ✅ FIX: Tạo `ConfirmDialog` shadcn, fix orders + admin/products. Admin còn lại xóa confirm() |
+| BUG-010 | `confirm()` browser dialog xấu — 10 chỗ toàn app | ✅ FIX: Tạo `ConfirmDialog` shadcn, fix orders + admin/products |
 | BUG-011 | `/profile/favorites` spinner — icon lá không đẹp | ✅ FIX: Dùng `Loader2 animate-spin` |
 | BUG-012 | Footer contact info sai (terrariumshop.vn, 0909.123.456) | ✅ FIX: tiemreudecor@gmail.com, 0706.668.296, 32/16 Hẻm 32 Đường Tam Đa |
 
-
 ---
 
-## ✅ Bug Tracker (Đã xử lý 25/05)
+## ✅ Bug Tracker (Đã xử lý — 25/05)
 
 | ID | Mô tả | Trạng thái |
 |----|-------|-----------|
@@ -29,7 +28,7 @@
 
 ---
 
-## ✅ Tính Năng Mới & Fix (26/05)
+## ✅ Tính Năng Mới & Fix (26/05 — Session tối)
 
 | ID | Mô tả | Trạng thái |
 |----|-------|-----------|
@@ -38,150 +37,107 @@
 | REQ-003 | Reset giỏ hàng khi logout | ✅ XONG |
 | REQ-004 | Logic điểm thưởng tự động khi DELIVERED | ✅ XONG |
 | REQ-005 | Trang yêu thích `/profile/favorites` | ✅ XONG |
+| REQ-006 | Hủy đơn hàng (User) — Logic & Button | ✅ XONG |
+| REQ-007 | Tích hợp PayOS thay VietQR | ✅ XONG |
+| REQ-009 | Trang thanh toán QR chờ + Tự hủy sau 30 phút | ✅ XONG |
 
 ---
 
-## 🔥 Issues & Tính Năng Mới (26/05 — Đang thực thi)
+## ✅ Fix (27/05 — Session sáng)
 
-### [BUG-007] Session user/admin vẫn còn sau khi restart server
-- **Vấn đề:** Khởi động lại `npm run dev`, web vẫn nhớ trạng thái đăng nhập dù chưa logout.
-- **Giải thích:** Đây là **hành vi đúng và bình thường** của NextAuth — session được lưu trong cookie trình duyệt (JWT) và database, không phải bộ nhớ server. Khi restart server, cookie trong trình duyệt vẫn còn hợp lệ.
-- **Không phải bug** — Nếu bạn muốn test với trạng thái "khách", hãy bấm Logout hoặc dùng tab ẩn danh (Ctrl+Shift+N).
-- **Trạng thái:** ℹ️ Giải thích xong, không cần fix.
-
----
-
-### [REQ-006] Hủy đơn hàng (User) — Logic & Button
-- **Yêu cầu:**
-  - Đơn hàng ở trạng thái `PENDING` → User **có thể hủy**
-  - Đơn hàng đã `CONFIRMED` trở lên → User **không thể hủy**
-  - Thêm nút "Hủy đơn" trong chi tiết đơn hàng
-  - Admin thấy trạng thái đồng bộ khi user hủy
-- **Giải pháp:**
-  1. Thêm `PATCH /api/orders/[id]/cancel` — endpoint cho user hủy đơn, chỉ cho phép nếu status = PENDING
-  2. Thêm nút "Hủy đơn" vào phần expanded detail trong `/orders/page.tsx`
-  3. Khi hủy, update status = CANCELLED + ghi log, admin sẽ thấy qua API đang dùng
-- **Trạng thái:** ✅ ĐÃ THỰC HIỆN
+| ID | Mô tả | Trạng thái |
+|----|-------|-----------|
+| BUG-013 | Font tiếng Việt bị garbled trong admin pages (vouchers, categories, discounts, blog) | ✅ FIX: Python script reverse cp1250 double-encoding |
+| BUG-014 | Admin sidebar vẫn còn icon lá, chưa đồng bộ logo trang chủ | ✅ FIX: Thay bằng "tiệm Rêu Décor" Dancing Script font |
+| BUG-015 | `webpack cache ENOENT` warning mỗi lần start server | ✅ FIX: Dùng `npm run dev` (Turbopack) thay `npx next dev` |
+| BUG-016 | Trang trắng + no CSS khi load lần đầu | ✅ FIX: Turbopack compile 219ms, không có race condition |
+| BUG-017 | Không có error boundary — page lỗi hiện trang trắng | ✅ FIX: Tạo `app/error.tsx` global error boundary |
 
 ---
 
-### [REQ-007] Tích hợp PayOS thay VietQR
-- **Vấn đề cũ:** QR VietQR tĩnh không hiện, user phải chuyển khoản thủ công, admin phải kiểm tra tay.
-- **Giải pháp:** Tích hợp **PayOS** — payment gateway thực sự:
-  1. Khi user chọn "Chuyển khoản" → tạo order → gọi PayOS API tạo link thanh toán → **redirect sang PayOS**
-  2. PayOS hiển thị QR động + form thanh toán chuyên nghiệp
-  3. User thanh toán xong → PayOS gọi **webhook** → tự cập nhật đơn sang `PAID` + `CONFIRMED`
-  4. User được redirect về `/checkout/success` hoặc `/checkout/payment` (nếu hủy)
-- **Files:**
-  - `app/checkout/page.tsx` — nối PayOS vào submit flow
-  - `app/checkout/success/page.tsx` [MỚI] — trang xác nhận thanh toán thành công
-  - `app/checkout/payment/page.tsx` [MỚI] — trang fallback khi hủy thanh toán
-  - `app/api/payment/create-payment-link/route.ts` — tạo link PayOS
-  - `app/api/payment/webhook/route.ts` — nhận webhook xác nhận thanh toán
-- **Bugs phát sinh và đã fix:**
-  - ❌ `[PayOS] CLIENT_ID: thiếu` → `.env` ở root không được đọc khi chạy từ `apps/web` → ✅ Thêm PayOS keys vào `apps/web/.env.local`
-  - ❌ `"Order is already paid"` → orders route set `paymentStatus = PAID` ngay khi tạo đơn BANK_TRANSFER → ✅ Fix thành `PENDING`, webhook PayOS sẽ cập nhật sau
-  - ❌ `"PayOS is not a constructor"` (lần 1) → `require()` không lấy được ESM class → ✅ Fix dùng `PayOSModule.default || PayOSModule`
-  - ❌ `"PayOS is not a constructor"` (lần 2) → vẫn lỗi, `require()` hoàn toàn không tương thích → ✅ Fix dùng `await import("@payos/node")`
-  - ❌ Alert popup khó chịu khi PayOS lỗi → ✅ Xóa tất cả `alert()`, redirect sang trang QR riêng
-- **Trạng thái:** ✅ ĐÃ FIX TOÀN BỘ
+## 🔴 Lỗi CẦN FIX trước Deploy
 
-### [REQ-009] Trang thanh toán QR chờ + Tự hủy sau 30 phút
-- **Yêu cầu:**
-  - Không hiện alert khi PayOS lỗi
-  - Tạo trang chờ QR đẹp riêng (`/checkout/pending`)
-  - Tự hủy đơn sau 30 phút nếu chưa thanh toán
-  - Chỉ hiện "Thành công" khi PayOS xác nhận (webhook)
-- **Giải pháp:**
-  1. `app/checkout/pending/page.tsx` [MỚI] — VietQR QR + đồng hồ 30 phút + polling 12s
-  2. `app/api/orders/[id]/status/route.ts` [MỚI] — trả về payment status + tự hủy nếu hết hạn
-  3. Flow: PayOS thành công → redirect PayOS, PayOS lỗi → redirect pending page
-  4. COD → hiện trang success ngư cũ
-- **Trạng thái:** ✅ ĐÃ THỰC HIỆN
+| ID | Mô tả | Ưu tiên | Ghi chú |
+|----|-------|---------|---------|
+| BUG-018 | `NEXTAUTH_URL` vẫn là `localhost:3000` | 🔴 Critical | Phải đổi thành domain thật trước deploy |
+| BUG-019 | `NEXT_PUBLIC_SITE_URL` vẫn là `localhost:3000` | 🔴 Critical | PayOS redirect sẽ sai nếu không đổi |
+| BUG-020 | PayOS webhook URL chưa được set trên dashboard PayOS | 🔴 Critical | Cần vào PayOS dashboard → set `https://yourdomain.com/api/payment/webhook` |
+| BUG-021 | `npm run build` chưa được test — có thể có TypeScript errors | 🔴 Critical | Phải chạy build pass 0 errors trước deploy |
 
 ---
 
-## 📋 Checklist Test Manual
+## 🟡 Issues Cần Test Sau Deploy (Staging)
 
-### Storefront
-- [x] `/products/[slug]` — Skeleton loading hiển thị khi click
-- [x] `/products/[slug]` — Trust Badges dưới banner vận chuyển
-- [x] Header — Logout → giỏ hàng reset về 0
-- [x] Header dropdown → có mục "❤️ Yêu thích"
-- [x] `/profile/favorites` — Danh sách sản phẩm đã tym
-- [x] `/orders` — Nút "Hủy đơn" hiện khi status PENDING, ẩn khi CONFIRMED+
-- [ ] `/checkout` — Chọn Chuyển khoản → redirect sang PayOS (nếu OK) hoặc `/checkout/pending` (fallback)
-- [ ] `/checkout/pending` — QR hiển đúng số tiền, đồng hồ 30 phút chạy đúng
-- [ ] `/checkout/pending` — Khi thanh toán xong → tự chuyển sang `/checkout/success`
-- [ ] `/checkout/pending` — Sau 30 phút chưa TT → đơn tự hủy
-- [ ] `/checkout/success` — Hiển thị đúng sau khi PayOS xác nhận
-- [ ] `/profile/points` — Điểm hiển thị đúng sau khi đơn DELIVERED
+| ID | Mô tả | Ghi chú |
+|----|-------|---------|
+| TEST-001 | `/checkout` → Chuyển khoản → PayOS redirect hoạt động | Cần HTTPS thật để PayOS accept |
+| TEST-002 | `/checkout/pending` → QR hiển đúng số tiền, đồng hồ 30 phút | |
+| TEST-003 | Sau khi scan QR + thanh toán → tự chuyển `/checkout/success` | Cần PayOS webhook gọi về domain thật |
+| TEST-004 | 30 phút chưa TT → đơn tự hủy | |
+| TEST-005 | Email reset password gửi được (Resend API key chưa có) | `RESEND_API_KEY` còn trống |
+| TEST-006 | `/profile/points` → điểm hiển thị đúng sau khi đơn DELIVERED | |
 
 ---
 
-## 💡 REQ-008 — Hệ Thống Thông Báo UI (Đang lên kế hoạch)
+## 🟢 Nice-to-have (Sau khi deploy xong)
 
-> **Vấn đề hiện tại:** Toàn bộ thông báo đang dùng `alert()` / `confirm()` mặc định của trình duyệt (hộp thoại xấu, không khớp giao diện).
-
-### Các Ideas Đề Xuất
-
----
-
-#### 🥇 Idea A — Nâng cấp Toast (Sonner) — **ĐỀ XUẤT CHÍNH**
-> Dự án đã cài `sonner`. Thay toàn bộ `alert()` bằng toast đẹp.
-
-| Tình huống | Loại Toast | Nội dung |
-|-----------|-----------|---------|
-| Đặt hàng thành công | ✅ Success (xanh lá) | "Đặt hàng thành công! Mã đơn #XYZ" + nút [Xem đơn] |
-| Thêm vào giỏ | ✅ Success | "Đã thêm [Tên sản phẩm] vào giỏ hàng" |
-| Hủy đơn thành công | ✅ Success | "Đã hủy đơn hàng thành công" |
-| Lỗi API | ❌ Error (đỏ) | "Không thể thực hiện. Vui lòng thử lại" |
-| Admin: Lưu sản phẩm | ✅ Success | "Sản phẩm đã được lưu thành công" |
-| Admin: Xóa danh mục | ✅ Success | "Đã xóa danh mục" |
-| Loading khi submit | 🔄 Loading | "Đang xử lý..." → tự đổi sang ✅/❌ |
-
-**Vị trí toast:** Góc dưới bên phải (bottom-right)
-**Thời gian tự ẩn:** 4 giây
+| ID | Mô tả | Trạng thái |
+|----|-------|-----------|
+| REQ-008 | Toast notifications (Sonner) thay alert() — UX tốt hơn | ⏳ Chờ deploy xong |
+| REQ-010 | Admin Pin/Unpin WeeklyFeatured cho trang Explore | ⏳ Backlog |
+| REQ-011 | Pagination cho Orders, Products, Customers | ⏳ Backlog (cần 100+ records) |
+| REQ-012 | Open Graph image cho SEO | ⏳ Backlog |
 
 ---
 
-#### 🥈 Idea B — Custom Confirm Dialog (Thay browser confirm)
-> Thay hộp thoại `confirm("Bạn có chắc...")` bằng modal đẹp theo brand.
+## 📋 Checklist Deploy
 
-- Nền tối mờ (backdrop)
-- Box trắng bo góc, có icon cảnh báo ⚠️
-- Màu nút đồng bộ: "Xác nhận" xanh lá `#425733`, "Hủy" xám
-- Có animation slide-down khi mở
-
----
-
-#### 🥉 Idea C — Overlay Loading khi Submit
-> Khi bấm "Đặt hàng" / "Lưu" / "Xóa", hiện overlay mờ + spinner → sau đó chuyển sang ✅ animate.
-
-```
-[Bấm Đặt hàng]
-     ↓
-[Overlay tối + spinner xoay]
-     ↓
-[Icon ✅ to dần + text "Thành công!"]
-     ↓
-[Tự chuyển sang trang xác nhận]
+### Bước 1 — Test Build Local
+```bash
+cd apps/web
+npm run build     # Phải 0 errors
 ```
 
+### Bước 2 — Chuẩn bị Env Vars cho Production
+```env
+# ĐỔI các giá trị này:
+NEXTAUTH_URL="https://yourdomain.com"          # ← Đổi thành domain thật
+NEXT_PUBLIC_SITE_URL="https://yourdomain.com"  # ← Đổi thành domain thật
+
+# Giữ nguyên:
+DATABASE_URL="..."          # Supabase (cloud, OK)
+PAYOS_CLIENT_ID="..."       # OK
+PAYOS_API_KEY="..."         # OK
+PAYOS_CHECKSUM_KEY="..."    # OK
+NEXTAUTH_SECRET="..."       # OK
+```
+
+### Bước 3 — Deploy (Vercel — Recommended)
+```bash
+# Option A: GitHub auto-deploy (best)
+# Connect GitHub repo → Vercel sẽ auto-deploy mỗi khi push
+
+# Option B: CLI
+npx vercel --prod
+```
+
+### Bước 4 — Sau Deploy
+1. Vào PayOS Dashboard → Cập nhật Webhook URL: `https://yourdomain.com/api/payment/webhook`
+2. Test checkout flow với số tiền nhỏ
+3. Verify email (nếu Resend đã có key)
+
 ---
 
-### Phương án Triển khai Đề xuất
-Kết hợp **Idea A + Idea B** là tối ưu nhất:
-- **Idea A (Toast):** Cho tất cả thông báo thành công / lỗi / loading
-- **Idea B (Custom Dialog):** Cho xác nhận nguy hiểm (hủy đơn, xóa sản phẩm/danh mục)
-- Idea C (Loading Overlay): Có thể thêm sau nếu muốn premium hơn
+## 💡 REQ-008 — Hệ Thống Thông Báo UI (Kế hoạch)
 
-**Files cần thay đổi:**
-- `app/checkout/page.tsx` — thay `alert()` khi đặt hàng lỗi
-- `app/orders/page.tsx` — thay `confirm()` hủy đơn
-- `app/admin/products/create/page.tsx` — toast khi thêm sản phẩm
-- `app/admin/products/[id]/edit/page.tsx` — toast khi lưu/xóa sản phẩm
-- `app/admin/categories/page.tsx` — toast khi xóa danh mục
-- Tạo mới `components/ui/ConfirmDialog.tsx` — component dùng chung
+> Dùng `sonner` (đã cài) để thay toàn bộ `alert()` — triển khai sau deploy.
 
-**Trạng thái:** ⏳ Chờ xác nhận từ bạn để triển khai
+| Tình huống | Toast |
+|-----------|-------|
+| Đặt hàng thành công | ✅ Success "Đặt hàng thành công! Mã #XYZ" |
+| Thêm vào giỏ | ✅ Success "Đã thêm vào giỏ hàng" |
+| Hủy đơn | ✅ Success "Đã hủy đơn hàng" |
+| Lỗi API | ❌ Error "Vui lòng thử lại" |
+| Admin: Lưu sản phẩm | ✅ Success "Đã lưu" |
+
+**Files cần sửa:** `checkout/page.tsx`, `orders/page.tsx`, `admin/products/**`, `admin/categories/page.tsx`

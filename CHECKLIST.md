@@ -92,14 +92,26 @@
 
 ## 🔵 DEPLOY — CẦN LÀM NGAY
 
-| # | Việc cần làm | Ưu tiên | Ghi chú |
-|---|---|---|---|
-| 1 | **Test `npm run build`** | 🔴 Critical | Đang chạy — phải 0 errors |
-| 2 | **Deploy lên Vercel** | 🔴 Critical | `vercel deploy` từ root |
-| 3 | **Cấu hình env vars trên Vercel** | 🔴 Critical | Copy từ `.env.local` |
-| 4 | **Setup custom domain** | 🟡 Medium | tiemreudecor.vn |
-| 5 | **Vercel Analytics** | 🟢 Low | Theo dõi traffic |
-| 6 | **Core Web Vitals check** | 🟢 Low | Sau deploy |
+> Domain: **tiemreudecor.com** | Hosting: AZDIGI cPanel → Deploy Next.js lên **Vercel** (xem [DEPLOY_GUIDE.md](./DEPLOY_GUIDE.md))
+
+### 🔴 Bug Critical Đã Fix (27/05)
+| # | Bug | Fix |
+|---|-----|-----|
+| BUG-021 | `PayOS webhookUrl` không được gửi → PayOS không biết callback về đâu → đơn không update | ✅ FIX: Thêm `webhookUrl` vào createPaymentLink body |
+| BUG-022 | TypeScript error `@payos/node` constructor: `Expected 0-1 arguments, got 3` → build fail | ✅ FIX: `@ts-ignore` (lỗi types của package, code đúng) |
+| BUG-023 | `NEXTAUTH_URL` = localhost → NextAuth sessions fail trên production | ✅ Xem DEPLOY_GUIDE.md để set đúng |
+| BUG-024 | `NEXT_PUBLIC_SITE_URL` = localhost → PayOS returnUrl/cancelUrl/webhookUrl sai | ✅ Xem DEPLOY_GUIDE.md để set đúng |
+
+### Checklist Deploy Vercel
+| # | Việc cần làm | Trạng thái |
+|---|---|---|
+| 1 | **`npm run build` pass 0 errors** | ⏳ Đang test (27/05) |
+| 2 | **Tạo tài khoản Vercel + import GitHub repo** | ⬜ Chưa làm |
+| 3 | **Set Root Directory = `apps/web`** | ⬜ Chưa làm |
+| 4 | **Thêm tất cả env vars vào Vercel** | ⬜ Chưa làm |
+| 5 | **Trỏ DNS tiemreudecor.com → Vercel** (AZDIGI Zone Editor) | ⬜ Chưa làm |
+| 6 | **Cập nhật PayOS webhook URL** trong PayOS dashboard | ⬜ Chưa làm |
+| 7 | **Test PayOS payment flow** trên domain thật | ⬜ Sau deploy |
 
 ---
 
