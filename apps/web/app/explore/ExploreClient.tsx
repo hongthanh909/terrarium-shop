@@ -141,6 +141,7 @@ export function ExploreClient({ featured, pinned, topVoted, newArrivals, weeklyF
               <button
                 onClick={handleVote}
                 disabled={isLoading}
+                aria-label={product.userVoted ? "Bỏ bình chọn sản phẩm" : "Bình chọn sản phẩm yêu thích"}
                 className="absolute top-2 right-2 p-2 rounded-full bg-white/80 backdrop-blur-sm hover:bg-white transition-colors shadow-sm disabled:opacity-50"
               >
                 <Heart 

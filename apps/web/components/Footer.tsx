@@ -92,7 +92,7 @@ export default async function Footer() {
 
           {/* Quick Links */}
           <div>
-            <h4 className="font-bold text-[hsl(220,14%,25%)] mb-4">Khám phá</h4>
+            <h3 className="font-bold text-[hsl(220,14%,25%)] mb-4">Khám phá</h3>
             <ul className="space-y-3 text-sm text-[hsl(220,14%,45%)]">
               <li>
                 <Link href="/products" className="hover:text-[#425733] transition-colors">
@@ -119,7 +119,7 @@ export default async function Footer() {
 
           {/* Contact */}
           <div>
-            <h4 className="font-bold text-[hsl(220,14%,25%)] mb-4">Liên hệ</h4>
+            <h3 className="font-bold text-[hsl(220,14%,25%)] mb-4">Liên hệ</h3>
             <ul className="space-y-3 text-sm text-[hsl(220,14%,45%)]">
               {emails.length > 0 ? (
                 emails.map((item: any, idx: number) => (
@@ -182,7 +182,7 @@ export default async function Footer() {
 
           {/* Policies */}
           <div>
-            <h4 className="font-bold text-[hsl(220,14%,25%)] mb-4">Chính sách</h4>
+            <h3 className="font-bold text-[hsl(220,14%,25%)] mb-4">Chính sách</h3>
             <ul className="space-y-3 text-sm text-[hsl(220,14%,45%)]">
               <li>
                 <Link href="/policies/warranty" className="hover:text-[#425733] transition-colors">
@@ -229,6 +229,7 @@ export default async function Footer() {
                     href={item.value}
                     target="_blank"
                     rel="noopener noreferrer"
+                    aria-label={`Theo dõi chúng tôi trên ${item.label}`}
                     className="w-8 h-8 rounded-full bg-[#e3ebdd] hover:bg-[#425733] hover:text-white flex items-center justify-center transition-all"
                   >
                     <Icon className="w-4 h-4" />

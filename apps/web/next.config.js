@@ -3,6 +3,12 @@
 module.exports = {
   reactStrictMode: true,
 
+  // Nén response để giảm băng thông
+  compress: true,
+
+  // Bỏ header X-Powered-By để bảo mật và tăng nhẹ hiệu suất
+  poweredByHeader: false,
+
   // Tối ưu package imports (tree-shaking tốt hơn = ít module compile hơn)
   experimental: {
     optimizePackageImports: [
@@ -25,9 +31,14 @@ module.exports = {
 
   images: {
     formats: ['image/avif', 'image/webp'],
-    deviceSizes: [640, 750, 828, 1080, 1200],
-    imageSizes: [16, 32, 48, 64, 96, 128, 256],
+    // Kích thước thiết bị hợp lý cho mobile/desktop
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920],
+    // Kích thước nhỏ cho thumbnail, icon
+    imageSizes: [16, 32, 48, 64, 96, 128, 192, 256],
+    // Cache ảnh 1 ngày
     minimumCacheTTL: 86400,
+    // Chất lượng ảnh 80 thay vì mặc định 75 — cân bằng chất lượng/kích thước
+    qualities: [75, 80, 85],
     remotePatterns: [
       {
         protocol: 'https',
@@ -58,5 +69,26 @@ module.exports = {
         hostname: '**.googleusercontent.com',
       },
     ],
+  },
+
+  // Headers bảo mật + cache tốt hơn
+  async headers() {
+    return [
+      {
+        source: '/(.*)',
+        headers: [
+          { key: 'X-Content-Type-Options', value: 'nosniff' },
+          { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
+          { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+        ],
+      },
+      {
+        // Cache static assets lâu hơn
+        source: '/(_next/static|favicon.ico)(.*)',
+        headers: [
+          { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
+        ],
+      },
+    ];
   },
 };
