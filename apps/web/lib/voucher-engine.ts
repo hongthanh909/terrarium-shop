@@ -6,6 +6,7 @@ export interface ValidationResult {
   valid: boolean;
   error?: string;
   discountAmount?: number;
+  isFreeShipping?: boolean;
   campaign?: any;
 }
 
@@ -70,16 +71,20 @@ export async function validateCoupon(
     subtotal
   );
 
-  if (discountAmount <= 0) {
+  // Handle FREE_SHIPPING separately — discount amount = 0 but valid
+  if (campaign.type === DiscountType.FREE_SHIPPING) {
     return {
-      valid: false,
-      error: "Discount code does not apply to items in your cart",
+      valid: true,
+      discountAmount: 0,
+      isFreeShipping: true,
+      campaign,
     };
   }
 
   return {
     valid: true,
     discountAmount,
+    isFreeShipping: false,
     campaign,
   };
 }
@@ -104,7 +109,7 @@ function calculateDiscountAmount(
       break;
 
     case DiscountType.FREE_SHIPPING:
-      // Free shipping discount - handled separately
+      // Handled separately above — don't fall through to discountAmount = 0
       discountAmount = 0;
       break;
   }

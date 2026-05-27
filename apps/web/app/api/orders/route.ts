@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
+import { incrementDiscountUsage } from "@/lib/voucher-engine";
 
 // Helper: normalize number | string → number
 const toNum = (v: number | string): number =>
@@ -41,6 +42,8 @@ const createOrderSchema = z.object({
   shippingFee: z.number().or(z.string()),
   discount: z.number().or(z.string()).default(0),
   total: z.number().or(z.string()),
+  discountCode: z.string().optional(),
+  discountCampaignId: z.string().optional(),
 });
 
 export async function POST(request: NextRequest) {
@@ -65,6 +68,7 @@ export async function POST(request: NextRequest) {
       shippingFee,
       discount,
       total,
+      discountCampaignId,
     } = validated.data;
 
 
@@ -141,6 +145,10 @@ export async function POST(request: NextRequest) {
             },
           });
         }
+      }
+
+      if (discountCampaignId) {
+        await incrementDiscountUsage(discountCampaignId);
       }
 
       return tx.order.findUnique({

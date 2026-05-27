@@ -33,6 +33,8 @@ export default function CheckoutPage() {
   });
 
   const [voucherApplied, setVoucherApplied] = useState(false);
+  const [voucherCampaignId, setVoucherCampaignId] = useState<string | null>(null);
+  const [isFreeShipping, setIsFreeShipping] = useState(false);
   const [discount, setDiscount] = useState(0);
   const [shippingFee, setShippingFee] = useState(30000);
   const [loading, setLoading] = useState(false);
@@ -71,8 +73,17 @@ export default function CheckoutPage() {
         }),
       });
       const data = await response.json();
-      if (data.valid && data.discountAmount) {
-        setDiscount(data.discountAmount);
+      if (data.valid) {
+        if (data.isFreeShipping) {
+          // FREE_SHIPPING: set phí ship = 0
+          setIsFreeShipping(true);
+          setShippingFee(0);
+          setDiscount(0);
+        } else {
+          setDiscount(data.discountAmount || 0);
+          setIsFreeShipping(false);
+        }
+        setVoucherCampaignId(data.campaign?.id || null);
         setVoucherApplied(true);
       } else {
         alert(data.error || data.message || "Mã giảm giá không hợp lệ");
@@ -118,6 +129,9 @@ export default function CheckoutPage() {
         shippingFee: shippingFee,
         discount: discount,
         total: total,
+        // Voucher info — dùng để increment usage count sau khi order thành công
+        discountCode: voucherApplied ? formData.voucherCode : undefined,
+        discountCampaignId: voucherCampaignId || undefined,
       };
 
       // Bước 1: Tạo đơn hàng

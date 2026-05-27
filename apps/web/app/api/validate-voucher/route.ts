@@ -15,10 +15,8 @@ export async function POST(request: NextRequest) {
 
     const result = await validateCoupon(code, cartItems || [], subtotal, customerId);
 
-    if (result.valid && result.discountAmount) {
-      // Increment usage count
-      await incrementDiscountUsage(result.campaign.id);
-    }
+    // NOTE: Do NOT increment usage here — only increment when order is actually placed
+    // Usage is incremented in the orders API after successful payment
 
     return NextResponse.json(result);
   } catch (error) {

@@ -81,7 +81,7 @@ export async function POST(request: NextRequest) {
         maxDiscountAmount: maxDiscountAmount ? parseFloat(maxDiscountAmount.toString()) : null,
         startsAt: new Date(startsAt),
         expiresAt: new Date(expiresAt),
-        usageLimit: usageLimit || null,
+        usageLimit: usageLimit ? parseInt(usageLimit.toString(), 10) : null,
         status: status || "INACTIVE",
         applicableTo,
         description,
