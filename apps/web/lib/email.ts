@@ -3,8 +3,9 @@ import { Resend } from 'resend';
 const resendApiKey = process.env.RESEND_API_KEY;
 const resend = resendApiKey ? new Resend(resendApiKey) : null;
 
-// Default sender email (You can change this once you verify a domain in Resend)
-const DEFAULT_FROM = 'Tiệm Rêu Decor <onboarding@resend.dev>'; 
+// Default sender email — dùng domain đã verified trên Resend
+// Nếu chưa verify domain, Resend sẽ dùng 'onboarding@resend.dev' (chỉ gửi đến email owner)
+const DEFAULT_FROM = 'Tiệm Rêu Decor <no-reply@tiemreudecor.com>'; 
 
 export async function sendPasswordResetEmail(email: string, token: string) {
   if (!resend) {
@@ -13,7 +14,7 @@ export async function sendPasswordResetEmail(email: string, token: string) {
     return { success: false, error: "RESEND_API_KEY is not configured" };
   }
 
-  const resetLink = `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/reset-password?token=${token}`;
+  const resetLink = `${process.env.NEXT_PUBLIC_SITE_URL || 'https://tiemreudecor.com'}/reset-password?token=${token}`;
 
   try {
     const { data, error } = await resend.emails.send({

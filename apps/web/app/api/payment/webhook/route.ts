@@ -4,6 +4,14 @@ import { errorResponse, successResponse } from "@/lib/api-helpers";
 
 export const dynamic = "force-dynamic";
 
+export async function GET() {
+  return successResponse({
+    message: "PayOS Webhook endpoint — Tiệm Rêu Decor",
+    status: "active",
+    method: "Endpoint này chỉ nhận POST requests từ PayOS.",
+  });
+}
+
 async function getPayOS() {
   // @payos/node uses NAMED export { PayOS }, not default export!
   const { PayOS } = await import("@payos/node");

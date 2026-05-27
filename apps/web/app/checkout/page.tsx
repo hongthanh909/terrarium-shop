@@ -40,6 +40,9 @@ export default function CheckoutPage() {
   const [orderId, setOrderId] = useState("");
   // Lưu lại tổng tiền trước khi clearCart() xóa state
   const [finalTotal, setFinalTotal] = useState(0);
+  const [finalSubtotal, setFinalSubtotal] = useState(0);
+  const [finalShippingFee, setFinalShippingFee] = useState(0);
+  const [finalDiscount, setFinalDiscount] = useState(0);
 
   const subtotal = getCartTotal();
   const total = subtotal + shippingFee - discount;
@@ -168,6 +171,9 @@ export default function CheckoutPage() {
       // COD → hiển thị trang thành công bình thường
       setOrderId(order.id);
       setFinalTotal(total);
+      setFinalSubtotal(subtotal);
+      setFinalShippingFee(shippingFee);
+      setFinalDiscount(discount);
       setOrderCreated(true);
       clearCart();
 
@@ -294,21 +300,21 @@ export default function CheckoutPage() {
               <CardContent className="space-y-2">
                 <div className="flex justify-between text-sm text-muted-foreground">
                   <span>Tạm tính</span>
-                  <span>{subtotal.toLocaleString("vi-VN")}₫</span>
+                  <span>{finalSubtotal.toLocaleString("vi-VN")}₫</span>
                 </div>
                 <div className="flex justify-between text-sm text-muted-foreground">
                   <span>Phí vận chuyển</span>
-                  <span>{shippingFee.toLocaleString("vi-VN")}₫</span>
+                  <span>{finalShippingFee.toLocaleString("vi-VN")}₫</span>
                 </div>
-                {discount > 0 && (
+                {finalDiscount > 0 && (
                   <div className="flex justify-between text-sm text-[#425733]">
                     <span>Giảm giá</span>
-                    <span>-{discount.toLocaleString("vi-VN")}₫</span>
+                    <span>-{finalDiscount.toLocaleString("vi-VN")}₫</span>
                   </div>
                 )}
                 <div className="flex justify-between font-bold text-base pt-2 border-t border-[#c8d5be]">
                   <span>Tổng cộng</span>
-                  <span className="text-[#425733]">{total.toLocaleString("vi-VN")}₫</span>
+                  <span className="text-[#425733]">{finalTotal.toLocaleString("vi-VN")}₫</span>
                 </div>
                 <p className="text-sm text-muted-foreground pt-1">Vui lòng chuẩn bị đúng số tiền khi nhận hàng. Đơn vị vận chuyển sẽ liên hệ bạn để xếp lịch giao hàng.</p>
               </CardContent>

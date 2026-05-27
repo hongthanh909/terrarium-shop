@@ -36,20 +36,26 @@ export async function GET() {
       // Pending reviews
       prisma.review.count({ where: { approved: false } }),
 
-      // This month revenue
+      // This month revenue — chỉ tính đơn đã thanh toán (banking đã paid HOẶC COD đã giao)
       prisma.order.aggregate({
         where: {
           createdAt: { gte: startOfMonth },
-          status: { notIn: ["CANCELLED"] },
+          OR: [
+            { paymentStatus: "PAID" },
+            { paymentMethod: "COD", status: "DELIVERED" },
+          ],
         },
         _sum: { total: true },
       }),
 
-      // Last month revenue
+      // Last month revenue — chỉ tính đơn đã thanh toán
       prisma.order.aggregate({
         where: {
           createdAt: { gte: startOfLastMonth, lte: endOfLastMonth },
-          status: { notIn: ["CANCELLED"] },
+          OR: [
+            { paymentStatus: "PAID" },
+            { paymentMethod: "COD", status: "DELIVERED" },
+          ],
         },
         _sum: { total: true },
       }),

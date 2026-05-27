@@ -128,7 +128,7 @@ export default function MyOrdersPage() {
     ORDER_STATUS_STEPS.findIndex((s) => s.key === status);
 
   const totalSpent = orders
-    .filter((order: Order) => order.status !== "CANCELLED")
+    .filter((order: Order) => order.status === "DELIVERED")
     .reduce((sum: number, order: Order) => sum + order.total, 0);
 
 

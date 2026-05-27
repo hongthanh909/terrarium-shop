@@ -161,7 +161,7 @@ export default async function Footer() {
               ) : (
                 <li className="flex items-start gap-2">
                   <MapPin className="w-4 h-4 text-[#425733] mt-0.5" />
-                  <span>32/16 Hẻm 32 Đường Tam Đa, Phường Long Trường, TP.HCM</span>
+                <span>32/16 Đường Tam Đa, Phường Long Trường, TP.HCM</span>
                 </li>
               )}
               {workingHours.length > 0 ? (
@@ -174,7 +174,7 @@ export default async function Footer() {
               ) : (
                 <li className="flex items-center gap-2">
                   <Clock className="w-4 h-4 text-[#425733]" />
-                  <span>Thứ 2 - 7 (9h00 - 17h30)</span>
+                  <span>Thứ 2 - Thứ 7 (9h00 - 17h00)</span>
                 </li>
               )}
             </ul>

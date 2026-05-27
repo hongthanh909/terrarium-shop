@@ -2,6 +2,54 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { verifyAdminRequest, unauthorizedResponse } from "@/lib/admin-auth";
 import { logAdminAction } from "@/lib/audit";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const customerId = (session.user as any).id;
+
+    const order = await prisma.order.findUnique({
+      where: { id: params.id },
+      include: {
+        items: true,
+        shippingInfo: true,
+        statusLogs: { orderBy: { createdAt: "desc" } },
+      },
+    });
+
+    if (!order) {
+      return NextResponse.json({ error: "Order not found" }, { status: 404 });
+    }
+
+    // Ensure customer owns this order
+    if (order.customerId !== customerId) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    return NextResponse.json({
+      ...order,
+      total: Number(order.total),
+      subtotal: Number(order.subtotal),
+      shippingFee: Number(order.shippingFee),
+      discount: Number(order.discount),
+      items: order.items.map((item) => ({
+        ...item,
+        price: Number(item.price),
+      })),
+    });
+  } catch (error) {
+    console.error("Error fetching order:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
+}
 
 export async function PATCH(
   request: NextRequest,

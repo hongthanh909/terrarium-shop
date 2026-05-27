@@ -4,6 +4,7 @@ import { verifyAdminRequest, unauthorizedResponse } from "@/lib/admin-auth";
 import { logAdminAction } from "@/lib/audit";
 import { createCategorySchema } from "@/lib/validations";
 import { z } from "zod";
+import { revalidatePath } from "next/cache";
 
 
 export async function GET(request: NextRequest) {
@@ -108,6 +109,10 @@ export async function POST(request: NextRequest) {
       name: category.name,
       slug: category.slug,
     });
+
+    // Revalidate user-facing pages
+    revalidatePath("/products");
+    revalidatePath("/");
 
     return NextResponse.json(category, { status: 201 });
   } catch (error) {

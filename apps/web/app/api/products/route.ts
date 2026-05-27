@@ -6,6 +6,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { verifyAdminRequest, unauthorizedResponse } from "@/lib/admin-auth";
 import { logAdminAction } from "@/lib/audit";
+import { revalidatePath } from "next/cache";
 
 
 export async function GET(request: NextRequest) {
@@ -224,6 +225,10 @@ export async function POST(request: NextRequest) {
       name: product!.name,
       slug: product!.slug,
     });
+
+    // Revalidate user-facing pages so new product appears immediately
+    revalidatePath("/products");
+    revalidatePath("/");
 
     return NextResponse.json(product, { status: 201 });
   } catch (error) {

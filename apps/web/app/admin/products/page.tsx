@@ -49,22 +49,30 @@ export default function AdminProductsPage() {
   };
 
   const doDelete = async (id: string) => {
+    // Optimistic update — remove from cache immediately
+    queryClient.setQueryData(["admin-products"], (old: Product[] | undefined) =>
+      old ? old.filter((p) => p.id !== id) : []
+    );
+    setConfirmDeleteId(null);
+
     try {
       const response = await fetch(`/api/products/${id}`, {
         method: "DELETE",
       });
 
       if (response.ok) {
-        queryClient.invalidateQueries({ queryKey: ["admin-products"] });
         toast.success("Xóa sản phẩm thành công!");
+        // Refetch to ensure consistency
+        queryClient.invalidateQueries({ queryKey: ["admin-products"] });
       } else {
         toast.error("Không thể xóa sản phẩm");
+        // Revert optimistic update
+        queryClient.invalidateQueries({ queryKey: ["admin-products"] });
       }
     } catch (error) {
       console.error("Error deleting product:", error);
       toast.error("Lỗi khi xóa sản phẩm");
-    } finally {
-      setConfirmDeleteId(null);
+      queryClient.invalidateQueries({ queryKey: ["admin-products"] });
     }
   };
 

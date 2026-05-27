@@ -5,6 +5,7 @@ import { logAdminAction } from "@/lib/audit";
 import { updateProductSchema } from "@/lib/validations";
 import { supabaseAdmin } from "@/lib/supabase";
 import { z } from "zod";
+import { revalidatePath } from "next/cache";
 
 /** Extract file path from Supabase public URL */
 function extractStoragePath(url: string): string | null {
@@ -169,6 +170,10 @@ export async function PUT(
       });
     }
 
+    // Revalidate user-facing pages
+    revalidatePath("/products");
+    revalidatePath("/");
+
     return NextResponse.json(product);
   } catch (error) {
     if (error instanceof z.ZodError) {
@@ -229,6 +234,10 @@ export async function DELETE(
     await logAdminAction(admin.id, "DELETE", "Product", id, {
       name: product.name,
     });
+
+    // Revalidate user-facing pages
+    revalidatePath("/products");
+    revalidatePath("/");
 
     return NextResponse.json({ success: true });
   } catch (error) {
