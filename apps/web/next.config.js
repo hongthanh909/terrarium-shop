@@ -37,8 +37,6 @@ module.exports = {
     imageSizes: [16, 32, 48, 64, 96, 128, 192, 256],
     // Cache ảnh 1 ngày
     minimumCacheTTL: 86400,
-    // Chất lượng ảnh 80 thay vì mặc định 75 — cân bằng chất lượng/kích thước
-    qualities: [75, 80, 85],
     remotePatterns: [
       {
         protocol: 'https',
