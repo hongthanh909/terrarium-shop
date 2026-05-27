@@ -21,11 +21,24 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
 
-    const payos = await getPayOS();
-    // Verify webhook data with PayOS checksum
-    const webhookData = payos.verifyPaymentWebhookData(body);
+    // PayOS sends a confirmation/test ping when registering the webhook URL.
+    // It may be an empty object or have no orderCode — just acknowledge it.
+    if (!body || Object.keys(body).length === 0) {
+      return successResponse({ received: true });
+    }
 
-    if (webhookData.code === "00") {
+    const payos = await getPayOS();
+
+    let webhookData: any;
+    try {
+      // Verify webhook data with PayOS checksum
+      webhookData = payos.verifyPaymentWebhookData(body);
+    } catch {
+      // PayOS test ping has an invalid/empty signature — respond 200 to confirm URL
+      return successResponse({ received: true });
+    }
+
+    if (webhookData?.code === "00") {
       // Payment successful
       const orderCode = webhookData.orderCode;
 
