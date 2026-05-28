@@ -9,6 +9,7 @@ import { ScrollReveal } from "@/components/ui/scroll-reveal";
 import { ReviewMarquee } from "@/components/ui/review-marquee";
 import { StatsSection } from "@/components/ui/number-ticker";
 import { prisma } from "@/lib/prisma";
+import { FeaturedProductCard } from "@/components/ui/featured-product-card";
 
 export const metadata: Metadata = {
   title: "Terrarium Shop | Mang Thiên Nhiên Vào Trong Nhà",
@@ -192,41 +193,19 @@ export default async function Home() {
               </div>
             </ScrollReveal>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {featuredProducts.map((product: any, index: number) => (
                 <ScrollReveal key={product.id} direction="up" delay={index * 0.1} className="h-full">
-                  <Link href={`/products/${product.slug}`} className="block h-full">
-                    <Card className="overflow-hidden hover:shadow-soft-xl transition-all duration-300 hover:-translate-y-1 group border-0 rounded-2xl h-full flex flex-col">
-                      <CardContent className="p-0 flex flex-col h-full">
-                        <div className="aspect-square relative overflow-hidden rounded-t-2xl">
-                          {product.images.length > 0 ? (
-                            <Image
-                              src={product.images[0]}
-                              alt={product.name}
-                              fill
-                              className="object-cover group-hover:scale-105 transition-transform duration-500"
-                              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
-                            />
-                          ) : (
-                            <div className="w-full h-full bg-gradient-to-br from-[#e3ebdd] to-[#f0f4ec] flex items-center justify-center">
-                              <Sprout className="w-16 h-16 text-[#6d8c5a]" />
-                            </div>
-                          )}
-                        </div>
-                        <div className="p-5 flex flex-col flex-1">
-                          <Badge variant="secondary" className="text-xs w-fit mb-3 font-semibold bg-[#e3ebdd] text-[#425733]">
-                            {product.category.name}
-                          </Badge>
-                          <h3 className="font-bold text-[hsl(220,14%,25%)] mb-1 group-hover:text-[#425733] transition-colors line-clamp-2 min-h-[3rem]">
-                            {product.name}
-                          </h3>
-                          <p className="text-xl font-bold text-[#425733] mt-auto pt-2">
-                            {Number(product.basePrice.toString()).toLocaleString("vi-VN")}₫
-                          </p>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </Link>
+                  <FeaturedProductCard
+                    id={product.id}
+                    slug={product.slug}
+                    name={product.name}
+                    basePrice={Number(product.basePrice.toString())}
+                    images={product.images}
+                    category={product.category ? { name: product.category.name } : undefined}
+                    isNew={product.isNew || false}
+                    isBestseller={product.isBestseller || false}
+                  />
                 </ScrollReveal>
               ))}
             </div>
