@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 
 // SePay VA — KienLongBank (chuyển khoản vào số này để SePay tự động xác nhận)
 const BANK_NAME = "KienLongBank";
-const BANK_ACCOUNT = "1014991000046l2299";
+const BANK_ACCOUNT = "101499100004612299";
 const BANK_OWNER = "NGUYEN THANH HONG";
 const BANK_BIN = "970452"; // KienLong BIN
 const TOTAL_SECONDS = 30 * 60; // 30 phút

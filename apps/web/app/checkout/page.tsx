@@ -182,7 +182,7 @@ export default function CheckoutPage() {
 
   if (orderCreated) {
     const bankName = "KienLongBank";
-    const bankAccount = "1014991000046l2299";
+    const bankAccount = "101499100004612299";
     const bankOwner = "NGUYEN THANH HONG";
     const bankBin = "970452"; // KienLong BIN
     const transferAmount = finalTotal; // Dùng finalTotal — được lưu trước khi clearCart()
