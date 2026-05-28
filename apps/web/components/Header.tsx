@@ -279,11 +279,11 @@ export default function Header() {
                       )}
                       <p className="text-sm font-bold text-[#425733] mt-1">{item.price.toLocaleString("vi-VN")}₫</p>
                       <div className="flex items-center gap-2 mt-2">
-                        <button onClick={() => updateQuantity(item.productId, item.variants, item.quantity - 1)} className="w-6 h-6 rounded-full bg-white border border-gray-200 flex items-center justify-center hover:border-[#425733] transition-colors">
+                        <button onClick={() => updateQuantity(item.productId, item.quantity - 1, item.variants)} className="w-6 h-6 rounded-full bg-white border border-gray-200 flex items-center justify-center hover:border-[#425733] transition-colors">
                           <Minus className="w-3 h-3" />
                         </button>
                         <span className="text-sm font-semibold w-6 text-center">{item.quantity}</span>
-                        <button onClick={() => updateQuantity(item.productId, item.variants, item.quantity + 1)} className="w-6 h-6 rounded-full bg-white border border-gray-200 flex items-center justify-center hover:border-[#425733] transition-colors">
+                        <button onClick={() => updateQuantity(item.productId, item.quantity + 1, item.variants)} className="w-6 h-6 rounded-full bg-white border border-gray-200 flex items-center justify-center hover:border-[#425733] transition-colors">
                           <Plus className="w-3 h-3" />
                         </button>
                         <button onClick={() => removeItem(item.productId, item.variants)} className="ml-auto w-6 h-6 rounded-full bg-white border border-gray-200 flex items-center justify-center hover:border-red-300 hover:text-red-500 transition-colors text-gray-400">
