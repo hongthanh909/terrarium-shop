@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Heart, ShoppingBag, ArrowLeft, Loader2, Leaf } from "lucide-react";
+import { Heart, ShoppingBag, ArrowLeft, Loader2, Package } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useCartStore } from "@/lib/store/cartStore";
@@ -136,7 +136,7 @@ export default function FavoritesPage() {
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center">
-                    <Leaf className="w-10 h-10 text-[#6d8c5a]" />
+                    <Package className="w-10 h-10 text-[#6d8c5a]" />
                   </div>
                 )}
                 {/* Unvote button */}

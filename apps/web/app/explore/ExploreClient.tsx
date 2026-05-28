@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { Leaf, Heart, Star, ShoppingCart } from "lucide-react";
+import { Package, Heart, Star, ShoppingCart } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "sonner";
 import { useState } from "react";
@@ -124,7 +124,7 @@ export function ExploreClient({ featured, pinned, topVoted, newArrivals, weeklyF
                   className="object-cover"
                 />
               ) : (
-                <Leaf className="w-16 h-16 text-[#5a7a48]" />
+                <Package className="w-16 h-16 text-[#5a7a48]" />
               )}
               {product.featured && (
                 <Badge className="absolute top-2 left-2 bg-[hsl(45,90%,60%)] text-[hsl(45,95%,25%)]">
@@ -269,7 +269,7 @@ export function ExploreClient({ featured, pinned, topVoted, newArrivals, weeklyF
                         />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">
-                          <Leaf className="w-20 h-20 text-white/50" />
+                          <Package className="w-20 h-20 text-white/50" />
                         </div>
                       )}
                     </div>

@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { Leaf, Filter, Search, ShoppingCart } from "lucide-react";
+import { Package, Filter, Search, ShoppingCart } from "lucide-react";
 import { useCartStore } from "@/lib/store/cartStore";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -152,7 +152,7 @@ export function ProductsClient({
         {/* Products Grid */}
         {initialProducts.length === 0 ? (
           <div className="text-center py-20">
-            <Leaf className="w-16 h-16 mx-auto text-[#6d8c5a] mb-4" />
+            <Package className="w-16 h-16 mx-auto text-[#6d8c5a] mb-4" />
             <p className="text-[hsl(220,14%,45%)] mb-4">Không tìm thấy sản phẩm nào.</p>
             <Button
               variant="outline"
@@ -177,7 +177,7 @@ export function ProductsClient({
                           className="object-cover"
                         />
                       ) : (
-                        <Leaf className="w-16 h-16 text-[#5a7a48]" />
+                        <Package className="w-16 h-16 text-[#5a7a48]" />
                       )}
                     </div>
                     <div className="p-4 flex-1 flex flex-col">

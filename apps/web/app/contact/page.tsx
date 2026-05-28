@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Leaf, Mail, Phone, MapPin, Clock } from "lucide-react";
+import { Building2, Mail, Phone, MapPin, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -73,7 +73,7 @@ export default function ContactPage() {
         {/* Header */}
         <div className="text-center mb-12">
           <div className="w-16 h-16 rounded-2xl bg-[#425733] flex items-center justify-center mx-auto mb-4">
-            <Leaf className="w-8 h-8 text-[#ffffff]" />
+            <Building2 className="w-8 h-8 text-[#ffffff]" />
           </div>
           <h1 className="text-4xl font-bold text-[hsl(220,14%,25%)] mb-4">Liên Hệ</h1>
           <p className="text-[hsl(220,14%,45%)] max-w-2xl mx-auto">

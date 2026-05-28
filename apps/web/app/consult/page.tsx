@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Send, Leaf, Bot, User } from "lucide-react";
+import { Send, Sprout, Bot, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -58,7 +58,7 @@ export default function ConsultPage() {
         {/* Header */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-[#e3ebdd] mb-4">
-            <Leaf className="w-8 h-8 text-[#425733]" />
+            <Sprout className="w-8 h-8 text-[#425733]" />
           </div>
           <h1 className="text-3xl font-bold text-[hsl(220,14%,25%)] mb-2">Tư Vấn</h1>
           <p className="text-[hsl(220,14%,45%)]">

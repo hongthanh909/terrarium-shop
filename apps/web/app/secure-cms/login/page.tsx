@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { Leaf, Lock, Mail, Eye, EyeOff, AlertCircle } from "lucide-react";
+import { Sprout, Lock, Mail, Eye, EyeOff, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -56,7 +56,7 @@ export default function AdminLoginPage() {
         {/* Logo */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-16 h-16 bg-[#425733] rounded-2xl mb-4 shadow-lg">
-            <Leaf className="w-8 h-8 text-white" />
+            <Sprout className="w-8 h-8 text-white" />
           </div>
           <h1 className="text-2xl font-bold text-[#2d3a24]">Quản Trị Terrarium</h1>
           <p className="text-sm text-gray-500 mt-1">Đăng nhập để quản lý cửa hàng</p>

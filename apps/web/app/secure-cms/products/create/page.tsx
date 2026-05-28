@@ -4,7 +4,9 @@ import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowLeft, Plus, X, Save, Upload, Image as ImageIcon } from "lucide-react";
+import {
+  ArrowLeft, X, Save, Upload, Image as ImageIcon, Star, Plus,
+} from "lucide-react";
 import { toast } from "sonner";
 import { FormField } from "@/components/admin/ui/FormField";
 import { FormSelect } from "@/components/admin/ui/FormSelect";
@@ -15,23 +17,21 @@ interface Category {
   slug: string;
 }
 
-interface VariantOption {
-  variantType: string;
-  options: string[];
-  image?: string;
-}
-
 export default function CreateProductPage() {
   const router = useRouter();
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const mainImageInputRef = useRef<HTMLInputElement>(null);
+  const subImageInputRef = useRef<HTMLInputElement>(null);
+
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(false);
-  const [uploading, setUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
-  const [variantOptions, setVariantOptions] = useState<VariantOption[]>([]);
-  const [images, setImages] = useState<string[]>([""]);
+  const [uploadingMain, setUploadingMain] = useState(false);
+  const [uploadingSub, setUploadingSub] = useState(false);
 
-  // Basic form state
+  // Main image (1 only)
+  const [mainImage, setMainImage] = useState<string>("");
+  // Sub images (max 10)
+  const [subImages, setSubImages] = useState<string[]>([]);
+
   const [formData, setFormData] = useState({
     slug: "",
     name: "",
@@ -42,7 +42,6 @@ export default function CreateProductPage() {
     inventory: 0,
   });
 
-  // Care guide fields
   const [careGuide, setCareGuide] = useState({
     watering: "",
     sunlight: "",
@@ -53,147 +52,75 @@ export default function CreateProductPage() {
   });
 
   useEffect(() => {
-    fetchCategories();
+    fetch("/api/categories")
+      .then((r) => r.json())
+      .then((data) => setCategories(Array.isArray(data) ? data : (data.categories ?? [])))
+      .catch(() => {});
   }, []);
 
-  const fetchCategories = async () => {
-    try {
-      const response = await fetch("/api/categories");
-      const data = await response.json();
-      // API trả { categories: [...], pagination: {...} } hoặc array trực tiếp
-      setCategories(Array.isArray(data) ? data : (data.categories ?? []));
-    } catch (error) {
-      console.error("Error fetching categories:", error);
-    }
+  // Auto-slug from name
+  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const name = e.target.value;
+    const slug = name
+      .toLowerCase()
+      .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+      .replace(/đ/g, "d")
+      .replace(/[^a-z0-9\s-]/g, "")
+      .replace(/\s+/g, "-")
+      .replace(/-+/g, "-")
+      .replace(/^-|-$/g, "");
+    setFormData((prev) => ({ ...prev, name, slug }));
   };
 
-  const handleAddImage = () => {
-    setImages([...images, ""]);
+  const uploadImage = async (file: File): Promise<string | null> => {
+    const fd = new FormData();
+    fd.append("file", file);
+    fd.append("bucket", "products");
+    const res = await fetch("/api/upload", { method: "POST", body: fd });
+    if (!res.ok) { toast.error("Upload thất bại"); return null; }
+    const data = await res.json();
+    return data.url;
   };
 
-  const handleRemoveImage = (index: number) => {
-    setImages(images.filter((_, i) => i !== index));
-  };
-
-  const handleImageChange = (index: number, value: string) => {
-    const newImages = [...images];
-    newImages[index] = value;
-    setImages(newImages);
-  };
-
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleMainImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    setUploadingMain(true);
+    const url = await uploadImage(file);
+    if (url) { setMainImage(url); toast.success("Đã tải ảnh chính"); }
+    setUploadingMain(false);
+    if (mainImageInputRef.current) mainImageInputRef.current.value = "";
+  };
 
-    setUploading(true);
-    setUploadProgress(10);
-    
-    try {
-      // Simulate progress for better UX
-      const progressInterval = setInterval(() => {
-        setUploadProgress(prev => (prev < 90 ? prev + 10 : prev));
-      }, 200);
-
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("bucket", "products");
-
-      const response = await fetch("/api/upload", {
-        method: "POST",
-        body: formData,
-      });
-
-      clearInterval(progressInterval);
-      setUploadProgress(100);
-
-      if (response.ok) {
-        const data = await response.json();
-        // Replace first empty image slot or add to end
-        const emptyIndex = images.findIndex((img) => img === "");
-        if (emptyIndex > -1) {
-          const newImages = [...images];
-          newImages[emptyIndex] = data.url;
-          setImages(newImages);
-        } else {
-          setImages([...images, data.url]);
-        }
-      } else {
-        const error = await response.json();
-        toast.error(`Upload failed: ${error.error}`);
-      }
-    } catch (error) {
-      console.error("Error uploading image:", error);
-      toast.error("Error uploading image");
-    } finally {
-      setTimeout(() => {
-        setUploading(false);
-        setUploadProgress(0);
-      }, 500);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
+  const handleSubImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (subImages.length + files.length > 10) {
+      toast.error("Tối đa 10 ảnh phụ");
+      return;
     }
-  };
-
-  const handleAddVariantOption = () => {
-    const types = ["SIZE", "TYPE", "DECOR", "ACCESSORY"];
-    const unusedType = types.find((t) => !variantOptions.some((v) => v.variantType === t));
-    if (unusedType) {
-      setVariantOptions([...variantOptions, { variantType: unusedType, options: [""] }]);
-    } else {
-      setVariantOptions([...variantOptions, { variantType: "CUSTOM", options: [""] }]);
+    setUploadingSub(true);
+    const urls: string[] = [];
+    for (const file of files) {
+      const url = await uploadImage(file);
+      if (url) urls.push(url);
     }
-  };
-
-  const handleRemoveVariantOption = (index: number) => {
-    setVariantOptions(variantOptions.filter((_, i) => i !== index));
-  };
-
-  const handleVariantOptionTypeChange = (index: number, value: string) => {
-    const newOptions = [...variantOptions];
-    newOptions[index].variantType = value;
-    setVariantOptions(newOptions);
-  };
-
-  const handleVariantOptionValueChange = (optionIndex: number, valueIndex: number, value: string) => {
-    const newOptions = [...variantOptions];
-    newOptions[optionIndex].options[valueIndex] = value;
-    setVariantOptions(newOptions);
-  };
-
-  const handleAddVariantOptionValue = (index: number) => {
-    const newOptions = [...variantOptions];
-    newOptions[index].options.push("");
-    setVariantOptions(newOptions);
-  };
-
-  const handleRemoveVariantOptionValue = (optionIndex: number, valueIndex: number) => {
-    const newOptions = [...variantOptions];
-    newOptions[optionIndex].options = newOptions[optionIndex].options.filter(
-      (_, i) => i !== valueIndex
-    );
-    setVariantOptions(newOptions);
+    setSubImages((prev) => [...prev, ...urls]);
+    if (urls.length) toast.success(`Đã tải ${urls.length} ảnh phụ`);
+    setUploadingSub(false);
+    if (subImageInputRef.current) subImageInputRef.current.value = "";
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!mainImage) { toast.error("Vui lòng tải ảnh chính sản phẩm"); return; }
     setLoading(true);
-
     try {
-      // Filter out empty image URLs
-      const validImages = images.filter((img) => img.trim() !== "");
-
-      // Filter out empty variant options
-      const validVariantOptions = variantOptions.map((v) => ({
-        ...v,
-        options: v.options.filter((o) => o.trim() !== ""),
-      })).filter((v) => v.options.length > 0);
-
+      const allImages = [mainImage, ...subImages.filter(Boolean)];
       const productData = {
         ...formData,
         basePrice: parseFloat(formData.basePrice) || 0,
-        images: validImages,
-        variantOptions: validVariantOptions,
+        images: allImages,
+        variantOptions: [],
         careGuideData: {
           watering: careGuide.watering,
           sunlight: careGuide.sunlight,
@@ -203,23 +130,20 @@ export default function CreateProductPage() {
           videoUrl: careGuide.videoUrl || null,
         },
       };
-
-      const response = await fetch("/api/products", {
+      const res = await fetch("/api/products", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(productData),
       });
-
-      if (response.ok) {
-        toast.success("Product created successfully!");
+      if (res.ok) {
+        toast.success("Tạo sản phẩm thành công!");
         router.push("/secure-cms/products");
       } else {
-        const error = await response.json();
-        toast.error(`Failed to create product: ${error.error || "Unknown error"}`);
+        const err = await res.json();
+        toast.error(err.error || "Lỗi khi tạo sản phẩm");
       }
-    } catch (error) {
-      console.error("Error creating product:", error);
-      toast.error("Error creating product");
+    } catch {
+      toast.error("Lỗi kết nối");
     } finally {
       setLoading(false);
     }
@@ -228,39 +152,35 @@ export default function CreateProductPage() {
   return (
     <div>
       <div className="mb-6">
-        <Link
-          href="/secure-cms/products"
-          className="inline-flex items-center text-[#425733] hover:text-[#425733] mb-4"
-        >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Products
+        <Link href="/secure-cms/products" className="inline-flex items-center text-[#425733] hover:text-[#364a29] mb-4 gap-1 text-sm">
+          <ArrowLeft className="w-4 h-4" /> Quay lại danh sách
         </Link>
-        <h2 className="text-3xl font-bold text-gray-800">Create New Product</h2>
+        <h2 className="text-2xl font-bold text-gray-800">Thêm Sản Phẩm Mới</h2>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Basic Information */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-xl font-semibold mb-4">Basic Information</h3>
+        {/* ── Thông tin cơ bản ───────────────────────────────── */}
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+          <h3 className="text-base font-semibold text-gray-800 mb-4">Thông tin cơ bản</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <FormField
-              label="Product Name"
+              label="Tên sản phẩm *"
               type="text"
               value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              onChange={handleNameChange}
               required
-              placeholder="e.g., Crystal Glass Terrarium"
+              placeholder="VD: Terrarium Thủy Tinh Tròn"
             />
             <FormField
-              label="Slug"
+              label="Slug (URL)"
               type="text"
               value={formData.slug}
               onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
               required
-              placeholder="e.g., crystal-glass-terrarium"
+              placeholder="terrarium-thuy-tinh-tron"
             />
             <FormField
-              label="Base Price (VND)"
+              label="Giá cơ bản (VNĐ) *"
               type="number"
               value={formData.basePrice}
               onChange={(e) => setFormData({ ...formData, basePrice: e.target.value })}
@@ -269,252 +189,187 @@ export default function CreateProductPage() {
               placeholder="299000"
             />
             <FormField
-              label="Inventory"
+              label="Tồn kho"
               type="number"
               value={formData.inventory}
               onChange={(e) => setFormData({ ...formData, inventory: parseInt(e.target.value) || 0 })}
               min="0"
             />
             <FormSelect
-              label="Category"
+              label="Danh mục"
               value={formData.categoryId}
               onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })}
-              options={categories.map(cat => ({ label: cat.name, value: cat.id }))}
+              options={[{ label: "-- Chọn danh mục --", value: "" }, ...categories.map((c) => ({ label: c.name, value: c.id }))]}
             />
             <FormSelect
-              label="Status"
+              label="Trạng thái"
               value={formData.status}
               onChange={(e) => setFormData({ ...formData, status: e.target.value })}
               options={[
-                { label: "Draft", value: "DRAFT" },
-                { label: "Active", value: "ACTIVE" },
-                { label: "Archived", value: "ARCHIVED" },
+                { label: "Nháp", value: "DRAFT" },
+                { label: "Đang bán", value: "ACTIVE" },
+                { label: "Lưu trữ", value: "ARCHIVED" },
               ]}
             />
           </div>
         </div>
 
-        {/* Images */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-xl font-semibold mb-4">Product Images</h3>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
-            {images.map((image, index) => (
-              <div key={index} className="relative">
-                {image ? (
-                  <div className="relative">
-                    <Image
-                      src={image}
-                      alt={`Product image ${index + 1}`}
-                      width={400}
-                      height={128}
-                      className="w-full h-32 object-cover rounded-lg border"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveImage(index)}
-                      className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full hover:bg-red-600"
-                    >
-                      <X className="w-3 h-3" />
-                    </button>
-                  </div>
+        {/* ── Ảnh sản phẩm ──────────────────────────────────── */}
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+          <h3 className="text-base font-semibold text-gray-800 mb-5">Ảnh sản phẩm</h3>
+
+          {/* Ảnh chính */}
+          <div className="mb-6">
+            <div className="flex items-center gap-2 mb-3">
+              <Star className="w-4 h-4 text-amber-500 fill-amber-500" />
+              <span className="text-sm font-medium text-gray-700">Ảnh chính</span>
+              <span className="text-xs text-gray-400">(bắt buộc · hiển thị ở listing)</span>
+            </div>
+            <div className="flex items-start gap-4">
+              {/* Preview */}
+              <div
+                onClick={() => mainImageInputRef.current?.click()}
+                className={`relative w-40 h-40 rounded-xl border-2 overflow-hidden cursor-pointer transition-all ${
+                  mainImage
+                    ? "border-[#425733] shadow-md"
+                    : "border-dashed border-gray-300 hover:border-[#425733] bg-gray-50"
+                }`}
+              >
+                {mainImage ? (
+                  <>
+                    <Image src={mainImage} alt="Ảnh chính" fill className="object-cover" />
+                    <div className="absolute inset-0 bg-black/0 hover:bg-black/20 transition-colors flex items-center justify-center">
+                      <span className="text-white text-xs font-medium opacity-0 hover:opacity-100">Đổi ảnh</span>
+                    </div>
+                    <div className="absolute top-2 left-2 bg-amber-400 text-white text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
+                      <Star className="w-2.5 h-2.5 fill-white" /> Chính
+                    </div>
+                  </>
                 ) : (
-                  <div
-                    onClick={() => fileInputRef.current?.click()}
-                    className="border-2 border-dashed border-gray-300 rounded-lg p-4 flex flex-col items-center justify-center cursor-pointer hover:border-[#6d8c5a] transition-colors"
-                  >
-                    <ImageIcon className="w-8 h-8 text-gray-400 mb-2" />
-                    <span className="text-sm text-gray-500">Click to upload</span>
-                    {uploading && <span className="text-xs text-[#425733] mt-1">Uploading...</span>}
+                  <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-gray-400">
+                    {uploadingMain ? (
+                      <div className="w-6 h-6 border-2 border-[#425733] border-t-transparent rounded-full animate-spin" />
+                    ) : (
+                      <>
+                        <ImageIcon className="w-8 h-8" />
+                        <span className="text-xs text-center px-2">Nhấn để tải ảnh chính</span>
+                      </>
+                    )}
                   </div>
                 )}
               </div>
-            ))}
-          </div>
-          {uploading && (
-            <div className="w-full bg-gray-200 rounded-full h-2 mb-4">
-              <div
-                className="bg-[#425733] h-2 rounded-full transition-all duration-300"
-                style={{ width: `${uploadProgress}%` }}
-              ></div>
+              <div className="flex-1">
+                <p className="text-xs text-gray-500 mb-2">Ảnh chính hiển thị trong danh sách sản phẩm và trang chi tiết. Khuyến nghị: tỷ lệ 1:1, tối thiểu 600×600px.</p>
+                <button
+                  type="button"
+                  onClick={() => mainImageInputRef.current?.click()}
+                  disabled={uploadingMain}
+                  className="flex items-center gap-2 bg-[#425733] text-white px-4 py-2 rounded-full text-sm font-semibold hover:bg-[#364a29] disabled:opacity-50 transition-colors"
+                >
+                  <Upload className="w-4 h-4" />
+                  {uploadingMain ? "Đang tải..." : mainImage ? "Thay ảnh chính" : "Tải ảnh chính"}
+                </button>
+              </div>
             </div>
-          )}
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            onChange={handleImageUpload}
-            className="hidden"
-          />
-          <div className="flex items-center gap-4">
-            <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              disabled={uploading}
-              className="flex items-center gap-2 bg-[#425733] text-white px-4 py-2 rounded-full font-semibold shadow-soft hover:-translate-y-0.5 hover:shadow-[0_4px_15px_rgba(66,87,51,0.3)] hover:bg-[#364a29] disabled:bg-gray-400 disabled:cursor-not-allowed"
-            >
-              <Upload className="w-4 h-4" />
-              {uploading ? `Uploading... ${uploadProgress}%` : "Upload Image"}
-            </button>
-            <button
-              type="button"
-              onClick={handleAddImage}
-              className="flex items-center gap-2 text-[#425733] hover:text-[#425733]"
-            >
-              <Plus className="w-4 h-4" />
-              Add Slot
-            </button>
-          </div>
-        </div>
-
-        {/* Variant Options */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-xl font-semibold">Variant Options</h3>
-            <button
-              type="button"
-              onClick={handleAddVariantOption}
-              className="flex items-center gap-2 text-[#425733] hover:text-[#425733]"
-            >
-              <Plus className="w-4 h-4" />
-              Add Variant Type
-            </button>
           </div>
 
-          {variantOptions.length === 0 ? (
-            <p className="text-gray-500 text-sm">No variant options added. Click "Add Variant Type" to start.</p>
-          ) : (
-            <div className="space-y-4">
-              {variantOptions.map((option, index) => (
-                <div key={index} className="border rounded-lg p-4">
-                  <div className="flex justify-between items-center mb-3">
-                    <select
-                      value={option.variantType}
-                      onChange={(e) => handleVariantOptionTypeChange(index, e.target.value)}
-                      className="px-3 py-1 border rounded-lg focus:ring-2 focus:ring-[#6d8c5a]"
-                    >
-                      <option value="SIZE">Size</option>
-                      <option value="TYPE">Type</option>
-                      <option value="DECOR">Decor</option>
-                      <option value="ACCESSORY">Accessory</option>
-                      <option value="CUSTOM">Custom</option>
-                    </select>
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveVariantOption(index)}
-                      className="text-red-600 hover:text-red-700"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {option.options.map((opt, optIndex) => (
-                      <div key={optIndex} className="flex items-center gap-1">
-                        <input
-                          type="text"
-                          value={opt}
-                          onChange={(e) =>
-                            handleVariantOptionValueChange(index, optIndex, e.target.value)
-                          }
-                          placeholder="Option value"
-                          className="px-3 py-1 border rounded-lg focus:ring-2 focus:ring-[#6d8c5a] text-sm"
-                        />
-                        {option.options.length > 1 && (
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveVariantOptionValue(index, optIndex)}
-                            className="text-red-600 hover:text-red-700"
-                          >
-                            <X className="w-3 h-3" />
-                          </button>
-                        )}
-                      </div>
-                    ))}
-                    <button
-                      type="button"
-                      onClick={() => handleAddVariantOptionValue(index)}
-                      className="text-[#425733] hover:text-[#425733] text-sm"
-                    >
-                      + Add
-                    </button>
-                  </div>
+          {/* Ảnh phụ */}
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium text-gray-700">Ảnh phụ</span>
+                <span className="text-xs text-gray-400">(tùy chọn · tối đa 10 ảnh)</span>
+              </div>
+              <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
+                subImages.length >= 10 ? "bg-red-100 text-red-600" : "bg-gray-100 text-gray-500"
+              }`}>
+                {subImages.length}/10
+              </span>
+            </div>
+
+            <div className="grid grid-cols-4 sm:grid-cols-6 gap-3 mb-3">
+              {subImages.map((img, idx) => (
+                <div key={idx} className="relative aspect-square rounded-xl overflow-hidden border border-gray-200 group">
+                  <Image src={img} alt={`Ảnh phụ ${idx + 1}`} fill className="object-cover" />
+                  <button
+                    type="button"
+                    onClick={() => setSubImages((prev) => prev.filter((_, i) => i !== idx))}
+                    className="absolute top-1 right-1 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
                 </div>
               ))}
+
+              {subImages.length < 10 && (
+                <button
+                  type="button"
+                  onClick={() => subImageInputRef.current?.click()}
+                  disabled={uploadingSub}
+                  className="aspect-square rounded-xl border-2 border-dashed border-gray-300 hover:border-[#425733] bg-gray-50 hover:bg-[#f5f7f4] transition-all flex flex-col items-center justify-center gap-1 text-gray-400 hover:text-[#425733]"
+                >
+                  {uploadingSub ? (
+                    <div className="w-5 h-5 border-2 border-[#425733] border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    <>
+                      <Plus className="w-5 h-5" />
+                      <span className="text-[10px]">Thêm</span>
+                    </>
+                  )}
+                </button>
+              )}
             </div>
-          )}
+
+            <button
+              type="button"
+              onClick={() => subImageInputRef.current?.click()}
+              disabled={uploadingSub || subImages.length >= 10}
+              className="flex items-center gap-2 text-sm text-[#425733] hover:text-[#364a29] font-medium disabled:opacity-40 transition-colors"
+            >
+              <Upload className="w-4 h-4" />
+              {uploadingSub ? "Đang tải ảnh phụ..." : "Tải nhiều ảnh phụ cùng lúc"}
+            </button>
+          </div>
+
+          {/* Hidden inputs */}
+          <input ref={mainImageInputRef} type="file" accept="image/*" onChange={handleMainImageUpload} className="hidden" />
+          <input ref={subImageInputRef} type="file" accept="image/*" multiple onChange={handleSubImageUpload} className="hidden" />
         </div>
 
-        {/* Care Guide */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <div className="flex items-center gap-3 mb-5">
-            <span className="text-2xl">🌿</span>
-            <h3 className="text-xl font-semibold">Hướng Dẫn Chăm Sóc</h3>
+        {/* ── Hướng dẫn chăm sóc ───────────────────────────── */}
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+          <div className="flex items-center gap-2 mb-5">
+            <div className="w-7 h-7 rounded-lg bg-[#e3ebdd] flex items-center justify-center">
+              <span className="text-sm">🪴</span>
+            </div>
+            <h3 className="text-base font-semibold text-gray-800">Hướng Dẫn Chăm Sóc</h3>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <FormField
-              label="Tưới nước"
-              type="text"
-              value={careGuide.watering}
-              onChange={(e) => setCareGuide({ ...careGuide, watering: e.target.value })}
-              placeholder="VD: Tưới 2-3 lần/tuần, tránh đọng nước"
-            />
-            <FormField
-              label="Ánh sáng"
-              type="text"
-              value={careGuide.sunlight}
-              onChange={(e) => setCareGuide({ ...careGuide, sunlight: e.target.value })}
-              placeholder="VD: Ánh sáng gián tiếp, tránh nắng trực tiếp"
-            />
-            <FormField
-              label="Nhiệt độ"
-              type="text"
-              value={careGuide.temperature}
-              onChange={(e) => setCareGuide({ ...careGuide, temperature: e.target.value })}
-              placeholder="VD: 18-25°C"
-            />
-            <FormField
-              label="Độ ẩm"
-              type="text"
-              value={careGuide.humidity}
-              onChange={(e) => setCareGuide({ ...careGuide, humidity: e.target.value })}
-              placeholder="VD: 60-80%"
-            />
+            <FormField label="Tưới nước" type="text" value={careGuide.watering} onChange={(e) => setCareGuide({ ...careGuide, watering: e.target.value })} placeholder="VD: Tưới 2-3 lần/tuần" />
+            <FormField label="Ánh sáng" type="text" value={careGuide.sunlight} onChange={(e) => setCareGuide({ ...careGuide, sunlight: e.target.value })} placeholder="VD: Ánh sáng gián tiếp" />
+            <FormField label="Nhiệt độ" type="text" value={careGuide.temperature} onChange={(e) => setCareGuide({ ...careGuide, temperature: e.target.value })} placeholder="VD: 18–25°C" />
+            <FormField label="Độ ẩm" type="text" value={careGuide.humidity} onChange={(e) => setCareGuide({ ...careGuide, humidity: e.target.value })} placeholder="VD: 60–80%" />
             <div className="md:col-span-2">
-              <FormField
-                label="Vấn đề thường gặp & cách xử lý"
-                multiline
-                rows={3}
-                value={careGuide.commonIssues}
-                onChange={(e) => setCareGuide({ ...careGuide, commonIssues: e.target.value })}
-                placeholder="VD: Lá vàng → giảm tưới; Mốc trắng → tăng thông thoáng"
-              />
+              <FormField label="Vấn đề thường gặp & cách xử lý" multiline rows={3} value={careGuide.commonIssues} onChange={(e) => setCareGuide({ ...careGuide, commonIssues: e.target.value })} placeholder="VD: Lá vàng → giảm tưới; Mốc trắng → tăng thông thoáng" />
             </div>
             <div className="md:col-span-2">
-              <FormField
-                label="Video hướng dẫn (URL)"
-                type="url"
-                value={careGuide.videoUrl}
-                onChange={(e) => setCareGuide({ ...careGuide, videoUrl: e.target.value })}
-                placeholder="https://youtube.com/..."
-              />
+              <FormField label="Video hướng dẫn (URL)" type="url" value={careGuide.videoUrl} onChange={(e) => setCareGuide({ ...careGuide, videoUrl: e.target.value })} placeholder="https://youtube.com/..." />
             </div>
           </div>
         </div>
 
-        {/* Submit */}
-        <div className="flex justify-end gap-4">
-          <Link
-            href="/secure-cms/products"
-            className="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
-          >
-            Cancel
+        {/* ── Submit ─────────────────────────────────────────── */}
+        <div className="flex justify-end gap-3">
+          <Link href="/secure-cms/products" className="px-6 py-2.5 border border-gray-200 rounded-full text-gray-600 text-sm font-medium hover:bg-gray-50 transition-colors">
+            Hủy
           </Link>
           <button
             type="submit"
             disabled={loading}
-            className="flex items-center gap-2 bg-[#425733] text-white px-6 py-3 rounded-full font-semibold shadow-soft hover:-translate-y-0.5 hover:shadow-[0_4px_20px_rgba(66,87,51,0.4)] hover:bg-[#364a29] disabled:bg-gray-400 disabled:cursor-not-allowed"
+            className="flex items-center gap-2 bg-[#425733] text-white px-6 py-2.5 rounded-full font-semibold text-sm shadow hover:-translate-y-0.5 hover:bg-[#364a29] hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all"
           >
-            <Save className="w-5 h-5" />
-            {loading ? "Creating..." : "Create Product"}
+            <Save className="w-4 h-4" />
+            {loading ? "Đang tạo..." : "Tạo sản phẩm"}
           </button>
         </div>
       </form>

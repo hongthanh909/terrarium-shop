@@ -3,24 +3,23 @@
 import Link from "next/link";
 import Image from "next/image";
 import {
-  ShoppingCart, Leaf, User, X, Minus, Plus, ShoppingBag,
-  ChevronDown, LogOut, Package, LayoutDashboard, Heart, Search,
+  ShoppingCart, User, X, Minus, Plus, ShoppingBag,
+  ChevronDown, LogOut, Package, LayoutDashboard, Heart,
 } from "lucide-react";
 import { useCartStore, CartItem } from "@/lib/store/cartStore";
 import { useState, useEffect, useCallback } from "react";
 import { useSession, signOut } from "next-auth/react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import {
   Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription,
 } from "@/components/ui/sheet";
-import { Card, CardContent } from "@/components/ui/card";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
   DropdownMenuSeparator, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { SearchPalette, SearchTrigger } from "@/components/ui/search-palette";
+import { Search } from "lucide-react";
 
 const NAV_LINKS = [
   { href: "/", label: "Trang chủ" },
@@ -53,7 +52,6 @@ export default function Header() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Global Cmd+K / Ctrl+K shortcut
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
     if ((e.metaKey || e.ctrlKey) && e.key === "k") {
       e.preventDefault();
@@ -71,35 +69,33 @@ export default function Header() {
 
   return (
     <>
-      {/* ─── Floating Pill Navbar ──────────────────────────────────────────────── */}
+      {/* ─── Floating Pill Navbar — GREEN ────────────────────────────────────── */}
       <div className="sticky top-0 z-40 flex justify-center px-4 pt-3 pb-1 pointer-events-none">
         <motion.header
-          initial={false}
-          animate={scrolled ? { y: 0, scale: 1 } : { y: 0, scale: 1 }}
           className={`pointer-events-auto w-full max-w-6xl rounded-2xl transition-all duration-300 ${
             scrolled
-              ? "bg-white/92 backdrop-blur-xl shadow-[0_4px_30px_rgba(0,0,0,0.1)] border border-[#e3ebdd]"
-              : "bg-white/80 backdrop-blur-lg shadow-[0_2px_16px_rgba(66,87,51,0.08)] border border-white/60"
+              ? "bg-[#2d3d23]/96 backdrop-blur-xl shadow-[0_4px_30px_rgba(0,0,0,0.25)] border border-[#425733]/80"
+              : "bg-[#364a29]/90 backdrop-blur-lg shadow-[0_2px_20px_rgba(0,0,0,0.2)] border border-[#425733]/60"
           }`}
         >
           <div className="flex items-center justify-between px-5 py-3">
             {/* Logo */}
             <Link href="/" className="flex flex-col group flex-shrink-0">
               <span
-                className="text-xl text-[#425733] group-hover:text-[#364a29] transition-colors leading-tight"
+                className="text-xl text-white group-hover:text-[#e3ebdd] transition-colors leading-tight"
                 style={{ fontFamily: "'Dancing Script', cursive", fontWeight: 600 }}
               >
                 tiệm Rêu Décor
               </span>
               <div className="flex items-center gap-1 mt-0.5">
-                <div className="flex-1 h-px bg-[#8ba57a]" />
+                <div className="flex-1 h-px bg-white/30" />
                 <span
-                  className="text-[9px] tracking-wider text-[#5f7d50] whitespace-nowrap px-1"
+                  className="text-[9px] tracking-wider text-white/50 whitespace-nowrap px-1"
                   style={{ fontFamily: "'Dancing Script', cursive" }}
                 >
                   Terrarium &amp; Moss Art
                 </span>
-                <div className="w-4 h-px bg-[#8ba57a]" />
+                <div className="w-4 h-px bg-white/30" />
               </div>
             </Link>
 
@@ -109,7 +105,7 @@ export default function Header() {
                 <Link
                   key={link.href}
                   href={link.href}
-                  className="px-4 py-1.5 rounded-full text-sm font-medium text-gray-500 hover:text-[#425733] hover:bg-[#e3ebdd]/70 transition-all duration-200"
+                  className="px-4 py-1.5 rounded-full text-sm font-medium text-white/75 hover:text-white hover:bg-white/15 transition-all duration-200"
                 >
                   {link.label}
                 </Link>
@@ -118,12 +114,12 @@ export default function Header() {
                 <DropdownMenuTrigger asChild>
                   <Button
                     variant="ghost"
-                    className="px-4 py-1.5 h-auto rounded-full text-sm font-medium text-gray-500 hover:text-[#425733] hover:bg-[#e3ebdd]/70 transition-all duration-200 flex items-center gap-1"
+                    className="px-4 py-1.5 h-auto rounded-full text-sm font-medium text-white/75 hover:text-white hover:bg-white/15 transition-all duration-200 flex items-center gap-1"
                   >
                     Chính sách <ChevronDown className="w-3.5 h-3.5" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className="rounded-xl shadow-soft border border-[#e3ebdd] bg-white/95 backdrop-blur-md min-w-[160px]">
+                <DropdownMenuContent className="rounded-xl shadow-lg border border-[#e3ebdd] bg-white min-w-[160px]">
                   {POLICY_LINKS.map((l) => (
                     <DropdownMenuItem key={l.href} asChild>
                       <Link href={l.href} className="cursor-pointer text-sm">{l.label}</Link>
@@ -135,15 +131,15 @@ export default function Header() {
 
             {/* Right actions */}
             <div className="flex items-center gap-1.5">
-              {/* Search trigger */}
-              <SearchTrigger onClick={() => setSearchOpen(true)} />
+              {/* Search trigger — light variant for green navbar */}
+              <SearchTrigger onClick={() => setSearchOpen(true)} light />
 
               {/* Mobile search */}
               <button
-                className="md:hidden w-9 h-9 flex items-center justify-center rounded-full text-gray-400 hover:text-[#425733] hover:bg-[#e3ebdd]/70 transition-colors"
+                className="md:hidden w-9 h-9 flex items-center justify-center rounded-full text-white/70 hover:text-white hover:bg-white/15 transition-colors"
                 onClick={() => setSearchOpen(true)}
               >
-                <Search className="w-4.5 h-4.5" />
+                <Search className="w-4 h-4" />
               </button>
 
               {/* User */}
@@ -151,13 +147,13 @@ export default function Header() {
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <button
-                      className="w-9 h-9 rounded-full bg-[#425733] text-white flex items-center justify-center text-sm font-bold hover:bg-[#364a29] transition-colors flex-shrink-0"
+                      className="w-9 h-9 rounded-full bg-white/20 text-white border border-white/30 flex items-center justify-center text-sm font-bold hover:bg-white/30 transition-colors flex-shrink-0"
                       title={session.user?.name || "Tài khoản"}
                     >
                       {session.user?.name?.charAt(0)?.toUpperCase() || "U"}
                     </button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="rounded-xl shadow-soft border border-[#e3ebdd] bg-white/95 backdrop-blur-md min-w-[185px]">
+                  <DropdownMenuContent align="end" className="rounded-xl shadow-lg border border-[#e3ebdd] bg-white min-w-[185px]">
                     <div className="px-3 py-2.5">
                       <p className="font-semibold text-sm text-gray-800 truncate">{session.user?.name}</p>
                       <p className="text-xs text-gray-400 truncate">{session.user?.email}</p>
@@ -195,7 +191,7 @@ export default function Header() {
                 </DropdownMenu>
               ) : (
                 <Link href="/login">
-                  <button className="px-3 py-1.5 rounded-full text-sm font-medium text-gray-500 hover:text-[#425733] hover:bg-[#e3ebdd]/70 transition-all duration-200 flex items-center gap-1.5">
+                  <button className="px-3 py-1.5 rounded-full text-sm font-medium text-white/75 hover:text-white hover:bg-white/15 transition-all duration-200 flex items-center gap-1.5">
                     <User className="w-4 h-4" />
                     <span className="hidden sm:inline">Đăng nhập</span>
                   </button>
@@ -204,7 +200,7 @@ export default function Header() {
 
               {/* Cart */}
               <button
-                className="relative w-9 h-9 flex items-center justify-center rounded-full text-gray-500 hover:text-[#425733] hover:bg-[#e3ebdd]/70 transition-colors"
+                className="relative w-9 h-9 flex items-center justify-center rounded-full text-white/75 hover:text-white hover:bg-white/15 transition-colors"
                 onClick={() => setCartOpen(true)}
               >
                 <ShoppingCart className="w-5 h-5" />
@@ -215,7 +211,7 @@ export default function Header() {
                       initial={{ scale: 0 }}
                       animate={{ scale: 1 }}
                       exit={{ scale: 0 }}
-                      className="absolute -top-0.5 -right-0.5 w-4.5 h-4.5 min-w-[18px] bg-[#425733] text-white text-[10px] font-bold rounded-full flex items-center justify-center shadow px-0.5"
+                      className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] bg-[#8fba6f] text-[#1a2c12] text-[10px] font-bold rounded-full flex items-center justify-center shadow px-0.5"
                     >
                       {cartCount}
                     </motion.span>
@@ -227,18 +223,18 @@ export default function Header() {
         </motion.header>
       </div>
 
-      {/* ─── Search Palette ────────────────────────────────────────────────────── */}
+      {/* ─── Search Palette ───────────────────────────────────────────────── */}
       <SearchPalette open={searchOpen} onClose={() => setSearchOpen(false)} />
 
-      {/* ─── Cart Drawer ───────────────────────────────────────────────────────── */}
+      {/* ─── Cart Drawer ──────────────────────────────────────────────────── */}
       <Sheet open={cartOpen} onOpenChange={setCartOpen}>
         <SheetContent className="sm:max-w-md flex flex-col">
           <SheetHeader className="pb-4 border-b">
-            <SheetTitle className="flex items-center gap-2 text-lg font-bold text-[hsl(220,14%,25%)]">
+            <SheetTitle className="flex items-center gap-2 text-lg font-bold text-gray-800">
               <ShoppingBag className="w-5 h-5 text-[#425733]" />
               Giỏ Hàng
             </SheetTitle>
-            <SheetDescription className="text-[hsl(220,14%,45%)]">
+            <SheetDescription className="text-gray-500">
               Xem lại sản phẩm và tiến hành thanh toán
             </SheetDescription>
           </SheetHeader>
@@ -267,12 +263,14 @@ export default function Header() {
                       {item.productImage ? (
                         <Image src={item.productImage} alt={item.productName} width={64} height={64} className="w-full h-full object-cover" />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center"><Leaf className="w-6 h-6 text-[#6d8c5a]" /></div>
+                        <div className="w-full h-full flex items-center justify-center">
+                          <Package className="w-6 h-6 text-[#6d8c5a]" />
+                        </div>
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="font-semibold text-sm text-gray-800 truncate">{item.productName}</p>
-                      {Object.keys(item.variants || {}).length > 0 && (
+                      {Object.keys(item.variants ?? {}).length > 0 && (
                         <p className="text-xs text-gray-400 mt-0.5">
                           {Object.entries(item.variants ?? {}).map(([k, v]) => `${k}: ${v}`).join(" · ")}
                         </p>

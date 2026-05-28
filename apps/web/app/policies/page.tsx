@@ -1,5 +1,5 @@
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Leaf } from "lucide-react";
+import { Shield } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 
 export const revalidate = 3600; // Cache for 1 hour
@@ -32,7 +32,7 @@ export default async function PoliciesPage() {
         {/* Header */}
         <div className="text-center mb-12">
           <div className="w-16 h-16 rounded-2xl bg-[#425733] flex items-center justify-center mx-auto mb-4">
-            <Leaf className="w-8 h-8 text-[#ffffff]" />
+            <Shield className="w-8 h-8 text-[#ffffff]" />
           </div>
           <h1 className="text-4xl font-bold text-[hsl(220,14%,25%)] mb-4">Chính sách & Hướng dẫn</h1>
           <p className="text-[hsl(220,14%,45%)] max-w-2xl mx-auto">

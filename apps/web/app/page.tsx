@@ -1,7 +1,7 @@
 import { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
-import { Leaf, Truck, ArrowRight, Star, Sparkles, Shield, FileText, Calendar } from "lucide-react";
+import { Sprout, Truck, ArrowRight, Star, Sparkles, Shield, FileText, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -128,7 +128,7 @@ export default async function Home() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
               {
-                icon: <Leaf className="w-8 h-8" />,
+                icon: <Sprout className="w-8 h-8" />,
                 title: "Thân Thiện Môi Trường",
                 desc: "Vật liệu được tìm nguồn bền vững và cây trồng được chọn lọc từ vườn ươm địa phương.",
                 color: "text-[#425733]",
@@ -186,7 +186,7 @@ export default async function Home() {
           {featuredProducts.length === 0 ? (
             <ScrollReveal direction="up">
               <div className="text-center py-24 bg-[#f0f4ec] rounded-3xl">
-                <Leaf className="w-16 h-16 mx-auto text-[#5a7a48] mb-4" />
+                <Sprout className="w-16 h-16 mx-auto text-[#5a7a48] mb-4" />
                 <p className="text-[hsl(220,14%,45%)] font-semibold text-lg mb-1">Chưa có sản phẩm nổi bật</p>
                 <p className="text-sm text-[hsl(220,14%,55%)]">Hãy quay lại sau nhé.</p>
               </div>
@@ -209,7 +209,7 @@ export default async function Home() {
                             />
                           ) : (
                             <div className="w-full h-full bg-gradient-to-br from-[#e3ebdd] to-[#f0f4ec] flex items-center justify-center">
-                              <Leaf className="w-16 h-16 text-[#6d8c5a]" />
+                              <Sprout className="w-16 h-16 text-[#6d8c5a]" />
                             </div>
                           )}
                         </div>
@@ -245,7 +245,7 @@ export default async function Home() {
         <div className="max-w-4xl mx-auto text-center">
           <ScrollReveal direction="up">
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-[#a8c098] mb-6">
-              <Leaf className="w-8 h-8 text-[#425733]" />
+              <Sprout className="w-8 h-8 text-[#425733]" />
             </div>
             <h2 className="text-4xl font-bold mb-6 text-[hsl(220,14%,25%)]">Về Sản Phẩm Của Chúng Tôi</h2>
             <p className="text-lg text-[hsl(220,14%,45%)] mb-6 leading-relaxed">

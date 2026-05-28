@@ -6,7 +6,7 @@ import { useParams, useRouter } from "next/navigation";
 import {
   ArrowLeft, ShoppingBag, Minus, Plus, Star,
   Droplets, Sun, Thermometer, Wind, AlertTriangle, Play,
-  Package, Leaf, Heart
+  Package, Sprout, Heart
 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
@@ -500,7 +500,7 @@ export function ProductDetailClient({ initialProduct, initialRelated }: { initia
                     : "border-transparent text-muted-foreground hover:text-foreground"
                 }`}
               >
-                <Leaf className="w-4 h-4" />
+                <Sprout className="w-4 h-4" />
                 Hướng dẫn chăm sóc
               </button>
             )}

@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
-import { Heart, Star, ShoppingBag } from "lucide-react";
+import { Heart, Star, ShoppingBag, Package } from "lucide-react";
 
 interface ProductCardProps {
   id: string;
@@ -46,8 +46,8 @@ export function ProductCard({
       whileHover={{ y: -4 }}
       transition={{ duration: 0.3 }}
       className={cn(
-        "group relative bg-white rounded-2xl border border-transparent shadow-sm overflow-hidden",
-        "hover:border-[#425733]/30 hover:shadow-[0_8px_30px_rgba(66,87,51,0.18)]",
+        "group relative bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden",
+        "hover:border-[#425733]/40 hover:shadow-[0_12px_40px_rgba(66,87,51,0.2)]",
         "transition-all duration-300",
         className
       )}
@@ -63,7 +63,9 @@ export function ProductCard({
             className="object-cover transition-transform duration-500 group-hover:scale-105"
           />
         ) : (
-          <div className="absolute inset-0 flex items-center justify-center text-5xl opacity-30">🌿</div>
+          <div className="absolute inset-0 flex items-center justify-center text-[#c2d6b0]">
+            <Package className="w-12 h-12" />
+          </div>
         )}
 
         {/* Green glow overlay on hover */}
