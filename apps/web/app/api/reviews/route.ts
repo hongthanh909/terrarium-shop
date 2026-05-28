@@ -79,20 +79,34 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { productId, customerId, rating, title, content, images, verified } = validated.data;
+    const { productId, customerId, rating, title, content, images } = validated.data;
 
+    // Kiểm tra user đã mua sản phẩm này chưa
+    const hasPurchased = await prisma.orderItem.findFirst({
+      where: {
+        productId,
+        order: {
+          customerId,
+          status: { in: ["DELIVERED", "CONFIRMED", "PROCESSING", "SHIPPING"] },
+        },
+      },
+    });
+
+    if (!hasPurchased) {
+      return NextResponse.json(
+        { error: "Bạn cần mua và nhận sản phẩm này trước khi đánh giá" },
+        { status: 403 }
+      );
+    }
 
     // Check if customer already reviewed this product
     const existingReview = await prisma.review.findFirst({
-      where: {
-        productId,
-        customerId,
-      },
+      where: { productId, customerId },
     });
 
     if (existingReview) {
       return NextResponse.json(
-        { error: "You have already reviewed this product" },
+        { error: "Bạn đã đánh giá sản phẩm này rồi" },
         { status: 400 }
       );
     }
@@ -105,8 +119,8 @@ export async function POST(request: NextRequest) {
         title,
         content,
         images: images || [],
-        verified: verified || false,
-        approved: false, // Pending admin approval
+        verified: true, // Đã xác minh mua hàng
+        approved: false, // Chờ admin duyệt
       },
     });
 
@@ -114,7 +128,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error("Error creating review:", error);
     return NextResponse.json(
-      { error: "Failed to create review" },
+      { error: "Lỗi khi gửi đánh giá" },
       { status: 500 }
     );
   }

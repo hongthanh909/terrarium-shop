@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { verifyAdminRequest, unauthorizedResponse } from "@/lib/admin-auth";
 import { logAdminAction } from "@/lib/audit";
+import { revalidatePath } from "next/cache";
+
 
 // PUT - Update a blog post
 export async function PUT(
@@ -55,6 +57,10 @@ export async function PUT(
       slug: post.slug,
       published: post.published,
     });
+
+    // Revalidate so changes appear immediately
+    revalidatePath("/blog");
+    revalidatePath(`/blog/${post.slug}`);
 
     return NextResponse.json(post);
   } catch (error) {

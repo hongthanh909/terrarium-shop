@@ -91,9 +91,25 @@ export async function DELETE(
       return NextResponse.json({ error: "Category not found" }, { status: 404 });
     }
 
-    await prisma.category.delete({
-      where: { id },
-    });
+    // Block delete if category has products
+    const productCount = await prisma.product.count({ where: { categoryId: id } });
+    if (productCount > 0) {
+      return NextResponse.json(
+        { error: `Không thể xóa danh mục đang có ${productCount} sản phẩm. Hãy di chuyển hoặc xóa sản phẩm trước.` },
+        { status: 400 }
+      );
+    }
+
+    // Block delete if category has children
+    const childCount = await prisma.category.count({ where: { parentId: id } });
+    if (childCount > 0) {
+      return NextResponse.json(
+        { error: `Không thể xóa danh mục đang có ${childCount} danh mục con.` },
+        { status: 400 }
+      );
+    }
+
+    await prisma.category.delete({ where: { id } });
 
     await logAdminAction(admin.id, "DELETE", "Category", id, {
       name: category.name,
@@ -103,7 +119,7 @@ export async function DELETE(
   } catch (error) {
     console.error("Error deleting category:", error);
     return NextResponse.json(
-      { error: "Internal server error" },
+      { error: "Lỗi máy chủ khi xóa danh mục" },
       { status: 500 }
     );
   }

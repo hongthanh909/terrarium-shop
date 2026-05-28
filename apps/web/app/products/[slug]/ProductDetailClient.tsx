@@ -68,7 +68,7 @@ interface RelatedProduct {
   category: { name: string };
 }
 
-type TabType = "details" | "care";
+type TabType = "details" | "care" | "reviews";
 
 export function ProductDetailClient({ initialProduct, initialRelated }: { initialProduct: any; initialRelated: any[] }) {
   const router = useRouter();
@@ -83,9 +83,77 @@ export function ProductDetailClient({ initialProduct, initialRelated }: { initia
   const [activeTab, setActiveTab] = useState<TabType>("details");
   const [isVoting, setIsVoting] = useState(false);
 
+  // Review state
+  const [reviews, setReviews] = useState<any[]>([]);
+  const [reviewsLoading, setReviewsLoading] = useState(false);
+  const [canReview, setCanReview] = useState<boolean | null>(null); // null = checking
+  const [reviewForm, setReviewForm] = useState({ rating: 5, title: "", content: "" });
+  const [submittingReview, setSubmittingReview] = useState(false);
+  const [alreadyReviewed, setAlreadyReviewed] = useState(false);
+
   const { data: session } = useSession();
   const { addItem, items, getCartTotal, getCartCount, removeItem, updateQuantity } = useCartStore();
 
+  // Load reviews when tab changes to "reviews"
+  useEffect(() => {
+    if (activeTab !== "reviews" || !product) return;
+    setReviewsLoading(true);
+    fetch(`/api/reviews?productId=${product.id}`)
+      .then((r) => r.json())
+      .then((data) => {
+        setReviews(Array.isArray(data) ? data : []);
+      })
+      .finally(() => setReviewsLoading(false));
+
+    // Check if logged-in user has purchased and can review
+    const customerId = (session?.user as any)?.id;
+    if (customerId) {
+      fetch(`/api/reviews/can-review?productId=${product.id}&customerId=${customerId}`)
+        .then((r) => r.json())
+        .then((d) => {
+          setCanReview(d.canReview ?? false);
+          setAlreadyReviewed(d.alreadyReviewed ?? false);
+        })
+        .catch(() => setCanReview(false));
+    } else {
+      setCanReview(false);
+    }
+  }, [activeTab, product, session]);
+
+  const handleSubmitReview = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const customerId = (session?.user as any)?.id;
+    if (!customerId) { toast.error("Vui lòng đăng nhập"); return; }
+    if (!reviewForm.content.trim()) { toast.error("Vui lòng nhập nội dung đánh giá"); return; }
+
+    setSubmittingReview(true);
+    try {
+      const res = await fetch("/api/reviews", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          productId: product.id,
+          customerId,
+          rating: reviewForm.rating,
+          title: reviewForm.title,
+          content: reviewForm.content,
+        }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        toast.success("Đánh giá đã được gửi! Đang chờ admin duyệt.");
+        setReviewForm({ rating: 5, title: "", content: "" });
+        setAlreadyReviewed(true);
+        setCanReview(false);
+      } else {
+        toast.error(data.error || "Lỗi khi gửi đánh giá");
+      }
+    } catch {
+      toast.error("Lỗi kết nối. Vui lòng thử lại.");
+    } finally {
+      setSubmittingReview(false);
+    }
+  };
 
   const getPriceWithVariants = () => {
     if (!product) return 0;
@@ -538,6 +606,82 @@ export function ProductDetailClient({ initialProduct, initialRelated }: { initia
                     <Play className="w-4 h-4" />
                     Xem video hướng dẫn
                   </a>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Tab: Reviews */}
+          {activeTab === "reviews" && (
+            <div className="bg-white rounded-b-2xl rounded-tr-2xl border border-t-0 border-border p-8">
+              {alreadyReviewed ? (
+                <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-xl text-green-800 text-sm">
+                  Ban da gui danh gia. Dang cho admin duyet.
+                </div>
+              ) : canReview ? (
+                <form onSubmit={handleSubmitReview} className="mb-8 p-6 bg-[#f8faf6] border border-[#daebd0] rounded-xl">
+                  <h3 className="font-semibold text-lg mb-4">Danh gia san pham cua ban</h3>
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium mb-2">Xep hang *</label>
+                    <div className="flex gap-1">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <button key={star} type="button" onClick={() => setReviewForm((p) => ({ ...p, rating: star }))} className="p-1">
+                          <Star className={`w-7 h-7 transition-colors ${star <= reviewForm.rating ? "text-yellow-400 fill-yellow-400" : "text-gray-300 hover:text-yellow-300"}`} />
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="mb-3">
+                    <label className="block text-sm font-medium mb-1">Tieu de (tuy chon)</label>
+                    <input type="text" value={reviewForm.title} onChange={(e) => setReviewForm((p) => ({ ...p, title: e.target.value }))} className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#6d8c5a] focus:outline-none" placeholder="Tom tat danh gia cua ban..." />
+                  </div>
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium mb-1">Noi dung *</label>
+                    <textarea value={reviewForm.content} onChange={(e) => setReviewForm((p) => ({ ...p, content: e.target.value }))} rows={4} required className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#6d8c5a] focus:outline-none" placeholder="Chia se trai nghiem cua ban voi san pham..." />
+                  </div>
+                  <button type="submit" disabled={submittingReview} className="bg-[#425733] text-white px-6 py-2.5 rounded-full font-semibold hover:bg-[#364a29] disabled:bg-gray-300 transition-colors">
+                    {submittingReview ? "Dang gui..." : "Gui Danh Gia"}
+                  </button>
+                </form>
+              ) : !session ? (
+                <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-xl text-blue-800 text-sm">
+                  <a href="/login" className="underline font-medium">Dang nhap</a> de danh gia san pham (chi danh cho khach hang da mua hang)
+                </div>
+              ) : (
+                <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-xl text-yellow-800 text-sm">
+                  Ban can mua san pham nay de co the gui danh gia.
+                </div>
+              )}
+              {reviewsLoading ? (
+                <div className="text-center py-8 text-gray-400">Dang tai danh gia...</div>
+              ) : reviews.length === 0 ? (
+                <div className="text-center py-12 text-gray-400">
+                  <Star className="w-12 h-12 mx-auto mb-3 opacity-20" />
+                  <p>Chua co danh gia nao.</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <h3 className="font-semibold text-lg">{reviews.length} danh gia</h3>
+                  {reviews.map((review: any) => (
+                    <div key={review.id} className="border rounded-xl p-5">
+                      <div className="flex justify-between items-start mb-2">
+                        <div>
+                          <p className="font-medium">{review.customer?.name || "Khach hang"}</p>
+                          <div className="flex gap-0.5 mt-1">
+                            {[1, 2, 3, 4, 5].map((s) => (
+                              <Star key={s} className={`w-4 h-4 ${s <= review.rating ? "text-yellow-400 fill-yellow-400" : "text-gray-200"}`} />
+                            ))}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {review.verified && <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Da mua hang</span>}
+                          <span className="text-xs text-gray-400">{new Date(review.createdAt).toLocaleDateString("vi-VN")}</span>
+                        </div>
+                      </div>
+                      {review.title && <p className="font-medium text-sm mb-1">{review.title}</p>}
+                      <p className="text-gray-700 text-sm leading-relaxed">{review.content}</p>
+                    </div>
+                  ))}
                 </div>
               )}
             </div>
