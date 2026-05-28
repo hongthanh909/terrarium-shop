@@ -9,6 +9,7 @@ import { useSession } from "next-auth/react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { OrderTimeline } from "@/components/ui/order-timeline";
 
 interface Order {
   id: string;
@@ -290,6 +291,12 @@ export default function MyOrdersPage() {
                     {/* Expandable order items */}
                   {isExpanded && (
                     <div className="border-t px-6 py-5 bg-gray-50 rounded-b-xl">
+                      {/* Animated Timeline */}
+                      <div className="mb-6">
+                        <h3 className="font-semibold text-gray-800 mb-4">Trạng thái đơn hàng</h3>
+                        <OrderTimeline currentStatus={order.status} />
+                      </div>
+
                       <h3 className="font-semibold text-gray-800 mb-4">Sản Phẩm Đã Đặt</h3>
                       <div className="space-y-3 mb-4">
                         {order.items.map((item: any) => (

@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ScrollReveal } from "@/components/ui/scroll-reveal";
+import { ReviewMarquee } from "@/components/ui/review-marquee";
+import { StatsSection } from "@/components/ui/number-ticker";
 import { prisma } from "@/lib/prisma";
 
 export const metadata: Metadata = {
@@ -232,63 +234,11 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* Testimonial / Social Proof */}
-      <section className="py-24 px-6 bg-gradient-to-br from-[#e3ebdd] to-[#cdd8c2]">
-        <div className="max-w-7xl mx-auto text-center">
-          <ScrollReveal direction="up">
-            <p className="text-[#425733] font-bold text-sm uppercase tracking-wide mb-4">Khách Hàng Nói Gì</p>
-            <h2 className="text-4xl font-bold mb-12 text-[hsl(220,14%,25%)]">Lời Đánh Giá</h2>
-          </ScrollReveal>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {topReviews.length > 0 ? (
-              topReviews.map((t: any, index: number) => (
-                <ScrollReveal key={t.id} direction="up" delay={index * 0.1}>
-                  <div className="bg-white/80 backdrop-blur-md rounded-2xl p-8 text-left shadow-soft hover:shadow-soft-lg transition-all duration-300 h-full flex flex-col">
-                    <div className="flex gap-1.5 mb-5">
-                      {[...Array(t.rating)].map((_, i) => (
-                        <Star key={i} className="w-5 h-5 fill-amber-400 text-amber-400" />
-                      ))}
-                    </div>
-                    {t.title && <h4 className="font-bold text-gray-800 mb-2">{t.title}</h4>}
-                    <p className="text-[hsl(220,14%,45%)] leading-relaxed mb-5 text-base italic flex-1">"{t.content}"</p>
-                    <div className="flex items-center gap-4 mt-auto">
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#6d8c5a] to-[#425733] flex items-center justify-center text-white text-sm font-bold shrink-0">
-                        {t.customer.name?.[0] || "C"}
-                      </div>
-                      <span className="font-bold text-[hsl(220,14%,25%)]">{t.customer.name || "Khách Hàng"}</span>
-                    </div>
-                  </div>
-                </ScrollReveal>
-              ))
-            ) : (
-              // Fallback if no dynamic reviews exist yet
-              [
-                { name: "Minh Anh", review: "Tuyệt vời! Terrarium làm góc làm việc của mình xanh tươi hẳn lên.", rating: 5 },
-                { name: "Thu Hằng", review: "Sản phẩm đóng gói cực kỳ cẩn thận. Cây xanh tươi tốt như hình.", rating: 5 },
-                { name: "Bảo Long", review: "Dịch vụ quá đỉnh. Mua về bị héo 1 cây nhỏ là shop đổi liền cho cây mới.", rating: 5 },
-              ].map((t: any, index: number) => (
-                <ScrollReveal key={index} direction="up" delay={index * 0.1}>
-                  <div className="bg-white/80 backdrop-blur-md rounded-2xl p-8 text-left shadow-soft hover:shadow-soft-lg transition-all duration-300 h-full flex flex-col">
-                    <div className="flex gap-1.5 mb-5">
-                      {[...Array(t.rating)].map((_, i) => (
-                        <Star key={i} className="w-5 h-5 fill-amber-400 text-amber-400" />
-                      ))}
-                    </div>
-                    <p className="text-[hsl(220,14%,45%)] leading-relaxed mb-5 text-base italic flex-1">"{t.review}"</p>
-                    <div className="flex items-center gap-4 mt-auto">
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#6d8c5a] to-[#425733] flex items-center justify-center text-white text-sm font-bold shrink-0">
-                        {t.name[0]}
-                      </div>
-                      <span className="font-bold text-[hsl(220,14%,25%)]">{t.name}</span>
-                    </div>
-                  </div>
-                </ScrollReveal>
-              ))
-            )}
-          </div>
-        </div>
-      </section>
+      {/* Testimonial / Social Proof — Marquee */}
+      <ReviewMarquee />
+
+      {/* Stats Section */}
+      <StatsSection />
 
       {/* About Section */}
       <section id="about" className="py-24 px-6 bg-gradient-to-br from-[#f0f4ec] to-[#e3ebdd]">
