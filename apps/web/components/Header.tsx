@@ -274,7 +274,7 @@ export default function Header() {
                       <p className="font-semibold text-sm text-gray-800 truncate">{item.productName}</p>
                       {Object.keys(item.variants || {}).length > 0 && (
                         <p className="text-xs text-gray-400 mt-0.5">
-                          {Object.entries(item.variants).map(([k, v]) => `${k}: ${v}`).join(" · ")}
+                          {Object.entries(item.variants ?? {}).map(([k, v]) => `${k}: ${v}`).join(" · ")}
                         </p>
                       )}
                       <p className="text-sm font-bold text-[#425733] mt-1">{item.price.toLocaleString("vi-VN")}₫</p>

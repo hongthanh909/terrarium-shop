@@ -273,7 +273,7 @@ export function ProductDetailClient({ initialProduct, initialRelated }: { initia
                           <h3 className="font-semibold">{item.productName}</h3>
                           {item.variants && Object.keys(item.variants).length > 0 && (
                             <p className="text-sm text-muted-foreground">
-                              {Object.entries(item.variants).map(([k, v]) => `${k}: ${v}`).join(", ")}
+                              {Object.entries(item.variants ?? {}).map(([k, v]) => `${k}: ${v}`).join(", ")}
                             </p>
                           )}
                           <p className="text-primary font-bold mt-1">

@@ -534,7 +534,7 @@ export default function CheckoutPage() {
                       <div className="flex-1">
                         <p className="font-semibold text-sm">{item.productName}</p>
                         {item.variants && Object.keys(item.variants).length > 0 && (
-                          <p className="text-xs text-muted-foreground">{Object.entries(item.variants).map(([k, v]) => `${k}: ${v}`).join(", ")}</p>
+                          <p className="text-xs text-muted-foreground">{Object.entries(item.variants ?? {}).map(([k, v]) => `${k}: ${v}`).join(", ")}</p>
                         )}
                         <p className="text-xs text-muted-foreground">Qty: {item.quantity}</p>
                         <p className="text-sm font-semibold">{(item.price * item.quantity).toLocaleString("vi-VN")}₫</p>
