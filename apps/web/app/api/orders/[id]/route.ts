@@ -83,6 +83,7 @@ export async function PATCH(
         data: {
           orderId: id,
           status,
+          note: status === "CANCELLED" ? "Admin đã huỷ đơn hàng" : undefined,
         },
       });
     }

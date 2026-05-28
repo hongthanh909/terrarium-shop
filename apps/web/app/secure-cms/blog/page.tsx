@@ -154,7 +154,7 @@ export default function AdminBlogPage() {
                         </Link>
                       )}
                       <Link
-                        href={`/admin/blog/${post.id}/edit`}
+                        href={`/secure-cms/blog/${post.id}/edit`}
                         className="text-[#425733] hover:text-[#364a29] p-1"
                         title="Chỉnh sửa"
                       >

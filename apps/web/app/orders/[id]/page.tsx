@@ -85,6 +85,9 @@ export default function OrderDetailPage() {
   }
 
   const isCancelled = order.status === "CANCELLED";
+  const cancelLog = order.statusLogs?.find((l: any) => l.status === "CANCELLED");
+  const isAdminCancelled = cancelLog?.note === "Admin đã huỷ đơn hàng";
+  
   const currentStepIndex = ORDER_STATUS_STEPS.findIndex((s) => s.key === order.status);
 
   const getStatusBadge = (status: string) => {
@@ -172,9 +175,21 @@ export default function OrderDetailPage() {
               })}
             </div>
           ) : (
-            <div className="flex items-center gap-2 text-red-600 text-sm">
-              <XCircle className="w-5 h-5" />
-              <span className="font-medium">Đơn hàng đã bị huỷ</span>
+            <div className="flex flex-col gap-2 p-4 bg-red-50 border border-red-100 rounded-xl">
+              <div className="flex items-center gap-2 text-red-600 text-sm">
+                <XCircle className="w-5 h-5" />
+                <span className="font-medium">Đơn hàng đã bị huỷ</span>
+              </div>
+              {isAdminCancelled && (
+                <p className="text-sm text-red-600 mt-1">
+                  <strong className="font-semibold">Thông báo:</strong> Quản trị viên (Admin) đã huỷ đơn hàng của bạn. Nếu có thắc mắc, vui lòng liên hệ hỗ trợ.
+                </p>
+              )}
+              {cancelLog?.note && !isAdminCancelled && (
+                <p className="text-sm text-red-500 mt-1">
+                  Lý do: {cancelLog.note}
+                </p>
+              )}
             </div>
           )}
         </div>

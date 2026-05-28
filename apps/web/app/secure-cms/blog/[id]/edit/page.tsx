@@ -56,7 +56,7 @@ export default function EditBlogPostPage() {
       .catch((error) => {
         console.error(error);
         toast.error("Không tìm thấy bài viết");
-        router.push("/admin/blog");
+        router.push("/secure-cms/blog");
       })
       .finally(() => {
         setLoading(false);
@@ -89,7 +89,7 @@ export default function EditBlogPostPage() {
 
       if (response.ok) {
         toast.success("Cập nhật bài viết thành công!");
-        router.push("/admin/blog");
+        router.push("/secure-cms/blog");
       } else {
         const err = await response.json();
         toast.error(err.error || "Lỗi khi cập nhật bài viết");
@@ -110,7 +110,7 @@ export default function EditBlogPostPage() {
     <div>
       <div className="mb-6">
         <Link
-          href="/admin/blog"
+          href="/secure-cms/blog"
           className="inline-flex items-center text-[#425733] hover:text-[#425733] mb-4"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
@@ -197,7 +197,7 @@ export default function EditBlogPostPage() {
 
         <div className="flex justify-end gap-4 pt-4">
           <Link
-            href="/admin/blog"
+            href="/secure-cms/blog"
             className="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
           >
             Huỷ
