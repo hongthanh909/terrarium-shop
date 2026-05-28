@@ -4,9 +4,9 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 import {
-  Package, ShoppingBag, Settings, Home,
+  Package, Settings, Home,
   ShoppingCart, Percent, FileText, MessageSquare, LogOut,
-  Grid3X3, ExternalLink,
+  Grid3X3, ExternalLink, Star,
 } from "lucide-react";
 import { Toaster } from "sonner";
 
@@ -24,7 +24,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     { href: "/secure-cms/orders", label: "Đơn hàng", icon: ShoppingCart },
     { href: "/secure-cms/vouchers", label: "Phiếu giảm giá", icon: Percent },
     { href: "/secure-cms/blog", label: "Blog", icon: FileText },
-    { href: "/secure-cms/reviews", label: "Đánh giá", icon: MessageSquare },
+    { href: "/secure-cms/reviews", label: "Đánh giá", icon: Star },
     { href: "/secure-cms/settings", label: "Cài đặt", icon: Settings },
   ];
 
@@ -91,7 +91,10 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                     : "text-white/60 hover:text-white hover:bg-white/10"
                 }`}
               >
-                <item.icon className={`w-4.5 h-4.5 flex-shrink-0 ${active ? "text-[#8fba6f]" : ""}`} style={{ width: "18px", height: "18px" }} />
+                <item.icon
+                  className={`flex-shrink-0 ${active ? "text-[#8fba6f]" : ""}`}
+                  style={{ width: "18px", height: "18px" }}
+                />
                 <span>{item.label}</span>
                 {active && <div className="ml-auto w-1.5 h-1.5 rounded-full bg-[#8fba6f]" />}
               </Link>
@@ -105,14 +108,14 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             href="/"
             className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-white/50 hover:text-white hover:bg-white/10 transition-all text-sm"
           >
-            <ExternalLink className="w-4.5 h-4.5 flex-shrink-0" style={{ width: "18px", height: "18px" }} />
+            <ExternalLink className="flex-shrink-0" style={{ width: "18px", height: "18px" }} />
             <span>Xem cửa hàng</span>
           </Link>
           <button
             onClick={handleLogout}
             className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-red-400/80 hover:text-red-300 hover:bg-red-950/40 transition-all text-sm"
           >
-            <LogOut className="w-4.5 h-4.5 flex-shrink-0" style={{ width: "18px", height: "18px" }} />
+            <LogOut className="flex-shrink-0" style={{ width: "18px", height: "18px" }} />
             <span>Đăng xuất</span>
           </button>
         </div>
@@ -125,7 +128,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             <h1 className="text-lg font-semibold text-gray-800">
               {menuItems.find((m) => isActive(m.href))?.label ?? "Bảng Điều Khiển"}
             </h1>
-            <p className="text-xs text-gray-400 mt-0.5">tiệm Rêu Décor · Hệ thống quản lý</p>
+            <p className="text-xs text-gray-400 mt-0.5">tiệm Rêu Décor — Hệ thống quản lý</p>
           </div>
           <Link
             href="/"
