@@ -91,9 +91,9 @@ export function SearchPalette({ open, onClose }: SearchPaletteProps) {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -10, scale: 0.97 }}
             transition={{ duration: 0.2, ease: "easeOut" }}
-            className="fixed top-[10vh] left-1/2 -translate-x-1/2 z-[61] w-full max-w-2xl px-4"
+            className="fixed top-[12vh] left-0 right-0 z-[61] flex justify-center px-4"
           >
-            <div className="rounded-2xl overflow-hidden bg-white shadow-[0_20px_60px_rgba(0,0,0,0.18)] border border-gray-100">
+            <div className="w-full max-w-[640px] rounded-2xl overflow-hidden bg-white shadow-[0_20px_60px_rgba(0,0,0,0.18)] border border-gray-100">
 
               {/* Input */}
               <form onSubmit={handleSubmit} className="flex items-center gap-3 px-5 py-4 border-b border-gray-100">

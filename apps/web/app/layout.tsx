@@ -7,6 +7,7 @@ import dynamic from "next/dynamic";
 import AuthProvider from "@/components/AuthProvider";
 import QueryProvider from "@/lib/query-provider";
 import ShopLayout from "./ShopLayout";
+import { Toaster } from "sonner";
 
 // ChatWidget lazy-loaded để tránh SSR issues
 const ChatWidget = dynamic(() => import("@/components/ChatWidget"), {
@@ -83,10 +84,7 @@ export default function RootLayout({
       >
         <AuthProvider>
           <QueryProvider>
-            {/*
-             * ShopLayout nhận Header, Footer, ChatWidget dưới dạng Server Component props.
-             * Khi isAdmin=true → chỉ render children, ẩn Header/Footer/Chat.
-             */}
+            <Toaster position="top-right" richColors closeButton toastOptions={{ duration: 4000 }} />
             <ShopLayout
               header={<Header />}
               footer={<Footer />}

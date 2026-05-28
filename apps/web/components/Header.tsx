@@ -70,12 +70,12 @@ export default function Header() {
   return (
     <>
       {/* ─── Floating Pill Navbar — GREEN ────────────────────────────────────── */}
-      <div className="sticky top-0 z-40 flex justify-center px-4 pt-3 pb-1 pointer-events-none">
+      <div className="sticky top-0 z-40 flex justify-center px-4 pt-2 pb-1 pointer-events-none">
         <motion.header
           className={`pointer-events-auto w-full max-w-6xl rounded-2xl transition-all duration-300 ${
             scrolled
-              ? "bg-[#2d3d23]/96 backdrop-blur-xl shadow-[0_4px_30px_rgba(0,0,0,0.25)] border border-[#425733]/80"
-              : "bg-[#364a29]/90 backdrop-blur-lg shadow-[0_2px_20px_rgba(0,0,0,0.2)] border border-[#425733]/60"
+              ? "bg-[#1e2e16] backdrop-blur-xl shadow-[0_4px_30px_rgba(0,0,0,0.35)] border border-[#425733]"
+              : "bg-[#2d3d23] backdrop-blur-lg shadow-[0_2px_20px_rgba(0,0,0,0.25)] border border-[#3d5230]"
           }`}
         >
           <div className="flex items-center justify-between px-5 py-3">

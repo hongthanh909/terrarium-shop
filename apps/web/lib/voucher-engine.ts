@@ -38,22 +38,24 @@ export async function validateCoupon(
 
   // Check campaign status
   if (campaign.status !== "ACTIVE") {
-    return { valid: false, error: "Discount code is not active" };
+    return { valid: false, error: "Mã giảm giá chưa được kích hoạt" };
   }
 
-  // Check if campaign has started
-  if (campaign.startsAt && new Date(campaign.startsAt) > new Date()) {
-    return { valid: false, error: "Discount code has not started yet" };
+  // Check if campaign has started — compare timestamps in ms to avoid timezone issues
+  const now = Date.now();
+  if (campaign.startsAt && new Date(campaign.startsAt).getTime() > now) {
+    const startDate = new Date(campaign.startsAt).toLocaleDateString("vi-VN");
+    return { valid: false, error: `Mã giảm giá có hiệu lực từ ngày ${startDate}` };
   }
 
   // Check if campaign has expired
-  if (campaign.expiresAt && new Date(campaign.expiresAt) < new Date()) {
-    return { valid: false, error: "Discount code has expired" };
+  if (campaign.expiresAt && new Date(campaign.expiresAt).getTime() < now) {
+    return { valid: false, error: "Mã giảm giá đã hết hạn" };
   }
 
   // Check usage limit
   if (campaign.usageLimit && campaign.usageCount >= campaign.usageLimit) {
-    return { valid: false, error: "Discount code has reached its usage limit" };
+    return { valid: false, error: "Mã giảm giá đã đạt giới hạn sử dụng" };
   }
 
   // Check minimum order amount

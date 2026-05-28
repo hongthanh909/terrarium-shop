@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, CreditCard, Truck, Check } from "lucide-react";
+import { ArrowLeft, CreditCard, Truck, Check, Tag, X } from "lucide-react";
 import { useCartStore, CartItem } from "@/lib/store/cartStore";
 import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { toast } from "sonner";
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -61,7 +62,7 @@ export default function CheckoutPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          code: formData.voucherCode,
+          code: formData.voucherCode.trim().toUpperCase(),
           subtotal,
           cartItems: items.map((item: CartItem) => ({
             productId: item.productId,
@@ -75,21 +76,22 @@ export default function CheckoutPage() {
       const data = await response.json();
       if (data.valid) {
         if (data.isFreeShipping) {
-          // FREE_SHIPPING: set phí ship = 0
           setIsFreeShipping(true);
           setShippingFee(0);
           setDiscount(0);
+          toast.success("🚚 Áp dụng thành công! Miễn phí vận chuyển");
         } else {
           setDiscount(data.discountAmount || 0);
           setIsFreeShipping(false);
+          toast.success(`✅ Áp dụng thành công! Giảm ${(data.discountAmount || 0).toLocaleString("vi-VN")}₫`);
         }
         setVoucherCampaignId(data.campaign?.id || null);
         setVoucherApplied(true);
       } else {
-        alert(data.error || data.message || "Mã giảm giá không hợp lệ");
+        toast.error(data.error || data.message || "Mã giảm giá không hợp lệ");
       }
     } catch {
-      alert("Lỗi khi kiểm tra mã giảm giá. Vui lòng thử lại.");
+      toast.error("Lỗi kết nối. Vui lòng thử lại.");
     }
   };
 
