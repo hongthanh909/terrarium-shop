@@ -152,28 +152,7 @@ export default function CheckoutPage() {
 
       // Bước 2: Nếu chọn Chuyển khoản
       if (formData.paymentMethod === "BANK_TRANSFER") {
-        // Thử PayOS trước
-        try {
-          const payRes = await fetch("/api/payment/create-payment-link", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ orderId: order.id }),
-          });
-
-          if (payRes.ok) {
-            const payData = await payRes.json();
-            const checkoutUrl = payData.checkoutUrl;
-            if (checkoutUrl) {
-              clearCart();
-              window.location.href = checkoutUrl; // → PayOS page
-              return;
-            }
-          }
-        } catch (payErr) {
-          console.warn("[PayOS] Failed, falling back to VietQR pending page:", payErr);
-        }
-
-        // PayOS lỗi → redirect sang trang QR chờ thanh toán của chúng ta
+        // Redirect sang trang QR chờ thanh toán (hiển thị KienLongBank - SePay)
         clearCart();
         const params = new URLSearchParams({
           orderId: order.id,
@@ -202,10 +181,10 @@ export default function CheckoutPage() {
   };
 
   if (orderCreated) {
-    const bankName = process.env.NEXT_PUBLIC_BANK_NAME || "TPBank";
-    const bankAccount = process.env.NEXT_PUBLIC_BANK_ACCOUNT_NUMBER || "07898110079";
-    const bankOwner = process.env.NEXT_PUBLIC_BANK_ACCOUNT_NAME || "NGUYEN THANH HONG";
-    const bankBin = process.env.NEXT_PUBLIC_BANK_BIN || "970423"; // TPBank BIN trong hệ thống Napas/VietQR
+    const bankName = "KienLongBank";
+    const bankAccount = "1014991000046l2299";
+    const bankOwner = "NGUYEN THANH HONG";
+    const bankBin = "970452"; // KienLong BIN
     const transferAmount = finalTotal; // Dùng finalTotal — được lưu trước khi clearCart()
     const transferContent = `TT ${orderId.slice(-8).toUpperCase()}`;
     // VietQR dynamic URL — amount đã bao gồm subtotal + phí ship - giảm giá
