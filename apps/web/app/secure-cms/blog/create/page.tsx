@@ -23,9 +23,8 @@ export default function CreateBlogPostPage() {
     title: "",
     slug: "",
     content: "",
-    excerpt: "",
     categoryId: "",
-    published: true, // Mặc định xuất bản ngay
+    published: true,
   });
 
   useEffect(() => {
@@ -145,17 +144,6 @@ export default function CreateBlogPostPage() {
             </p>
           </div>
 
-          {/* Mô tả ngắn */}
-          <div>
-            <label className="block text-sm font-medium mb-1">Mô tả ngắn (excerpt)</label>
-            <textarea
-              value={formData.excerpt}
-              onChange={(e) => setFormData((prev) => ({ ...prev, excerpt: e.target.value }))}
-              rows={2}
-              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#6d8c5a] focus:outline-none"
-              placeholder="Tóm tắt ngắn hiển thị trên trang danh sách blog..."
-            />
-          </div>
 
           {/* Danh mục */}
           <div>

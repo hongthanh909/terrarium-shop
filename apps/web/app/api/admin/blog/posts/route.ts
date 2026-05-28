@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
     if (!admin) return unauthorizedResponse();
 
     const body = await request.json();
-    const { title, slug, content, categoryId, published, coverImage } = body;
+    const { title, slug, content, categoryId, published } = body;
 
     if (!title || !slug) {
       return NextResponse.json(
@@ -82,7 +82,6 @@ export async function POST(request: NextRequest) {
         title,
         slug,
         content,
-        coverImage: coverImage || null,
         categoryId: categoryId || null,
         published: isPublished,
         publishedAt: isPublished ? new Date() : null,
