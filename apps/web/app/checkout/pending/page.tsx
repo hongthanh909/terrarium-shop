@@ -5,10 +5,11 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { CheckCircle2, Clock, AlertTriangle, Copy, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-const BANK_NAME = process.env.NEXT_PUBLIC_BANK_NAME || "TPBank";
-const BANK_ACCOUNT = process.env.NEXT_PUBLIC_BANK_ACCOUNT_NUMBER || "07898110079";
+// SePay VA — KienLongBank (chuyển khoản vào số này để SePay tự động xác nhận)
+const BANK_NAME = process.env.NEXT_PUBLIC_BANK_NAME || "KienLongBank";
+const BANK_ACCOUNT = process.env.NEXT_PUBLIC_BANK_ACCOUNT_NUMBER || "1014991000046l2299";
 const BANK_OWNER = process.env.NEXT_PUBLIC_BANK_ACCOUNT_NAME || "NGUYEN THANH HONG";
-const BANK_BIN = process.env.NEXT_PUBLIC_BANK_BIN || "970423";
+const BANK_BIN = process.env.NEXT_PUBLIC_BANK_BIN || "970452"; // KienLong BIN
 const TOTAL_SECONDS = 30 * 60; // 30 phút
 
 export default function CheckoutPendingPage() {

@@ -1,84 +1,102 @@
+import { createHmac } from "crypto";
 import { prisma } from "@/lib/prisma";
-import { NextRequest } from "next/server";
-import { errorResponse, successResponse } from "@/lib/api-helpers";
+import { NextRequest, NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
 
+// Health check endpoint
 export async function GET() {
-  return successResponse({
-    message: "PayOS Webhook endpoint — Tiệm Rêu Decor",
+  return NextResponse.json({
+    message: "SePay Webhook endpoint — Tiệm Rêu Décor",
     status: "active",
-    method: "Endpoint này chỉ nhận POST requests từ PayOS.",
   });
-}
-
-async function getPayOS() {
-  // @payos/node uses NAMED export { PayOS }, not default export!
-  const { PayOS } = await import("@payos/node");
-  // Cast to any: @payos/node type definitions are wrong (claims 0-1 args, actually needs 3)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const PayOSClass = PayOS as any;
-  return new PayOSClass(
-    process.env.PAYOS_CLIENT_ID as string,
-    process.env.PAYOS_API_KEY as string,
-    process.env.PAYOS_CHECKSUM_KEY as string
-  );
 }
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
+    const rawBody = await req.text();
 
-    // PayOS sends a confirmation/test ping when registering the webhook URL.
-    // It may be an empty object or have no orderCode — just acknowledge it.
-    if (!body || Object.keys(body).length === 0) {
-      return successResponse({ received: true });
-    }
+    // ── 1. Verify HMAC-SHA256 signature from SePay ────────────────────────
+    const signatureHeader = req.headers.get("X-SePay-Signature") || "";
+    const secret = process.env.SEPAY_WEBHOOK_SECRET || "";
 
-    const payos = await getPayOS();
+    if (secret) {
+      const expected = createHmac("sha256", secret)
+        .update(rawBody)
+        .digest("hex");
 
-    let webhookData: any;
-    try {
-      // Verify webhook data with PayOS checksum
-      webhookData = payos.verifyPaymentWebhookData(body);
-    } catch {
-      // PayOS test ping has an invalid/empty signature — respond 200 to confirm URL
-      return successResponse({ received: true });
-    }
+      // SePay may send "sha256=<hex>" or just "<hex>"
+      const received = signatureHeader.startsWith("sha256=")
+        ? signatureHeader.slice(7)
+        : signatureHeader;
 
-    if (webhookData?.code === "00") {
-      // Payment successful
-      const orderCode = webhookData.orderCode;
-
-      // Find the order that has this orderCode in its logs
-      const logEntry = await prisma.orderStatusLog.findFirst({
-        where: { note: { contains: `PayOS OrderCode: ${orderCode}` } }
-      });
-
-      if (logEntry) {
-        // Update the order status to PAID
-        await prisma.order.update({
-          where: { id: logEntry.orderId },
-          data: {
-            paymentStatus: "PAID",
-            status: "CONFIRMED" // Usually after payment, we confirm the order
-          }
-        });
-
-        // Add a log for payment success
-        await prisma.orderStatusLog.create({
-          data: {
-            orderId: logEntry.orderId,
-            status: "CONFIRMED",
-            note: "Thanh toán thành công qua PayOS"
-          }
-        });
+      if (received !== expected) {
+        console.error("[SePay] ❌ Invalid signature — request rejected");
+        return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
       }
     }
 
-    return successResponse({ received: true });
+    const body = JSON.parse(rawBody);
+    console.log("[SePay] Webhook received:", JSON.stringify(body, null, 2));
+
+    // ── 2. Chỉ xử lý giao dịch TIỀN VÀO ─────────────────────────────────
+    if (body.transferType !== "in") {
+      return NextResponse.json({ received: true });
+    }
+
+    const content: string = (body.content || body.description || "").toUpperCase();
+    const amount: number = Number(body.transferAmount || 0);
+
+    console.log(`[SePay] Transfer IN — content: "${content}", amount: ${amount}`);
+
+    // ── 3. Khớp đơn hàng từ nội dung chuyển khoản ────────────────────────
+    // Format nội dung CK: "TT XXXXXXXX" (8 ký tự cuối của orderNumber)
+    const match = content.match(/TT\s*([A-Z0-9]{4,})/);
+    if (!match) {
+      console.log("[SePay] No order code pattern found in content:", content);
+      return NextResponse.json({ received: true });
+    }
+
+    const codeFragment = match[1];
+    console.log("[SePay] Looking for order ending with:", codeFragment);
+
+    // Tìm đơn hàng chưa thanh toán khớp với fragment
+    const order = await prisma.order.findFirst({
+      where: {
+        orderNumber: { endsWith: codeFragment },
+        paymentMethod: "BANK_TRANSFER",
+        paymentStatus: "PENDING",
+      },
+    });
+
+    if (!order) {
+      console.log("[SePay] No matching pending order for code:", codeFragment);
+      return NextResponse.json({ received: true });
+    }
+
+    // ── 4. Cập nhật trạng thái đơn hàng ─────────────────────────────────
+    await prisma.order.update({
+      where: { id: order.id },
+      data: {
+        paymentStatus: "PAID",
+        status: "CONFIRMED",
+      },
+    });
+
+    await prisma.orderStatusLog.create({
+      data: {
+        orderId: order.id,
+        status: "CONFIRMED",
+        note: `Thanh toán thành công qua SePay — ${amount.toLocaleString("vi-VN")}đ`,
+      },
+    });
+
+    console.log(`[SePay] ✅ Order ${order.orderNumber} marked PAID (${amount.toLocaleString("vi-VN")}đ)`);
+    return NextResponse.json({ received: true });
+
   } catch (error: any) {
-    console.error("PayOS Webhook Error:", error);
-    return errorResponse("Lỗi xử lý webhook");
+    console.error("[SePay] Webhook Error:", error?.message || error);
+    // Luôn trả 200 để SePay không retry liên tục khi lỗi không liên quan
+    return NextResponse.json({ received: true });
   }
 }
