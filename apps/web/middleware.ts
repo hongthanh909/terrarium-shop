@@ -2,76 +2,164 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
 
-// ─── Admin paths — chỉ role=ADMIN + email whitelist mới truy cập ──────────────
-const ADMIN_PATHS = ["/admin", "/api/admin"];
+// ─── 🔐 SECRET ADMIN PATH — không dùng /admin nữa ────────────────────────────
+//   Thay đổi giá trị này nếu muốn đổi URL admin.
+//   Đặt biến env ADMIN_SECRET_PATH trong Vercel để override.
+const ADMIN_SECRET_PATH = process.env.ADMIN_SECRET_PATH || "/secure-cms";
+const ADMIN_LOGIN_PATH = `${ADMIN_SECRET_PATH}/login`;
 
-// ─── Customer-only paths — cần login ─────────────────────────────────────────
+// API admin path vẫn giữ /api/admin vì chỉ gọi server-to-server
+const API_ADMIN_PATH = "/api/admin";
+
+// ─── Customer-only paths ───────────────────────────────────────────────────────
 const CUSTOMER_PROTECTED_PATHS = ["/orders", "/account", "/profile", "/checkout"];
 
-// ─── Trang login của từng bên (không cần middleware) ─────────────────────────
-const ADMIN_LOGIN_PATH = "/admin/login";
+// ─── Security Headers (áp dụng cho mọi response) ─────────────────────────────
+function applySecurityHeaders(response: NextResponse): NextResponse {
+  // Chặn clickjacking
+  response.headers.set("X-Frame-Options", "DENY");
+  // Chặn MIME sniffing
+  response.headers.set("X-Content-Type-Options", "nosniff");
+  // Referrer policy
+  response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
+  // Tắt các API không cần thiết
+  response.headers.set(
+    "Permissions-Policy",
+    "camera=(), microphone=(), geolocation=(), payment=()"
+  );
+  // HSTS — chỉ HTTPS
+  response.headers.set(
+    "Strict-Transport-Security",
+    "max-age=63072000; includeSubDomains; preload"
+  );
+  // Ẩn server fingerprint
+  response.headers.delete("X-Powered-By");
+  return response;
+}
+
+// ─── Rate limiting state (in-memory, Edge-compatible) ─────────────────────────
+// Lưu ý: In-memory sẽ reset khi cold start. Dùng Upstash Redis ở Phase 2
+//        Tuy nhiên đây vẫn tạo thêm một lớp bảo vệ.
+const loginAttempts = new Map<string, { count: number; resetAt: number }>();
+const RATE_LIMIT_MAX = 5;
+const RATE_LIMIT_WINDOW = 15 * 60 * 1000; // 15 phút
+
+function checkLoginRateLimit(ip: string): { allowed: boolean; retryAfter?: number } {
+  const now = Date.now();
+  const entry = loginAttempts.get(ip);
+
+  if (!entry || now > entry.resetAt) {
+    loginAttempts.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW });
+    return { allowed: true };
+  }
+
+  if (entry.count >= RATE_LIMIT_MAX) {
+    return { allowed: false, retryAfter: Math.ceil((entry.resetAt - now) / 1000) };
+  }
+
+  entry.count++;
+  return { allowed: true };
+}
 
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
+  const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
 
-  // ─── 1. Bỏ qua trang /admin/login (không cần token) ──────────────────────
+  // ─── 1. Người dùng gõ /admin → 404 (không lộ URL mới) ──────────────────────
+  if (pathname === "/admin" || pathname.startsWith("/admin/")) {
+    const response = new NextResponse(null, { status: 404 });
+    return applySecurityHeaders(response);
+  }
+
+  // ─── 2. Cho qua trang login admin (xử lý rate limit riêng) ─────────────────
   if (pathname === ADMIN_LOGIN_PATH) {
-    return NextResponse.next();
+    const response = NextResponse.next();
+    return applySecurityHeaders(response);
   }
 
-  // ─── 2. Kiểm tra admin & customer-protected paths ─────────────────────────
-  const isAdminPath = ADMIN_PATHS.some((p) => pathname.startsWith(p));
-  const isCustomerProtected = CUSTOMER_PROTECTED_PATHS.some((p) =>
-    pathname.startsWith(p)
-  );
-
-  // Không phải protected path → next() ngay, không tốn thời gian getToken()
-  if (!isAdminPath && !isCustomerProtected) {
-    return NextResponse.next();
+  // ─── 3. Rate limit cho API auth (đặc biệt login) ─────────────────────────────
+  if (pathname === "/api/auth/callback/admin-login" || pathname === "/api/auth/signin") {
+    const rateCheck = checkLoginRateLimit(ip);
+    if (!rateCheck.allowed) {
+      const response = new NextResponse(
+        JSON.stringify({ error: "Quá nhiều lần thử. Vui lòng thử lại sau.", retryAfter: rateCheck.retryAfter }),
+        { status: 429, headers: { "Content-Type": "application/json", "Retry-After": String(rateCheck.retryAfter) } }
+      );
+      return applySecurityHeaders(response);
+    }
   }
 
-  // ─── 3. Chỉ gọi getToken() khi cần ──────────────────────────────────────
+  const isAdminPath = pathname.startsWith(ADMIN_SECRET_PATH);
+  const isApiAdmin = pathname.startsWith(API_ADMIN_PATH);
+  const isCustomerProtected = CUSTOMER_PROTECTED_PATHS.some((p) => pathname.startsWith(p));
+
+  // Không phải protected path → next() ngay
+  if (!isAdminPath && !isApiAdmin && !isCustomerProtected) {
+    const response = NextResponse.next();
+    return applySecurityHeaders(response);
+  }
+
+  // ─── 4. Lấy token ────────────────────────────────────────────────────────────
   const token = await getToken({
     req: request as any,
     secret: process.env.NEXTAUTH_SECRET,
   });
 
-  // ─── 4. Admin routes ────────────────────────────────────────────────────────
+  // ─── 5. Admin routes (UI) ────────────────────────────────────────────────────
   if (isAdminPath) {
-    // Chưa login → về trang admin login
     if (!token) {
-      return NextResponse.redirect(new URL("/admin/login", request.url));
+      return NextResponse.redirect(new URL(ADMIN_LOGIN_PATH, request.url));
     }
-    // Đã login nhưng không phải ADMIN → về trang chủ (không lộ thông tin)
     if (token.role !== "ADMIN") {
+      // Không lộ URL admin — chỉ về trang chủ
       return NextResponse.redirect(new URL("/", request.url));
     }
-    // ✅ Là ADMIN → cho vào, đính kèm headers để server components dùng
     const response = NextResponse.next();
     response.headers.set("x-user-id", token.id as string);
     response.headers.set("x-user-role", token.role as string);
     response.headers.set("x-pathname", pathname);
-    return response;
+    return applySecurityHeaders(response);
   }
 
-  // ─── 5. Customer-protected routes ────────────────────────────────────────────
+  // ─── 6. API Admin routes ─────────────────────────────────────────────────────
+  if (isApiAdmin) {
+    if (!token || token.role !== "ADMIN") {
+      const response = new NextResponse(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers: { "Content-Type": "application/json" } }
+      );
+      return applySecurityHeaders(response);
+    }
+    const response = NextResponse.next();
+    return applySecurityHeaders(response);
+  }
+
+  // ─── 7. Customer-protected routes ────────────────────────────────────────────
   if (isCustomerProtected && !token) {
     const loginUrl = new URL("/login", request.url);
     loginUrl.searchParams.set("callbackUrl", pathname);
     return NextResponse.redirect(loginUrl);
   }
 
-  return NextResponse.next();
+  const response = NextResponse.next();
+  return applySecurityHeaders(response);
 }
 
 export const config = {
   matcher: [
+    // Admin paths (secret + old /admin)
     "/admin/:path*",
+    "/secure-cms/:path*",
     "/api/admin/:path*",
+    // Auth endpoints (rate limit)
+    "/api/auth/:path*",
+    // Customer protected
     "/orders/:path*",
     "/account/:path*",
     "/profile/:path*",
     "/checkout",
     "/checkout/:path*",
+    // Apply security headers everywhere except static files
+    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)).*)",
   ],
 };

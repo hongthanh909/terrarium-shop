@@ -17,23 +17,23 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   const pathname = usePathname();
 
   const menuItems = [
-    { href: "/admin", label: "Bảng Điều Khiển", icon: Home },
-    { href: "/admin/products", label: "Sản phẩm", icon: Package },
-    { href: "/admin/categories", label: "Danh mục", icon: Leaf },
-    { href: "/admin/orders", label: "Đơn hàng", icon: ShoppingCart },
-    { href: "/admin/vouchers", label: "Phiếu giảm giá", icon: Percent },
-    { href: "/admin/blog", label: "Blog", icon: FileText },
-    { href: "/admin/reviews", label: "Đánh giá", icon: MessageSquare },
-    { href: "/admin/settings", label: "Cài đặt", icon: Settings },
+    { href: "/secure-cms", label: "Bảng Điều Khiển", icon: Home },
+    { href: "/secure-cms/products", label: "Sản phẩm", icon: Package },
+    { href: "/secure-cms/categories", label: "Danh mục", icon: Leaf },
+    { href: "/secure-cms/orders", label: "Đơn hàng", icon: ShoppingCart },
+    { href: "/secure-cms/vouchers", label: "Phiếu giảm giá", icon: Percent },
+    { href: "/secure-cms/blog", label: "Blog", icon: FileText },
+    { href: "/secure-cms/reviews", label: "Đánh giá", icon: MessageSquare },
+    { href: "/secure-cms/settings", label: "Cài đặt", icon: Settings },
   ];
 
   const isActive = (href: string) => {
-    if (href === "/admin") return pathname === "/admin";
+    if (href === "/secure-cms") return pathname === "/secure-cms";
     return pathname.startsWith(href);
   };
 
   const handleLogout = async () => {
-    await signOut({ callbackUrl: "/admin/login" });
+    await signOut({ callbackUrl: "/secure-cms/login" });
   };
 
   return (

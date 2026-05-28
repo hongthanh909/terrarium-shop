@@ -115,7 +115,7 @@ export default function AdminReviewsPage() {
     <div>
       <div className="mb-6">
         <Link
-          href="/admin"
+          href="/secure-cms"
           className="inline-flex items-center text-[#425733] hover:text-[#425733] mb-4"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />

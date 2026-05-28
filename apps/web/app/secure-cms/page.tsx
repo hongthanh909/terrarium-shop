@@ -163,13 +163,13 @@ export default function AdminDashboard() {
           value={stats?.totalOrders || 0}
           icon={ShoppingCart}
           sub={`${stats?.pendingOrders || 0} đơn chờ xử lý`}
-          href="/admin/orders"
+          href="/secure-cms/orders"
         />
         <StatCard
           label="Sản Phẩm Hoạt Động"
           value={stats?.totalProducts || 0}
           icon={Package}
-          href="/admin/products"
+          href="/secure-cms/products"
         />
         <StatCard
           label="Khách Hàng"
@@ -182,7 +182,7 @@ export default function AdminDashboard() {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {(stats?.pendingOrders || 0) > 0 && (
           <Link
-            href="/admin/orders"
+            href="/secure-cms/orders"
             className="flex items-center gap-3 p-4 bg-yellow-50 border border-yellow-200 rounded-xl hover:bg-yellow-100 transition-colors"
           >
             <Clock className="w-5 h-5 text-yellow-600 shrink-0" />
@@ -194,7 +194,7 @@ export default function AdminDashboard() {
         )}
         {(stats?.pendingReviews || 0) > 0 && (
           <Link
-            href="/admin/reviews"
+            href="/secure-cms/reviews"
             className="flex items-center gap-3 p-4 bg-blue-50 border border-blue-200 rounded-xl hover:bg-blue-100 transition-colors"
           >
             <Star className="w-5 h-5 text-blue-600 shrink-0" />
@@ -212,7 +212,7 @@ export default function AdminDashboard() {
         <div className="lg:col-span-2 bg-white rounded-2xl shadow-soft overflow-hidden">
           <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
             <h3 className="font-semibold text-gray-800">Đơn Hàng Gần Đây</h3>
-            <Link href="/admin/orders" className="text-sm text-[#425733] hover:underline font-medium">
+            <Link href="/secure-cms/orders" className="text-sm text-[#425733] hover:underline font-medium">
               Xem tất cả →
             </Link>
           </div>
@@ -248,7 +248,7 @@ export default function AdminDashboard() {
         <div className="bg-white rounded-2xl shadow-soft overflow-hidden">
           <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
             <h3 className="font-semibold text-gray-800">Bán Chạy Nhất</h3>
-            <Link href="/admin/products" className="text-sm text-[#425733] hover:underline font-medium">
+            <Link href="/secure-cms/products" className="text-sm text-[#425733] hover:underline font-medium">
               Xem tất cả →
             </Link>
           </div>
@@ -275,11 +275,11 @@ export default function AdminDashboard() {
         <h3 className="font-semibold text-gray-800 mb-4">Hành Động Nhanh</h3>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
           {[
-            { href: "/admin/products/create", icon: Package,      label: "Thêm Sản Phẩm" },
-            { href: "/admin/orders",          icon: ShoppingCart,  label: "Đơn Hàng" },
-            { href: "/admin/categories",      icon: LayoutGrid,    label: "Danh Mục" },
-            { href: "/admin/discounts",       icon: Tag,           label: "Giảm Giá" },
-            { href: "/admin/reviews",         icon: MessageSquare, label: "Đánh Giá" },
+            { href: "/secure-cms/products/create", icon: Package,      label: "Thêm Sản Phẩm" },
+            { href: "/secure-cms/orders",          icon: ShoppingCart,  label: "Đơn Hàng" },
+            { href: "/secure-cms/categories",      icon: LayoutGrid,    label: "Danh Mục" },
+            { href: "/secure-cms/discounts",       icon: Tag,           label: "Giảm Giá" },
+            { href: "/secure-cms/reviews",         icon: MessageSquare, label: "Đánh Giá" },
           ].map(({ href, icon: Icon, label }) => (
             <Link
               key={href}

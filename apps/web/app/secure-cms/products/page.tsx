@@ -191,7 +191,7 @@ export default function AdminProductsPage() {
           <p className="text-gray-600">Quản lý sản phẩm terrarium của bạn</p>
         </div>
         <Link
-          href="/admin/products/create"
+          href="/secure-cms/products/create"
           className="flex items-center gap-2 bg-[#425733] text-white px-6 py-3 rounded-full font-semibold shadow-soft hover:-translate-y-0.5 hover:shadow-[0_4px_20px_rgba(66,87,51,0.4)] hover:bg-[#364a29] transition-colors"
         >
           <Plus className="w-5 h-5" />
@@ -266,7 +266,7 @@ export default function AdminProductsPage() {
         ) : filteredProducts.length === 0 ? (
           <div className="p-8 text-center text-gray-500">
             Không tìm thấy sản phẩm.{" "}
-            <Link href="/admin/products/create" className="text-[#425733] hover:underline">
+            <Link href="/secure-cms/products/create" className="text-[#425733] hover:underline">
               Thêm sản phẩm đầu tiên
             </Link>
           </div>

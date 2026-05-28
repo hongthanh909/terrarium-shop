@@ -19,7 +19,7 @@ export default function ShopLayout({
   chat: React.ReactNode;
 }) {
   const pathname = usePathname() ?? "";
-  const isAdmin = pathname.startsWith("/admin");
+  const isAdmin = pathname.startsWith("/secure-cms");
 
   if (isAdmin) {
     // Admin pages: chỉ render children (admin layout tự xử lý sidebar + content)

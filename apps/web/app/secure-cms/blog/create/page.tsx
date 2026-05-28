@@ -85,7 +85,7 @@ export default function CreateBlogPostPage() {
             ? "Bài viết đã được xuất bản thành công!"
             : "Đã lưu bài viết dưới dạng bản nháp!"
         );
-        router.push("/admin/blog");
+        router.push("/secure-cms/blog");
       } else {
         toast.error(result.error || "Lỗi khi tạo bài viết");
       }
@@ -101,7 +101,7 @@ export default function CreateBlogPostPage() {
     <div>
       <div className="mb-6">
         <Link
-          href="/admin/blog"
+          href="/secure-cms/blog"
           className="inline-flex items-center text-[#425733] hover:text-[#364a29] mb-4 gap-1"
         >
           <ArrowLeft className="w-4 h-4" />
@@ -235,7 +235,7 @@ export default function CreateBlogPostPage() {
         {/* Actions */}
         <div className="flex justify-end gap-4">
           <Link
-            href="/admin/blog"
+            href="/secure-cms/blog"
             className="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
           >
             Hủy

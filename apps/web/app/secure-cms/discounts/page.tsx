@@ -2,9 +2,8 @@
 
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
-import { ArrowLeft, Plus, Edit, Trash2, Save, X } from "lucide-react";
 import Link from "next/link";
+import { ArrowLeft, Plus, Edit, Trash2, Save, X } from "lucide-react";
 import { toast } from "sonner";
 
 interface DiscountCampaign {
@@ -21,13 +20,17 @@ interface DiscountCampaign {
   status: string;
   applicableTo: string;
   description: string | null;
+  applicables: Array<{
+    id: string;
+    targetType: string;
+    targetId: string;
+  }>;
 }
 
-export default function AdminVouchersPage() {
-  const router = useRouter();
+export default function AdminDiscountsPage() {
   const queryClient = useQueryClient();
   const { data: campaigns = [], isLoading: loading } = useQuery({
-    queryKey: ["admin-vouchers"],
+    queryKey: ["admin-discounts"],
     queryFn: async () => {
       const response = await fetch("/api/discount-campaigns");
       return response.json();
@@ -107,21 +110,21 @@ export default function AdminVouchersPage() {
       });
 
       if (response.ok) {
-        toast.success(editingCampaign ? "Cập nhật phiếu giảm giá!" : "Tạo phiếu giảm giá!");
+        toast.success(editingCampaign ? "Chiến dịch được cập nhật!" : "Chiến dịch được tạo!");
         handleCloseModal();
-        queryClient.invalidateQueries({ queryKey: ["admin-vouchers"] });
+        queryClient.invalidateQueries({ queryKey: ["admin-discounts"] });
       } else {
         const error = await response.json();
-        toast.error(error.error || "Không thá»ƒ lưu phiếu giảm giá");
+        toast.error(error.error || "Không thá»ƒ lưu chiến dịch");
       }
     } catch (error) {
-      console.error("Error saving voucher:", error);
-      toast.error("Lỗi khi lưu phiếu giảm giá");
+      console.error("Error saving campaign:", error);
+      toast.error("Lỗi khi lưu chiến dịch");
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Bạn có chắc chắn muốn xóa phiếu giảm giá này?")) return;
+    if (!confirm("Bạn có chắc chắn muốn xóa chiến dịch này?")) return;
 
     try {
       const response = await fetch(`/api/discount-campaigns/${id}`, {
@@ -129,14 +132,14 @@ export default function AdminVouchersPage() {
       });
 
       if (response.ok) {
-        toast.success("Xóa phiếu giảm giá thành công!");
-        queryClient.invalidateQueries({ queryKey: ["admin-vouchers"] });
+        toast.success("Xóa chiến dịch thành công!");
+        queryClient.invalidateQueries({ queryKey: ["admin-discounts"] });
       } else {
-        toast.error("Không thá»ƒ xóa phiếu giảm giá");
+        toast.error("Không thá»ƒ xóa chiến dịch");
       }
     } catch (error) {
-      console.error("Error deleting voucher:", error);
-      toast.error("Lỗi khi xóa phiếu giảm giá");
+      console.error("Error deleting campaign:", error);
+      toast.error("Lỗi khi xóa chiến dịch");
     }
   };
 
@@ -158,38 +161,38 @@ export default function AdminVouchersPage() {
   const getTypeLabel = (type: string) => {
     switch (type) {
       case "PERCENTAGE":
-        return "Phần TrÄƒm";
+        return "%";
       case "FIXED":
-        return "Số Tiền Cố Định";
+        return "₫";
       case "FREE_SHIPPING":
-        return "Miễn Phí Vận Chuyá»ƒn";
+        return "Free Ship";
       default:
         return type;
     }
   };
 
   if (loading) {
-    return <div className="text-center py-12">Đang tải...</div>;
+    return <div className="text-center py-12">Loading...</div>;
   }
 
   return (
     <div>
       <div className="mb-6">
         <Link
-          href="/admin"
+          href="/secure-cms"
           className="inline-flex items-center text-[#425733] hover:text-[#425733] mb-4"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
           Quay Lại Admin
         </Link>
         <div className="flex justify-between items-center">
-          <h2 className="text-3xl font-bold text-gray-800">Phiếu Giảm Giá</h2>
+          <h2 className="text-3xl font-bold text-gray-800">Chiến Dịch Giảm Giá</h2>
           <button
             onClick={() => handleOpenModal()}
             className="flex items-center gap-2 bg-[#425733] text-white px-6 py-3 rounded-full font-semibold shadow-soft hover:-translate-y-0.5 hover:shadow-[0_4px_20px_rgba(66,87,51,0.4)] hover:bg-[#364a29]"
           >
             <Plus className="w-5 h-5" />
-            Phiếu Giảm Giá Mới
+            Chiến Dịch Mới
           </button>
         </div>
       </div>
@@ -198,13 +201,13 @@ export default function AdminVouchersPage() {
         <table className="w-full">
           <thead className="bg-gray-50 border-b">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Mã</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Loại</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Giá Trị</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Trạng Thái</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Thời Gian</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Sử Dụng</th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Hành Động</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Code</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Value</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Period</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Usage</th>
+              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y">
@@ -221,11 +224,11 @@ export default function AdminVouchersPage() {
                     ? `${campaign.value}%`
                     : campaign.type === "FIXED"
                     ? `${Number(campaign.value).toLocaleString("vi-VN")}₫`
-                    : "Miễn Phí Vận Chuyá»ƒn"}
+                    : "Free Shipping"}
                 </td>
                 <td className="px-6 py-4">
                   <span className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(campaign.status)}`}>
-                    {campaign.status === 'ACTIVE' ? 'Hoạt Động' : campaign.status === 'INACTIVE' ? 'Không Hoạt Động' : campaign.status === 'EXPIRED' ? 'Đã Hết Hạn' : campaign.status === 'SOLD_OUT' ? 'Đã Hết' : campaign.status}
+                    {campaign.status}
                   </span>
                 </td>
                 <td className="px-6 py-4 text-sm text-gray-500">
@@ -256,7 +259,7 @@ export default function AdminVouchersPage() {
             {campaigns.length === 0 && (
               <tr>
                 <td colSpan={7} className="px-6 py-12 text-center text-gray-500">
-                  Chưa có phiếu giảm giá. Nhấn "Phiếu Giảm Giá Mới" đá»ƒ tạo.
+                  Chưa có chiến dịch. Nhấn "Chiến Dịch Mới" đá»ƒ tạo.
                 </td>
               </tr>
             )}
@@ -275,10 +278,10 @@ export default function AdminVouchersPage() {
                   <X className="w-6 h-6" />
                 </button>
               </div>
-              <h3 className="text-xl font-bold mb-4">{editingCampaign ? "Chỉnh Sửa Phiếu Giảm Giá" : "Phiếu Giảm Giá Mới"}</h3>
+              <h3 className="text-xl font-bold mb-4">{editingCampaign ? "Chỉnh Sửa Chiến Dịch" : "Chiến Dịch Mới"}</h3>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium mb-1">Mã Phiếu *</label>
+                  <label className="block text-sm font-medium mb-1">Mã Chiến Dịch *</label>
                   <input
                     type="text"
                     value={formData.code}
@@ -428,7 +431,7 @@ export default function AdminVouchersPage() {
                     className="flex items-center gap-2 bg-[#425733] text-white px-4 py-2 rounded-full font-semibold shadow-soft hover:-translate-y-0.5 hover:shadow-[0_4px_15px_rgba(66,87,51,0.3)] hover:bg-[#364a29]"
                   >
                     <Save className="w-4 h-4" />
-                    Lưu Phiếu Giảm Giá
+                    Lưu Chiến Dịch
                   </button>
                 </div>
               </form>

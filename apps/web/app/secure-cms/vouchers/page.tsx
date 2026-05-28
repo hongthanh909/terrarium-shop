@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { ArrowLeft, Plus, Edit, Trash2, Save, X } from "lucide-react";
+import Link from "next/link";
 import { toast } from "sonner";
 
 interface DiscountCampaign {
@@ -20,17 +21,13 @@ interface DiscountCampaign {
   status: string;
   applicableTo: string;
   description: string | null;
-  applicables: Array<{
-    id: string;
-    targetType: string;
-    targetId: string;
-  }>;
 }
 
-export default function AdminDiscountsPage() {
+export default function AdminVouchersPage() {
+  const router = useRouter();
   const queryClient = useQueryClient();
   const { data: campaigns = [], isLoading: loading } = useQuery({
-    queryKey: ["admin-discounts"],
+    queryKey: ["admin-vouchers"],
     queryFn: async () => {
       const response = await fetch("/api/discount-campaigns");
       return response.json();
@@ -110,21 +107,21 @@ export default function AdminDiscountsPage() {
       });
 
       if (response.ok) {
-        toast.success(editingCampaign ? "Chiến dịch được cập nhật!" : "Chiến dịch được tạo!");
+        toast.success(editingCampaign ? "Cập nhật phiếu giảm giá!" : "Tạo phiếu giảm giá!");
         handleCloseModal();
-        queryClient.invalidateQueries({ queryKey: ["admin-discounts"] });
+        queryClient.invalidateQueries({ queryKey: ["admin-vouchers"] });
       } else {
         const error = await response.json();
-        toast.error(error.error || "Không thá»ƒ lưu chiến dịch");
+        toast.error(error.error || "Không thá»ƒ lưu phiếu giảm giá");
       }
     } catch (error) {
-      console.error("Error saving campaign:", error);
-      toast.error("Lỗi khi lưu chiến dịch");
+      console.error("Error saving voucher:", error);
+      toast.error("Lỗi khi lưu phiếu giảm giá");
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Bạn có chắc chắn muốn xóa chiến dịch này?")) return;
+    if (!confirm("Bạn có chắc chắn muốn xóa phiếu giảm giá này?")) return;
 
     try {
       const response = await fetch(`/api/discount-campaigns/${id}`, {
@@ -132,14 +129,14 @@ export default function AdminDiscountsPage() {
       });
 
       if (response.ok) {
-        toast.success("Xóa chiến dịch thành công!");
-        queryClient.invalidateQueries({ queryKey: ["admin-discounts"] });
+        toast.success("Xóa phiếu giảm giá thành công!");
+        queryClient.invalidateQueries({ queryKey: ["admin-vouchers"] });
       } else {
-        toast.error("Không thá»ƒ xóa chiến dịch");
+        toast.error("Không thá»ƒ xóa phiếu giảm giá");
       }
     } catch (error) {
-      console.error("Error deleting campaign:", error);
-      toast.error("Lỗi khi xóa chiến dịch");
+      console.error("Error deleting voucher:", error);
+      toast.error("Lỗi khi xóa phiếu giảm giá");
     }
   };
 
@@ -161,38 +158,38 @@ export default function AdminDiscountsPage() {
   const getTypeLabel = (type: string) => {
     switch (type) {
       case "PERCENTAGE":
-        return "%";
+        return "Phần TrÄƒm";
       case "FIXED":
-        return "₫";
+        return "Số Tiền Cố Định";
       case "FREE_SHIPPING":
-        return "Free Ship";
+        return "Miễn Phí Vận Chuyá»ƒn";
       default:
         return type;
     }
   };
 
   if (loading) {
-    return <div className="text-center py-12">Loading...</div>;
+    return <div className="text-center py-12">Đang tải...</div>;
   }
 
   return (
     <div>
       <div className="mb-6">
         <Link
-          href="/admin"
+          href="/secure-cms"
           className="inline-flex items-center text-[#425733] hover:text-[#425733] mb-4"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
           Quay Lại Admin
         </Link>
         <div className="flex justify-between items-center">
-          <h2 className="text-3xl font-bold text-gray-800">Chiến Dịch Giảm Giá</h2>
+          <h2 className="text-3xl font-bold text-gray-800">Phiếu Giảm Giá</h2>
           <button
             onClick={() => handleOpenModal()}
             className="flex items-center gap-2 bg-[#425733] text-white px-6 py-3 rounded-full font-semibold shadow-soft hover:-translate-y-0.5 hover:shadow-[0_4px_20px_rgba(66,87,51,0.4)] hover:bg-[#364a29]"
           >
             <Plus className="w-5 h-5" />
-            Chiến Dịch Mới
+            Phiếu Giảm Giá Mới
           </button>
         </div>
       </div>
@@ -201,13 +198,13 @@ export default function AdminDiscountsPage() {
         <table className="w-full">
           <thead className="bg-gray-50 border-b">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Code</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Value</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Period</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Usage</th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Mã</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Loại</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Giá Trị</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Trạng Thái</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Thời Gian</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Sử Dụng</th>
+              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Hành Động</th>
             </tr>
           </thead>
           <tbody className="divide-y">
@@ -224,11 +221,11 @@ export default function AdminDiscountsPage() {
                     ? `${campaign.value}%`
                     : campaign.type === "FIXED"
                     ? `${Number(campaign.value).toLocaleString("vi-VN")}₫`
-                    : "Free Shipping"}
+                    : "Miễn Phí Vận Chuyá»ƒn"}
                 </td>
                 <td className="px-6 py-4">
                   <span className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(campaign.status)}`}>
-                    {campaign.status}
+                    {campaign.status === 'ACTIVE' ? 'Hoạt Động' : campaign.status === 'INACTIVE' ? 'Không Hoạt Động' : campaign.status === 'EXPIRED' ? 'Đã Hết Hạn' : campaign.status === 'SOLD_OUT' ? 'Đã Hết' : campaign.status}
                   </span>
                 </td>
                 <td className="px-6 py-4 text-sm text-gray-500">
@@ -259,7 +256,7 @@ export default function AdminDiscountsPage() {
             {campaigns.length === 0 && (
               <tr>
                 <td colSpan={7} className="px-6 py-12 text-center text-gray-500">
-                  Chưa có chiến dịch. Nhấn "Chiến Dịch Mới" đá»ƒ tạo.
+                  Chưa có phiếu giảm giá. Nhấn "Phiếu Giảm Giá Mới" đá»ƒ tạo.
                 </td>
               </tr>
             )}
@@ -278,10 +275,10 @@ export default function AdminDiscountsPage() {
                   <X className="w-6 h-6" />
                 </button>
               </div>
-              <h3 className="text-xl font-bold mb-4">{editingCampaign ? "Chỉnh Sửa Chiến Dịch" : "Chiến Dịch Mới"}</h3>
+              <h3 className="text-xl font-bold mb-4">{editingCampaign ? "Chỉnh Sửa Phiếu Giảm Giá" : "Phiếu Giảm Giá Mới"}</h3>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium mb-1">Mã Chiến Dịch *</label>
+                  <label className="block text-sm font-medium mb-1">Mã Phiếu *</label>
                   <input
                     type="text"
                     value={formData.code}
@@ -431,7 +428,7 @@ export default function AdminDiscountsPage() {
                     className="flex items-center gap-2 bg-[#425733] text-white px-4 py-2 rounded-full font-semibold shadow-soft hover:-translate-y-0.5 hover:shadow-[0_4px_15px_rgba(66,87,51,0.3)] hover:bg-[#364a29]"
                   >
                     <Save className="w-4 h-4" />
-                    Lưu Chiến Dịch
+                    Lưu Phiếu Giảm Giá
                   </button>
                 </div>
               </form>

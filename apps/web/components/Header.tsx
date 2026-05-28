@@ -168,7 +168,7 @@ export default function Header() {
                     <DropdownMenuSeparator />
                     {(session.user as any)?.role === "ADMIN" && (
                       <DropdownMenuItem asChild>
-                        <Link href="/admin" className="cursor-pointer flex items-center gap-2 text-[#425733] font-semibold focus:bg-[#e3ebdd]">
+                        <Link href="/secure-cms" className="cursor-pointer flex items-center gap-2 text-[#425733] font-semibold focus:bg-[#e3ebdd]">
                           <LayoutDashboard className="w-4 h-4" /> Quản lý
                         </Link>
                       </DropdownMenuItem>
