@@ -4,7 +4,8 @@ import { notFound } from "next/navigation";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
-export const dynamic = "force-dynamic";
+// ISR: cache sản phẩm 60 giây — user vote data vẫn fresh vì fetch sau client-side
+export const revalidate = 60;
 
 export default async function ProductPage({ params }: { params: { slug: string } }) {
   const session = await getServerSession(authOptions);

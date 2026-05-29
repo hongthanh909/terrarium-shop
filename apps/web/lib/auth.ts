@@ -89,8 +89,8 @@ export const authOptions: NextAuthOptions = {
 
   session: {
     strategy: "jwt",
-    maxAge: 30 * 24 * 60 * 60, // 30 ngày (production)
-    updateAge: 24 * 60 * 60,   // Refresh token mỗi 24 giờ (tránh stale session)
+    maxAge: 24 * 60 * 60,   // 24 giờ (thay vì 30 ngày) — bảo mật hơn
+    updateAge: 15 * 60,     // Refresh token mỗi 15 phút nếu đang dùng
   },
 
   callbacks: {

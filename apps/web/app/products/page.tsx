@@ -1,6 +1,10 @@
 import { prisma } from "@/lib/prisma";
 import { ProductsClient } from "./ProductsClient";
 
+// ISR: cache 60 giây per search/category combination
+export const revalidate = 60;
+
+
 export default async function ProductsPage({
   searchParams,
 }: {

@@ -10,6 +10,11 @@ import { ReviewMarquee } from "@/components/ui/review-marquee";
 import { StatsSection } from "@/components/ui/number-ticker";
 import { prisma } from "@/lib/prisma";
 import { FeaturedProductCard } from "@/components/ui/featured-product-card";
+import { unstable_cache } from "next/cache";
+
+// ISR: trang chủ cache 2 phút — đủ fresh mà không query DB mỗi request
+export const revalidate = 120;
+
 
 export const metadata: Metadata = {
   title: "Terrarium Shop | Mang Thiên Nhiên Vào Trong Nhà",
@@ -22,26 +27,37 @@ export const metadata: Metadata = {
   },
 };
 
+// Cache homepage data — chỉ query DB mỗi 2 phút
+const getHomepageData = unstable_cache(
+  async () => {
+    const [featuredProducts, latestPosts, topReviews] = await Promise.all([
+      prisma.product.findMany({
+        where: { featured: true, status: "ACTIVE" },
+        take: 4,
+        include: { category: true },
+        orderBy: { createdAt: "desc" },
+      }),
+      prisma.blogPost.findMany({
+        where: { published: true },
+        take: 3,
+        orderBy: { publishedAt: "desc" },
+        include: { category: true },
+      }),
+      prisma.review.findMany({
+        where: { approved: true },
+        take: 10,
+        orderBy: { createdAt: "desc" },
+        include: { customer: { select: { name: true } } },
+      }),
+    ]);
+    return { featuredProducts, latestPosts, topReviews };
+  },
+  ["homepage-data"],
+  { revalidate: 120 }
+);
+
 export default async function Home() {
-  // Fetch Data directly on Server
-  const [featuredProducts, latestPosts, topReviews] = await Promise.all([
-    prisma.product.findMany({
-      where: { featured: true, status: "ACTIVE" },
-      take: 4,
-      include: { category: true },
-    }),
-    prisma.blogPost.findMany({
-      where: { published: true },
-      orderBy: { publishedAt: "desc" },
-      take: 3,
-      include: { category: true },
-    }),
-    prisma.review.findMany({
-      where: { approved: true, rating: 5 },
-      take: 3,
-      include: { customer: true },
-    }),
-  ]);
+  const { featuredProducts, latestPosts, topReviews } = await getHomepageData();
 
   return (
     <main className="min-h-screen">

@@ -118,6 +118,9 @@ export async function middleware(request: NextRequest) {
     response.headers.set("x-user-id", token.id as string);
     response.headers.set("x-user-role", token.role as string);
     response.headers.set("x-pathname", pathname);
+    // Ngăn browser cache trang admin
+    response.headers.set("Cache-Control", "no-store, no-cache, must-revalidate");
+    response.headers.set("Pragma", "no-cache");
     return applySecurityHeaders(response);
   }
 
