@@ -382,6 +382,10 @@ model Order {
   discounts        OrderDiscount[]
   shippingTracking ShippingTracking?
 
+  // ── Indexes cho query phổ biến ───────────────────────────────
+  @@index([customerId, createdAt])    // lịch sử đơn của khách hàng
+  @@index([status, createdAt])        // admin filter theo trạng thái
+  @@index([paymentStatus, paymentMethod]) // theo dõi thanh toán
   @@map("orders")
 }
 

@@ -1,11 +1,10 @@
 import { prisma } from "@/lib/prisma";
 import { ExploreClient } from "./ExploreClient";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
 import { unstable_cache } from "next/cache";
 
-// Force dynamic rendering — trang này dùng getServerSession (headers)
-export const dynamic = "force-dynamic";
+// ✅ ISR thay vì force-dynamic — product data cache 2 phút
+// Vote status của user được fetch client-side trong ExploreClient
+export const revalidate = 120;
 
 const getCachedExploreData = unstable_cache(
   async () => {
@@ -54,31 +53,19 @@ const getCachedExploreData = unstable_cache(
     return { featured, pinned, topVoted, newArrivals, weeklyFeaturedData };
   },
   ["explore-data-cache"],
-  { revalidate: 60 }
+  { revalidate: 120 }
 );
+
+const serializeProduct = (p: any) => ({
+  ...JSON.parse(JSON.stringify(p)),
+  voteCount: p._count?.votes || 0,
+  userVoted: false, // vote status sẽ được load client-side
+});
 
 export default async function ExplorePage() {
   try {
-    const session = await getServerSession(authOptions);
-    const customerId = (session?.user as any)?.id;
-
-    const [exploreData, userVotes] = await Promise.all([
-      getCachedExploreData(),
-      customerId ? prisma.productVote.findMany({
-        where: { customerId },
-        select: { productId: true },
-      }) : Promise.resolve([]),
-    ]);
-
-    const { featured, pinned, topVoted, newArrivals, weeklyFeaturedData } = exploreData;
-
-    const userVotedProductIds = new Set(userVotes.map(v => v.productId));
-
-    const serializeProduct = (p: any) => ({
-      ...JSON.parse(JSON.stringify(p)),
-      voteCount: p._count?.votes || 0,
-      userVoted: userVotedProductIds.has(p.id),
-    });
+    const { featured, pinned, topVoted, newArrivals, weeklyFeaturedData } =
+      await getCachedExploreData();
 
     const weeklyFeatured = weeklyFeaturedData
       ? {

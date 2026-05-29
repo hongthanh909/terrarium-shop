@@ -4,46 +4,60 @@ import { ArrowLeft, Calendar, Tag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
+import { unstable_cache } from "next/cache";
+
+// ISR: cache bài viết 1 giờ (nội dung blog ít thay đổi)
+export const revalidate = 3600;
 
 interface Props {
   params: { slug: string };
 }
 
-// BUG-15 fix: generate per-post metadata for SEO
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const post = await getPost(params.slug);
-  if (!post) return { title: "Bài viết không tìm thấy" };
-
-  const description = post.content
-    .replace(/<[^>]+>/g, "") // strip HTML tags
-    .slice(0, 160)
-    .trim();
-
-  return {
-    title: `${post.title} | Blog - Tiệm Rêu Decor`,
-    description,
-    openGraph: {
-      title: post.title,
-      description,
-      type: "article",
-      publishedTime: post.publishedAt?.toISOString(),
-    },
-  };
-}
-
-async function getPost(slug: string) {
+// ✅ Prerender tất cả bài blog tại build time
+export async function generateStaticParams() {
   try {
-    return await prisma.blogPost.findUnique({
-      where: { slug, published: true },
-      include: { category: true },
+    const posts = await prisma.blogPost.findMany({
+      where: { published: true },
+      select: { slug: true },
     });
+    return posts.map((p) => ({ slug: p.slug }));
   } catch {
-    return null;
+    return [];
   }
 }
 
+function getCachedPost(slug: string) {
+  return unstable_cache(
+    async () => {
+      try {
+        return await prisma.blogPost.findUnique({
+          where: { slug, published: true },
+          include: { category: true },
+        });
+      } catch {
+        return null;
+      }
+    },
+    [`blog-post-${slug}`],
+    { revalidate: 3600 }
+  );
+}
+
+// SEO: generate per-post metadata
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const post = await getCachedPost(params.slug)();
+  if (!post) return { title: "Bài viết không tìm thấy" };
+  const description = post.content.replace(/<[^>]+>/g, "").slice(0, 160).trim();
+  return {
+    title: `${post.title} | Blog - Tiệm Rêu Decor`,
+    description,
+    openGraph: { title: post.title, description, type: "article",
+      publishedTime: post.publishedAt?.toISOString() },
+  };
+}
+
 export default async function BlogPostPage({ params }: Props) {
-  const post = await getPost(params.slug);
+  const post = await getCachedPost(params.slug)();
 
   if (!post) {
     notFound();
