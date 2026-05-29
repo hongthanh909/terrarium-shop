@@ -111,8 +111,8 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL(ADMIN_LOGIN_PATH, request.url));
     }
     if (token.role !== "ADMIN") {
-      // Không lộ URL admin — chỉ về trang chủ
-      return NextResponse.redirect(new URL("/", request.url));
+      // Có session nhưng không phải ADMIN → về trang login admin để đăng nhập lại
+      return NextResponse.redirect(new URL(ADMIN_LOGIN_PATH, request.url));
     }
     const response = NextResponse.next();
     response.headers.set("x-user-id", token.id as string);
