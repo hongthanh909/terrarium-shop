@@ -117,36 +117,6 @@ export async function POST(request: NextRequest) {
         });
       }
 
-      // Update customer loyalty points if they made a purchase
-      if (customerId) {
-        const customer = await tx.customer.findUnique({
-          where: { id: customerId },
-        });
-
-        if (customer) {
-          const pointsEarned = Math.floor(toNum(total) / 100000); // 1 point per 100k VND
-
-          await tx.customer.update({
-            where: { id: customerId },
-            data: {
-              loyaltyPoints: {
-                increment: pointsEarned,
-              },
-            },
-          });
-
-          // Record loyalty points history
-          await tx.loyaltyPoint.create({
-            data: {
-              customerId,
-              points: pointsEarned,
-              source: "ORDER",
-              orderId: newOrder.id,
-            },
-          });
-        }
-      }
-
       if (discountCampaignId) {
         await incrementDiscountUsage(discountCampaignId);
       }

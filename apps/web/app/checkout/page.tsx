@@ -92,7 +92,7 @@ export default function CheckoutPage() {
     e.preventDefault();
 
     if (items.length === 0) {
-      alert("Giỏ hàng trống!");
+      toast.error("Giỏ hàng trống! Vui lòng thêm sản phẩm trước.");
       return;
     }
 
@@ -135,7 +135,7 @@ export default function CheckoutPage() {
       });
 
       if (!response.ok) {
-        alert("Không thể tạo đơn hàng. Vui lòng thử lại.");
+        toast.error("Không thể tạo đơn hàng. Vui lòng thử lại.");
         return;
       }
 
@@ -153,7 +153,7 @@ export default function CheckoutPage() {
 
     } catch (error) {
       console.error("Error creating order:", error);
-      alert("Có lỗi xảy ra. Vui lòng thử lại.");
+      toast.error("Có lỗi xảy ra. Vui lòng thử lại.");
     } finally {
       setLoading(false);
     }

@@ -168,7 +168,7 @@ export default function AdminOrdersPage() {
       className: "text-right",
       render: (o) => (
         <Link
-          href={`/admin/orders/${o.id}`}
+          href={`/tiem-nho-nth24/orders/${o.id}`}
           onClick={(e) => e.stopPropagation()}
           className="inline-flex items-center gap-1 text-[#425733] hover:text-[#364a29] font-semibold text-xs px-2 py-1 rounded-lg hover:bg-[#e3ebdd] transition-colors"
         >
