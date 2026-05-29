@@ -5,7 +5,7 @@ import { getToken } from "next-auth/jwt";
 // ─── 🔐 SECRET ADMIN PATH — không dùng /admin nữa ────────────────────────────
 //   Thay đổi giá trị này nếu muốn đổi URL admin.
 //   Đặt biến env ADMIN_SECRET_PATH trong Vercel để override.
-const ADMIN_SECRET_PATH = process.env.ADMIN_SECRET_PATH || "/secure-cms";
+const ADMIN_SECRET_PATH = process.env.ADMIN_SECRET_PATH || "/tiem-nho-nth24";
 const ADMIN_LOGIN_PATH = `${ADMIN_SECRET_PATH}/login`;
 
 // API admin path vẫn giữ /api/admin vì chỉ gọi server-to-server
@@ -151,10 +151,10 @@ export async function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     // ⚠️  Matcher là STATIC — không đọc được env var.
-    // /secure-cms là default path; thay đổi ADMIN_SECRET_PATH trên Vercel
+    // /tiem-nho-nth24 là default path; thay đổi ADMIN_SECRET_PATH trên Vercel
     // thì CẦN cập nhật dòng dưới đây tương ứng.
     "/admin/:path*",
-    "/secure-cms/:path*",
+    "/tiem-nho-nth24/:path*",
     "/api/admin/:path*",
     // Auth endpoints (rate limit)
     "/api/auth/:path*",

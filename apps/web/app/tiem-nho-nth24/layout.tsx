@@ -18,23 +18,23 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   const pathname = usePathname();
 
   const menuItems = [
-    { href: "/secure-cms", label: "Bảng Điều Khiển", icon: Home },
-    { href: "/secure-cms/products", label: "Sản phẩm", icon: Package },
-    { href: "/secure-cms/categories", label: "Danh mục", icon: Grid3X3 },
-    { href: "/secure-cms/orders", label: "Đơn hàng", icon: ShoppingCart },
-    { href: "/secure-cms/vouchers", label: "Phiếu giảm giá", icon: Percent },
-    { href: "/secure-cms/blog", label: "Blog", icon: FileText },
-    { href: "/secure-cms/reviews", label: "Đánh giá", icon: Star },
-    { href: "/secure-cms/settings", label: "Cài đặt", icon: Settings },
+    { href: "/tiem-nho-nth24", label: "Bảng Điều Khiển", icon: Home },
+    { href: "/tiem-nho-nth24/products", label: "Sản phẩm", icon: Package },
+    { href: "/tiem-nho-nth24/categories", label: "Danh mục", icon: Grid3X3 },
+    { href: "/tiem-nho-nth24/orders", label: "Đơn hàng", icon: ShoppingCart },
+    { href: "/tiem-nho-nth24/vouchers", label: "Phiếu giảm giá", icon: Percent },
+    { href: "/tiem-nho-nth24/blog", label: "Blog", icon: FileText },
+    { href: "/tiem-nho-nth24/reviews", label: "Đánh giá", icon: Star },
+    { href: "/tiem-nho-nth24/settings", label: "Cài đặt", icon: Settings },
   ];
 
   const isActive = (href: string) => {
-    if (href === "/secure-cms") return pathname === "/secure-cms";
+    if (href === "/tiem-nho-nth24") return pathname === "/tiem-nho-nth24";
     return pathname.startsWith(href);
   };
 
   const handleLogout = async () => {
-    await signOut({ callbackUrl: "/secure-cms/login" });
+    await signOut({ callbackUrl: "/tiem-nho-nth24/login" });
   };
 
   return (

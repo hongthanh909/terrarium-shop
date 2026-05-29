@@ -43,7 +43,7 @@ export default function CreateBlogCategoryPage() {
       if (response.ok) {
         toast.success("Danh mục đã được tạo!");
         queryClient.invalidateQueries({ queryKey: ["admin-blog-categories"] });
-        router.push("/secure-cms/blog");
+        router.push("/tiem-nho-nth24/blog");
       } else {
         const err = await response.json();
         toast.error(err.error || "Lỗi khi tạo danh mục");
@@ -60,7 +60,7 @@ export default function CreateBlogCategoryPage() {
     <div>
       <div className="mb-6">
         <Link
-          href="/secure-cms/blog"
+          href="/tiem-nho-nth24/blog"
           className="inline-flex items-center text-[#425733] hover:text-[#425733] mb-4"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
@@ -97,7 +97,7 @@ export default function CreateBlogCategoryPage() {
 
         <div className="flex justify-end gap-4 pt-4">
           <Link
-            href="/secure-cms/blog"
+            href="/tiem-nho-nth24/blog"
             className="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
           >
             Huỷ

@@ -40,7 +40,7 @@ export default function AdminLoginPage() {
       }
 
       if (result?.ok) {
-        router.replace("/secure-cms");
+        router.replace("/tiem-nho-nth24");
         router.refresh();
       }
     } catch (err) {

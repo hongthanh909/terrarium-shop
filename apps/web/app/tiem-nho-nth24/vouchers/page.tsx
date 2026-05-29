@@ -161,7 +161,7 @@ export default function AdminVouchersPage() {
     <div>
       {/* Header */}
       <div className="mb-6">
-        <Link href="/secure-cms" className="inline-flex items-center text-[#425733] hover:underline mb-4 text-sm">
+        <Link href="/tiem-nho-nth24" className="inline-flex items-center text-[#425733] hover:underline mb-4 text-sm">
           <ArrowLeft className="w-4 h-4 mr-1" />
           Quay Lại Admin
         </Link>

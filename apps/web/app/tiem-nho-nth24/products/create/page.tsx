@@ -137,7 +137,7 @@ export default function CreateProductPage() {
       });
       if (res.ok) {
         toast.success("Tạo sản phẩm thành công!");
-        router.push("/secure-cms/products");
+        router.push("/tiem-nho-nth24/products");
       } else {
         const err = await res.json();
         toast.error(err.error || "Lỗi khi tạo sản phẩm");
@@ -152,7 +152,7 @@ export default function CreateProductPage() {
   return (
     <div>
       <div className="mb-6">
-        <Link href="/secure-cms/products" className="inline-flex items-center text-[#425733] hover:text-[#364a29] mb-4 gap-1 text-sm">
+        <Link href="/tiem-nho-nth24/products" className="inline-flex items-center text-[#425733] hover:text-[#364a29] mb-4 gap-1 text-sm">
           <ArrowLeft className="w-4 h-4" /> Quay lại danh sách
         </Link>
         <h2 className="text-2xl font-bold text-gray-800">Thêm Sản Phẩm Mới</h2>
@@ -360,7 +360,7 @@ export default function CreateProductPage() {
 
         {/* ── Submit ─────────────────────────────────────────── */}
         <div className="flex justify-end gap-3">
-          <Link href="/secure-cms/products" className="px-6 py-2.5 border border-gray-200 rounded-full text-gray-600 text-sm font-medium hover:bg-gray-50 transition-colors">
+          <Link href="/tiem-nho-nth24/products" className="px-6 py-2.5 border border-gray-200 rounded-full text-gray-600 text-sm font-medium hover:bg-gray-50 transition-colors">
             Hủy
           </Link>
           <button

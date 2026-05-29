@@ -9,7 +9,7 @@ export default function robots(): MetadataRoute.Robots {
         userAgent: "*",
         allow: "/",
         disallow: [
-          "/secure-cms/",
+          "/tiem-nho-nth24/",
           "/api/",
           "/profile",
           "/orders",

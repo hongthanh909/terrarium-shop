@@ -112,7 +112,7 @@ function CategoryRow({
         {/* Actions */}
         <div className="flex items-center gap-1 flex-shrink-0">
           <Link
-            href={`/secure-cms/categories/${category.id}/edit`}
+            href={`/tiem-nho-nth24/categories/${category.id}/edit`}
             className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-[#425733] hover:bg-[#e3ebdd] transition-colors"
             title="Chỉnh sửa"
           >
@@ -182,7 +182,7 @@ function CategoryRow({
                         {Number(p.basePrice).toLocaleString("vi-VN")}₫
                       </p>
                       <Link
-                        href={`/secure-cms/products/${p.id}/edit`}
+                        href={`/tiem-nho-nth24/products/${p.id}/edit`}
                         className="mt-2 w-full flex items-center justify-center gap-1 text-[10px] font-semibold text-[#425733] py-1 rounded-lg bg-[#e3ebdd] hover:bg-[#c8d5be] transition-colors"
                       >
                         <Edit className="w-3 h-3" /> Sửa
@@ -193,7 +193,7 @@ function CategoryRow({
               </div>
               <div className="mt-3 text-right">
                 <Link
-                  href={`/secure-cms/products?categoryId=${category.id}`}
+                  href={`/tiem-nho-nth24/products?categoryId=${category.id}`}
                   className="text-xs text-[#425733] hover:underline font-medium"
                 >
                   Xem tất cả trong Products →
@@ -392,7 +392,7 @@ export default function AdminCategoriesPage() {
                           <span className="ml-2 text-xs text-gray-400">{child._count?.products ?? 0} sp</span>
                         </div>
                         <div className="flex items-center gap-1">
-                          <Link href={`/secure-cms/categories/${child.id}/edit`} className="w-7 h-7 rounded-lg flex items-center justify-center text-gray-400 hover:text-[#425733] hover:bg-[#e3ebdd] transition-colors">
+                          <Link href={`/tiem-nho-nth24/categories/${child.id}/edit`} className="w-7 h-7 rounded-lg flex items-center justify-center text-gray-400 hover:text-[#425733] hover:bg-[#e3ebdd] transition-colors">
                             <Edit className="w-3.5 h-3.5" />
                           </Link>
                           <button onClick={() => handleDelete(child.id)} className="w-7 h-7 rounded-lg flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors">

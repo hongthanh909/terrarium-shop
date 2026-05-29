@@ -82,7 +82,7 @@ export default function AdminBlogPage() {
           <p className="text-gray-500">Quản lý nội dung blog</p>
         </div>
         <Link
-          href="/secure-cms/blog/create"
+          href="/tiem-nho-nth24/blog/create"
           className="flex items-center gap-2 bg-[#425733] text-white px-6 py-3 rounded-full font-semibold shadow hover:-translate-y-0.5 hover:shadow-lg hover:bg-[#364a29] transition-all"
         >
           <Plus className="w-5 h-5" />
@@ -96,7 +96,7 @@ export default function AdminBlogPage() {
         ) : posts.length === 0 ? (
           <div className="text-center py-16 text-gray-400">
             <p className="mb-3">Chưa có bài viết nào.</p>
-            <Link href="/secure-cms/blog/create" className="text-[#425733] underline">
+            <Link href="/tiem-nho-nth24/blog/create" className="text-[#425733] underline">
               Tạo bài viết đầu tiên →
             </Link>
           </div>
@@ -154,7 +154,7 @@ export default function AdminBlogPage() {
                         </Link>
                       )}
                       <Link
-                        href={`/secure-cms/blog/${post.id}/edit`}
+                        href={`/tiem-nho-nth24/blog/${post.id}/edit`}
                         className="text-[#425733] hover:text-[#364a29] p-1"
                         title="Chỉnh sửa"
                       >

@@ -24,7 +24,7 @@ export default function ShopLayout({
   chat: React.ReactNode;
 }) {
   const pathname = usePathname() ?? "";
-  const isAdmin  = pathname.startsWith("/secure-cms");
+  const isAdmin  = pathname.startsWith("/tiem-nho-nth24");
 
   // Idle logout: 30 phút cho customer, 60 phút cho admin
   useIdleLogout({
