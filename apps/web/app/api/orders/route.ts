@@ -1,7 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
-import { incrementDiscountUsage } from "@/lib/voucher-engine";
 
 // Helper: normalize number | string → number
 const toNum = (v: number | string): number =>
@@ -117,8 +116,12 @@ export async function POST(request: NextRequest) {
         });
       }
 
+      // ✅ Increment voucher usage INSIDE transaction — atomic với order creation
       if (discountCampaignId) {
-        await incrementDiscountUsage(discountCampaignId);
+        await tx.discountCampaign.update({
+          where: { id: discountCampaignId },
+          data: { usageCount: { increment: 1 } },
+        });
       }
 
       return tx.order.findUnique({

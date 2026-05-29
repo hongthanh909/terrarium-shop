@@ -185,6 +185,7 @@ export default function CheckoutPage() {
 
         <h1 className="text-3xl font-bold mb-8">Thanh Toán</h1>
 
+        <form onSubmit={handleSubmit}>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-6">
             <Card>
@@ -310,7 +311,7 @@ export default function CheckoutPage() {
               </CardContent>
             </Card>
 
-            <Button type="submit" size="lg" className="w-full bg-[#425733] hover:bg-[#364a29]" disabled={loading} onClick={handleSubmit as any}>
+            <Button type="submit" size="lg" className="w-full bg-[#425733] hover:bg-[#364a29]" disabled={loading}>
               {loading ? "Đang xử lý..." : `Đặt Hàng - ${total.toLocaleString("vi-VN")}₫`}
             </Button>
           </div>
@@ -362,6 +363,7 @@ export default function CheckoutPage() {
             </Card>
           </div>
         </div>
+        </form>
       </div>
     </main>
   );

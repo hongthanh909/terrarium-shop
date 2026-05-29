@@ -123,9 +123,9 @@ export default function CreateProductPage() {
         basePrice: parseFloat(formData.basePrice) || 0,
         // Sale price: chỉ gửi nếu có giá
         salePrice: formData.salePrice ? parseFloat(formData.salePrice) : null,
-        // Sale end date: convert VN -> UTC
+        // Sale end date: datetime-local đã là giờ VN, append +07:00 để parse đúng
         saleEndDate: formData.saleEndDate
-          ? new Date(new Date(formData.saleEndDate).getTime() - 7 * 60 * 60000).toISOString()
+          ? new Date(formData.saleEndDate + ":00+07:00").toISOString()
           : null,
         images: allImages,
         variantOptions: [],

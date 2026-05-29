@@ -127,9 +127,12 @@ export default function EditProductPage() {
           // Convert UTC → Giờ VN cho datetime-local input
           salePrice: data.salePrice != null ? String(data.salePrice) : "",
           saleEndDate: data.saleEndDate
-            ? new Date(new Date(data.saleEndDate).getTime() + 7 * 60 * 60000)
-                .toISOString()
-                .slice(0, 16)
+            ? (() => {
+                // UTC → giờ VN, định dạng "YYYY-MM-DDTHH:mm" cho datetime-local
+                const d = new Date(data.saleEndDate);
+                const vnStr = d.toLocaleString("sv-SE", { timeZone: "Asia/Ho_Chi_Minh" });
+                return vnStr.slice(0, 16); // "YYYY-MM-DD HH:mm" → slice bỏ seconds
+              })()
             : "",
           type: data.type,
           categoryId: data.categoryId || "",
@@ -303,7 +306,7 @@ export default function EditProductPage() {
         // Sale: convert giờ VN → UTC khi lưu
         salePrice: formData.salePrice ? parseFloat(formData.salePrice) : null,
         saleEndDate: formData.saleEndDate
-          ? new Date(new Date(formData.saleEndDate).getTime() - 7 * 60 * 60000).toISOString()
+          ? new Date(formData.saleEndDate + ":00+07:00").toISOString()
           : null,
         images: validImages,
         variants: variants.map((v) => ({
