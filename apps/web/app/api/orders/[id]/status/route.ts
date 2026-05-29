@@ -82,6 +82,8 @@ export async function GET(
       expired: false,
       orderNumber: order.orderNumber,
       total: Number(order.total),
+      // Frontend dùng để detect PAID sau khi webhook cập nhật
+      isPaid: order.paymentStatus === "PAID",
     });
   } catch (error) {
     console.error("Error checking order status:", error);
