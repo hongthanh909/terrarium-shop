@@ -77,6 +77,12 @@ export const authOptions: NextAuthOptions = {
           throw new Error("Email hoặc mật khẩu không đúng.");
         }
 
+        // 🔒 Chặn ADMIN đăng nhập qua form khách hàng
+        // Admin phải dùng trang đăng nhập quản trị riêng
+        if (user.role === "ADMIN") {
+          throw new Error("Tài khoản quản trị viên không thể đăng nhập tại đây. Vui lòng dùng trang đăng nhập quản trị.");
+        }
+
         return {
           id: user.id,
           email: user.email,

@@ -51,13 +51,19 @@ function AuthPage() {
   };
 
   const handleLogin = async () => {
-    const result = await signIn("customer-login", { email: formData.email, password: formData.password, redirect: false });
+    const result = await signIn("customer-login", {
+      email: formData.email,
+      password: formData.password,
+      redirect: false,
+    });
+
     if (result?.error) {
-      const errorMap: Record<string, string> = {
-        CredentialsSignin: "Email hoặc mật khẩu không đúng",
-      };
-      throw new Error(errorMap[result.error] || "Đăng nhập thất bại");
+      // NextAuth v4: lỗi credentials luôn là "CredentialsSignin"
+      // Message thực từ authorize() bị ẩn vì lý do bảo mật
+      // Hiện thị message chung, không để lộ lý do cụ thể
+      throw new Error("Email hoặc mật khẩu không đúng. Nếu bạn là quản trị viên, vui lòng dùng trang đăng nhập riêng.");
     }
+    return result;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -65,8 +71,15 @@ function AuthPage() {
     setLoading(true);
     setError(null);
     try {
-      if (isLogin) await handleLogin(); else await handleRegister();
-      router.push(callbackUrl);
+      if (isLogin) {
+        await handleLogin();
+        // Sau login, session chứa role — nếu là ADMIN thì về admin panel
+        // (admin bị chặn ở server, nên flow này chỉ xảy ra với CUSTOMER)
+        router.push(callbackUrl === "/" ? "/" : callbackUrl);
+      } else {
+        await handleRegister();
+        router.push(callbackUrl);
+      }
       router.refresh();
     } catch (err: any) {
       setError(err.message);
