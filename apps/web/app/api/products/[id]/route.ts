@@ -82,6 +82,10 @@ export async function PUT(
       careGuideData,
     } = validatedData;
 
+    // Extract sale fields from body
+    const salePrice = body.salePrice != null ? (parseFloat(body.salePrice) || null) : null;
+    const saleEndDate = body.saleEndDate ? new Date(body.saleEndDate) : null;
+
     const product = await prisma.$transaction(async (tx) => {
       // Update product
       const updatedProduct = await tx.product.update({
@@ -90,6 +94,8 @@ export async function PUT(
           slug,
           name,
           basePrice,
+          salePrice,
+          saleEndDate,
           type,
           categoryId: categoryId,
           status,

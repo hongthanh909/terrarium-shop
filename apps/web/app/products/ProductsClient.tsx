@@ -2,22 +2,25 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
-import Image from "next/image";
-import { Package, Filter, Search, ShoppingCart } from "lucide-react";
-import { useCartStore } from "@/lib/store/cartStore";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Package, Filter, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { ProductCard } from "@/components/ui/product-card";
+import { PageTransition, SlideInHeading } from "@/components/ui/page-transition";
+import { useCartStore } from "@/lib/store/cartStore";
+import { toast } from "sonner";
+import { motion } from "framer-motion";
 
 interface Product {
   id: string;
   slug: string;
   name: string;
   basePrice: { toString: () => string };
+  salePrice?: { toString: () => string } | null;
+  saleEndDate?: string | null;
   images: string[];
   category: { id: string; name: string };
+  _count?: { reviews: number };
 }
 
 interface Category {
@@ -44,31 +47,19 @@ export function ProductsClient({
   const [searchQuery, setSearchQuery] = useState(initialSearch);
   const { addItem } = useCartStore();
 
-  const handleAddToCart = (e: React.MouseEvent, product: Product) => {
-    e.preventDefault();
-    e.stopPropagation();
+  const handleAddToCart = (product: Product) => {
+    const basePrice = parseFloat(product.basePrice.toString());
+    const salePrice = product.salePrice ? parseFloat(product.salePrice.toString()) : null;
+    const price = salePrice != null && salePrice < basePrice ? salePrice : basePrice;
     addItem({
       productId: product.id,
       productName: product.name,
       productImage: product.images[0] || "",
-      price: parseFloat(product.basePrice.toString()),
+      price,
       quantity: 1,
       variants: {},
     });
-  };
-
-  const handleBuyNow = (e: React.MouseEvent, product: Product) => {
-    e.preventDefault();
-    e.stopPropagation();
-    addItem({
-      productId: product.id,
-      productName: product.name,
-      productImage: product.images[0] || "",
-      price: parseFloat(product.basePrice.toString()),
-      quantity: 1,
-      variants: {},
-    });
-    router.push("/checkout");
+    toast.success(`Đã thêm "${product.name}" vào giỏ hàng 🛒`);
   };
 
   const handleSearch = (e: React.FormEvent) => {
@@ -88,134 +79,115 @@ export function ProductsClient({
   };
 
   return (
-    <main className="min-h-screen bg-[hsl(0,0%,100%)] py-8 px-6">
-      <div className="max-w-7xl mx-auto">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
-          <h1 className="text-4xl font-bold text-[hsl(220,14%,25%)] mb-4 md:mb-0">Sản Phẩm</h1>
+    <PageTransition>
+      <main className="min-h-screen bg-[#fafbf8] py-10 px-6">
+        <div className="max-w-7xl mx-auto">
 
-          {/* Search Bar */}
-          <form onSubmit={handleSearch} className="flex items-center gap-2 mb-4 md:mb-0">
-            <Input
-              type="text"
-              placeholder="Tìm kiếm sản phẩm..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-64 rounded-full border-[#c8d5be]"
-            />
-            <Button type="submit" size="sm" className="rounded-full bg-[#425733] hover:bg-[#364a29]">
-              <Search className="w-4 h-4" />
-            </Button>
-          </form>
-        </div>
+          {/* Header */}
+          <SlideInHeading className="mb-8">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+              <div>
+                <h1 className="text-4xl font-bold text-[#1a2e12]">Sản Phẩm</h1>
+                <p className="text-gray-500 text-sm mt-1">{totalProducts} sản phẩm đang có</p>
+              </div>
 
-        {/* Category Filter Bar */}
-        <div className="mb-10 mt-2">
-          <div className="flex items-center gap-3 mb-4">
-            <Filter className="w-4 h-4 text-[#425733] flex-shrink-0" />
-            <span className="text-xs font-semibold uppercase tracking-widest text-[hsl(220,14%,55%)]">
-              Danh mục
-            </span>
-            <div className="flex-1 h-px bg-[#d4dec9]" />
-            <span className="text-xs text-[hsl(220,14%,55%)]">
-              {totalProducts} sản phẩm
-            </span>
-          </div>
+              {/* Search */}
+              <form onSubmit={handleSearch} className="flex items-center gap-2">
+                <Input
+                  type="text"
+                  placeholder="Tìm kiếm sản phẩm..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-64 rounded-full border-[#c8d5be] focus:border-[#425733]"
+                />
+                <Button type="submit" size="sm" className="rounded-full bg-[#425733] hover:bg-[#364a29]">
+                  <Search className="w-4 h-4" />
+                </Button>
+              </form>
+            </div>
+          </SlideInHeading>
 
-          <div className="flex flex-wrap gap-2.5">
-            <button
-              onClick={() => handleCategoryChange(null)}
-              className={`px-5 py-2 rounded-full text-sm font-semibold transition-all duration-200 border-2 ${
-                selectedCategory === null
-                  ? "bg-[#425733] text-white border-[#425733] shadow-[0_4px_14px_rgba(66,87,51,0.35)]"
-                  : "bg-white text-[hsl(220,14%,45%)] border-[#c8d5be] hover:border-[#425733] hover:text-[#425733] hover:bg-[#f3f7ef]"
-              }`}
-            >
-              Tất Cả
-            </button>
+          {/* Category Filter */}
+          <motion.div
+            className="mb-10"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15, duration: 0.4 }}
+          >
+            <div className="flex items-center gap-3 mb-4">
+              <Filter className="w-4 h-4 text-[#425733] flex-shrink-0" />
+              <span className="text-xs font-semibold uppercase tracking-widest text-gray-400">
+                Danh mục
+              </span>
+              <div className="flex-1 h-px bg-[#d4dec9]" />
+            </div>
 
-            {categories.map((category) => (
+            <div className="flex flex-wrap gap-2.5">
               <button
-                key={category.id}
-                onClick={() => handleCategoryChange(category.id)}
+                onClick={() => handleCategoryChange(null)}
                 className={`px-5 py-2 rounded-full text-sm font-semibold transition-all duration-200 border-2 ${
-                  selectedCategory === category.id
+                  selectedCategory === null
                     ? "bg-[#425733] text-white border-[#425733] shadow-[0_4px_14px_rgba(66,87,51,0.35)]"
-                    : "bg-white text-[hsl(220,14%,45%)] border-[#c8d5be] hover:border-[#425733] hover:text-[#425733] hover:bg-[#f3f7ef]"
+                    : "bg-white text-gray-500 border-[#c8d5be] hover:border-[#425733] hover:text-[#425733] hover:bg-[#f3f7ef]"
                 }`}
               >
-                {category.name}
+                Tất Cả
               </button>
-            ))}
-          </div>
-        </div>
+              {categories.map((cat) => (
+                <button
+                  key={cat.id}
+                  onClick={() => handleCategoryChange(cat.id)}
+                  className={`px-5 py-2 rounded-full text-sm font-semibold transition-all duration-200 border-2 ${
+                    selectedCategory === cat.id
+                      ? "bg-[#425733] text-white border-[#425733] shadow-[0_4px_14px_rgba(66,87,51,0.35)]"
+                      : "bg-white text-gray-500 border-[#c8d5be] hover:border-[#425733] hover:text-[#425733] hover:bg-[#f3f7ef]"
+                  }`}
+                >
+                  {cat.name}
+                </button>
+              ))}
+            </div>
+          </motion.div>
 
-        {/* Products Grid */}
-        {initialProducts.length === 0 ? (
-          <div className="text-center py-20">
-            <Package className="w-16 h-16 mx-auto text-[#6d8c5a] mb-4" />
-            <p className="text-[hsl(220,14%,45%)] mb-4">Không tìm thấy sản phẩm nào.</p>
-            <Button
-              variant="outline"
-              onClick={() => { setSelectedCategory(null); setSearchQuery(""); router.push("/products"); }}
+          {/* Products Grid — using unified ProductCard */}
+          {initialProducts.length === 0 ? (
+            <motion.div
+              className="text-center py-24"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.2 }}
             >
-              Xem tất cả sản phẩm
-            </Button>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {initialProducts.map((product) => (
-              <Link key={product.id} href={`/products/${product.slug}`} className="block h-full">
-                <Card className="overflow-hidden hover:shadow-lg transition-shadow group h-full border-[#e3ebdd] flex flex-col">
-                  <CardContent className="p-0 flex flex-col h-full">
-                    <div className="aspect-square bg-[#f0f4ec] flex items-center justify-center relative">
-                      {product.images.length > 0 ? (
-                        <Image
-                          src={product.images[0]}
-                          alt={product.name}
-                          fill
-                          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-                          className="object-cover"
-                        />
-                      ) : (
-                        <Package className="w-16 h-16 text-[#5a7a48]" />
-                      )}
-                    </div>
-                    <div className="p-4 flex-1 flex flex-col">
-                      <Badge variant="secondary" className="mb-2 w-fit bg-[#f0f4ec] text-[#425733]">
-                        {product.category.name}
-                      </Badge>
-                      <h3 className="font-bold mb-2 line-clamp-2 group-hover:text-[#425733] transition-colors min-h-[3rem]">
-                        {product.name}
-                      </h3>
-                      <p className="text-lg font-bold text-[#425733] mt-auto mb-4">
-                        {Number(product.basePrice.toString()).toLocaleString("vi-VN")}₫
-                      </p>
-                      
-                      <div className="flex gap-2 mt-auto">
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          className="flex-1 border-[#425733] text-[#425733] hover:bg-[#425733] hover:text-white"
-                          onClick={(e) => handleAddToCart(e, product)}
-                        >
-                          <ShoppingCart className="w-4 h-4 mr-1" /> Giỏ
-                        </Button>
-                        <Button 
-                          size="sm" 
-                          className="flex-1 bg-[#425733] hover:bg-[#364a29]"
-                          onClick={(e) => handleBuyNow(e, product)}
-                        >
-                          Mua Ngay
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
-            ))}
-          </div>
-        )}
-      </div>
-    </main>
+              <Package className="w-16 h-16 mx-auto text-[#a8c49a] mb-4" />
+              <p className="text-gray-400 mb-4">Không tìm thấy sản phẩm nào.</p>
+              <Button
+                variant="outline"
+                onClick={() => { setSelectedCategory(null); setSearchQuery(""); router.push("/products"); }}
+                className="border-[#425733] text-[#425733] hover:bg-[#f0f4ed]"
+              >
+                Xem tất cả sản phẩm
+              </Button>
+            </motion.div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {initialProducts.map((product) => (
+                <ProductCard
+                  key={product.id}
+                  id={product.id}
+                  slug={product.slug}
+                  name={product.name}
+                  basePrice={parseFloat(product.basePrice.toString())}
+                  salePrice={product.salePrice ? parseFloat(product.salePrice.toString()) : null}
+                  saleEndDate={product.saleEndDate ?? null}
+                  images={product.images}
+                  category={product.category}
+                  reviewCount={product._count?.reviews ?? 0}
+                  onAddToCart={() => handleAddToCart(product)}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      </main>
+    </PageTransition>
   );
 }

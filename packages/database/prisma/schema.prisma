@@ -168,6 +168,8 @@ model Product {
   slug          String         @unique
   name          String
   basePrice     Decimal        @db.Decimal(10, 2)
+  salePrice     Decimal?       @db.Decimal(10, 2)  // Giá khuyến mãi (flash sale)
+  saleEndDate   DateTime?                           // Thời gian kết thúc flash sale
   type          ProductType    @default(PRODUCT)
   inventory     Int            @default(0)
   featured      Boolean        @default(false)

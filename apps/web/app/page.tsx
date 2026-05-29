@@ -217,6 +217,8 @@ export default async function Home() {
                     slug={product.slug}
                     name={product.name}
                     basePrice={Number(product.basePrice.toString())}
+                    salePrice={product.salePrice != null ? Number(product.salePrice.toString()) : null}
+                    saleEndDate={product.saleEndDate ? product.saleEndDate.toISOString() : null}
                     images={product.images}
                     category={product.category ? { name: product.category.name } : undefined}
                     isNew={product.isNew || false}

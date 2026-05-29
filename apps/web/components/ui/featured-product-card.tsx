@@ -9,6 +9,8 @@ interface FeaturedProductCardProps {
   slug: string;
   name: string;
   basePrice: number;
+  salePrice?: number | null;
+  saleEndDate?: string | null;
   images: string[];
   category?: { name: string };
   rating?: number;
@@ -21,11 +23,14 @@ export function FeaturedProductCard(props: FeaturedProductCardProps) {
   const { addItem } = useCartStore();
 
   const handleAddToCart = () => {
+    const price = props.salePrice != null && props.salePrice < props.basePrice
+      ? props.salePrice
+      : props.basePrice;
     addItem({
       productId: props.id,
       productName: props.name,
       productImage: props.images[0] || "",
-      price: props.basePrice,
+      price,
       quantity: 1,
     });
     toast.success(`Đã thêm "${props.name}" vào giỏ hàng 🛒`);

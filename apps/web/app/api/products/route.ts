@@ -156,6 +156,10 @@ export async function POST(request: NextRequest) {
       careGuideData,
     } = validatedData;
 
+    // Extract sale fields from body (not in schema yet, pass through)
+    const salePrice = body.salePrice != null ? parseFloat(body.salePrice) : null;
+    const saleEndDate = body.saleEndDate ? new Date(body.saleEndDate) : null;
+
     const product = await prisma.$transaction(async (tx) => {
       // Create product
       const newProduct = await tx.product.create({
@@ -163,6 +167,8 @@ export async function POST(request: NextRequest) {
           slug,
           name,
           basePrice,
+          ...(salePrice != null && { salePrice }),
+          ...(saleEndDate && { saleEndDate }),
           type,
           categoryId,
           status,

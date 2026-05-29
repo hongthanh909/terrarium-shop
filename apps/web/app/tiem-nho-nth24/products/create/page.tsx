@@ -36,6 +36,8 @@ export default function CreateProductPage() {
     slug: "",
     name: "",
     basePrice: "",
+    salePrice: "",       // Giá khuyến mãi (để trống nếu không có)
+    saleEndDate: "",     // Thời hạn flash sale (giờ VN)
     type: "PRODUCT",
     categoryId: "",
     status: "DRAFT",
@@ -116,9 +118,15 @@ export default function CreateProductPage() {
     setLoading(true);
     try {
       const allImages = [mainImage, ...subImages.filter(Boolean)];
-      const productData = {
+      const productData: Record<string, unknown> = {
         ...formData,
         basePrice: parseFloat(formData.basePrice) || 0,
+        // Sale price: chỉ gửi nếu có giá
+        salePrice: formData.salePrice ? parseFloat(formData.salePrice) : null,
+        // Sale end date: convert VN -> UTC
+        saleEndDate: formData.saleEndDate
+          ? new Date(new Date(formData.saleEndDate).getTime() - 7 * 60 * 60000).toISOString()
+          : null,
         images: allImages,
         variantOptions: [],
         careGuideData: {
@@ -189,12 +197,35 @@ export default function CreateProductPage() {
               placeholder="299000"
             />
             <FormField
+              label="Giá khuyến mãi (VNĐ)"
+              type="number"
+              value={formData.salePrice}
+              onChange={(e) => setFormData({ ...formData, salePrice: e.target.value })}
+              min="0"
+              placeholder="Để trống nếu không giảm giá"
+            />
+            <FormField
               label="Tồn kho"
               type="number"
               value={formData.inventory}
               onChange={(e) => setFormData({ ...formData, inventory: parseInt(e.target.value) || 0 })}
               min="0"
             />
+            {/* Sale end date - chỉ hiển thị nếu có giá KM */}
+            {formData.salePrice && (
+              <div className="md:col-span-2">
+                <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                  Thời Hạn Flash Sale <span className="text-[10px] text-[#425733] font-normal">(Giờ VN)</span>
+                </label>
+                <input
+                  type="datetime-local"
+                  value={formData.saleEndDate}
+                  onChange={(e) => setFormData({ ...formData, saleEndDate: e.target.value })}
+                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#425733]/50"
+                />
+                <p className="text-xs text-gray-400 mt-1">Để trống nếu flash sale không có thời hạn</p>
+              </div>
+            )}
             <FormSelect
               label="Danh mục"
               value={formData.categoryId}

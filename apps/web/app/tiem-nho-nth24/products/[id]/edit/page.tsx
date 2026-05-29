@@ -79,6 +79,8 @@ export default function EditProductPage() {
     slug: "",
     name: "",
     basePrice: "",
+    salePrice: "",      // Giá khuyến mãi
+    saleEndDate: "",    // Thời hạn flash sale (hiển thị theo giờ VN)
     type: "PRODUCT",
     categoryId: "",
     status: "DRAFT",
@@ -122,6 +124,13 @@ export default function EditProductPage() {
           slug: data.slug,
           name: data.name,
           basePrice: data.basePrice.toString(),
+          // Convert UTC → Giờ VN cho datetime-local input
+          salePrice: data.salePrice != null ? String(data.salePrice) : "",
+          saleEndDate: data.saleEndDate
+            ? new Date(new Date(data.saleEndDate).getTime() + 7 * 60 * 60000)
+                .toISOString()
+                .slice(0, 16)
+            : "",
           type: data.type,
           categoryId: data.categoryId || "",
           status: data.status,
@@ -291,6 +300,11 @@ export default function EditProductPage() {
       const productData = {
         ...formData,
         basePrice: parseFloat(formData.basePrice) || 0,
+        // Sale: convert giờ VN → UTC khi lưu
+        salePrice: formData.salePrice ? parseFloat(formData.salePrice) : null,
+        saleEndDate: formData.saleEndDate
+          ? new Date(new Date(formData.saleEndDate).getTime() - 7 * 60 * 60000).toISOString()
+          : null,
         images: validImages,
         variants: variants.map((v) => ({
           ...v,
@@ -381,6 +395,14 @@ export default function EditProductPage() {
               min="0"
             />
             <FormField
+              label="Giá Khuyến Mãi (VND)"
+              type="number"
+              value={formData.salePrice}
+              onChange={(e) => setFormData({ ...formData, salePrice: e.target.value })}
+              min="0"
+              placeholder="Để trống nếu không có khuyến mãi"
+            />
+            <FormField
               label="Inventory"
               type="number"
               value={formData.inventory}
@@ -403,6 +425,21 @@ export default function EditProductPage() {
                 { label: "Archived", value: "ARCHIVED" },
               ]}
             />
+            {/* Flash Sale End Date — chỉ hiển khi có giá KM */}
+            {formData.salePrice && (
+              <div className="md:col-span-2">
+                <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                  Thời Hạn Flash Sale <span className="text-[10px] text-[#425733] font-normal">(Giờ VN)</span>
+                </label>
+                <input
+                  type="datetime-local"
+                  value={formData.saleEndDate}
+                  onChange={(e) => setFormData({ ...formData, saleEndDate: e.target.value })}
+                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#425733]/50"
+                />
+                <p className="text-xs text-gray-400 mt-1">Để trống nếu flash sale không có thời hạn</p>
+              </div>
+            )}
           </div>
         </div>
 

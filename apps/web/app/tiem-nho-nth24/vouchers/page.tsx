@@ -1,10 +1,46 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Plus, Edit, Trash2, Save, X } from "lucide-react";
+import { ArrowLeft, Plus, Edit, Trash2, Save, X, Clock } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
+
+// ─── Helpers: Vietnam Timezone (UTC+7) ─────────────────────────────────────
+// datetime-local input cần format "YYYY-MM-DDTHH:mm" theo local time
+// Supabase lưu UTC → cần convert 2 chiều
+
+const VN_OFFSET = 7 * 60; // phút
+
+/** Chuyển Date → "YYYY-MM-DDTHH:mm" theo giờ Việt Nam */
+function toVNLocalInput(date: Date | string): string {
+  const d = new Date(date);
+  const vnMs = d.getTime() + VN_OFFSET * 60_000;
+  const vnDate = new Date(vnMs);
+  return vnDate.toISOString().slice(0, 16);
+}
+
+/** Chuyển "YYYY-MM-DDTHH:mm" (giờ VN) → ISO UTC string để lưu DB */
+function fromVNLocalInput(localStr: string): string {
+  // localStr là giờ VN, trừ 7 tiếng để ra UTC
+  const utcMs = new Date(localStr).getTime() - VN_OFFSET * 60_000;
+  return new Date(utcMs).toISOString();
+}
+
+/** Hiển thị giờ VN realtime "HH:mm:ss" */
+function useVNClock() {
+  const [clock, setClock] = useState("");
+  useEffect(() => {
+    const tick = () => {
+      setClock(new Date().toLocaleTimeString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh", hour12: false }));
+    };
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, []);
+  return clock;
+}
+
 
 interface DiscountCampaign {
   id: string;
@@ -65,6 +101,7 @@ const DEFAULT_FORM = {
 
 export default function AdminVouchersPage() {
   const queryClient = useQueryClient();
+  const vnClock = useVNClock(); // Real-time VN clock
 
   const { data: campaigns = [], isLoading: loading } = useQuery({
     queryKey: ["admin-vouchers"],
@@ -87,8 +124,9 @@ export default function AdminVouchersPage() {
         value: campaign.value.toString(),
         minOrderAmount: campaign.minOrderAmount?.toString() || "",
         maxDiscountAmount: campaign.maxDiscountAmount?.toString() || "",
-        startsAt: new Date(campaign.startsAt).toISOString().slice(0, 16),
-        expiresAt: new Date(campaign.expiresAt).toISOString().slice(0, 16),
+        // ✅ Convert UTC → Giờ Việt Nam khi load
+        startsAt: toVNLocalInput(campaign.startsAt),
+        expiresAt: toVNLocalInput(campaign.expiresAt),
         usageLimit: campaign.usageLimit?.toString() || "",
         status: campaign.status,
         applicableTo: campaign.applicableTo,
@@ -96,7 +134,9 @@ export default function AdminVouchersPage() {
       });
     } else {
       setEditingCampaign(null);
-      setFormData({ ...DEFAULT_FORM });
+      // Default: thời điểm hiện tại VN
+      const nowVN = toVNLocalInput(new Date());
+      setFormData({ ...DEFAULT_FORM, startsAt: nowVN });
     }
     setShowModal(true);
   };
@@ -117,7 +157,12 @@ export default function AdminVouchersPage() {
       const res = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          ...formData,
+          // ✅ Convert Giờ VN → UTC trước khi lưu DB
+          startsAt: fromVNLocalInput(formData.startsAt),
+          expiresAt: fromVNLocalInput(formData.expiresAt),
+        }),
       });
 
       if (res.ok) {
@@ -255,9 +300,18 @@ export default function AdminVouchersPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between px-6 py-5 border-b">
-              <h3 className="text-xl font-bold text-gray-800">
-                {editingCampaign ? "Chỉnh Sửa Phiếu Giảm Giá" : "Phiếu Giảm Giá Mới"}
-              </h3>
+              <div>
+                <h3 className="text-xl font-bold text-gray-800">
+                  {editingCampaign ? "Chỉnh Sửa Phiếu Giảm Giá" : "Phiếu Giảm Giá Mới"}
+                </h3>
+                {/* Real-time Vietnam clock */}
+                <div className="flex items-center gap-1.5 mt-1">
+                  <Clock className="w-3.5 h-3.5 text-[#425733]" />
+                  <span className="text-xs text-gray-500 font-mono">
+                    🇻🇳 Giờ VN: <span className="text-[#425733] font-semibold">{vnClock}</span>
+                  </span>
+                </div>
+              </div>
               <button onClick={handleCloseModal} className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors">
                 <X className="w-5 h-5" />
               </button>
@@ -309,7 +363,9 @@ export default function AdminVouchersPage() {
               {/* Ngày Bắt Đầu & Kết Thúc */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">Ngày Bắt Đầu *</label>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                    Ngày Bắt Đầu * <span className="text-[10px] text-[#425733] font-normal">(Giờ VN)</span>
+                  </label>
                   <input
                     type="datetime-local"
                     value={formData.startsAt}
@@ -319,7 +375,9 @@ export default function AdminVouchersPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">Ngày Kết Thúc *</label>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                    Ngày Kết Thúc * <span className="text-[10px] text-[#425733] font-normal">(Giờ VN)</span>
+                  </label>
                   <input
                     type="datetime-local"
                     value={formData.expiresAt}

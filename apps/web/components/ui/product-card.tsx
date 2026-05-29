@@ -5,12 +5,15 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { Heart, Star, ShoppingBag, Package } from "lucide-react";
+import { SaleCountdown } from "@/components/ui/sale-countdown";
 
-interface ProductCardProps {
+export interface ProductCardProps {
   id: string;
   slug: string;
   name: string;
   basePrice: number;
+  salePrice?: number | null;
+  saleEndDate?: string | null;
   images: string[];
   category?: { name: string };
   rating?: number;
@@ -27,6 +30,8 @@ export function ProductCard({
   slug,
   name,
   basePrice,
+  salePrice,
+  saleEndDate,
   images,
   category,
   rating = 0,
@@ -38,6 +43,18 @@ export function ProductCard({
   onToggleWishlist,
   wished = false,
 }: ProductCardProps) {
+  // Tính sale: chỉ hiện nếu salePrice < basePrice và chưa hết hạn
+  const isOnSale =
+    salePrice != null &&
+    salePrice < basePrice &&
+    (saleEndDate == null || new Date(saleEndDate) > new Date());
+
+  const discountPct = isOnSale
+    ? Math.round(((basePrice - salePrice!) / basePrice) * 100)
+    : 0;
+
+  const displayPrice = isOnSale ? salePrice! : basePrice;
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 24 }}
@@ -46,7 +63,6 @@ export function ProductCard({
       whileHover={{ y: -6 }}
       transition={{ duration: 0.35 }}
       className={cn(
-        // Option C: Green-tinted card — always visible against white bg
         "group relative rounded-2xl overflow-hidden",
         "bg-[#f0f4ed] border border-[#d4e4c9]",
         "shadow-[0_2px_12px_rgba(66,87,51,0.08)]",
@@ -68,8 +84,7 @@ export function ProductCard({
               alt={name}
               fill
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-              className="object-cover transition-transform duration-500 group-hover:scale-107"
-              style={{ transform: undefined }}
+              className="object-cover transition-transform duration-500 group-hover:scale-[1.07]"
             />
           ) : (
             <div className="absolute inset-0 flex items-center justify-center text-[#a8c49a]">
@@ -77,10 +92,10 @@ export function ProductCard({
             </div>
           )}
 
-          {/* Hover overlay — subtle green tint */}
+          {/* Hover overlay */}
           <div className="absolute inset-0 bg-[#1a2e12]/0 group-hover:bg-[#1a2e12]/10 transition-colors duration-400 pointer-events-none" />
 
-          {/* ── Add to cart slide-up overlay ────────────────── */}
+          {/* ── Add to cart slide-up ────────────────── */}
           <div className="absolute bottom-0 inset-x-0 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out">
             <button
               onClick={(e) => { e.preventDefault(); onAddToCart?.(); }}
@@ -94,7 +109,12 @@ export function ProductCard({
 
         {/* ── Badges ─────────────────────────────────────────── */}
         <div className="absolute top-3 left-3 flex flex-col gap-1.5 z-10">
-          {isNew && (
+          {isOnSale && (
+            <span className="px-2.5 py-0.5 rounded-full bg-red-500 text-white text-[11px] font-bold shadow-sm tracking-wide animate-pulse">
+              -{discountPct}%
+            </span>
+          )}
+          {isNew && !isOnSale && (
             <span className="px-2.5 py-0.5 rounded-full bg-[#425733] text-white text-[11px] font-bold shadow-sm tracking-wide">
               Mới
             </span>
@@ -138,14 +158,30 @@ export function ProductCard({
           </h3>
         </Link>
 
+        {/* Sale countdown */}
+        {isOnSale && saleEndDate && (
+          <SaleCountdown saleEndDate={saleEndDate} className="mb-2" />
+        )}
+
         {/* Price row */}
         <div className="flex items-center justify-between">
-          {/* Price badge */}
-          <span className="inline-block px-3 py-1 rounded-full bg-[#425733] text-white text-sm font-bold shadow-sm">
-            {basePrice.toLocaleString("vi-VN")}₫
-          </span>
+          <div className="flex items-center gap-2">
+            {/* Current price */}
+            <span className={cn(
+              "inline-block px-3 py-1 rounded-full text-white text-sm font-bold shadow-sm",
+              isOnSale ? "bg-red-500" : "bg-[#425733]"
+            )}>
+              {displayPrice.toLocaleString("vi-VN")}₫
+            </span>
+            {/* Strikethrough original price */}
+            {isOnSale && (
+              <span className="text-[12px] text-gray-400 line-through">
+                {basePrice.toLocaleString("vi-VN")}₫
+              </span>
+            )}
+          </div>
 
-          {/* Rating — always show stars (filled/empty) */}
+          {/* Rating */}
           <div className="flex items-center gap-1">
             {[1, 2, 3, 4, 5].map((star) => (
               <Star

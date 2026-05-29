@@ -2,10 +2,9 @@
 
 import { useState, useMemo } from "react";
 import Link from "next/link";
-import { Calendar, Tag } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Calendar, Tag, BookOpen } from "lucide-react";
+import { PageTransition } from "@/components/ui/page-transition";
+import { motion } from "framer-motion";
 
 interface BlogPost {
   id: string;
@@ -14,11 +13,7 @@ interface BlogPost {
   content: string;
   published: boolean;
   publishedAt: string | null;
-  category: {
-    id: string;
-    slug: string;
-    name: string;
-  } | null;
+  category: { id: string; slug: string; name: string } | null;
 }
 
 interface BlogCategory {
@@ -42,75 +37,107 @@ export function BlogClient({
   }, [selectedCategory, initialPosts]);
 
   return (
-    <main className="min-h-screen bg-[hsl(0,0%,100%)] py-8 px-6">
-      <div className="max-w-7xl mx-auto">
-        {/* Hero */}
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-[hsl(220,14%,25%)] mb-4">Blog</h1>
-          <p className="text-[hsl(220,14%,45%)] max-w-2xl mx-auto">
-            Mẹo chăm sóc cây, hướng dẫn và cảm hứng từ thế giới terrarium
-          </p>
-        </div>
+    <PageTransition>
+      <main className="min-h-screen bg-[#fafbf8] py-10 px-6">
+        <div className="max-w-7xl mx-auto">
 
-        {/* Category Filters */}
-        <div className="flex items-center gap-2 mb-8 flex-wrap justify-center">
-          <Button
-            variant={selectedCategory === null ? "default" : "outline"}
-            size="sm"
-            onClick={() => setSelectedCategory(null)}
-            className="border-[#c8d5be]"
+          {/* Hero */}
+          <motion.div
+            className="text-center mb-12"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
           >
-            Tất Cả
-          </Button>
-          {categories.map((category) => (
-            <Button
-              key={category.id}
-              variant={selectedCategory === category.id ? "default" : "outline"}
-              size="sm"
-              onClick={() => setSelectedCategory(category.id)}
-              className="border-[#c8d5be]"
-            >
-              {category.name}
-            </Button>
-          ))}
-        </div>
+            <div className="inline-flex items-center gap-2 bg-[#e3ebdd] px-4 py-2 rounded-full text-sm font-medium text-[#425733] mb-4">
+              <BookOpen className="w-4 h-4" />
+              <span>Kiến thức terrarium</span>
+            </div>
+            <h1 className="text-5xl font-bold text-[#1a2e12] mb-4">Blog</h1>
+            <p className="text-gray-500 max-w-2xl mx-auto">
+              Mẹo chăm sóc cây, hướng dẫn và cảm hứng từ thế giới terrarium
+            </p>
+          </motion.div>
 
-        {/* Blog Posts Grid */}
-        {filteredPosts.length === 0 ? (
-          <div className="text-center py-12">
-            <p className="text-[hsl(220,14%,45%)]">Chưa có bài viết nào.</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredPosts.map((post) => (
-              <Link key={post.id} href={`/blog/${post.slug}`}>
-                <Card className="overflow-hidden hover:shadow-lg transition-shadow group h-full">
-                  <CardContent className="p-6">
-                    {post.category && (
-                      <Badge variant="secondary" className="mb-3">
-                        <Tag className="w-3 h-3 mr-1" />
-                        {post.category.name}
-                      </Badge>
-                    )}
-                    <h3 className="text-xl font-bold text-[hsl(220,14%,25%)] mb-3 group-hover:text-[#425733] transition-colors line-clamp-2">
-                      {post.title}
-                    </h3>
-                    <p className="text-[hsl(220,14%,45%)] text-sm line-clamp-3 mb-4">
-                      {post.content.substring(0, 150)}...
-                    </p>
-                    {post.publishedAt && (
-                      <div className="flex items-center text-xs text-[hsl(220,14%,45%)]">
-                        <Calendar className="w-3 h-3 mr-1" />
-                        {new Date(post.publishedAt).toLocaleDateString("vi-VN")}
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              </Link>
+          {/* Category Filters */}
+          <motion.div
+            className="flex items-center gap-2 mb-10 flex-wrap justify-center"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15, duration: 0.4 }}
+          >
+            <button
+              onClick={() => setSelectedCategory(null)}
+              className={`px-5 py-2 rounded-full text-sm font-semibold transition-all duration-200 border-2 ${
+                selectedCategory === null
+                  ? "bg-[#425733] text-white border-[#425733] shadow-[0_4px_14px_rgba(66,87,51,0.35)]"
+                  : "bg-white text-gray-500 border-[#c8d5be] hover:border-[#425733] hover:text-[#425733]"
+              }`}
+            >
+              Tất Cả
+            </button>
+            {categories.map((cat) => (
+              <button
+                key={cat.id}
+                onClick={() => setSelectedCategory(cat.id)}
+                className={`px-5 py-2 rounded-full text-sm font-semibold transition-all duration-200 border-2 ${
+                  selectedCategory === cat.id
+                    ? "bg-[#425733] text-white border-[#425733] shadow-[0_4px_14px_rgba(66,87,51,0.35)]"
+                    : "bg-white text-gray-500 border-[#c8d5be] hover:border-[#425733] hover:text-[#425733]"
+                }`}
+              >
+                {cat.name}
+              </button>
             ))}
-          </div>
-        )}
-      </div>
-    </main>
+          </motion.div>
+
+          {/* Blog Posts Grid */}
+          {filteredPosts.length === 0 ? (
+            <motion.div className="text-center py-16" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+              <BookOpen className="w-16 h-16 mx-auto text-[#a8c49a] mb-4" />
+              <p className="text-gray-400">Chưa có bài viết nào.</p>
+            </motion.div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredPosts.map((post, i) => (
+                <motion.div
+                  key={post.id}
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: "-40px" }}
+                  transition={{ duration: 0.4, delay: i * 0.06 }}
+                  whileHover={{ y: -4 }}
+                >
+                  <Link href={`/blog/${post.slug}`} className="block h-full">
+                    <div className="group h-full bg-[#f0f4ed] border border-[#d4e4c9] rounded-2xl overflow-hidden shadow-[0_2px_12px_rgba(66,87,51,0.08)] hover:shadow-[0_16px_40px_rgba(66,87,51,0.16)] hover:border-[#425733]/40 transition-all duration-300">
+                      <div className="h-1 bg-gradient-to-r from-[#425733] via-[#6d8c5a] to-[#425733] opacity-60 group-hover:opacity-100 transition-opacity" />
+                      <div className="p-6">
+                        {post.category && (
+                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#d4e4c9] text-[#425733] text-[10px] font-semibold uppercase tracking-wider mb-3">
+                            <Tag className="w-3 h-3" />
+                            {post.category.name}
+                          </span>
+                        )}
+                        <h3 className="text-lg font-bold text-[#1a2e12] mb-3 group-hover:text-[#425733] transition-colors line-clamp-2 leading-snug">
+                          {post.title}
+                        </h3>
+                        <p className="text-gray-500 text-sm line-clamp-3 mb-4 leading-relaxed">
+                          {post.content.replace(/<[^>]+>/g, "").substring(0, 150)}...
+                        </p>
+                        {post.publishedAt && (
+                          <div className="flex items-center text-xs text-gray-400">
+                            <Calendar className="w-3 h-3 mr-1" />
+                            {new Date(post.publishedAt).toLocaleDateString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh" })}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </Link>
+                </motion.div>
+              ))}
+            </div>
+          )}
+        </div>
+      </main>
+    </PageTransition>
   );
 }
