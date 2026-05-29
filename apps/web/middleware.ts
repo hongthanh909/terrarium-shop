@@ -150,7 +150,9 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    // Admin paths (secret + old /admin)
+    // ⚠️  Matcher là STATIC — không đọc được env var.
+    // /secure-cms là default path; thay đổi ADMIN_SECRET_PATH trên Vercel
+    // thì CẦN cập nhật dòng dưới đây tương ứng.
     "/admin/:path*",
     "/secure-cms/:path*",
     "/api/admin/:path*",
@@ -162,7 +164,8 @@ export const config = {
     "/profile/:path*",
     "/checkout",
     "/checkout/:path*",
-    // Apply security headers everywhere except static files
+    // Apply security headers + idle-logout everywhere (static files excluded)
     "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)).*)",
   ],
 };
+

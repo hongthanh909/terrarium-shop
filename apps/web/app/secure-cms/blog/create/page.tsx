@@ -7,8 +7,14 @@ import Link from "next/link";
 import { toast } from "sonner";
 import dynamic from "next/dynamic";
 
-const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
-import "react-quill/dist/quill.snow.css";
+const ReactQuill = dynamic(
+  () => import("react-quill").then((mod) => {
+    require("react-quill/dist/quill.snow.css");
+    return mod;
+  }),
+  { ssr: false, loading: () => <div className="h-64 bg-gray-50 rounded border animate-pulse" /> }
+);
+
 
 interface BlogCategory {
   id: string;

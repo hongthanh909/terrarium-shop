@@ -79,6 +79,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="vi" className={`${inter.variable} ${dancingScript.variable}`}>
+      <head>
+        {/* Preconnect Google Fonts — gi\u1ea3m DNS lookup + TLS latency cho fonts */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+      </head>
       <body
         className={`${inter.className} antialiased min-h-screen flex flex-col`}
       >
