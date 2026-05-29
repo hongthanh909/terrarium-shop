@@ -41,7 +41,7 @@ export default function EditCategoryPage() {
 
         if (!catRes.ok) {
           toast.error("Không tìm thấy danh mục");
-          router.push("/admin/categories");
+          router.push("/tiem-nho-nth24/categories");
           return;
         }
 
@@ -84,7 +84,7 @@ export default function EditCategoryPage() {
 
       if (response.ok) {
         toast.success("Cập nhật danh mục thành công!");
-        router.push("/admin/categories");
+        router.push("/tiem-nho-nth24/categories");
       } else {
         const err = await response.json();
         toast.error(err.error || "Không thể cập nhật danh mục");
@@ -120,7 +120,7 @@ export default function EditCategoryPage() {
       {/* Header */}
       <div className="flex items-center gap-4 mb-8">
         <Link
-          href="/admin/categories"
+          href="/tiem-nho-nth24/categories"
           className="p-2 rounded-full hover:bg-[#e3ebdd] text-[#425733] transition-colors"
         >
           <ArrowLeft className="w-5 h-5" />
@@ -221,7 +221,7 @@ export default function EditCategoryPage() {
         {/* Actions */}
         <div className="flex justify-end gap-3 pt-2">
           <Link
-            href="/admin/categories"
+            href="/tiem-nho-nth24/categories"
             className="px-5 py-2.5 border border-gray-200 rounded-full text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors"
           >
             Hủy

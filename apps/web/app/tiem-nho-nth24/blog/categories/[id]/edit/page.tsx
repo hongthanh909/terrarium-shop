@@ -36,13 +36,13 @@ export default function EditBlogCategoryPage() {
           });
         } else {
           toast.error("Không tìm thấy danh mục");
-          router.push("/admin/blog");
+          router.push("/tiem-nho-nth24/blog");
         }
       })
       .catch((error) => {
         console.error(error);
         toast.error("Lỗi khi tải danh mục");
-        router.push("/admin/blog");
+        router.push("/tiem-nho-nth24/blog");
       })
       .finally(() => {
         setLoading(false);
@@ -75,7 +75,7 @@ export default function EditBlogCategoryPage() {
       if (response.ok) {
         toast.success("Cập nhật danh mục thành công!");
         queryClient.invalidateQueries({ queryKey: ["admin-blog-categories"] });
-        router.push("/admin/blog");
+        router.push("/tiem-nho-nth24/blog");
       } else {
         const err = await response.json();
         toast.error(err.error || "Lỗi khi cập nhật danh mục");
@@ -97,7 +97,7 @@ export default function EditBlogCategoryPage() {
       if (response.ok) {
         toast.success("Đã xóa danh mục!");
         queryClient.invalidateQueries({ queryKey: ["admin-blog-categories"] });
-        router.push("/admin/blog");
+        router.push("/tiem-nho-nth24/blog");
       } else {
         const err = await response.json();
         toast.error(err.error || "Không thể xóa danh mục");
@@ -115,7 +115,7 @@ export default function EditBlogCategoryPage() {
     <div>
       <div className="mb-6">
         <Link
-          href="/admin/blog"
+          href="/tiem-nho-nth24/blog"
           className="inline-flex items-center text-[#425733] hover:text-[#425733] mb-4"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
@@ -160,7 +160,7 @@ export default function EditBlogCategoryPage() {
 
         <div className="flex justify-end gap-4 pt-4">
           <Link
-            href="/admin/blog"
+            href="/tiem-nho-nth24/blog"
             className="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
           >
             Huỷ

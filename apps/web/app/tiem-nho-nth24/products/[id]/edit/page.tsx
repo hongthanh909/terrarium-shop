@@ -149,7 +149,7 @@ export default function EditProductPage() {
         }
       } else {
         toast.error("Product not found");
-        router.push("/admin/products");
+        router.push("/tiem-nho-nth24/products");
       }
     } catch (error) {
       console.error("Error fetching product:", error);
@@ -332,7 +332,7 @@ export default function EditProductPage() {
 
       if (response.ok) {
         toast.success("Product updated successfully!");
-        router.push("/admin/products");
+        router.push("/tiem-nho-nth24/products");
       } else {
         const error = await response.json();
         toast.error(`Failed to update product: ${error.error || "Unknown error"}`);
@@ -361,7 +361,7 @@ export default function EditProductPage() {
     <div>
       <div className="mb-6">
         <Link
-          href="/admin/products"
+          href="/tiem-nho-nth24/products"
           className="inline-flex items-center text-[#425733] hover:text-[#425733] mb-4"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
@@ -742,7 +742,7 @@ export default function EditProductPage() {
         {/* Submit */}
         <div className="flex justify-end gap-4">
           <Link
-            href="/admin/products"
+            href="/tiem-nho-nth24/products"
             className="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
           >
             Cancel

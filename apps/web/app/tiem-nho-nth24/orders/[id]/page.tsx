@@ -61,7 +61,7 @@ export default function AdminOrderDetailPage() {
         setOrder(data);
       } else {
         toast.error("Order not found");
-        router.push("/admin/orders");
+        router.push("/tiem-nho-nth24/orders");
       }
     } catch (error) {
       console.error("Error fetching order:", error);
@@ -137,7 +137,7 @@ export default function AdminOrderDetailPage() {
     <div>
       <div className="mb-6">
         <Link
-          href="/admin/orders"
+          href="/tiem-nho-nth24/orders"
           className="inline-flex items-center text-[#425733] hover:text-[#425733] mb-4"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
