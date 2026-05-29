@@ -1,21 +1,30 @@
 import { prisma } from "@/lib/prisma";
 import { BlogClient } from "./BlogClient";
+import { unstable_cache } from "next/cache";
 
-export const revalidate = 60; // Cache for 60 seconds
+export const revalidate = 60;
+
+const getBlogData = unstable_cache(
+  async () => {
+    const [posts, categories] = await Promise.all([
+      prisma.blogPost.findMany({
+        where: { published: true },
+        include: { category: true },
+        orderBy: { publishedAt: "desc" },
+      }),
+      prisma.blogCategory.findMany({
+        orderBy: { name: "asc" },
+      }),
+    ]);
+    return { posts, categories };
+  },
+  ["blog-data"],
+  { revalidate: 60 }
+);
 
 export default async function BlogPage() {
-  const [posts, categories] = await Promise.all([
-    prisma.blogPost.findMany({
-      where: { published: true },
-      include: { category: true },
-      orderBy: { publishedAt: "desc" },
-    }),
-    prisma.blogCategory.findMany({
-      orderBy: { name: "asc" },
-    }),
-  ]);
+  const { posts, categories } = await getBlogData();
 
-  // Serialize dates for client component
   const serializedPosts = posts.map((p) => ({
     ...p,
     publishedAt: p.publishedAt?.toISOString() || null,

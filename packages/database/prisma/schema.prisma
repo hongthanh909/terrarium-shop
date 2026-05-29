@@ -194,6 +194,12 @@ model Product {
   seoMeta       SeoMeta?
   // discountApplicables removed - not implemented
 
+  // ── Indexes cho các query phổ biến ──────────────────────────
+  @@index([status, featured])        // homepage: featured ACTIVE products
+  @@index([status, categoryId])      // /products: filter by category
+  @@index([status, createdAt])       // /products: sort by newest
+  @@index([status, saleEndDate])     // flash sale: query sale products
+  @@index([categoryId, status])      // related products query
   @@map("products")
 }
 
