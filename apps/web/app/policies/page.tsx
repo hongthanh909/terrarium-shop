@@ -3,7 +3,7 @@ import { PoliciesClient } from "./PoliciesClient";
 import { unstable_cache } from "next/cache";
 
 // Cache 1 giờ — nội dung chính sách rất ít thay đổi
-export const revalidate = 3600;
+export const dynamic = "force-dynamic";
 
 const getCachedPolicies = unstable_cache(
   async () => {

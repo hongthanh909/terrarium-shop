@@ -2,7 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { BlogClient } from "./BlogClient";
 import { unstable_cache } from "next/cache";
 
-export const revalidate = 60;
+export const dynamic = "force-dynamic";
 
 const getBlogData = unstable_cache(
   async () => {

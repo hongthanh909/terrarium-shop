@@ -3,7 +3,7 @@ import { ProductsClient } from "./ProductsClient";
 import { unstable_cache } from "next/cache";
 
 // ISR: cache 60 giây per combination
-export const revalidate = 60;
+export const dynamic = "force-dynamic";
 
 // Cache factory theo từng combination category+search+page
 function getCachedProducts(categoryId: string | null, search: string | null, page: number) {

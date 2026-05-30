@@ -4,7 +4,7 @@ import { unstable_cache } from "next/cache";
 
 // ✅ ISR thay vì force-dynamic — product data cache 2 phút
 // Vote status của user được fetch client-side trong ExploreClient
-export const revalidate = 120;
+export const dynamic = "force-dynamic";
 
 const getCachedExploreData = unstable_cache(
   async () => {

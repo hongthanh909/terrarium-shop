@@ -6,6 +6,8 @@
  */
 import { NextResponse } from "next/server";
 
+export const dynamic = "force-dynamic";
+
 export async function POST() {
   // Xóa NextAuth session cookie bằng cách set expires về quá khứ
   const response = NextResponse.json({ success: true, message: "Đã đăng xuất" });

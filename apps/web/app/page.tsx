@@ -14,7 +14,7 @@ import { HeroCarousel } from "@/components/ui/hero-carousel";
 import { unstable_cache } from "next/cache";
 
 // ISR: trang chủ cache 2 phút — đủ fresh mà không query DB mỗi request
-export const revalidate = 120;
+export const dynamic = "force-dynamic";
 
 
 export const metadata: Metadata = {

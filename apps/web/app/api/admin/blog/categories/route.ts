@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { verifyAdminRequest, unauthorizedResponse } from "@/lib/admin-auth";
 import { logAdminAction } from "@/lib/audit";
 
+export const dynamic = "force-dynamic";
 
 // GET - List all blog categories
 export async function GET() {

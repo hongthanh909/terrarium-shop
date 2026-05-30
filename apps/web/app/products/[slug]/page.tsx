@@ -5,7 +5,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
 // ISR: cache sản phẩm 60 giây
-export const revalidate = 60;
+export const dynamic = "force-dynamic";
 
 // ✅ Prerender tất cả sản phẩm ACTIVE tại build time — xóa hoàn toàn cold start
 export async function generateStaticParams() {

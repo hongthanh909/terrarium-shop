@@ -7,7 +7,7 @@ import { prisma } from "@/lib/prisma";
 import { unstable_cache } from "next/cache";
 
 // ISR: cache bài viết 1 giờ (nội dung blog ít thay đổi)
-export const revalidate = 3600;
+export const dynamic = "force-dynamic";
 
 interface Props {
   params: { slug: string };
