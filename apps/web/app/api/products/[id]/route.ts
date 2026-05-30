@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { PrismaClient } from "@prisma/client";
 import { verifyAdminRequest, unauthorizedResponse } from "@/lib/admin-auth";
 import { logAdminAction } from "@/lib/audit";
 import { updateProductSchema } from "@/lib/validations";
@@ -22,10 +22,19 @@ export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  const client = new PrismaClient({
+    datasources: {
+      db: {
+        url: process.env.DIRECT_URL || process.env.DATABASE_URL,
+      },
+    },
+    log: ["error"],
+  });
+
   try {
     const { id } = params;
 
-    const product = await prisma.product.findUnique({
+    const product = await client.product.findUnique({
       where: { id },
       include: {
         category: true,
@@ -53,12 +62,24 @@ export async function GET(
       { error: "Internal server error" },
       { status: 500 }
     );
+  } finally {
+    await client.$disconnect().catch(() => {});
   }
 }
+
 export async function PUT(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  const client = new PrismaClient({
+    datasources: {
+      db: {
+        url: process.env.DIRECT_URL || process.env.DATABASE_URL,
+      },
+    },
+    log: ["error"],
+  });
+
   try {
     const admin = await verifyAdminRequest(request);
     if (!admin) return unauthorizedResponse();
@@ -86,7 +107,7 @@ export async function PUT(
     const salePrice = body.salePrice != null ? (parseFloat(body.salePrice) || null) : null;
     const saleEndDate = body.saleEndDate ? new Date(body.saleEndDate) : null;
 
-    const product = await prisma.$transaction(async (tx) => {
+    const product = await client.$transaction(async (tx) => {
       // Update product
       const updatedProduct = await tx.product.update({
         where: { id },
@@ -193,6 +214,8 @@ export async function PUT(
       { error: "Internal server error" },
       { status: 500 }
     );
+  } finally {
+    await client.$disconnect().catch(() => {});
   }
 }
 
@@ -200,13 +223,22 @@ export async function DELETE(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  const client = new PrismaClient({
+    datasources: {
+      db: {
+        url: process.env.DIRECT_URL || process.env.DATABASE_URL,
+      },
+    },
+    log: ["error"],
+  });
+
   try {
     const admin = await verifyAdminRequest(request);
     if (!admin) return unauthorizedResponse();
 
     const { id } = params;
 
-    const product = await prisma.product.findUnique({
+    const product = await client.product.findUnique({
       where: { id },
       select: { name: true, images: true },
     });
@@ -235,7 +267,7 @@ export async function DELETE(
     }
 
     // ─── Xóa product (cascade xóa variants, reviews, v.v.) ───────────────────
-    await prisma.product.delete({ where: { id } });
+    await client.product.delete({ where: { id } });
 
     await logAdminAction(admin.id, "DELETE", "Product", id, {
       name: product.name,
@@ -252,5 +284,7 @@ export async function DELETE(
       { error: "Internal server error" },
       { status: 500 }
     );
+  } finally {
+    await client.$disconnect().catch(() => {});
   }
 }

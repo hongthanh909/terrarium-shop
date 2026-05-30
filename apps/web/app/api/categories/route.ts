@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/prisma";
+import { PrismaClient } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 import { verifyAdminRequest, unauthorizedResponse } from "@/lib/admin-auth";
 import { logAdminAction } from "@/lib/audit";
@@ -6,8 +6,16 @@ import { createCategorySchema } from "@/lib/validations";
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
 
-
 export async function GET(request: NextRequest) {
+  const client = new PrismaClient({
+    datasources: {
+      db: {
+        url: process.env.DIRECT_URL || process.env.DATABASE_URL,
+      },
+    },
+    log: ["error"],
+  });
+
   try {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get("id");
@@ -16,7 +24,7 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get("limit") || "50");
 
     if (id) {
-      const category = await prisma.category.findUnique({
+      const category = await client.category.findUnique({
         where: { id },
         include: {
           children: true,
@@ -45,7 +53,7 @@ export async function GET(request: NextRequest) {
     }
 
     const [categories, total] = await Promise.all([
-      prisma.category.findMany({
+      client.category.findMany({
         where: whereClause,
         include: {
           _count: {
@@ -59,7 +67,7 @@ export async function GET(request: NextRequest) {
         skip: (page - 1) * limit,
         take: limit,
       }),
-      prisma.category.count({ where: whereClause })
+      client.category.count({ where: whereClause })
     ]);
 
     return NextResponse.json({
@@ -79,10 +87,21 @@ export async function GET(request: NextRequest) {
       { error: "Internal server error" },
       { status: 500 }
     );
+  } finally {
+    await client.$disconnect().catch(() => {});
   }
 }
 
 export async function POST(request: NextRequest) {
+  const client = new PrismaClient({
+    datasources: {
+      db: {
+        url: process.env.DIRECT_URL || process.env.DATABASE_URL,
+      },
+    },
+    log: ["error"],
+  });
+
   try {
     const admin = await verifyAdminRequest(request);
     if (!admin) return unauthorizedResponse();
@@ -92,7 +111,7 @@ export async function POST(request: NextRequest) {
     // Validate request body
     const validatedData = createCategorySchema.parse(body);
 
-    const category = await prisma.category.create({
+    const category = await client.category.create({
       data: {
         name: validatedData.name,
         slug: validatedData.slug,
@@ -127,5 +146,7 @@ export async function POST(request: NextRequest) {
       { error: "Internal server error" },
       { status: 500 }
     );
+  } finally {
+    await client.$disconnect().catch(() => {});
   }
 }

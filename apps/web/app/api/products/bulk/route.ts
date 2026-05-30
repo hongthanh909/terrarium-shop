@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/prisma";
+import { PrismaClient } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 import { verifyAdminRequest, unauthorizedResponse } from "@/lib/admin-auth";
 import { logAdminAction } from "@/lib/audit";
@@ -15,6 +15,15 @@ function extractStoragePath(url: string): string | null {
 }
 
 export async function POST(request: NextRequest) {
+  const client = new PrismaClient({
+    datasources: {
+      db: {
+        url: process.env.DIRECT_URL || process.env.DATABASE_URL,
+      },
+    },
+    log: ["error"],
+  });
+
   try {
     const admin = await verifyAdminRequest(request);
     if (!admin) return unauthorizedResponse();
@@ -30,7 +39,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Get info + images before deletion
-    const products = await prisma.product.findMany({
+    const products = await client.product.findMany({
       where: { id: { in: ids } },
       select: { id: true, name: true, images: true },
     });
@@ -55,7 +64,7 @@ export async function POST(request: NextRequest) {
     }
 
     // ─── Xóa products trong DB ────────────────────────────────────────────────
-    await prisma.product.deleteMany({
+    await client.product.deleteMany({
       where: { id: { in: ids } },
     });
 
@@ -71,5 +80,7 @@ export async function POST(request: NextRequest) {
       { error: "Internal server error" },
       { status: 500 }
     );
+  } finally {
+    await client.$disconnect().catch(() => {});
   }
 }

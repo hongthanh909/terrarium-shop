@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/prisma";
+import { PrismaClient } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 import { verifyAdminRequest, unauthorizedResponse } from "@/lib/admin-auth";
 import { logAdminAction } from "@/lib/audit";
@@ -7,6 +7,15 @@ export async function POST(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  const client = new PrismaClient({
+    datasources: {
+      db: {
+        url: process.env.DIRECT_URL || process.env.DATABASE_URL,
+      },
+    },
+    log: ["error"],
+  });
+
   try {
     const admin = await verifyAdminRequest(request);
     if (!admin) return unauthorizedResponse();
@@ -22,7 +31,7 @@ export async function POST(
 
     if (unset) {
       // Bỏ set weekly featured của tuần này
-      await prisma.weeklyFeatured.deleteMany({
+      await client.weeklyFeatured.deleteMany({
         where: {
           weekStart: weekStart,
         },
@@ -40,12 +49,12 @@ export async function POST(
     // Ở đây ta dùng deleteMany để xóa cũ rồi tạo mới cho dễ vì weekStart_productId là unique,
     // nhưng ta muốn 1 tuần chỉ có 1 sản phẩm featured (nếu model cho phép, ở đây ta cứ deactivate các cái cũ)
     
-    await prisma.weeklyFeatured.updateMany({
+    await client.weeklyFeatured.updateMany({
       where: { weekStart },
       data: { isActive: false },
     });
 
-    const weekly = await prisma.weeklyFeatured.upsert({
+    const weekly = await client.weeklyFeatured.upsert({
       where: {
         weekStart_productId: {
           weekStart,
@@ -77,5 +86,7 @@ export async function POST(
       { error: "Internal server error" },
       { status: 500 }
     );
+  } finally {
+    await client.$disconnect().catch(() => {});
   }
 }
