@@ -1,15 +1,41 @@
 import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { prisma } from "@/lib/prisma";
+import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 
 const ADMIN_SECRET_PATH = process.env.ADMIN_SECRET_PATH || "/tiem-nho-nth24";
 const ADMIN_LOGIN_PATH = `${ADMIN_SECRET_PATH}/login`;
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Helper: create a dedicated, short-lived PrismaClient for auth queries.
+// We do NOT reuse the app-wide prisma singleton here because:
+//  1. The singleton may be in a bad connection state (stale / pooled).
+//  2. Auth is on the critical path — we need a guaranteed fresh connection.
+//  3. Explicit $disconnect() releases the TCP connection to PgBouncer
+//     immediately, preventing pool exhaustion on Supabase free tier.
+// ─────────────────────────────────────────────────────────────────────────────
+async function findUserByEmail(email: string) {
+  const client = new PrismaClient({ log: ["error"] });
+  try {
+    return await client.customer.findUnique({
+      where: { email },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        passwordHash: true,
+        role: true,
+      },
+    });
+  } finally {
+    // Always release the connection — do NOT let it linger in the pool.
+    await client.$disconnect().catch(() => {});
+  }
+}
 
 export const authOptions: NextAuthOptions = {
   providers: [
-    // ─── Provider 1: ADMIN login (chỉ dành cho /admin) ───────────────────────
+    // ─── Provider 1: ADMIN login ─────────────────────────────────────────────
     CredentialsProvider({
       id: "admin-login",
       name: "Admin Login",
@@ -22,9 +48,7 @@ export const authOptions: NextAuthOptions = {
           throw new Error("Vui lòng nhập email và mật khẩu.");
         }
 
-        const user = await prisma.customer.findUnique({
-          where: { email: credentials.email },
-        });
+        const user = await findUserByEmail(credentials.email);
 
         if (!user || !user.passwordHash) {
           throw new Error("Tài khoản không tồn tại.");
@@ -35,27 +59,27 @@ export const authOptions: NextAuthOptions = {
           throw new Error("Mật khẩu không chính xác.");
         }
 
-        // Chỉ cho phép ADMIN đăng nhập qua provider này
+        // Only ADMIN role is allowed through this provider
         if (user.role !== "ADMIN") {
           throw new Error("Bạn không có quyền truy cập quản trị.");
         }
 
-        // Whitelist: chỉ email được cấu hình mới được vào Admin
-        const allowedAdminEmail = process.env.ADMIN_EMAIL;
-        if (allowedAdminEmail && user.email !== allowedAdminEmail) {
+        // Email whitelist — only the configured admin email
+        const allowedEmail = process.env.ADMIN_EMAIL;
+        if (allowedEmail && user.email !== allowedEmail) {
           throw new Error("Tài khoản này không được phép truy cập trang quản trị.");
         }
 
         return {
           id: user.id,
           email: user.email,
-          name: user.name,
+          name: user.name ?? null,
           role: user.role,
         };
       },
     }),
 
-    // ─── Provider 2: CUSTOMER login (dành cho /login trang khách hàng) ────────
+    // ─── Provider 2: CUSTOMER login ──────────────────────────────────────────
     CredentialsProvider({
       id: "customer-login",
       name: "Customer Login",
@@ -68,9 +92,7 @@ export const authOptions: NextAuthOptions = {
           throw new Error("Vui lòng nhập email và mật khẩu.");
         }
 
-        const user = await prisma.customer.findUnique({
-          where: { email: credentials.email },
-        });
+        const user = await findUserByEmail(credentials.email);
 
         if (!user || !user.passwordHash) {
           throw new Error("Email hoặc mật khẩu không đúng.");
@@ -81,16 +103,17 @@ export const authOptions: NextAuthOptions = {
           throw new Error("Email hoặc mật khẩu không đúng.");
         }
 
-        // 🔒 Chặn ADMIN đăng nhập qua form khách hàng
-        // Admin phải dùng trang đăng nhập quản trị riêng
+        // Block admin from logging in via customer form
         if (user.role === "ADMIN") {
-          throw new Error("Tài khoản quản trị viên không thể đăng nhập tại đây. Vui lòng dùng trang đăng nhập quản trị.");
+          throw new Error(
+            "Tài khoản quản trị viên không thể đăng nhập tại đây. Vui lòng dùng trang đăng nhập quản trị."
+          );
         }
 
         return {
           id: user.id,
           email: user.email,
-          name: user.name,
+          name: user.name ?? null,
           role: user.role,
         };
       },
@@ -99,8 +122,8 @@ export const authOptions: NextAuthOptions = {
 
   session: {
     strategy: "jwt",
-    maxAge: 24 * 60 * 60,   // 24 giờ (thay vì 30 ngày) — bảo mật hơn
-    updateAge: 15 * 60,     // Refresh token mỗi 15 phút nếu đang dùng
+    maxAge: 24 * 60 * 60,    // 24 hours
+    updateAge: 15 * 60,       // refresh token every 15 min if active
   },
 
   callbacks: {
@@ -118,17 +141,14 @@ export const authOptions: NextAuthOptions = {
       }
       return session;
     },
-    // Ensure admin login always lands on admin dashboard, not customer pages
+    // Ensure admin signIn always lands on admin dashboard, never customer pages.
     async redirect({ url, baseUrl }) {
-      // If the URL is the admin path or a subpath, allow it
       if (url.startsWith(ADMIN_SECRET_PATH) || url.startsWith(baseUrl + ADMIN_SECRET_PATH)) {
         return url;
       }
-      // For customer login paths, allow them
       if (url.startsWith("/login") || url.startsWith(baseUrl + "/login")) {
         return url;
       }
-      // Default: return to the provided URL if on same origin, else baseUrl
       if (url.startsWith("/")) return `${baseUrl}${url}`;
       if (url.startsWith(baseUrl)) return url;
       return baseUrl;
@@ -136,7 +156,8 @@ export const authOptions: NextAuthOptions = {
   },
 
   pages: {
-    // When NextAuth encounters an unhandled error, redirect to ADMIN login (not customer login)
+    // When NextAuth encounters an unhandled error (e.g. DB down), send to
+    // admin login — NOT the customer /login page.
     error: ADMIN_LOGIN_PATH,
   },
 

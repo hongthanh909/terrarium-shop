@@ -4,13 +4,23 @@ const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
 };
 
-// Build phase: bypass all DB calls to prevent connection timeouts during static generation
+// ─── Build Phase ──────────────────────────────────────────────────────────────
+// During `next build`, skip real DB connections to prevent timeout failures
+// in static analysis / ISR prerendering.
 const isBuildPhase = process.env.NEXT_PHASE === "phase-production-build";
 
-export const prisma = isBuildPhase
+// ─── Runtime Singleton ────────────────────────────────────────────────────────
+// Reuse the same PrismaClient across warm serverless invocations (both dev and
+// production). This is the pattern recommended by Prisma for Next.js:
+// https://www.prisma.io/docs/guides/other/troubleshooting-orm/help-articles/nextjs-prisma-client-dev-practices
+//
+// NOTE: Auth queries do NOT use this singleton — see lib/auth.ts.
+//       Auth creates its own short-lived client with explicit $disconnect()
+//       to guarantee connection release and prevent PgBouncer pool exhaustion.
+export const prisma: PrismaClient = isBuildPhase
   ? (new Proxy({} as any, {
       get(_target, prop) {
-        if (["$connect", "$disconnect", "$use"].includes(prop as string)) {
+        if (["$connect", "$disconnect", "$use", "$on", "$extends"].includes(prop as string)) {
           return async () => {};
         }
         if (["$queryRaw", "$executeRaw", "$queryRawUnsafe", "$executeRawUnsafe"].includes(prop as string)) {
@@ -22,7 +32,7 @@ export const prisma = isBuildPhase
             return Promise.all(val);
           };
         }
-        // All model calls (prisma.product.findMany etc.) return empty results
+        // All model calls return safe empty results during build
         return new Proxy({}, {
           get(_sub, method) {
             return async () => {
@@ -32,19 +42,17 @@ export const prisma = isBuildPhase
               if (m.startsWith("aggregate")) return { _sum: {}, _avg: {}, _count: {}, _max: {}, _min: {} };
               return null;
             };
-          }
+          },
         });
-      }
+      },
     }) as PrismaClient)
   : (globalForPrisma.prisma ??
       new PrismaClient({
         log: process.env.NODE_ENV === "development" ? ["error", "warn"] : ["error"],
       }));
 
-// Development: cache globally to prevent too many instances during HMR
-// Production/serverless: do NOT cache globally — each invocation gets a fresh client
-// so PgBouncer connections are released when the lambda finishes.
-if (process.env.NODE_ENV !== "production") {
+// Cache the singleton globally so it survives hot-module replacement (dev)
+// and is reused across warm serverless invocations (production).
+if (!globalForPrisma.prisma) {
   globalForPrisma.prisma = prisma;
 }
-

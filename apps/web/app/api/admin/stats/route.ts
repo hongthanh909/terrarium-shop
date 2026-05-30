@@ -10,33 +10,20 @@ export async function GET() {
     const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
     const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
 
-    const [
-      totalProducts,
-      totalOrders,
-      totalCustomers,
-      pendingOrders,
-      pendingReviews,
-      monthOrders,
-      lastMonthOrders,
-      recentOrders,
-      topProducts,
-    ] = await Promise.all([
-      // Total products (ACTIVE)
-      prisma.product.count({ where: { status: "ACTIVE" } }),
+    // Run in two sequential batches to stay within PgBouncer pool limits.
+    // Batch 1: lightweight count queries (fast, run in parallel)
+    const [totalProducts, totalOrders, totalCustomers, pendingOrders, pendingReviews] =
+      await Promise.all([
+        prisma.product.count({ where: { status: "ACTIVE" } }),
+        prisma.order.count(),
+        prisma.customer.count(),
+        prisma.order.count({ where: { status: "PENDING" } }),
+        prisma.review.count({ where: { approved: false } }),
+      ]);
 
-      // Total orders
-      prisma.order.count(),
-
-      // Total customers
-      prisma.customer.count(),
-
-      // Pending orders
-      prisma.order.count({ where: { status: "PENDING" } }),
-
-      // Pending reviews
-      prisma.review.count({ where: { approved: false } }),
-
-      // This month revenue — chỉ tính đơn đã thanh toán (banking đã paid HOẶC COD đã giao)
+    // Batch 2: heavier aggregations + data fetch
+    const [monthOrders, lastMonthOrders, recentOrders, topProducts] = await Promise.all([
+      // This month revenue
       prisma.order.aggregate({
         where: {
           createdAt: { gte: startOfMonth },
@@ -47,8 +34,7 @@ export async function GET() {
         },
         _sum: { total: true },
       }),
-
-      // Last month revenue — chỉ tính đơn đã thanh toán
+      // Last month revenue
       prisma.order.aggregate({
         where: {
           createdAt: { gte: startOfLastMonth, lte: endOfLastMonth },
@@ -59,7 +45,6 @@ export async function GET() {
         },
         _sum: { total: true },
       }),
-
       // Recent 6 orders
       prisma.order.findMany({
         take: 6,
@@ -70,13 +55,10 @@ export async function GET() {
           total: true,
           status: true,
           createdAt: true,
-          customer: {
-            select: { name: true, email: true },
-          },
+          customer: { select: { name: true, email: true } },
         },
       }),
-
-      // Top 5 products by order items
+      // Top 5 products by sold quantity
       prisma.orderItem.groupBy({
         by: ["productId"],
         _sum: { quantity: true },
@@ -84,6 +66,7 @@ export async function GET() {
         take: 5,
       }),
     ]);
+
 
     // Fetch product names for top products
     const topProductsWithNames = await Promise.all(
