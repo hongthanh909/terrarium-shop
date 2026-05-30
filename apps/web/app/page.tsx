@@ -11,9 +11,6 @@ import { StatsSection } from "@/components/ui/number-ticker";
 import { prisma } from "@/lib/prisma";
 import { FeaturedProductCard } from "@/components/ui/featured-product-card";
 import { HeroCarousel } from "@/components/ui/hero-carousel";
-import { unstable_cache } from "next/cache";
-
-// ISR: trang chủ cache 2 phút — đủ fresh mà không query DB mỗi request
 export const dynamic = "force-dynamic";
 
 
@@ -28,10 +25,13 @@ export const metadata: Metadata = {
   },
 };
 
-// Cache homepage data — chỉ query DB mỗi 2 phút
-const getHomepageData = unstable_cache(
-  async () => {
-    const [featuredProducts, latestPosts, topReviews] = await Promise.all([
+export default async function Home() {
+  let featuredProducts: any[] = [];
+  let latestPosts: any[] = [];
+  let topReviews: any[] = [];
+
+  try {
+    [featuredProducts, latestPosts, topReviews] = await Promise.all([
       prisma.product.findMany({
         where: { featured: true, status: "ACTIVE" },
         take: 4,
@@ -51,14 +51,9 @@ const getHomepageData = unstable_cache(
         include: { customer: { select: { name: true } } },
       }),
     ]);
-    return { featuredProducts, latestPosts, topReviews };
-  },
-  ["homepage-data"],
-  { revalidate: 120 }
-);
-
-export default async function Home() {
-  const { featuredProducts, latestPosts, topReviews } = await getHomepageData();
+  } catch (error) {
+    console.error("Home: failed to load homepage data", error);
+  }
 
   return (
     <main className="min-h-screen">

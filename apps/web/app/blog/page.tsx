@@ -1,12 +1,14 @@
 import { prisma } from "@/lib/prisma";
 import { BlogClient } from "./BlogClient";
-import { unstable_cache } from "next/cache";
 
 export const dynamic = "force-dynamic";
 
-const getBlogData = unstable_cache(
-  async () => {
-    const [posts, categories] = await Promise.all([
+export default async function BlogPage() {
+  let posts: any[] = [];
+  let categories: any[] = [];
+
+  try {
+    [posts, categories] = await Promise.all([
       prisma.blogPost.findMany({
         where: { published: true },
         include: { category: true },
@@ -16,14 +18,9 @@ const getBlogData = unstable_cache(
         orderBy: { name: "asc" },
       }),
     ]);
-    return { posts, categories };
-  },
-  ["blog-data"],
-  { revalidate: 60 }
-);
-
-export default async function BlogPage() {
-  const { posts, categories } = await getBlogData();
+  } catch (error) {
+    console.error("BlogPage: failed to load blog data", error);
+  }
 
   const serializedPosts = posts.map((p) => ({
     ...p,

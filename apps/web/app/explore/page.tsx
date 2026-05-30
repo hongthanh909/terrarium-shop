@@ -1,13 +1,16 @@
 import { prisma } from "@/lib/prisma";
 import { ExploreClient } from "./ExploreClient";
-import { unstable_cache } from "next/cache";
 
-// ✅ ISR thay vì force-dynamic — product data cache 2 phút
-// Vote status của user được fetch client-side trong ExploreClient
 export const dynamic = "force-dynamic";
 
-const getCachedExploreData = unstable_cache(
-  async () => {
+const serializeProduct = (p: any) => ({
+  ...JSON.parse(JSON.stringify(p)),
+  voteCount: p._count?.votes || 0,
+  userVoted: false,
+});
+
+export default async function ExplorePage() {
+  try {
     const now = new Date();
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
@@ -31,10 +34,7 @@ const getCachedExploreData = unstable_cache(
       }),
       prisma.product.findMany({
         where: { status: "ACTIVE" },
-        include: {
-          category: true,
-          _count: { select: { votes: true } },
-        },
+        include: { category: true, _count: { select: { votes: true } } },
         orderBy: { votes: { _count: "desc" } },
         take: 8,
       }),
@@ -49,23 +49,6 @@ const getCachedExploreData = unstable_cache(
         include: { product: { include: { category: true } } },
       }).catch(() => null),
     ]);
-
-    return { featured, pinned, topVoted, newArrivals, weeklyFeaturedData };
-  },
-  ["explore-data-cache"],
-  { revalidate: 120 }
-);
-
-const serializeProduct = (p: any) => ({
-  ...JSON.parse(JSON.stringify(p)),
-  voteCount: p._count?.votes || 0,
-  userVoted: false, // vote status sẽ được load client-side
-});
-
-export default async function ExplorePage() {
-  try {
-    const { featured, pinned, topVoted, newArrivals, weeklyFeaturedData } =
-      await getCachedExploreData();
 
     const weeklyFeatured = weeklyFeaturedData
       ? {
