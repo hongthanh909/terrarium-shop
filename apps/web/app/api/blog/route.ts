@@ -2,6 +2,8 @@ import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { unstable_cache } from "next/cache";
 
+export const dynamic = "force-dynamic";
+
 // Không dùng force-dynamic — cho phép CDN cache response
 // Cache phía server 5 phút, stale-while-revalidate 1 giờ phía CDN
 const getCachedBlogData = unstable_cache(

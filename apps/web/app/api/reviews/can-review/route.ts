@@ -1,6 +1,8 @@
 import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 
+export const dynamic = "force-dynamic";
+
 // GET /api/reviews/can-review?productId=xxx&customerId=yyy
 export async function GET(request: NextRequest) {
   try {
