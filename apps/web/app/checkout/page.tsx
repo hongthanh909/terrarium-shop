@@ -58,7 +58,7 @@ export default function CheckoutPage() {
         body: JSON.stringify({
           code: formData.voucherCode.trim().toUpperCase(),
           subtotal,
-          cartItems: items.map((item: CartItem) => ({
+          cartItems: itemsToCheckout.map((item: CartItem) => ({
             productId: item.productId,
             categoryId: "",
             price: item.price,
