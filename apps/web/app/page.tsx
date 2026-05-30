@@ -63,7 +63,7 @@ export default async function Home() {
   return (
     <main className="min-h-screen">
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-[#fafcf9] min-h-[85vh] flex items-center">
+      <section className="relative overflow-hidden bg-gradient-to-br from-[#f0f4ec] to-[#e3ebdd] min-h-[85vh] flex items-center">
         {/* Soft decorative blobs */}
         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[rgba(66,87,51,0.05)] rounded-full -translate-y-1/3 translate-x-1/3 blur-3xl pointer-events-none" />
         <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-[rgba(66,87,51,0.05)] rounded-full translate-y-1/2 -translate-x-1/4 blur-2xl pointer-events-none" />
