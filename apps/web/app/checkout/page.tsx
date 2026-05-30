@@ -92,8 +92,8 @@ export default function CheckoutPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (items.length === 0) {
-      toast.error("Giỏ hàng trống! Vui lòng thêm sản phẩm trước.");
+    if (itemsToCheckout.length === 0) {
+      toast.error("Giỏ hàng trống! Vui lòng chọn sản phẩm trước.");
       return;
     }
 
