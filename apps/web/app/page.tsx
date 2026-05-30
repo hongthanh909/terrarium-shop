@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
+import { Suspense } from "react";
 import { Sprout, Truck, ArrowRight, Star, Sparkles, Shield, FileText, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -13,7 +14,6 @@ import { FeaturedProductCard } from "@/components/ui/featured-product-card";
 import { HeroCarousel } from "@/components/ui/hero-carousel";
 export const dynamic = "force-dynamic";
 
-
 export const metadata: Metadata = {
   title: "Terrarium Shop | Mang Thiên Nhiên Vào Trong Nhà",
   description: "Khám phá bộ sưu tập terrarium thủ công của chúng tôi — những hệ sinh thái thu nhỏ biến không gian của bạn thành thiên nhiên trong trẻo.",
@@ -25,35 +25,190 @@ export const metadata: Metadata = {
   },
 };
 
-export default async function Home() {
-  let featuredProducts: any[] = [];
-  let latestPosts: any[] = [];
-  let topReviews: any[] = [];
+// ─── Async sub-components for Suspense streaming ─────────────────────────────
 
+async function FeaturedProductsSection() {
+  let featuredProducts: any[] = [];
   try {
-    [featuredProducts, latestPosts, topReviews] = await Promise.all([
-      prisma.product.findMany({
-        where: { featured: true, status: "ACTIVE" },
-        take: 4,
-        include: { category: true },
-        orderBy: { createdAt: "desc" },
-      }),
-      prisma.blogPost.findMany({
-        where: { published: true },
-        take: 3,
-        orderBy: { publishedAt: "desc" },
-        include: { category: true },
-      }),
-      prisma.review.findMany({
-        where: { approved: true },
-        take: 10,
-        orderBy: { createdAt: "desc" },
-        include: { customer: { select: { name: true } } },
-      }),
-    ]);
-  } catch (error) {
-    console.error("Home: failed to load homepage data", error);
-  }
+    featuredProducts = await prisma.product.findMany({
+      where: { featured: true, status: "ACTIVE" },
+      take: 4,
+      include: { category: true },
+      orderBy: { createdAt: "desc" },
+    });
+  } catch (e) { console.error("FeaturedProducts fetch error", e); }
+
+  return (
+    <section className="py-24 px-6 bg-white">
+      <div className="max-w-7xl mx-auto">
+        <ScrollReveal direction="up">
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-4">
+            <div>
+              <p className="text-[#425733] font-bold text-sm uppercase tracking-wide mb-3">Được Lựa Chọn Cho Bạn</p>
+              <h2 className="text-4xl font-bold text-[hsl(220,14%,25%)]">Sản Phẩm Nổi Bật</h2>
+            </div>
+            <Button variant="outline" asChild className="self-start md:self-auto border-2 border-[#6d8c5a] text-[#425733] hover:bg-[#e3ebdd]">
+              <Link href="/products" className="group">
+                Xem Tất Cả
+                <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              </Link>
+            </Button>
+          </div>
+        </ScrollReveal>
+        {featuredProducts.length === 0 ? (
+          <ScrollReveal direction="up">
+            <div className="text-center py-24 bg-[#f0f4ec] rounded-3xl">
+              <Sprout className="w-16 h-16 mx-auto text-[#5a7a48] mb-4" />
+              <p className="text-[hsl(220,14%,45%)] font-semibold text-lg mb-1">Chưa có sản phẩm nổi bật</p>
+              <p className="text-sm text-[hsl(220,14%,55%)]">Hãy quay lại sau nhé.</p>
+            </div>
+          </ScrollReveal>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {featuredProducts.map((product: any, index: number) => (
+              <ScrollReveal key={product.id} direction="up" delay={index * 0.1} className="h-full">
+                <FeaturedProductCard
+                  id={product.id}
+                  slug={product.slug}
+                  name={product.name}
+                  basePrice={Number(product.basePrice.toString())}
+                  salePrice={product.salePrice != null ? Number(product.salePrice.toString()) : null}
+                  saleEndDate={product.saleEndDate ? product.saleEndDate.toISOString() : null}
+                  images={product.images}
+                  category={product.category ? { name: product.category.name } : undefined}
+                  isNew={product.isNew || false}
+                  isBestseller={product.isBestseller || false}
+                />
+              </ScrollReveal>
+            ))}
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}
+
+async function LatestBlogSection() {
+  let latestPosts: any[] = [];
+  try {
+    latestPosts = await prisma.blogPost.findMany({
+      where: { published: true },
+      take: 3,
+      orderBy: { publishedAt: "desc" },
+      include: { category: true },
+    });
+  } catch (e) { console.error("LatestBlog fetch error", e); }
+
+  const fallbackImages = [
+    "https://images.unsplash.com/photo-1595086862145-2be916325514?w=800&auto=format&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1416879598056-cb6f64d0a3d4?w=800&auto=format&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1463320726281-696a485928c7?w=800&auto=format&fit=crop&q=80",
+  ];
+
+  return (
+    <section className="py-24 px-6 bg-white">
+      <div className="max-w-7xl mx-auto">
+        <ScrollReveal direction="up">
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-4">
+            <div>
+              <p className="text-[#425733] font-bold text-sm uppercase tracking-wide mb-3">Bài Viết Mới Nhất</p>
+              <h2 className="text-4xl font-bold text-[hsl(220,14%,25%)]">Góc Chia Sẻ</h2>
+            </div>
+            <Button variant="outline" asChild className="self-start md:self-auto border-2 border-[#6d8c5a] text-[#425733] hover:bg-[#e3ebdd]">
+              <Link href="/blog" className="group">
+                Xem Tất Cả Bài Viết
+                <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              </Link>
+            </Button>
+          </div>
+        </ScrollReveal>
+        {latestPosts.length === 0 ? (
+          <ScrollReveal direction="up">
+            <div className="text-center py-24 bg-[#f0f4ec] rounded-3xl">
+              <FileText className="w-16 h-16 mx-auto text-[#5a7a48] mb-4" />
+              <p className="text-[hsl(220,14%,45%)] font-semibold text-lg mb-1">Chưa có bài viết nào</p>
+              <p className="text-sm text-[hsl(220,14%,55%)]">Hãy quay lại sau!</p>
+            </div>
+          </ScrollReveal>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {latestPosts.map((post: any, index: number) => (
+              <ScrollReveal key={post.id} direction="up" delay={index * 0.1} className="h-full">
+                <Link href={`/blog/${post.slug}`} className="block h-full">
+                  <Card className="overflow-hidden hover:shadow-soft-xl transition-all duration-300 hover:-translate-y-1 group border-0 rounded-2xl h-full flex flex-col">
+                    <CardContent className="p-0 flex flex-col h-full">
+                      <div className="aspect-video relative overflow-hidden bg-[#f0f4ec]">
+                        <Image src={fallbackImages[index % 3]} alt={post.title} fill className="object-cover group-hover:scale-105 transition-transform duration-500" sizes="(max-width: 768px) 100vw, 33vw" />
+                        <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors duration-300" />
+                      </div>
+                      <div className="p-6 flex-1 flex flex-col">
+                        {post.category && (
+                          <Badge variant="secondary" className="text-xs mb-3 w-fit bg-[#e3ebdd] text-[#425733]">{post.category.name}</Badge>
+                        )}
+                        <h3 className="font-bold text-xl text-[hsl(220,14%,25%)] mb-3 line-clamp-2 group-hover:text-[#425733] transition-colors min-h-[3.5rem]">{post.title}</h3>
+                        <p className="text-sm text-[hsl(220,14%,45%)] line-clamp-3 mb-4 flex-1">{post.content.replace(/<[^>]*>/g, '').slice(0, 150)}...</p>
+                        <div className="flex items-center gap-2 text-xs font-semibold text-[#6d8c5a] uppercase tracking-wider">
+                          <Calendar className="w-3.5 h-3.5" />
+                          <span>{post.publishedAt ? new Date(post.publishedAt).toLocaleDateString('vi-VN') : "Mới đây"}</span>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </Link>
+              </ScrollReveal>
+            ))}
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}
+
+// Skeleton placeholders for Suspense fallbacks
+function ProductsSkeleton() {
+  return (
+    <section className="py-24 px-6 bg-white">
+      <div className="max-w-7xl mx-auto">
+        <div className="h-8 w-52 bg-[#f0f4ec] rounded-lg animate-pulse mb-16" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="rounded-2xl bg-white border border-[#e3ebdd] overflow-hidden shadow-sm">
+              <div className="aspect-[4/3] bg-[#f0f4ec] animate-pulse" />
+              <div className="p-4 space-y-2">
+                <div className="h-3 w-14 bg-[#e8efe2] rounded animate-pulse" />
+                <div className="h-5 w-full bg-[#e8efe2] rounded animate-pulse" />
+                <div className="h-6 w-24 bg-[#e8efe2] rounded animate-pulse" />
+                <div className="h-9 w-full bg-[#e8efe2] rounded-lg animate-pulse" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function BlogSkeleton() {
+  return (
+    <section className="py-24 px-6 bg-white">
+      <div className="max-w-7xl mx-auto">
+        <div className="h-8 w-48 bg-[#f0f4ec] rounded-lg animate-pulse mb-16" />
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="rounded-2xl bg-white border border-[#e3ebdd] overflow-hidden shadow-sm">
+              <div className="aspect-video bg-[#f0f4ec] animate-pulse" />
+              <div className="p-6 space-y-3">
+                <div className="h-3 w-20 bg-[#e8efe2] rounded-full animate-pulse" />
+                <div className="h-6 w-full bg-[#e8efe2] rounded animate-pulse" />
+                <div className="h-4 w-4/5 bg-[#e8efe2] rounded animate-pulse" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
 
   return (
     <main className="min-h-screen">
@@ -183,62 +338,23 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* Featured Products Section */}
-      <section className="py-24 px-6 bg-white">
-        <div className="max-w-7xl mx-auto">
-          <ScrollReveal direction="up">
-            <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-4">
-              <div>
-                <p className="text-[#425733] font-bold text-sm uppercase tracking-wide mb-3">Được Lựa Chọn Cho Bạn</p>
-                <h2 className="text-4xl font-bold text-[hsl(220,14%,25%)]">Sản Phẩm Nổi Bật</h2>
-              </div>
-              <Button variant="outline" asChild className="self-start md:self-auto border-2 border-[#6d8c5a] text-[#425733] hover:bg-[#e3ebdd]">
-                <Link href="/products" className="group">
-                  Xem Tất Cả
-                  <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                </Link>
-              </Button>
-            </div>
-          </ScrollReveal>
+      {/* Featured Products Section — streams in while hero is visible */}
+      <Suspense fallback={<ProductsSkeleton />}>
+        <FeaturedProductsSection />
+      </Suspense>
 
-          {featuredProducts.length === 0 ? (
-            <ScrollReveal direction="up">
-              <div className="text-center py-24 bg-[#f0f4ec] rounded-3xl">
-                <Sprout className="w-16 h-16 mx-auto text-[#5a7a48] mb-4" />
-                <p className="text-[hsl(220,14%,45%)] font-semibold text-lg mb-1">Chưa có sản phẩm nổi bật</p>
-                <p className="text-sm text-[hsl(220,14%,55%)]">Hãy quay lại sau nhé.</p>
-              </div>
-            </ScrollReveal>
-          ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {featuredProducts.map((product: any, index: number) => (
-                <ScrollReveal key={product.id} direction="up" delay={index * 0.1} className="h-full">
-                  <FeaturedProductCard
-                    id={product.id}
-                    slug={product.slug}
-                    name={product.name}
-                    basePrice={Number(product.basePrice.toString())}
-                    salePrice={product.salePrice != null ? Number(product.salePrice.toString()) : null}
-                    saleEndDate={product.saleEndDate ? product.saleEndDate.toISOString() : null}
-                    images={product.images}
-                    category={product.category ? { name: product.category.name } : undefined}
-                    isNew={product.isNew || false}
-                    isBestseller={product.isBestseller || false}
-                  />
-                </ScrollReveal>
-              ))}
-            </div>
-          )}
-        </div>
-      </section>
+      {/* Blog Section — streams independently */}
+      <Suspense fallback={<BlogSkeleton />}>
+        <LatestBlogSection />
+      </Suspense>
 
-      {/* Testimonial / Social Proof — Marquee */}
+      {/* Testimonial / Social Proof — Marquee (static, no DB) */}
       <ReviewMarquee />
 
-      {/* Stats Section */}
+      {/* Stats Section (static) */}
       <StatsSection />
 
-      {/* About Section */}
+      {/* About Section (static) */}
       <section id="about" className="py-24 px-6 bg-gradient-to-br from-[#f0f4ec] to-[#e3ebdd]">
         <div className="max-w-4xl mx-auto text-center">
           <ScrollReveal direction="up">
@@ -266,85 +382,6 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* Blog Preview Section */}
-      <section className="py-24 px-6 bg-white">
-        <div className="max-w-7xl mx-auto">
-          <ScrollReveal direction="up">
-            <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-4">
-              <div>
-                <p className="text-[#425733] font-bold text-sm uppercase tracking-wide mb-3">Bài Viết Mới Nhất</p>
-                <h2 className="text-4xl font-bold text-[hsl(220,14%,25%)]">Góc Chia Sẻ</h2>
-              </div>
-              <Button variant="outline" asChild className="self-start md:self-auto border-2 border-[#6d8c5a] text-[#425733] hover:bg-[#e3ebdd]">
-                <Link href="/blog" className="group">
-                  Xem Tất Cả Bài Viết
-                  <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                </Link>
-              </Button>
-            </div>
-          </ScrollReveal>
-
-          {latestPosts.length === 0 ? (
-            <ScrollReveal direction="up">
-              <div className="text-center py-24 bg-[#f0f4ec] rounded-3xl">
-                <FileText className="w-16 h-16 mx-auto text-[#5a7a48] mb-4" />
-                <p className="text-[hsl(220,14%,45%)] font-semibold text-lg mb-1">Chưa có bài viết nào</p>
-                <p className="text-sm text-[hsl(220,14%,55%)]">Hãy quay lại sau để xem mẹo và hướng dẫn chăm sóc nhé!</p>
-              </div>
-            </ScrollReveal>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {latestPosts.map((post: any, index: number) => {
-                // Fallback elegant thumbnails since DB doesn't have blog images
-                const fallbackImages = [
-                  "https://images.unsplash.com/photo-1595086862145-2be916325514?w=800&auto=format&fit=crop&q=80",
-                  "https://images.unsplash.com/photo-1416879598056-cb6f64d0a3d4?w=800&auto=format&fit=crop&q=80",
-                  "https://images.unsplash.com/photo-1463320726281-696a485928c7?w=800&auto=format&fit=crop&q=80"
-                ];
-                const thumbnail = fallbackImages[index % 3];
-
-                return (
-                  <ScrollReveal key={post.id} direction="up" delay={index * 0.1} className="h-full">
-                    <Link href={`/blog/${post.slug}`} className="block h-full">
-                      <Card className="overflow-hidden hover:shadow-soft-xl transition-all duration-300 hover:-translate-y-1 group border-0 rounded-2xl h-full flex flex-col">
-                        <CardContent className="p-0 flex flex-col h-full">
-                          <div className="aspect-video relative overflow-hidden bg-[#f0f4ec]">
-                            <Image
-                              src={thumbnail}
-                              alt={post.title}
-                              fill
-                              className="object-cover group-hover:scale-105 transition-transform duration-500"
-                              sizes="(max-width: 768px) 100vw, 33vw"
-                            />
-                            <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors duration-300" />
-                          </div>
-                          <div className="p-6 flex-1 flex flex-col">
-                            {post.category && (
-                              <Badge variant="secondary" className="text-xs mb-3 w-fit bg-[#e3ebdd] text-[#425733]">
-                                {post.category.name}
-                              </Badge>
-                            )}
-                            <h3 className="font-bold text-xl text-[hsl(220,14%,25%)] mb-3 line-clamp-2 group-hover:text-[#425733] transition-colors min-h-[3.5rem]">
-                              {post.title}
-                            </h3>
-                            <p className="text-sm text-[hsl(220,14%,45%)] line-clamp-3 mb-4 flex-1">
-                              {post.content.replace(/<[^>]*>/g, '').slice(0, 150)}...
-                            </p>
-                            <div className="flex items-center gap-2 text-xs font-semibold text-[#6d8c5a] uppercase tracking-wider">
-                              <Calendar className="w-3.5 h-3.5" />
-                              <span>{post.publishedAt ? new Date(post.publishedAt).toLocaleDateString('vi-VN') : "Mới đây"}</span>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    </Link>
-                  </ScrollReveal>
-                )
-              })}
-            </div>
-          )}
-        </div>
-      </section>
 
       {/* Final CTA Section */}
       <section className="py-24 px-6 bg-gradient-to-br from-[#425733] to-[#364a29] text-white">

@@ -8,6 +8,7 @@ import AuthProvider from "@/components/AuthProvider";
 import QueryProvider from "@/lib/query-provider";
 import ShopLayout from "./ShopLayout";
 import { Toaster } from "sonner";
+import { NavigationProgress } from "@/components/ui/navigation-progress";
 
 export const dynamic = "force-dynamic";
 
@@ -91,6 +92,7 @@ export default function RootLayout({
       >
         <AuthProvider>
           <QueryProvider>
+            <NavigationProgress />
             <Toaster position="top-right" richColors closeButton toastOptions={{ duration: 4000 }} />
             <ShopLayout
               header={<Header />}

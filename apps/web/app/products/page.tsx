@@ -1,18 +1,21 @@
+import { Suspense } from "react";
 import { prisma } from "@/lib/prisma";
 import { ProductsClient } from "./ProductsClient";
+import ProductsLoading from "./loading";
 
 export const dynamic = "force-dynamic";
 
-export default async function ProductsPage({
-  searchParams,
+// Tách data fetch ra component riêng để Suspense streaming hoạt động
+async function ProductsData({
+  categoryId,
+  search,
+  page,
 }: {
-  searchParams: { category?: string; search?: string; page?: string };
+  categoryId: string | null;
+  search: string | null;
+  page: number;
 }) {
-  const categoryId = searchParams.category || null;
-  const search = searchParams.search || null;
-  const page = parseInt(searchParams.page || "1");
   const limit = 12;
-
   const where: any = { status: "ACTIVE" };
   if (categoryId) where.categoryId = categoryId;
   if (search) {
@@ -30,10 +33,7 @@ export default async function ProductsPage({
     [products, categories, total] = await Promise.all([
       prisma.product.findMany({
         where,
-        include: {
-          category: true,
-          _count: { select: { reviews: true } },
-        },
+        include: { category: true, _count: { select: { reviews: true } } },
         orderBy: [
           { salePrice: { sort: "asc", nulls: "last" } },
           { createdAt: "desc" },
@@ -48,8 +48,7 @@ export default async function ProductsPage({
       prisma.product.count({ where }),
     ]);
   } catch (error) {
-    console.error("ProductsPage: failed to load products", error);
-    // Return empty state instead of crashing
+    console.error("ProductsData: DB error", error);
   }
 
   return (
@@ -60,5 +59,21 @@ export default async function ProductsPage({
       initialCategory={categoryId}
       initialSearch={search || ""}
     />
+  );
+}
+
+export default function ProductsPage({
+  searchParams,
+}: {
+  searchParams: { category?: string; search?: string; page?: string };
+}) {
+  const categoryId = searchParams.category || null;
+  const search = searchParams.search || null;
+  const page = parseInt(searchParams.page || "1");
+
+  return (
+    <Suspense key={`${categoryId}-${search}-${page}`} fallback={<ProductsLoading />}>
+      <ProductsData categoryId={categoryId} search={search} page={page} />
+    </Suspense>
   );
 }
