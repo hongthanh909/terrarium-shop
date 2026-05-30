@@ -210,6 +210,20 @@ function BlogSkeleton() {
   );
 }
 
+export default async function Home() {
+  // Fetch featured products for HeroCarousel (in hero section, not streamed)
+  let heroProducts: any[] = [];
+  try {
+    heroProducts = await prisma.product.findMany({
+      where: { featured: true, status: "ACTIVE" },
+      take: 4,
+      include: { category: true },
+      orderBy: { createdAt: "desc" },
+    });
+  } catch (e) {
+    console.error("Home: failed to fetch hero products", e);
+  }
+
   return (
     <main className="min-h-screen">
       {/* Hero Section */}
@@ -283,7 +297,7 @@ function BlogSkeleton() {
 
           {/* Right Column: Product Slider */}
           <ScrollReveal direction="left" delay={0.3}>
-            <HeroCarousel products={featuredProducts as any} />
+            <HeroCarousel products={heroProducts as any} />
           </ScrollReveal>
         </div>
       </section>
