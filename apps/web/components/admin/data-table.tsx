@@ -169,7 +169,7 @@ export function DataTable<T>({
                 <tr key={i} className="border-b border-gray-50">
                   {columns.map((col) => (
                     <td key={col.key as string} className="px-4 py-3">
-                      <div className="h-4 bg-gray-100 rounded animate-pulse" style={{ width: `${50 + Math.random() * 40}%` }} />
+                      <div className="h-4 bg-gray-100 rounded animate-pulse" style={{ width: `${60 + (i * 7) % 30}%` }} />
                     </td>
                   ))}
                 </tr>

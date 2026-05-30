@@ -143,7 +143,7 @@ export function ProductCard({
             {rating > 0 ? rating.toFixed(1) : "5.0"}
           </span>
           <span className="text-xs text-gray-400">
-            ({reviewCount > 0 ? reviewCount : Math.floor(Math.random() * 20) + 5})
+            ({reviewCount > 0 ? reviewCount : 5})
           </span>
         </div>
 
