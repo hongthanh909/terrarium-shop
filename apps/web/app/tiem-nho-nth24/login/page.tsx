@@ -27,11 +27,27 @@ export default function AdminLoginPage() {
         redirect: false,
       });
 
-      if (result?.error) {
+      if (!result) {
+        // signIn returned undefined — likely a critical server error / timeout
+        setError("Không thể kết nối tới máy chủ. Vui lòng thử lại sau vài giây.");
+        return;
+      }
+
+      if (result.error) {
         // Map NextAuth errors to friendly messages
-        if (result.error.includes("không có quyền") || result.error.includes("không được phép")) {
+        if (
+          result.error.includes("không có quyền") ||
+          result.error.includes("không được phép") ||
+          result.error.includes("không thể đăng nhập")
+        ) {
           setError("Tài khoản này không có quyền truy cập trang quản trị.");
-        } else if (result.error.includes("không tồn tại") || result.error.includes("không đúng")) {
+        } else if (
+          result.error.includes("không tồn tại") ||
+          result.error.includes("không đúng") ||
+          result.error.includes("không chính xác")
+        ) {
+          setError("Email hoặc mật khẩu không chính xác.");
+        } else if (result.error === "CredentialsSignin") {
           setError("Email hoặc mật khẩu không chính xác.");
         } else {
           setError(result.error || "Đăng nhập thất bại. Vui lòng thử lại.");
@@ -39,12 +55,16 @@ export default function AdminLoginPage() {
         return;
       }
 
-      if (result?.ok) {
+      if (result.ok) {
+        // Navigate to admin dashboard — use replace so back button doesn't return to login
         router.replace("/tiem-nho-nth24");
-        router.refresh();
       }
-    } catch (err) {
-      setError("Lỗi kết nối. Vui lòng thử lại.");
+    } catch (err: any) {
+      if (err?.message?.includes("ECHECKOUTTIMEOUT") || err?.message?.includes("timeout")) {
+        setError("Kết nối cơ sở dữ liệu bị quá tải. Vui lòng thử lại sau vài giây.");
+      } else {
+        setError("Lỗi kết nối. Vui lòng kiểm tra mạng và thử lại.");
+      }
     } finally {
       setLoading(false);
     }

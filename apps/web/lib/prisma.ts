@@ -41,6 +41,10 @@ export const prisma = isBuildPhase
         log: process.env.NODE_ENV === "development" ? ["error", "warn"] : ["error"],
       }));
 
-// Cache in both development and production to reuse connections across serverless hot-starts
-globalForPrisma.prisma = prisma;
+// Development: cache globally to prevent too many instances during HMR
+// Production/serverless: do NOT cache globally — each invocation gets a fresh client
+// so PgBouncer connections are released when the lambda finishes.
+if (process.env.NODE_ENV !== "production") {
+  globalForPrisma.prisma = prisma;
+}
 

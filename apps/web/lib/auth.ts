@@ -3,6 +3,10 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 
+const ADMIN_SECRET_PATH = process.env.ADMIN_SECRET_PATH || "/tiem-nho-nth24";
+const ADMIN_LOGIN_PATH = `${ADMIN_SECRET_PATH}/login`;
+
+
 export const authOptions: NextAuthOptions = {
   providers: [
     // ─── Provider 1: ADMIN login (chỉ dành cho /admin) ───────────────────────
@@ -114,14 +118,26 @@ export const authOptions: NextAuthOptions = {
       }
       return session;
     },
+    // Ensure admin login always lands on admin dashboard, not customer pages
+    async redirect({ url, baseUrl }) {
+      // If the URL is the admin path or a subpath, allow it
+      if (url.startsWith(ADMIN_SECRET_PATH) || url.startsWith(baseUrl + ADMIN_SECRET_PATH)) {
+        return url;
+      }
+      // For customer login paths, allow them
+      if (url.startsWith("/login") || url.startsWith(baseUrl + "/login")) {
+        return url;
+      }
+      // Default: return to the provided URL if on same origin, else baseUrl
+      if (url.startsWith("/")) return `${baseUrl}${url}`;
+      if (url.startsWith(baseUrl)) return url;
+      return baseUrl;
+    },
   },
 
   pages: {
-    // Middleware redirect đúng chỗ:
-    // - /admin/* → /admin/login
-    // - /orders, /profile, /checkout → /login
-    // error page cho customer auth (NextAuth default error)
-    error: "/login",
+    // When NextAuth encounters an unhandled error, redirect to ADMIN login (not customer login)
+    error: ADMIN_LOGIN_PATH,
   },
 
   secret: process.env.NEXTAUTH_SECRET,
