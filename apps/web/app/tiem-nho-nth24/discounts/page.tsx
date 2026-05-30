@@ -294,14 +294,14 @@ export default function AdminDiscountsPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-1.5">Ngày Bắt Đầu *</label>
-                  <input type="datetime-local" value={formData.startsAt}
+                  <input type="datetime-local" lang="en-GB" step="60" value={formData.startsAt}
                     onChange={(e) => setFormData({ ...formData, startsAt: e.target.value })}
                     required className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#425733]/50"
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-1.5">Ngày Kết Thúc *</label>
-                  <input type="datetime-local" value={formData.expiresAt}
+                  <input type="datetime-local" lang="en-GB" step="60" value={formData.expiresAt}
                     onChange={(e) => setFormData({ ...formData, expiresAt: e.target.value })}
                     required className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#425733]/50"
                   />

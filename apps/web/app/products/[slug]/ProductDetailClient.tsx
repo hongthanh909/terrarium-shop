@@ -92,7 +92,7 @@ export function ProductDetailClient({ initialProduct, initialRelated }: { initia
   const [alreadyReviewed, setAlreadyReviewed] = useState(false);
 
   const { data: session } = useSession();
-  const { addItem, items, getCartTotal, getCartCount, removeItem, updateQuantity } = useCartStore();
+  const { addItem, items, getCartTotal, getCartCount, removeItem, updateQuantity, toggleSelectItem, selectAllItems, getSelectedTotal, getSelectedItems } = useCartStore();
 
   // Load reviews when tab changes to "reviews"
   useEffect(() => {
@@ -198,6 +198,28 @@ export function ProductDetailClient({ initialProduct, initialRelated }: { initia
     setCartOpen(true);
   };
 
+  const handleBuyNow = () => {
+    if (!product) return;
+    const { price } = getPriceWithVariants();
+    
+    addItem({
+      productId: product.id,
+      productName: product.name,
+      productImage: product.images[0] || "",
+      price: price,
+      quantity,
+      variants: selectedVariants,
+    });
+
+    if (items.length === 0) {
+      // Giỏ hàng trống -> vào thẳng checkout
+      router.push("/checkout");
+    } else {
+      // Giỏ hàng đã có đồ -> mở giỏ hàng để user chọn checkbox
+      setCartOpen(true);
+    }
+  };
+
   const handleVote = async () => {
     if (!session) {
       toast.error("Vui lòng đăng nhập để bình chọn");
@@ -274,10 +296,26 @@ export function ProductDetailClient({ initialProduct, initialRelated }: { initia
               </div>
             ) : (
               <div className="space-y-4">
+                <div className="flex items-center gap-2 px-1">
+                  <input 
+                    type="checkbox" 
+                    id="selectAll"
+                    className="w-4 h-4 rounded border-gray-300 text-[#425733] focus:ring-[#425733]"
+                    checked={items.length > 0 && items.every(i => i.selected)}
+                    onChange={(e) => selectAllItems(e.target.checked)}
+                  />
+                  <label htmlFor="selectAll" className="text-sm font-medium cursor-pointer">Chọn tất cả</label>
+                </div>
                 {items.map((item: CartItem) => (
-                  <Card key={item.id}>
+                  <Card key={item.id} className={item.selected ? "border-[#425733] bg-[#f8faf6]" : "opacity-80"}>
                     <CardContent className="p-4">
-                      <div className="flex gap-4">
+                      <div className="flex items-start gap-4">
+                        <input 
+                          type="checkbox" 
+                          className="mt-2 w-4 h-4 rounded border-gray-300 text-[#425733] focus:ring-[#425733]"
+                          checked={item.selected || false}
+                          onChange={() => toggleSelectItem(item.id)}
+                        />
                         <div className="relative w-20 h-20 flex-shrink-0 rounded overflow-hidden">
                           <Image
                             src={item.productImage || "https://via.placeholder.com/80x80"}
@@ -321,10 +359,23 @@ export function ProductDetailClient({ initialProduct, initialRelated }: { initia
             <div className="mt-4 pt-4 border-t">
               <div className="flex justify-between text-lg font-semibold mb-4">
                 <span>Tổng cộng:</span>
-                <span className="text-primary">{getCartTotal().toLocaleString("vi-VN")}₫</span>
+                <span className="text-primary">{getSelectedTotal().toLocaleString("vi-VN")}₫</span>
               </div>
-              <Button className="w-full" asChild onClick={() => setCartOpen(false)}>
-                <Link href="/checkout">Tiến hành thanh toán</Link>
+              <Button 
+                className="w-full bg-[#425733] hover:bg-[#364a29]" 
+                asChild={getSelectedItems().length > 0}
+                disabled={getSelectedItems().length === 0}
+                onClick={() => {
+                  if (getSelectedItems().length > 0) {
+                    setCartOpen(false);
+                  }
+                }}
+              >
+                {getSelectedItems().length > 0 ? (
+                  <Link href="/checkout">Tiến hành thanh toán</Link>
+                ) : (
+                  <span>Vui lòng chọn sản phẩm</span>
+                )}
               </Button>
             </div>
           )}
@@ -421,7 +472,7 @@ export function ProductDetailClient({ initialProduct, initialRelated }: { initia
               </button>
             </div>
             
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-[#1a2e12] leading-tight mb-4 tracking-tight">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-[#1a2e12] leading-tight mb-4 tracking-tight">
               {product.name}
             </h1>
             
@@ -497,7 +548,7 @@ export function ProductDetailClient({ initialProduct, initialRelated }: { initia
                 <Button 
                   size="lg" 
                   className="flex-1 h-[56px] bg-[#425733] hover:bg-[#364a29] text-white rounded-xl font-bold text-base shadow-md hover:shadow-lg transition-all"
-                  onClick={() => { handleAddToCart(); router.push("/checkout"); }}
+                  onClick={handleBuyNow}
                   disabled={product.inventory <= 0}
                 >
                   Mua Ngay

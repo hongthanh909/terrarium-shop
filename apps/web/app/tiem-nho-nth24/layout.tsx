@@ -6,7 +6,7 @@ import { signOut } from "next-auth/react";
 import {
   Package, Settings, Home,
   ShoppingCart, Percent, FileText, MessageSquare, LogOut,
-  Grid3X3, ExternalLink, Star,
+  Grid3X3, ExternalLink, Star, ShieldCheck,
 } from "lucide-react";
 import { Toaster } from "sonner";
 
@@ -25,6 +25,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     { href: "/tiem-nho-nth24/vouchers", label: "Phiếu giảm giá", icon: Percent },
     { href: "/tiem-nho-nth24/blog", label: "Blog", icon: FileText },
     { href: "/tiem-nho-nth24/reviews", label: "Đánh giá", icon: Star },
+    { href: "/tiem-nho-nth24/policies", label: "Chính sách", icon: ShieldCheck },
     { href: "/tiem-nho-nth24/settings", label: "Cài đặt", icon: Settings },
   ];
 

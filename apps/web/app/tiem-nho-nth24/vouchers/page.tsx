@@ -368,6 +368,8 @@ export default function AdminVouchersPage() {
                   </label>
                   <input
                     type="datetime-local"
+                    lang="en-GB"
+                    step="60"
                     value={formData.startsAt}
                     onChange={(e) => setFormData({ ...formData, startsAt: e.target.value })}
                     required
@@ -380,6 +382,8 @@ export default function AdminVouchersPage() {
                   </label>
                   <input
                     type="datetime-local"
+                    lang="en-GB"
+                    step="60"
                     value={formData.expiresAt}
                     onChange={(e) => setFormData({ ...formData, expiresAt: e.target.value })}
                     required

@@ -19,6 +19,7 @@ export interface CartItem {
     hasLight?: boolean;
     [key: string]: boolean | undefined;
   };
+  selected?: boolean; // Thêm trường selected
 }
 
 interface CartStore {
@@ -29,6 +30,10 @@ interface CartStore {
   clearCart: () => void;
   getCartTotal: () => number;
   getCartCount: () => number;
+  toggleSelectItem: (id: string) => void;
+  selectAllItems: (selected: boolean) => void;
+  getSelectedTotal: () => number;
+  getSelectedItems: () => CartItem[];
 }
 
 export const useCartStore = create<CartStore>()(
@@ -47,6 +52,7 @@ export const useCartStore = create<CartStore>()(
           if (existingItemIndex > -1) {
             const updatedItems = [...state.items];
             updatedItems[existingItemIndex].quantity += item.quantity;
+            updatedItems[existingItemIndex].selected = true; // Auto select when adding more
             return { items: updatedItems };
           }
 
@@ -56,6 +62,7 @@ export const useCartStore = create<CartStore>()(
               {
                 ...item,
                 id: `${item.productId}-${JSON.stringify(item.variants)}-${Date.now()}`,
+                selected: true, // Default selected
               },
             ],
           };
@@ -103,6 +110,30 @@ export const useCartStore = create<CartStore>()(
 
       getCartCount: () => {
         return get().items.reduce((count, item) => count + item.quantity, 0);
+      },
+
+      toggleSelectItem: (id) => {
+        set((state) => ({
+          items: state.items.map((item) =>
+            item.id === id ? { ...item, selected: !item.selected } : item
+          ),
+        }));
+      },
+
+      selectAllItems: (selected) => {
+        set((state) => ({
+          items: state.items.map((item) => ({ ...item, selected })),
+        }));
+      },
+
+      getSelectedTotal: () => {
+        return get().items
+          .filter((item) => item.selected)
+          .reduce((total, item) => total + item.price * item.quantity, 0);
+      },
+
+      getSelectedItems: () => {
+        return get().items.filter((item) => item.selected);
       },
     }),
     {

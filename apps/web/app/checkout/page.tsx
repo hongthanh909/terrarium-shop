@@ -17,7 +17,8 @@ import { toast } from "sonner";
 
 export default function CheckoutPage() {
   const router = useRouter();
-  const { items, getCartTotal, clearCart } = useCartStore();
+  const { getSelectedItems, getSelectedTotal, removeItem } = useCartStore();
+  const itemsToCheckout = getSelectedItems();
   const { data: session } = useSession();
 
   const [formData, setFormData] = useState({
@@ -40,7 +41,7 @@ export default function CheckoutPage() {
   const [shippingFee, setShippingFee] = useState(30000);
   const [loading, setLoading] = useState(false);
 
-  const subtotal = getCartTotal();
+  const subtotal = getSelectedTotal();
   const total = subtotal + shippingFee - discount;
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -101,7 +102,7 @@ export default function CheckoutPage() {
     try {
       const orderData = {
         customerId: (session?.user as any)?.id || null,
-        items: items.map((item: CartItem) => ({
+        items: itemsToCheckout.map((item: CartItem) => ({
           productId: item.productId,
           productName: item.productName,
           productImage: item.productImage,
@@ -142,7 +143,9 @@ export default function CheckoutPage() {
       const order = await response.json();
 
       // Xóa giỏ hàng và redirect sang trang cảm ơn
-      clearCart();
+      itemsToCheckout.forEach(item => {
+        removeItem(item.productId, item.variants);
+      });
       const params = new URLSearchParams({
         orderId: order.id,
         orderNumber: order.orderNumber,
@@ -159,7 +162,7 @@ export default function CheckoutPage() {
     }
   };
 
-  if (items.length === 0) {
+  if (itemsToCheckout.length === 0) {
     return (
       <main className="min-h-screen bg-background py-8 px-6">
         <div className="max-w-2xl mx-auto text-center">
@@ -252,7 +255,7 @@ export default function CheckoutPage() {
                       <p className="text-sm text-muted-foreground">3-5 ngày làm việc</p>
                     </div>
                   </div>
-                  <p className="font-semibold">{shippingFee.toLocaleString("vi-VN")}₫</p>
+                  <p className="font-semibold">30.000₫</p>
                 </label>
                 <label className="flex items-center justify-between p-4 border rounded-lg cursor-pointer hover:bg-muted/50">
                   <div className="flex items-center gap-3">
@@ -262,7 +265,7 @@ export default function CheckoutPage() {
                       <p className="text-sm text-muted-foreground">1-2 ngày làm việc</p>
                     </div>
                   </div>
-                  <p className="font-semibold">50,000₫</p>
+                  <p className="font-semibold">50.000₫</p>
                 </label>
               </CardContent>
             </Card>
@@ -323,7 +326,7 @@ export default function CheckoutPage() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4 mb-6 max-h-64 overflow-y-auto">
-                  {items.map((item: CartItem) => (
+                  {itemsToCheckout.map((item: CartItem) => (
                     <div key={item.id} className="flex gap-4">
                       <Image src={item.productImage} alt={item.productName} width={64} height={64} className="w-16 h-16 object-cover rounded" />
                       <div className="flex-1">
