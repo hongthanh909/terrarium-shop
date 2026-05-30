@@ -41,7 +41,6 @@ export const prisma = isBuildPhase
         log: process.env.NODE_ENV === "development" ? ["error", "warn"] : ["error"],
       }));
 
-// Only cache in non-production to avoid stale serverless connections
-if (process.env.NODE_ENV !== "production") {
-  globalForPrisma.prisma = prisma;
-}
+// Cache in both development and production to reuse connections across serverless hot-starts
+globalForPrisma.prisma = prisma;
+
