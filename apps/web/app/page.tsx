@@ -10,6 +10,7 @@ import { ReviewMarquee } from "@/components/ui/review-marquee";
 import { StatsSection } from "@/components/ui/number-ticker";
 import { prisma } from "@/lib/prisma";
 import { FeaturedProductCard } from "@/components/ui/featured-product-card";
+import { HeroCarousel } from "@/components/ui/hero-carousel";
 import { unstable_cache } from "next/cache";
 
 // ISR: trang chủ cache 2 phút — đủ fresh mà không query DB mỗi request
@@ -62,72 +63,77 @@ export default async function Home() {
   return (
     <main className="min-h-screen">
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-[#e3ebdd] via-[#c8d5be] to-[#6d8c5a] text-[hsl(220,14%,25%)] min-h-[85vh] flex items-center">
+      <section className="relative overflow-hidden bg-[#fafcf9] min-h-[85vh] flex items-center">
         {/* Soft decorative blobs */}
-        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[rgba(66,87,51,0.15)] rounded-full -translate-y-1/3 translate-x-1/3 blur-3xl pointer-events-none" />
-        <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-[rgba(66,87,51,0.15)] rounded-full translate-y-1/2 -translate-x-1/4 blur-2xl pointer-events-none" />
-        <div className="absolute top-1/4 left-1/3 w-[300px] h-[300px] bg-[rgba(66,87,51,0.1)] rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[rgba(66,87,51,0.05)] rounded-full -translate-y-1/3 translate-x-1/3 blur-3xl pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-[rgba(66,87,51,0.05)] rounded-full translate-y-1/2 -translate-x-1/4 blur-2xl pointer-events-none" />
 
-        <div className="relative max-w-7xl mx-auto px-6 py-24 text-center w-full">
-          <ScrollReveal direction="down" delay={0.1}>
-            <Badge className="mb-6 bg-[#425733] text-[#ffffff] border-2 border-[#425733]/30 hover:bg-[#4d6b3d] backdrop-blur-sm px-4 py-1.5 text-sm font-medium inline-flex items-center gap-2">
-              <Sparkles className="w-3.5 h-3.5" />
-              Hệ Sinh Thái Thu Nhỏ Độc Bản
-            </Badge>
-          </ScrollReveal>
-
-          <ScrollReveal direction="up" delay={0.2}>
-            <h1 className="text-5xl md:text-7xl font-extrabold mb-6 leading-tight tracking-tight">
-              Mang Thiên Nhiên{" "}
-              <span className="text-[#425733]">
+        <div className="relative max-w-7xl mx-auto px-6 py-24 w-full grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+          {/* Left Column: Text & CTA */}
+          <div>
+            <ScrollReveal direction="up" delay={0.2}>
+              <h1 className="text-5xl md:text-6xl lg:text-7xl font-extrabold mb-6 leading-tight tracking-tight text-gray-900">
+                Mang Thiên Nhiên <br/>
                 Vào Trong Nhà
-              </span>
-            </h1>
-          </ScrollReveal>
+              </h1>
+            </ScrollReveal>
 
-          <ScrollReveal direction="up" delay={0.3}>
-            <p className="text-xl md:text-2xl mb-10 text-[hsl(220,14%,45%)] max-w-2xl mx-auto leading-relaxed">
-              Khám phá bộ sưu tập terrarium thủ công của chúng tôi — những hệ sinh thái thu nhỏ biến không gian của bạn thành thiên nhiên trong trẻo.
-            </p>
-          </ScrollReveal>
+            <ScrollReveal direction="up" delay={0.3}>
+              <p className="text-lg md:text-xl mb-10 text-gray-600 max-w-lg leading-relaxed">
+                Khám phá bộ sưu tập terrarium thủ công của chúng tôi — những hệ sinh thái thu nhỏ biến không gian của bạn thành thiên nhiên trong trẻo.
+              </p>
+            </ScrollReveal>
 
-          <ScrollReveal direction="up" delay={0.4}>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-              <Button
-                size="lg"
-                className="bg-[#425733] text-[#ffffff] hover:bg-[#4d6b3d] font-bold text-base px-8 shadow-soft-lg hover:shadow-soft-xl transition-all duration-300 hover:-translate-y-0.5"
-                asChild
-              >
-                <Link href="/products">
-                  Mua Ngay
-                  <ArrowRight className="ml-2 w-4 h-4 transition-transform" />
-                </Link>
-              </Button>
-              <Button
-                size="lg"
-                variant="outline"
-                className="border-2 border-[#425733]/30 text-[hsl(220,14%,25%)] hover:bg-[#e3ebdd] font-bold text-base px-8 transition-all duration-300"
-                asChild
-              >
-                <Link href="#about">Tìm Hiểu Thêm</Link>
-              </Button>
-            </div>
-          </ScrollReveal>
+            <ScrollReveal direction="up" delay={0.4}>
+              <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+                <Button
+                  size="lg"
+                  className="bg-blue-500 text-white hover:bg-blue-600 font-medium rounded-full text-lg px-8 shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5"
+                  asChild
+                >
+                  <Link href="/products">
+                    Mua Ngay
+                  </Link>
+                </Button>
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="border-2 border-gray-200 text-gray-700 rounded-full hover:bg-gray-50 font-medium text-lg px-8 transition-all duration-300"
+                  asChild
+                >
+                  <Link href="#about">Tìm Hiểu Thêm</Link>
+                </Button>
+              </div>
+            </ScrollReveal>
 
-          {/* Stats bar */}
-          <ScrollReveal direction="up" delay={0.5}>
-            <div className="mt-16 grid grid-cols-3 gap-8 max-w-lg mx-auto">
-              {[
-                { number: "500+", label: "Khách hàng hài lòng" },
-                { number: "50+", label: "Thiết kế độc bản" },
-                { number: "4.9★", label: "Đánh giá trung bình" },
-              ].map((stat) => (
-                <div key={stat.label} className="text-center">
-                  <div className="text-2xl font-bold text-[#364a29]">{stat.number}</div>
-                  <div className="text-sm text-[hsl(220,14%,55%)] mt-1">{stat.label}</div>
+            {/* Feature Icons */}
+            <ScrollReveal direction="up" delay={0.5}>
+              <div className="mt-12 flex gap-8">
+                <div className="flex flex-col items-center text-center gap-2">
+                  <div className="text-gray-800">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 14 4-4"/><path d="M3.34 19a10 10 0 1 1 17.32 0"/></svg>
+                  </div>
+                  <span className="text-sm text-gray-700 font-medium">Cấp ẩm tự động</span>
                 </div>
-              ))}
-            </div>
+                <div className="flex flex-col items-center text-center gap-2">
+                  <div className="text-gray-800">
+                    <Sprout className="w-6 h-6" />
+                  </div>
+                  <span className="text-sm text-gray-700 font-medium">Dễ chăm sóc</span>
+                </div>
+                <div className="flex flex-col items-center text-center gap-2">
+                  <div className="text-gray-800">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect width="20" height="5" x="2" y="7"/><line x1="12" x2="12" y1="22" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>
+                  </div>
+                  <span className="text-sm text-gray-700 font-medium">Quà tặng ý nghĩa</span>
+                </div>
+              </div>
+            </ScrollReveal>
+          </div>
+
+          {/* Right Column: Product Slider */}
+          <ScrollReveal direction="left" delay={0.3}>
+            <HeroCarousel products={featuredProducts as any} />
           </ScrollReveal>
         </div>
       </section>
