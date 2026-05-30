@@ -28,12 +28,16 @@ interface Product {
 
 export default function AdminProductsPage() {
   const queryClient = useQueryClient();
-  const { data: products = [], isLoading: loading } = useQuery({
+  const { data: products = [], isLoading: loading, error } = useQuery<Product[], Error>({
     queryKey: ["admin-products"],
     queryFn: async () => {
       const response = await fetch("/api/products?status=all");
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || "Không thể tải danh sách sản phẩm.");
+      }
       const data = await response.json();
-      return data.products || data;
+      return Array.isArray(data.products) ? data.products : [];
     },
   });
   const [searchQuery, setSearchQuery] = useState("");
@@ -263,6 +267,10 @@ export default function AdminProductsPage() {
       <div className="bg-white rounded-lg shadow overflow-hidden">
         {loading ? (
           <div className="p-8 text-center text-gray-500">Đang tải sản phẩm...</div>
+        ) : error ? (
+          <div className="p-8 text-center text-red-600 font-medium">
+            ⚠️ Lỗi tải dữ liệu: {error.message || "Không thể tải danh sách sản phẩm. Vui lòng tải lại trang."}
+          </div>
         ) : filteredProducts.length === 0 ? (
           <div className="p-8 text-center text-gray-500">
             Không tìm thấy sản phẩm.{" "}
