@@ -9,6 +9,8 @@ import QueryProvider from "@/lib/query-provider";
 import ShopLayout from "./ShopLayout";
 import { Toaster } from "sonner";
 
+export const dynamic = "force-dynamic";
+
 // ChatWidget lazy-loaded để tránh SSR issues
 const ChatWidget = dynamic(() => import("@/components/ChatWidget"), {
   ssr: false,

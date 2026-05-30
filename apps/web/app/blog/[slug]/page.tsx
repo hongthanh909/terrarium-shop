@@ -15,15 +15,7 @@ interface Props {
 
 // ✅ Prerender tất cả bài blog tại build time
 export async function generateStaticParams() {
-  try {
-    const posts = await prisma.blogPost.findMany({
-      where: { published: true },
-      select: { slug: true },
-    });
-    return posts.map((p) => ({ slug: p.slug }));
-  } catch {
-    return [];
-  }
+  return [];
 }
 
 function getCachedPost(slug: string) {

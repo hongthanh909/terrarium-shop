@@ -9,15 +9,7 @@ export const revalidate = 60;
 
 // ✅ Prerender tất cả sản phẩm ACTIVE tại build time — xóa hoàn toàn cold start
 export async function generateStaticParams() {
-  try {
-    const products = await prisma.product.findMany({
-      where: { status: "ACTIVE" },
-      select: { slug: true },
-    });
-    return products.map((p) => ({ slug: encodeURIComponent(p.slug) }));
-  } catch {
-    return [];
-  }
+  return [];
 }
 
 export default async function ProductPage({ params }: { params: { slug: string } }) {
