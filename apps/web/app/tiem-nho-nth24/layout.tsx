@@ -17,6 +17,28 @@ interface AdminLayoutProps {
 export default function AdminLayout({ children }: AdminLayoutProps) {
   const pathname = usePathname();
 
+  // If we are on the admin login page, render children directly without the sidebar & header
+  if (pathname === "/tiem-nho-nth24/login") {
+    return (
+      <div className="min-h-screen bg-[#f5f7f4]">
+        <Toaster
+          position="top-right"
+          richColors
+          closeButton
+          toastOptions={{
+            duration: 3000,
+            style: { fontFamily: "inherit" },
+            classNames: {
+              success: "font-medium",
+              error: "font-medium",
+            },
+          }}
+        />
+        {children}
+      </div>
+    );
+  }
+
   const menuItems = [
     { href: "/tiem-nho-nth24", label: "Bảng Điều Khiển", icon: Home },
     { href: "/tiem-nho-nth24/products", label: "Sản phẩm", icon: Package },

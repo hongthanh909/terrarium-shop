@@ -41,6 +41,11 @@ export const metadata: Metadata = {
   },
   description:
     "Khám phá bộ sưu tập terrarium và moss art thủ công tại Tiệm Rêu Décor. Giao hàng toàn quốc, chăm sóc tận tâm.",
+  icons: {
+    icon: "/logo.png",
+    shortcut: "/logo.png",
+    apple: "/logo.png",
+  },
   keywords: [
     "terrarium",
     "moss art",

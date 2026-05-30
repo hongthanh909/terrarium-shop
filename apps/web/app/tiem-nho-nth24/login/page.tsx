@@ -61,9 +61,10 @@ export default function AdminLoginPage() {
       if (result.ok) {
         setIsSuccess(true);
         setTimeout(() => {
-          // Navigate to admin dashboard — use replace so back button doesn't return to login
-          router.replace("/tiem-nho-nth24");
-        }, 1800);
+          // Navigate to admin dashboard using window.location.href to force a hard reload.
+          // This ensures cookies are updated and the layout is re-rendered fresh.
+          window.location.href = "/tiem-nho-nth24";
+        }, 1500);
       }
     } catch (err: any) {
       if (err?.message?.includes("ECHECKOUTTIMEOUT") || err?.message?.includes("timeout")) {

@@ -73,6 +73,14 @@ export async function middleware(request: NextRequest) {
 
   // ─── 2. Cho qua trang login admin (xử lý rate limit riêng) ─────────────────
   if (pathname === ADMIN_LOGIN_PATH) {
+    // Nếu đã đăng nhập admin rồi mà vào trang login thì tự động chuyển hướng vào bảng điều khiển
+    const token = await getToken({
+      req: request as any,
+      secret: process.env.NEXTAUTH_SECRET,
+    });
+    if (token && token.role === "ADMIN") {
+      return NextResponse.redirect(new URL(ADMIN_SECRET_PATH, request.url));
+    }
     const response = NextResponse.next();
     return applySecurityHeaders(response);
   }
