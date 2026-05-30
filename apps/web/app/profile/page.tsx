@@ -10,6 +10,7 @@ import {
   Lock, LogOut, ChevronRight, Save, Eye, EyeOff, ArrowLeft
 } from "lucide-react";
 import { toast } from "sonner";
+import { useCartStore } from "@/lib/store/cartStore";
 
 interface Order {
   id: string;
@@ -122,7 +123,10 @@ export default function ProfilePage() {
       if (res.ok) {
         toast.success("Đổi mật khẩu thành công! Vui lòng đăng nhập lại.");
         setCurrentPassword(""); setNewPassword(""); setConfirmPassword("");
-        setTimeout(() => signOut({ callbackUrl: "/login" }), 2000);
+        setTimeout(() => {
+          useCartStore.getState().clearCart();
+          signOut({ callbackUrl: "/login" });
+        }, 2000);
       } else {
         const err = await res.json();
         toast.error(err.error || "Đổi mật khẩu thất bại");
@@ -285,7 +289,7 @@ export default function ProfilePage() {
               <div className="flex items-center justify-between pt-2">
                 <button
                   type="button"
-                  onClick={() => signOut({ callbackUrl: "/" })}
+                  onClick={() => { useCartStore.getState().clearCart(); signOut({ callbackUrl: "/" }); }}
                   className="flex items-center gap-2 text-red-500 hover:text-red-700 text-sm font-medium"
                 >
                   <LogOut className="w-4 h-4" />

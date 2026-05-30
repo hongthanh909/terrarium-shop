@@ -15,6 +15,7 @@
 import { useEffect, useRef, useCallback } from "react";
 import { signOut, useSession } from "next-auth/react";
 import { toast } from "sonner";
+import { useCartStore } from "@/lib/store/cartStore";
 
 interface UseIdleLogoutOptions {
   idleMinutes?: number;
@@ -48,6 +49,7 @@ export function useIdleLogout({
     clearTimers();
     toast.info("🔒 Phiên đăng nhập đã hết. Đang đăng xuất...", { duration: 3000 });
     await new Promise(r => setTimeout(r, 1500));
+    useCartStore.getState().clearCart();
     signOut({ callbackUrl: "/login" });
   }, [clearTimers]);
 
