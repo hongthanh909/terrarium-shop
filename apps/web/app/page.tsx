@@ -2,7 +2,7 @@ import { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import { Suspense } from "react";
-import { Sprout, Truck, ArrowRight, Star, Sparkles, Shield, FileText, Calendar } from "lucide-react";
+import { Sprout, Truck, ArrowRight, Shield, FileText, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -12,7 +12,10 @@ import { StatsSection } from "@/components/ui/number-ticker";
 import { prisma } from "@/lib/prisma";
 import { FeaturedProductCard } from "@/components/ui/featured-product-card";
 import { HeroCarousel } from "@/components/ui/hero-carousel";
-export const dynamic = "force-dynamic";
+
+// ISR: Cache page for 60 seconds, revalidate in background
+// This makes the page INSTANT for most requests instead of waiting for DB every time
+export const revalidate = 60;
 
 export const metadata: Metadata = {
   title: "Terrarium Shop | Mang Thiên Nhiên Vào Trong Nhà",
@@ -25,18 +28,35 @@ export const metadata: Metadata = {
   },
 };
 
-// ─── Async sub-components for Suspense streaming ─────────────────────────────
+// ─── Async streaming sub-components ───────────────────────────────────────────
 
-async function FeaturedProductsSection() {
-  let featuredProducts: any[] = [];
+async function HeroCarouselSection() {
+  let products: any[] = [];
   try {
-    featuredProducts = await prisma.product.findMany({
+    products = await prisma.product.findMany({
       where: { featured: true, status: "ACTIVE" },
       take: 4,
       include: { category: true },
       orderBy: { createdAt: "desc" },
     });
-  } catch (e) { console.error("FeaturedProducts fetch error", e); }
+  } catch (e) {
+    console.error("HeroCarouselSection: DB error", e);
+  }
+  return <HeroCarousel products={products as any} />;
+}
+
+async function FeaturedProductsSection() {
+  let products: any[] = [];
+  try {
+    products = await prisma.product.findMany({
+      where: { featured: true, status: "ACTIVE" },
+      take: 4,
+      include: { category: true },
+      orderBy: { createdAt: "desc" },
+    });
+  } catch (e) {
+    console.error("FeaturedProductsSection: DB error", e);
+  }
 
   return (
     <section className="py-24 px-6 bg-white">
@@ -55,7 +75,7 @@ async function FeaturedProductsSection() {
             </Button>
           </div>
         </ScrollReveal>
-        {featuredProducts.length === 0 ? (
+        {products.length === 0 ? (
           <ScrollReveal direction="up">
             <div className="text-center py-24 bg-[#f0f4ec] rounded-3xl">
               <Sprout className="w-16 h-16 mx-auto text-[#5a7a48] mb-4" />
@@ -65,7 +85,7 @@ async function FeaturedProductsSection() {
           </ScrollReveal>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {featuredProducts.map((product: any, index: number) => (
+            {products.map((product: any, index: number) => (
               <ScrollReveal key={product.id} direction="up" delay={index * 0.1} className="h-full">
                 <FeaturedProductCard
                   id={product.id}
@@ -97,7 +117,9 @@ async function LatestBlogSection() {
       orderBy: { publishedAt: "desc" },
       include: { category: true },
     });
-  } catch (e) { console.error("LatestBlog fetch error", e); }
+  } catch (e) {
+    console.error("LatestBlog fetch error", e);
+  }
 
   const fallbackImages = [
     "https://images.unsplash.com/photo-1595086862145-2be916325514?w=800&auto=format&fit=crop&q=80",
@@ -164,7 +186,23 @@ async function LatestBlogSection() {
   );
 }
 
-// Skeleton placeholders for Suspense fallbacks
+// ─── Skeleton Fallbacks ────────────────────────────────────────────────────────
+
+function HeroCarouselSkeleton() {
+  return (
+    <div className="relative w-full max-w-lg mx-auto bg-white rounded-3xl shadow-xl overflow-hidden border border-white/40">
+      <div className="aspect-[4/3] w-full bg-gradient-to-br from-[#e3ebdd] to-[#c8d5be] animate-pulse flex items-center justify-center">
+        <Sprout className="w-16 h-16 text-[#425733]/30" />
+      </div>
+      <div className="p-6 space-y-3">
+        <div className="h-6 w-3/4 bg-[#f0f4ec] rounded animate-pulse" />
+        <div className="h-4 w-1/2 bg-[#f0f4ec] rounded animate-pulse" />
+        <div className="h-7 w-1/3 bg-[#e3ebdd] rounded animate-pulse" />
+      </div>
+    </div>
+  );
+}
+
 function ProductsSkeleton() {
   return (
     <section className="py-24 px-6 bg-white">
@@ -210,23 +248,12 @@ function BlogSkeleton() {
   );
 }
 
-export default async function Home() {
-  // Fetch featured products for HeroCarousel (in hero section, not streamed)
-  let heroProducts: any[] = [];
-  try {
-    heroProducts = await prisma.product.findMany({
-      where: { featured: true, status: "ACTIVE" },
-      take: 4,
-      include: { category: true },
-      orderBy: { createdAt: "desc" },
-    });
-  } catch (e) {
-    console.error("Home: failed to fetch hero products", e);
-  }
+// ─── Main Page (SYNC — no DB fetches here) ────────────────────────────────────
 
+export default function Home() {
   return (
     <main className="min-h-screen">
-      {/* Hero Section */}
+      {/* Hero Section — renders INSTANTLY, carousel streams in */}
       <section className="relative overflow-hidden bg-gradient-to-br from-[#f0f4ec] to-[#e3ebdd] min-h-[85vh] flex items-center">
         {/* Soft decorative blobs */}
         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[rgba(66,87,51,0.05)] rounded-full -translate-y-1/3 translate-x-1/3 blur-3xl pointer-events-none" />
@@ -252,7 +279,7 @@ export default async function Home() {
               <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
                 <Button
                   size="lg"
-                  className="bg-blue-500 text-white hover:bg-blue-600 font-medium rounded-full text-lg px-8 shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5"
+                  className="bg-[#425733] text-white hover:bg-[#364a29] font-semibold rounded-full text-lg px-8 shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5"
                   asChild
                 >
                   <Link href="/products">
@@ -262,7 +289,7 @@ export default async function Home() {
                 <Button
                   size="lg"
                   variant="outline"
-                  className="border-2 border-gray-200 text-gray-700 rounded-full hover:bg-gray-50 font-medium text-lg px-8 transition-all duration-300"
+                  className="border-2 border-[#425733]/30 text-[#425733] rounded-full hover:bg-[#e3ebdd] font-medium text-lg px-8 transition-all duration-300"
                   asChild
                 >
                   <Link href="#about">Tìm Hiểu Thêm</Link>
@@ -274,19 +301,19 @@ export default async function Home() {
             <ScrollReveal direction="up" delay={0.5}>
               <div className="mt-12 flex gap-8">
                 <div className="flex flex-col items-center text-center gap-2">
-                  <div className="text-gray-800">
+                  <div className="text-[#425733]">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 14 4-4"/><path d="M3.34 19a10 10 0 1 1 17.32 0"/></svg>
                   </div>
                   <span className="text-sm text-gray-700 font-medium">Cấp ẩm tự động</span>
                 </div>
                 <div className="flex flex-col items-center text-center gap-2">
-                  <div className="text-gray-800">
+                  <div className="text-[#425733]">
                     <Sprout className="w-6 h-6" />
                   </div>
                   <span className="text-sm text-gray-700 font-medium">Dễ chăm sóc</span>
                 </div>
                 <div className="flex flex-col items-center text-center gap-2">
-                  <div className="text-gray-800">
+                  <div className="text-[#425733]">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect width="20" height="5" x="2" y="7"/><line x1="12" x2="12" y1="22" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>
                   </div>
                   <span className="text-sm text-gray-700 font-medium">Quà tặng ý nghĩa</span>
@@ -295,9 +322,11 @@ export default async function Home() {
             </ScrollReveal>
           </div>
 
-          {/* Right Column: Product Slider */}
+          {/* Right Column: Product Slider — streams in via Suspense */}
           <ScrollReveal direction="left" delay={0.3}>
-            <HeroCarousel products={heroProducts as any} />
+            <Suspense fallback={<HeroCarouselSkeleton />}>
+              <HeroCarouselSection />
+            </Suspense>
           </ScrollReveal>
         </div>
       </section>
@@ -352,7 +381,7 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* Featured Products Section — streams in while hero is visible */}
+      {/* Featured Products — streams in */}
       <Suspense fallback={<ProductsSkeleton />}>
         <FeaturedProductsSection />
       </Suspense>
@@ -395,7 +424,6 @@ export default async function Home() {
           </ScrollReveal>
         </div>
       </section>
-
 
       {/* Final CTA Section */}
       <section className="py-24 px-6 bg-gradient-to-br from-[#425733] to-[#364a29] text-white">

@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { BlogClient } from "./BlogClient";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60; // ISR: cache 60s at CDN edge
 
 export default async function BlogPage() {
   let posts: any[] = [];

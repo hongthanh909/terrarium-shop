@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { ExploreClient } from "./ExploreClient";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60; // ISR: cache 60s at CDN edge
 
 const serializeProduct = (p: any) => ({
   ...JSON.parse(JSON.stringify(p)),
