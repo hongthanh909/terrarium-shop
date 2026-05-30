@@ -11,6 +11,8 @@ module.exports = {
 
   // Tối ưu package imports (tree-shaking tốt hơn = ít module compile hơn)
   experimental: {
+    workerThreads: false,
+    cpus: 1,
     optimizePackageImports: [
       'lucide-react',
       'framer-motion',
