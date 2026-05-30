@@ -39,9 +39,53 @@ async function HeroCarouselSection() {
       include: { category: true },
       orderBy: { createdAt: "desc" },
     });
+
+    // Nếu không có sản phẩm nổi bật nào, tự động lấy các sản phẩm active mới nhất làm fallback
+    if (products.length === 0) {
+      products = await prisma.product.findMany({
+        where: { status: "ACTIVE" },
+        take: 4,
+        include: { category: true },
+        orderBy: { createdAt: "desc" },
+      });
+    }
   } catch (e) {
     console.error("HeroCarouselSection: DB error", e);
   }
+
+  // Nếu cơ sở dữ liệu trống hoặc không có bất kỳ sản phẩm hoạt động nào, sử dụng danh sách sản phẩm mẫu siêu đẹp
+  if (products.length === 0) {
+    products = [
+      {
+        id: "mock-1",
+        slug: "mini-forest-moss-terrarium",
+        name: "Rừng Rêu Thu Nhỏ - Hệ Kín Cao Cấp",
+        basePrice: 450000,
+        salePrice: 380000,
+        images: ["https://images.unsplash.com/photo-1545241047-6083a3684587?w=800&auto=format&fit=crop&q=80"],
+        category: { name: "Terrarium Hệ Kín" }
+      },
+      {
+        id: "mock-2",
+        slug: "desert-oasis-succulent",
+        name: "Ốc Đảo Sa Mạc - Sen Đá Tự Nhiên",
+        basePrice: 320000,
+        salePrice: null,
+        images: ["https://images.unsplash.com/photo-1463936575829-25148e1db1b8?w=800&auto=format&fit=crop&q=80"],
+        category: { name: "Terrarium Hệ Mở" }
+      },
+      {
+        id: "mock-3",
+        slug: "stream-side-moss-art",
+        name: "Dòng Suối Bình Yên - Bán Cạn Moss Art",
+        basePrice: 650000,
+        salePrice: 590000,
+        images: ["https://images.unsplash.com/photo-1509440159596-0249088772ff?w=800&auto=format&fit=crop&q=80"],
+        category: { name: "Bán Cạn (Paludarium)" }
+      }
+    ];
+  }
+
   return <HeroCarousel products={products as any} />;
 }
 

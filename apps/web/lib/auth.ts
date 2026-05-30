@@ -15,9 +15,16 @@ const ADMIN_LOGIN_PATH = `${ADMIN_SECRET_PATH}/login`;
 //     immediately, preventing pool exhaustion on Supabase free tier.
 // ─────────────────────────────────────────────────────────────────────────────
 async function findUserByEmail(email: string) {
-  const client = new PrismaClient({ log: ["error"] });
+  const client = new PrismaClient({
+    datasources: {
+      db: {
+        url: process.env.DIRECT_URL || process.env.DATABASE_URL,
+      },
+    },
+    log: ["error"],
+  });
   try {
-    return await client.customer.findUnique({
+    const user = await client.customer.findUnique({
       where: { email },
       select: {
         id: true,
@@ -27,6 +34,26 @@ async function findUserByEmail(email: string) {
         role: true,
       },
     });
+
+    // Tự động thăng cấp email cấu hình admin thành vai trò ADMIN nếu đang là CUSTOMER
+    const adminEmail = process.env.ADMIN_EMAIL;
+    if (user && adminEmail && user.email.toLowerCase() === adminEmail.toLowerCase() && user.role !== "ADMIN") {
+      const updatedUser = await client.customer.update({
+        where: { id: user.id },
+        data: { role: "ADMIN" },
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          passwordHash: true,
+          role: true,
+        },
+      });
+      console.log(`[Auth] Auto-promoted ${email} to ADMIN role.`);
+      return updatedUser;
+    }
+
+    return user;
   } finally {
     // Always release the connection — do NOT let it linger in the pool.
     await client.$disconnect().catch(() => {});
