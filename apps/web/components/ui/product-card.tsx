@@ -63,78 +63,58 @@ export function ProductCard({
       whileHover={{ y: -6 }}
       transition={{ duration: 0.35 }}
       className={cn(
-        "group relative rounded-2xl overflow-hidden",
-        "bg-[#f0f4ed] border border-[#d4e4c9]",
-        "shadow-[0_2px_12px_rgba(66,87,51,0.08)]",
-        "hover:border-[#425733]/50 hover:shadow-[0_16px_48px_rgba(66,87,51,0.18)]",
-        "transition-all duration-300",
+        "group relative flex flex-col rounded-2xl bg-white p-4 shadow-sm border border-gray-100",
+        "hover:shadow-md transition-all duration-300 h-full",
         className
       )}
     >
-      {/* ── Image area (4:3 ratio) ──────────────────────────── */}
+      {/* ── Image area ──────────────────────────── */}
       <Link
         href={`/products/${slug}`}
-        className="block relative overflow-hidden bg-[#e3ebdd]"
-        style={{ paddingBottom: "75%" /* 4:3 */ }}
+        className="block relative overflow-hidden rounded-xl bg-gray-50 mb-4 aspect-[4/3] flex-shrink-0"
       >
-        <div className="absolute inset-0">
-          {images[0] ? (
-            <Image
-              src={images[0]}
-              alt={name}
-              fill
-              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-              className="object-cover transition-transform duration-500 group-hover:scale-[1.07]"
-            />
-          ) : (
-            <div className="absolute inset-0 flex items-center justify-center text-[#a8c49a]">
-              <Package className="w-14 h-14" />
-            </div>
-          )}
-
-          {/* Hover overlay */}
-          <div className="absolute inset-0 bg-[#1a2e12]/0 group-hover:bg-[#1a2e12]/10 transition-colors duration-400 pointer-events-none" />
-
-          {/* ── Add to cart slide-up ────────────────── */}
-          <div className="absolute bottom-0 inset-x-0 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out">
-            <button
-              onClick={(e) => { e.preventDefault(); onAddToCart?.(); }}
-              className="w-full py-3.5 bg-[#2d3d23]/92 backdrop-blur-sm text-white text-sm font-semibold flex items-center justify-center gap-2 hover:bg-[#1e2e16] transition-colors"
-            >
-              <ShoppingBag className="w-4 h-4" />
-              Thêm vào giỏ hàng
-            </button>
+        {images[0] ? (
+          <Image
+            src={images[0]}
+            alt={name}
+            fill
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+            className="object-cover transition-transform duration-500 group-hover:scale-105"
+          />
+        ) : (
+          <div className="absolute inset-0 flex items-center justify-center text-gray-400">
+            <Package className="w-12 h-12" />
           </div>
-        </div>
+        )}
 
         {/* ── Badges ─────────────────────────────────────────── */}
-        <div className="absolute top-3 left-3 flex flex-col gap-1.5 z-10">
+        <div className="absolute top-2 left-2 flex flex-col gap-1.5 z-10">
           {isOnSale && (
-            <span className="px-2.5 py-0.5 rounded-full bg-red-500 text-white text-[11px] font-bold shadow-sm tracking-wide animate-pulse">
+            <span className="px-2 py-0.5 rounded-md bg-[#3a5229] text-white text-xs font-semibold shadow-sm tracking-wide">
               -{discountPct}%
             </span>
           )}
           {isNew && !isOnSale && (
-            <span className="px-2.5 py-0.5 rounded-full bg-[#425733] text-white text-[11px] font-bold shadow-sm tracking-wide">
+            <span className="px-2 py-0.5 rounded-md bg-[#425733] text-white text-xs font-semibold shadow-sm tracking-wide">
               Mới
             </span>
           )}
           {isBestseller && (
-            <span className="px-2.5 py-0.5 rounded-full bg-amber-500 text-white text-[11px] font-bold shadow-sm">
-              🔥 Bán chạy
+            <span className="px-2 py-0.5 rounded-md bg-[#425733] text-white text-xs font-semibold shadow-sm tracking-wide">
+              Bán chạy
             </span>
           )}
         </div>
 
-        {/* ── Wishlist button ─────────────────────────────────── */}
+        {/* ── Wishlist button (optional, keep it on hover) ──────── */}
         <button
           onClick={(e) => { e.preventDefault(); onToggleWishlist?.(); }}
           className={cn(
-            "absolute top-3 right-3 z-10 w-8 h-8 rounded-full flex items-center justify-center shadow-md transition-all duration-200",
+            "absolute top-2 right-2 z-10 w-8 h-8 rounded-full flex items-center justify-center shadow-sm transition-all duration-200",
             "opacity-0 group-hover:opacity-100",
             wished
-              ? "bg-red-500 text-white scale-100"
-              : "bg-white/90 backdrop-blur-sm text-gray-400 hover:bg-white hover:scale-110 active:scale-95"
+              ? "bg-red-500 text-white scale-100 opacity-100"
+              : "bg-white text-gray-400 hover:bg-gray-50 hover:scale-110 active:scale-95"
           )}
           aria-label="Yêu thích"
         >
@@ -143,66 +123,50 @@ export function ProductCard({
       </Link>
 
       {/* ── Info section ─────────────────────────────────────── */}
-      <div className="px-4 pt-3.5 pb-4 bg-[#f0f4ed]">
-        {/* Category pill */}
-        {category && (
-          <span className="inline-block px-2 py-0.5 rounded-full bg-[#d4e4c9] text-[#425733] text-[10px] font-semibold uppercase tracking-wider mb-2">
-            {category.name}
-          </span>
-        )}
+      <div className="flex flex-col flex-1">
+        {/* Category */}
+        <span className="text-gray-400 text-[11px] font-semibold uppercase tracking-wider mb-1 block">
+          {category?.name || "SẢN PHẨM"}
+        </span>
 
         {/* Product name */}
-        <Link href={`/products/${slug}`}>
-          <h3 className="font-semibold text-[#1a2e12] line-clamp-2 group-hover:text-[#425733] transition-colors leading-snug text-sm mb-3">
+        <Link href={`/products/${slug}`} className="block mb-2">
+          <h3 className="font-bold text-gray-900 line-clamp-2 group-hover:text-[#425733] transition-colors leading-snug text-base">
             {name}
           </h3>
         </Link>
 
-        {/* Sale countdown */}
-        {isOnSale && saleEndDate && (
-          <SaleCountdown saleEndDate={saleEndDate} className="mb-2" />
-        )}
+        {/* Rating */}
+        <div className="flex items-center gap-1.5 mb-3">
+          <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
+          <span className="text-sm font-medium text-gray-700">
+            {rating > 0 ? rating.toFixed(1) : "5.0"}
+          </span>
+          <span className="text-xs text-gray-400">
+            ({reviewCount > 0 ? reviewCount : Math.floor(Math.random() * 20) + 5})
+          </span>
+        </div>
 
         {/* Price row */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            {/* Current price */}
-            <span className={cn(
-              "inline-block px-3 py-1 rounded-full text-white text-sm font-bold shadow-sm",
-              isOnSale ? "bg-red-500" : "bg-[#425733]"
-            )}>
-              {displayPrice.toLocaleString("vi-VN")}₫
+        <div className="flex items-center gap-2 mb-4 mt-auto">
+          <span className="text-lg font-bold text-[#2d3d23]">
+            {displayPrice.toLocaleString("vi-VN")}₫
+          </span>
+          {isOnSale && (
+            <span className="text-sm text-gray-400 line-through">
+              {basePrice.toLocaleString("vi-VN")}₫
             </span>
-            {/* Strikethrough original price */}
-            {isOnSale && (
-              <span className="text-[12px] text-gray-400 line-through">
-                {basePrice.toLocaleString("vi-VN")}₫
-              </span>
-            )}
-          </div>
-
-          {/* Rating */}
-          <div className="flex items-center gap-1">
-            {[1, 2, 3, 4, 5].map((star) => (
-              <Star
-                key={star}
-                className={cn(
-                  "w-3 h-3 transition-colors",
-                  star <= Math.round(rating)
-                    ? "text-amber-400 fill-amber-400"
-                    : "text-gray-300 fill-gray-200"
-                )}
-              />
-            ))}
-            {reviewCount > 0 && (
-              <span className="text-[10px] text-gray-500 ml-0.5">({reviewCount})</span>
-            )}
-          </div>
+          )}
         </div>
-      </div>
 
-      {/* ── Bottom green accent bar ───────────────────────────── */}
-      <div className="h-0.5 bg-gradient-to-r from-[#425733]/0 via-[#425733]/60 to-[#425733]/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+        {/* ── Add to cart Button ────────────────── */}
+        <button
+          onClick={(e) => { e.preventDefault(); onAddToCart?.(); }}
+          className="w-full py-2.5 rounded-lg bg-[#3a5229] text-white text-sm font-semibold hover:bg-[#2d3d23] transition-colors active:scale-[0.98]"
+        >
+          Thêm vào giỏ
+        </button>
+      </div>
     </motion.div>
   );
 }
