@@ -385,151 +385,153 @@ export default function Home() {
             </div>
           </ScrollReveal>
 
-          {/* Premium customized accordion styles from user code sample */}
+          {/* Premium customized accordion styles from user code sample — Light Green theme & Square-ish cards */}
           <style dangerouslySetInnerHTML={{ __html: `
             .wi-timeline-wrapper {
               display: flex;
               width: 100%;
-              height: 26rem;
-              padding: 1rem 0;
+              height: 18rem; /* Balanced, square-ish 18rem height */
+              gap: 1.5rem; /* Clean layout spacing */
+              justify-content: center;
+              padding: 0.5rem 0;
               overflow: hidden;
             }
 
             .wi-card {
-              margin-left: 1rem;
-              margin-right: 1rem;
               position: relative;
-              flex: 1;
+              flex: 0 0 18rem; /* Perfectly square (18rem x 18rem) when inactive! */
+              width: 18rem;
               background: #ffffff;
-              border: 1px solid rgba(0,0,0,0.05);
-              border-radius: 1.5rem;
+              border: 1px solid #daebd0; /* Soft light green border */
+              border-radius: 1.25rem;
               overflow: hidden;
               cursor: pointer;
               transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
               display: flex;
               flex-direction: column;
               justify-content: flex-end;
-              padding: 2.2rem;
-              box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+              padding: 1.5rem;
+              box-shadow: 0 8px 24px rgba(66, 87, 51, 0.04);
             }
 
-            /* First card is active by default */
+            /* Active card expands to take remaining space (making it a nice rectangle!) */
             .wi-card.active {
-              flex: 3.5;
-              background: linear-gradient(135deg, #1e2e16, #425733);
-              border-color: transparent;
+              flex: 1 1 auto;
+              background: #e3ebdd; /* Soft light green theme */
+              border-color: #c8d5be;
             }
 
             .wi-card:hover {
-              flex: 3.5 !important;
-              background: linear-gradient(135deg, #1e2e16, #425733) !important;
-              border-color: transparent !important;
-              box-shadow: 0 20px 40px rgba(66, 87, 51, 0.18) !important;
+              flex: 1 1 auto !important;
+              background: #e3ebdd !important;
+              border-color: #c8d5be !important;
+              box-shadow: 0 15px 35px rgba(66, 87, 51, 0.1) !important;
             }
 
+            /* When hovering the wrapper, the active card that is NOT hovered shrinks back to a square */
             .wi-timeline-wrapper:hover .wi-card.active:not(:hover) {
-              flex: 1;
+              flex: 0 0 18rem;
               background: #ffffff;
-              border-color: rgba(0,0,0,0.05);
-              box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+              border-color: #daebd0;
+              box-shadow: 0 8px 24px rgba(66, 87, 51, 0.04);
             }
 
             .wi-content {
-              opacity: 0;
-              transform: translateY(1.5rem);
               transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-            }
-
-            .wi-card.active .wi-content,
-            .wi-card:hover .wi-content {
-              opacity: 1;
-              transform: translateY(0);
-            }
-
-            .wi-timeline-wrapper:hover .wi-card.active:not(:hover) .wi-content {
-              opacity: 0;
-              transform: translateY(1.5rem);
+              text-align: left;
             }
 
             .wi-content h3 {
-              color: hsl(220,14%,25%);
-              margin: 0 0 0.75rem 0;
-              font-size: 1.35rem;
+              color: #425733; /* Forest green title */
+              margin: 0;
+              font-size: 1.15rem;
               font-weight: 700;
               transition: color 0.4s;
             }
             
             .wi-card.active .wi-content h3,
             .wi-card:hover .wi-content h3 {
-              color: #ffffff;
+              color: #1e2e16; /* Darker forest green */
             }
             
             .wi-timeline-wrapper:hover .wi-card.active:not(:hover) .wi-content h3 {
-              color: hsl(220,14%,25%);
+              color: #425733;
             }
 
             .wi-content p {
-              color: rgba(255,255,255,0.85);
-              font-size: 0.95rem;
-              line-height: 1.6;
+              color: #4b5563; /* Gray description */
+              font-size: 0.85rem;
+              line-height: 1.5;
               margin: 0;
               text-align: justify;
-              transition: color 0.4s;
+              opacity: 0.8; /* Always visible but slightly soft for inactive cards */
+              transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+              margin-top: 0.5rem;
             }
             
+            .wi-card.active .wi-content p,
+            .wi-card:hover .wi-content p {
+              opacity: 1;
+              color: #374151;
+            }
+
             .wi-timeline-wrapper:hover .wi-card.active:not(:hover) .wi-content p {
-              color: hsl(220,14%,45%);
+              opacity: 0.8;
+              color: #4b5563;
             }
 
             .wi-year {
               position: absolute;
-              top: 2rem;
-              left: 2rem;
-              font-size: 2.2rem;
+              top: 1.5rem;
+              left: 1.5rem;
+              font-size: 1.8rem;
               font-weight: 800;
               color: #425733;
               transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
               z-index: 10;
               display: flex;
               align-items: center;
-              gap: 0.75rem;
+              gap: 0.5rem;
             }
             
             .wi-icon-wrapper {
-              width: 3.5rem;
-              height: 3.5rem;
-              border-radius: 1rem;
+              width: 2.8rem;
+              height: 2.8rem;
+              border-radius: 0.75rem;
               display: flex;
               align-items: center;
               justify-content: center;
               transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+              background: #e3ebdd;
+              color: #425733;
             }
 
             .wi-card.active .wi-year,
             .wi-card:hover .wi-year {
-              color: rgba(255,255,255, 0.15);
-              font-size: 4rem;
-              top: 1rem;
+              color: rgba(66, 87, 51, 0.12); /* Subtle green number in background */
+              font-size: 3.5rem;
+              top: 0.75rem;
               left: auto;
-              right: 2rem;
+              right: 1.5rem;
             }
             
             .wi-card.active .wi-icon-wrapper,
             .wi-card:hover .wi-icon-wrapper {
-              background: rgba(255,255,255,0.15) !important;
-              color: #ffffff !important;
-              transform: scale(1.1);
+              background: #ffffff !important;
+              color: #425733 !important;
+              transform: scale(1.05);
             }
             
             .wi-timeline-wrapper:hover .wi-card.active:not(:hover) .wi-year {
               color: #425733;
-              font-size: 2.2rem;
-              top: 2rem;
-              left: 2rem;
+              font-size: 1.8rem;
+              top: 1.5rem;
+              left: 1.5rem;
               right: auto;
             }
             
             .wi-timeline-wrapper:hover .wi-card.active:not(:hover) .wi-icon-wrapper {
+              background: #e3ebdd !important;
               transform: scale(1);
             }
 
@@ -539,51 +541,46 @@ export default function Home() {
                 height: auto;
                 overflow: visible;
                 padding: 1rem 0;
-                gap: 1.5rem;
+                gap: 1.25rem;
               }
 
               .wi-card {
-                width: 100%;
-                flex: none;
-                min-height: 14rem;
-                background: linear-gradient(135deg, #1e2e16, #425733) !important;
-                border: none !important;
-                box-shadow: 0 10px 35px rgba(66, 87, 51, 0.15) !important;
+                width: 100% !important;
+                flex: none !important;
+                min-height: 10rem;
+                background: #e3ebdd !important;
+                border-color: #c8d5be !important;
+                box-shadow: 0 8px 24px rgba(66, 87, 51, 0.08) !important;
                 margin-left: 0;
                 margin-right: 0;
               }
 
-              .wi-content {
+              .wi-content p {
                 opacity: 1 !important;
-                transform: translateY(0) !important;
+                margin-top: 0.5rem;
               }
               
               .wi-content h3 {
-                color: #ffffff !important;
-                font-size: 1.5rem !important;
-                margin-bottom: 0.5rem;
-              }
-              
-              .wi-content p {
-                color: rgba(255,255,255,0.85) !important;
+                color: #1e2e16 !important;
+                font-size: 1.3rem !important;
               }
 
               .wi-year {
-                color: rgba(255,255,255, 0.15) !important;
-                font-size: 3.5rem !important;
-                top: 1.5rem;
-                right: 2rem;
+                color: rgba(66, 87, 51, 0.12) !important;
+                font-size: 3rem !important;
+                top: 1rem;
+                right: 1.5rem;
                 left: auto;
               }
               
               .wi-icon-wrapper {
-                background: rgba(255,255,255,0.15) !important;
-                color: #ffffff !important;
+                background: #ffffff !important;
+                color: #425733 !important;
               }
 
               .wi-timeline-wrapper:hover .wi-card.active:not(:hover) {
-                flex: none;
-                background: linear-gradient(135deg, #1e2e16, #425733) !important;
+                flex: none !important;
+                background: #e3ebdd !important;
               }
             }
           `}} />
