@@ -43,6 +43,8 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
   };
 
   const currentProduct = products[currentIndex];
+  const nextProduct = products[(currentIndex + 1) % products.length] || currentProduct;
+  const nextNextProduct = products[(currentIndex + 2) % products.length] || nextProduct;
   
   // Calculate discount percentage
   const basePrice = Number(currentProduct.basePrice);
@@ -53,17 +55,9 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
     <div className="relative w-full max-w-lg mx-auto py-8 group/carousel flex items-center justify-center select-none">
       {/* Premium styles for 3D card deck & SVG animations */}
       <style dangerouslySetInnerHTML={{ __html: `
-        @keyframes float-subtle-1 {
-          0%, 100% { transform: translate(-12px, -8px) rotate(-4deg) translateY(0); }
-          50% { transform: translate(-12px, -8px) rotate(-4deg) translateY(-8px); }
-        }
-        @keyframes float-subtle-2 {
-          0%, 100% { transform: translate(12px, 8px) rotate(3deg) translateY(0); }
-          50% { transform: translate(12px, 8px) rotate(3deg) translateY(8px); }
-        }
         @keyframes svg-breath {
-          0%, 100% { transform: scale(0.95); opacity: 0.8; }
-          50% { transform: scale(1.02); opacity: 1; }
+          0%, 100% { transform: scale(0.95); opacity: 0.65; }
+          50% { transform: scale(1.02); opacity: 0.85; }
         }
         @keyframes bounce-slow {
           0%, 100% { transform: rotate(45deg) translateY(0); }
@@ -78,16 +72,16 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
           50% { transform: rotate(45deg) translate(calc(var(--tx) + 4px), calc(var(--ty) - 5px)) scale(1.25); opacity: 0.95; }
         }
         .carousel-glass-layer {
-          transition: all 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+          transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.8s ease, box-shadow 0.8s ease;
         }
         /* Default states */
         .glass-left {
-          transform: translate(-12px, -8px) rotate(-4deg);
-          animation: float-subtle-1 7s ease-in-out infinite;
+          transform: translate(-25px, -10px) rotate(-6deg) scale(0.92);
+          box-shadow: -10px 15px 30px rgba(0, 0, 0, 0.1);
         }
         .glass-right {
-          transform: translate(12px, 8px) rotate(3deg);
-          animation: float-subtle-2 9s ease-in-out infinite 1s;
+          transform: translate(25px, 10px) rotate(5deg) scale(0.96);
+          box-shadow: 10px 15px 30px rgba(0, 0, 0, 0.1);
         }
         .main-carousel-card {
           transform: rotate(-1deg);
@@ -95,17 +89,15 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
         }
         /* Hover states */
         .group\\/carousel:hover .glass-left {
-          transform: translate(-70px, -20px) rotate(-10deg) scale(1.02) !important;
+          transform: translate(-95px, -20px) rotate(-12deg) scale(1.02) !important;
           box-shadow: -25px 30px 50px rgba(0, 0, 0, 0.25);
-          animation-play-state: paused;
         }
         .group\\/carousel:hover .glass-right {
-          transform: translate(70px, 20px) rotate(10deg) scale(1.02) !important;
+          transform: translate(95px, 20px) rotate(12deg) scale(1.02) !important;
           box-shadow: 25px 30px 50px rgba(0, 0, 0, 0.25);
-          animation-play-state: paused;
         }
         .group\\/carousel:hover .main-carousel-card {
-          transform: rotate(0deg) scale(1.02);
+          transform: rotate(0deg) scale(1.03);
           box-shadow: 0 35px 70px rgba(0, 0, 0, 0.28);
         }
         /* SVG anims */
@@ -132,36 +124,19 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
         }
       `}} />
 
-      {/* Decorative Glass Card Left */}
+      {/* Decorative Gold SVG at the very bottom layer */}
       <div 
-        className="carousel-glass-layer glass-left absolute inset-0 rounded-[2.5rem] border border-white/20 shadow-2xl flex items-center justify-center pointer-events-none"
+        className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-hidden"
         style={{
-          background: "linear-gradient(135deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.02))",
-          backdropFilter: "blur(14px)",
-          WebkitBackdropFilter: "blur(14px)",
-          zIndex: 1,
-        }}
-      />
-
-      {/* Decorative Glass Card Right (with glowing 3D SVG block) */}
-      <div 
-        className="carousel-glass-layer glass-right absolute inset-0 rounded-[2.5rem] border border-white/20 shadow-2xl flex items-center justify-center overflow-hidden pointer-events-none"
-        style={{
-          background: "linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.01))",
-          backdropFilter: "blur(10px)",
-          WebkitBackdropFilter: "blur(10px)",
-          zIndex: 2,
+          zIndex: 0,
         }}
       >
-        {/* Futuristic Gold glow behind SVG */}
-        <div className="absolute w-[220px] h-[220px] bg-gradient-to-tr from-[#d3a410]/20 to-transparent rounded-full blur-3xl top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-60" />
-        
-        {/* Custom Glowing Gold SVG */}
+        <div className="absolute w-[240px] h-[240px] bg-gradient-to-tr from-[#d3a410]/20 to-transparent rounded-full blur-3xl opacity-50" />
         <svg 
           xmlns="http://www.w3.org/2000/svg" 
           viewBox="0 0 200 200" 
-          className="w-[180px] h-[180px] opacity-85 select-none"
-          style={{ animation: "svg-breath 5s ease-in-out infinite" }}
+          className="w-[180px] h-[180px] opacity-70 select-none"
+          style={{ animation: "svg-breath 6s ease-in-out infinite" }}
         >
           <g style={{ order: -1 }}>
             <polygon
@@ -275,11 +250,55 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
         </svg>
       </div>
 
-      {/* Main Interactive Product Card */}
+      {/* Decorative Glass Card Left (Layer 10: Next-Next Product) */}
+      <div 
+        className="carousel-glass-layer glass-left absolute inset-0 rounded-[2.5rem] border border-white/20 shadow-2xl overflow-hidden pointer-events-none"
+        style={{
+          zIndex: 10,
+        }}
+      >
+        {nextNextProduct.images[0] ? (
+          <Image
+            src={nextNextProduct.images[0]}
+            alt={nextNextProduct.name}
+            fill
+            className="object-cover filter blur-[2px] brightness-75 transition-all duration-700"
+            sizes="400px"
+          />
+        ) : (
+          <div className="w-full h-full bg-[#e3ebdd]" />
+        )}
+        {/* Soft elegant green-gray shade for backing depth */}
+        <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-[#1a2c12]/30 backdrop-blur-[1px]" />
+      </div>
+
+      {/* Decorative Glass Card Right (Layer 20: Next Product) */}
+      <div 
+        className="carousel-glass-layer glass-right absolute inset-0 rounded-[2.5rem] border border-white/20 shadow-2xl overflow-hidden pointer-events-none"
+        style={{
+          zIndex: 20,
+        }}
+      >
+        {nextProduct.images[0] ? (
+          <Image
+            src={nextProduct.images[0]}
+            alt={nextProduct.name}
+            fill
+            className="object-cover filter blur-[0.5px] brightness-[0.88] transition-all duration-700"
+            sizes="400px"
+          />
+        ) : (
+          <div className="w-full h-full bg-[#e3ebdd]" />
+        )}
+        {/* Soft elegant shade */}
+        <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-[#2d3d23]/20 backdrop-blur-[0.5px]" />
+      </div>
+
+      {/* Main Interactive Product Card (Layer 30) */}
       <div 
         className="carousel-glass-layer main-carousel-card relative w-full bg-white rounded-3xl overflow-hidden border border-white/40 group/main flex flex-col"
         style={{
-          zIndex: 3,
+          zIndex: 30,
         }}
       >
         <Link href={`/products/${currentProduct.slug}`} className="block relative aspect-[4/3] w-full bg-[#f8faf7] overflow-hidden">
