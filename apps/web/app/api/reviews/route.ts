@@ -8,24 +8,31 @@ export async function GET(request: NextRequest) {
     const productId = searchParams.get("productId");
     const status = searchParams.get("status");
 
-    // Map status to approved boolean
-    let approvedFilter: boolean | undefined = true; // default: show approved reviews
-    if (status === "all") {
-      approvedFilter = undefined; // Show all reviews for admin
+    // Build where clause based on status filter
+    type WhereClause = {
+      productId?: string;
+      approved?: boolean;
+      status?: string;
+    };
+    const where: WhereClause = {};
+
+    if (productId) where.productId = productId;
+
+    if (!status || status === "APPROVED") {
+      // Default: only approved reviews (for public product pages)
+      where.approved = true;
     } else if (status === "PENDING") {
-      approvedFilter = false;
+      // Pending = not yet approved, not rejected
+      where.approved = false;
+      where.status = "PENDING";
     } else if (status === "REJECTED") {
-      approvedFilter = false;
-    } else if (status === "APPROVED") {
-      approvedFilter = true;
+      where.approved = false;
+      where.status = "REJECTED";
     }
-    // If no status or unknown, default to approved only
+    // status === "all" → no filter, show everything
 
     const reviews = await prisma.review.findMany({
-      where: {
-        ...(productId && { productId }),
-        ...(approvedFilter !== undefined && { approved: approvedFilter }),
-      },
+      where,
       include: {
         customer: {
           select: {

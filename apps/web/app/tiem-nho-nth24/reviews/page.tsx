@@ -32,8 +32,9 @@ interface Review {
 export default function AdminReviewsPage() {
   const queryClient = useQueryClient();
   const [filter, setFilter] = useState<"ALL" | "PENDING" | "APPROVED" | "REJECTED">("PENDING");
+  const [processingId, setProcessingId] = useState<string | null>(null);
 
-  const { data: reviews = [], isLoading: loading } = useQuery({
+  const { data: reviews = [], isLoading: loading, error } = useQuery({
     queryKey: ["admin-reviews", filter],
     queryFn: async () => {
       let url = "/api/reviews";
@@ -48,48 +49,62 @@ export default function AdminReviewsPage() {
         url += `?status=${statusMap[filter]}`;
       }
       const response = await fetch(url);
-      return response.json();
+      if (!response.ok) {
+        throw new Error("Không thể tải danh sách đánh giá");
+      }
+      const data = await response.json();
+      return Array.isArray(data) ? data : [];
     },
   });
 
   const handleApprove = async (id: string) => {
-    try {
+    setProcessingId(id);
+    const promise = async () => {
       const response = await fetch(`/api/reviews/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ approved: true, status: "APPROVED" }),
       });
 
-      if (response.ok) {
-        toast.success("Đã duyệt đánh giá!");
-        queryClient.invalidateQueries({ queryKey: ["admin-reviews"] });
-      } else {
-        toast.error("Không thể duyệt đánh giá");
+      if (!response.ok) {
+        throw new Error("Không thể duyệt đánh giá");
       }
-    } catch (error) {
-      console.error("Error approving review:", error);
-      toast.error("Lỗi khi duyệt đánh giá");
-    }
+      
+      queryClient.invalidateQueries({ queryKey: ["admin-reviews"] });
+      return response.json();
+    };
+
+    toast.promise(promise(), {
+      loading: "Đang duyệt đánh giá...",
+      success: "Đã duyệt đánh giá thành công!",
+      error: (err) => err.message || "Lỗi khi duyệt đánh giá",
+      finally: () => setProcessingId(null),
+    });
   };
 
   const handleReject = async (id: string) => {
-    try {
+    setProcessingId(id);
+    const promise = async () => {
       const response = await fetch(`/api/reviews/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ approved: false, status: "REJECTED" }),
       });
 
-      if (response.ok) {
-        toast.success("Đã từ chối đánh giá!");
-        queryClient.invalidateQueries({ queryKey: ["admin-reviews"] });
-      } else {
-        toast.error("Không thể từ chối đánh giá");
+      if (!response.ok) {
+        throw new Error("Không thể từ chối đánh giá");
       }
-    } catch (error) {
-      console.error("Error rejecting review:", error);
-      toast.error("Lỗi khi từ chối đánh giá");
-    }
+
+      queryClient.invalidateQueries({ queryKey: ["admin-reviews"] });
+      return response.json();
+    };
+
+    toast.promise(promise(), {
+      loading: "Đang từ chối đánh giá...",
+      success: "Đã từ chối đánh giá!",
+      error: (err) => err.message || "Lỗi khi từ chối đánh giá",
+      finally: () => setProcessingId(null),
+    });
   };
 
   const renderStars = (rating: number) => {
@@ -143,7 +158,9 @@ export default function AdminReviewsPage() {
 
       <div className="bg-white rounded-lg shadow overflow-hidden">
         <div className="space-y-4 p-6">
-          {reviews.length === 0 ? (
+          {error ? (
+            <p className="text-center text-red-500 py-12">Đã xảy ra lỗi khi tải danh sách đánh giá</p>
+          ) : !Array.isArray(reviews) || reviews.length === 0 ? (
             <p className="text-center text-gray-500 py-12">Không tìm thấy đánh giá</p>
           ) : (
             reviews.map((review: any) => (
@@ -156,11 +173,17 @@ export default function AdminReviewsPage() {
                   <div className="flex items-center gap-2">
                     {renderStars(review.rating)}
                     <span className={`px-2 py-1 rounded text-xs font-medium ${
-                      review.approved
+                      review.status === "APPROVED" || review.approved
                         ? "bg-[#e3ebdd] text-[#364a29]"
+                        : review.status === "REJECTED"
+                        ? "bg-red-100 text-red-700"
                         : "bg-yellow-100 text-yellow-800"
                     }`}>
-                      {review.approved ? "Đã Duyệt" : "Chờ Duyệt"}
+                      {review.status === "APPROVED" || review.approved
+                        ? "Đã Duyệt"
+                        : review.status === "REJECTED"
+                        ? "Đã Từ Chối"
+                        : "Chờ Duyệt"}
                     </span>
                     {review.verified && (
                       <span className="px-2 py-1 rounded text-xs font-medium bg-blue-100 text-blue-800">
@@ -195,18 +218,20 @@ export default function AdminReviewsPage() {
                     <Eye className="w-4 h-4" />
                     Xem Sản Phẩm
                   </Link>
-                  {!review.approved && filter === "PENDING" && (
+                  {!review.approved && review.status !== "REJECTED" && (
                     <div className="flex gap-2">
                       <button
                         onClick={() => handleReject(review.id)}
-                        className="flex items-center gap-1 px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700"
+                        disabled={processingId !== null}
+                        className="flex items-center gap-1 px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         <X className="w-4 h-4" />
                         Từ Chối
                       </button>
                       <button
                         onClick={() => handleApprove(review.id)}
-                        className="flex items-center gap-1 px-3 py-1 bg-[#425733] text-white px-6 py-3 rounded-full font-semibold shadow-soft hover:-translate-y-0.5 hover:shadow-[0_4px_20px_rgba(66,87,51,0.4)] hover:bg-[#364a29]"
+                        disabled={processingId !== null}
+                        className="flex items-center gap-1 px-3 py-1 bg-[#425733] text-white rounded-full font-semibold shadow-soft hover:-translate-y-0.5 hover:shadow-[0_4px_20px_rgba(66,87,51,0.4)] hover:bg-[#364a29] disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         <Check className="w-4 h-4" />
                         Duyệt

@@ -173,11 +173,16 @@ export async function POST(request: NextRequest) {
       variants = [],
       variantOptions = [],
       careGuideData,
+      salePrice: salePriceRaw,
+      saleEndDate: saleEndDateRaw,
     } = validatedData;
 
-    // Extract sale fields from body (not in schema yet, pass through)
-    const salePrice = body.salePrice != null ? parseFloat(body.salePrice) : null;
-    const saleEndDate = body.saleEndDate ? new Date(body.saleEndDate) : null;
+    // Resolve sale fields
+    const salePrice = salePriceRaw != null ? Number(salePriceRaw) : null;
+    const saleEndDate = saleEndDateRaw ? new Date(saleEndDateRaw) : null;
+    // Also check body as fallback (backward-compat)
+    const finalSalePrice = salePrice ?? (body.salePrice != null ? parseFloat(body.salePrice) : null);
+    const finalSaleEndDate = saleEndDate ?? (body.saleEndDate ? new Date(body.saleEndDate) : null);
 
     const product = await client.$transaction(async (tx) => {
       // Create product
@@ -186,10 +191,10 @@ export async function POST(request: NextRequest) {
           slug,
           name,
           basePrice,
-          ...(salePrice != null && { salePrice }),
-          ...(saleEndDate && { saleEndDate }),
+          ...(finalSalePrice != null && { salePrice: finalSalePrice }),
+          ...(finalSaleEndDate && { saleEndDate: finalSaleEndDate }),
           type,
-          categoryId,
+          ...(categoryId && { categoryId }),
           status,
           images,
         },

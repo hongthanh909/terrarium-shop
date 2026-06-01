@@ -20,6 +20,8 @@ export default function AdminBlogPage() {
   const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [togglingId, setTogglingId] = useState<string | null>(null);
 
   const { data: postsData, isLoading } = useQuery({
     queryKey: ["admin-blog-posts", page, limit],
@@ -41,37 +43,43 @@ export default function AdminBlogPage() {
 
   const handleDelete = async (id: string) => {
     if (!confirm("Bạn có chắc chắn muốn xóa bài viết này?")) return;
-    try {
+    setDeletingId(id);
+    const promise = async () => {
       const response = await fetch(`/api/admin/blog/posts/${id}`, { method: "DELETE" });
-      if (response.ok) {
-        toast.success("Xóa bài viết thành công!");
-        queryClient.invalidateQueries({ queryKey: ["admin-blog-posts"] });
-      } else {
+      if (!response.ok) {
         const err = await response.json();
-        toast.error(err.error || "Không thể xóa bài viết");
+        throw new Error(err.error || "Không thể xóa bài viết");
       }
-    } catch {
-      toast.error("Lỗi khi xóa bài viết");
-    }
+      queryClient.invalidateQueries({ queryKey: ["admin-blog-posts"] });
+    };
+    toast.promise(promise(), {
+      loading: "Đang xóa bài viết...",
+      success: "Xóa bài viết thành công!",
+      error: (err) => err.message || "Lỗi khi xóa bài viết",
+      finally: () => setDeletingId(null),
+    });
   };
 
   const handleTogglePublish = async (post: BlogPost) => {
-    try {
+    setTogglingId(post.id);
+    const promise = async () => {
       const response = await fetch(`/api/admin/blog/posts/${post.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ published: !post.published }),
       });
-      if (response.ok) {
-        toast.success(post.published ? "Đã chuyển sang bản nháp" : "Đã xuất bản bài viết!");
-        queryClient.invalidateQueries({ queryKey: ["admin-blog-posts"] });
-      } else {
+      if (!response.ok) {
         const err = await response.json();
-        toast.error(err.error || "Không thể cập nhật trạng thái");
+        throw new Error(err.error || "Không thể cập nhật trạng thái");
       }
-    } catch {
-      toast.error("Lỗi khi cập nhật");
-    }
+      queryClient.invalidateQueries({ queryKey: ["admin-blog-posts"] });
+    };
+    toast.promise(promise(), {
+      loading: post.published ? "Đang chuyển sang bản nháp..." : "Đang xuất bản...",
+      success: post.published ? "Đã chuyển sang bản nháp" : "Đã xuất bản bài viết!",
+      error: (err) => err.message || "Lỗi khi cập nhật",
+      finally: () => setTogglingId(null),
+    });
   };
 
   return (
@@ -124,14 +132,17 @@ export default function AdminBlogPage() {
                   <td className="px-6 py-4">
                     <button
                       onClick={() => handleTogglePublish(post)}
-                      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium transition-colors ${
+                      disabled={togglingId !== null || deletingId !== null}
+                      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
                         post.published
                           ? "bg-[#e3ebdd] text-[#364a29] hover:bg-[#d5e3cc]"
                           : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                       }`}
                       title={post.published ? "Nhấn để chuyển sang bản nháp" : "Nhấn để xuất bản"}
                     >
-                      {post.published ? (
+                      {togglingId === post.id ? (
+                        <div className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                      ) : post.published ? (
                         <><Eye className="w-3 h-3" /> Đã Xuất Bản</>
                       ) : (
                         <><EyeOff className="w-3 h-3" /> Bản Nháp</>
@@ -162,10 +173,13 @@ export default function AdminBlogPage() {
                       </Link>
                       <button
                         onClick={() => handleDelete(post.id)}
-                        className="text-red-500 hover:text-red-700 p-1"
+                        disabled={deletingId !== null || togglingId !== null}
+                        className="text-red-500 hover:text-red-700 p-1 disabled:opacity-50 disabled:cursor-not-allowed"
                         title="Xóa"
                       >
-                        <Trash2 className="w-4 h-4" />
+                        {deletingId === post.id
+                          ? <div className="w-4 h-4 border-2 border-red-400 border-t-transparent rounded-full animate-spin" />
+                          : <Trash2 className="w-4 h-4" />}
                       </button>
                     </div>
                   </td>

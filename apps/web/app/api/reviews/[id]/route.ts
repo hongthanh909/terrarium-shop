@@ -53,17 +53,22 @@ export async function PUT(
     if (!admin) return unauthorizedResponse();
 
     const body = await request.json();
-    const { approved } = body;
+    const { approved, status } = body;
+
+    // Derive status from approved flag if status not provided explicitly
+    const resolvedStatus = status ?? (approved ? "APPROVED" : "REJECTED");
 
     const review = await prisma.review.update({
       where: { id: params.id },
       data: {
         ...(approved !== undefined && { approved }),
+        status: resolvedStatus,
       },
     });
 
     await logAdminAction(admin.id, "UPDATE", "Review", params.id, {
       approved,
+      status: resolvedStatus,
       action: approved ? "APPROVE" : "REJECT",
     });
 

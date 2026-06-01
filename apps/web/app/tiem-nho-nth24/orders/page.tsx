@@ -44,6 +44,7 @@ export default function AdminOrdersPage() {
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("");
   const [page, setPage] = useState(1);
+  const [updatingId, setUpdatingId] = useState<string | null>(null);
   const pageSize = 10;
 
   const { data: ordersData, isLoading } = useQuery({
@@ -66,21 +67,25 @@ export default function AdminOrdersPage() {
   const total = ordersData?.total ?? 0;
 
   const handleUpdateStatus = async (orderId: string, newStatus: string) => {
-    try {
+    setUpdatingId(orderId);
+    const promise = async () => {
       const res = await fetch(`/api/admin/orders`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ orderId, status: newStatus }),
       });
-      if (res.ok) {
-        queryClient.invalidateQueries({ queryKey: ["admin-orders"] });
-        toast.success("Cập nhật trạng thái thành công!");
-      } else {
-        toast.error("Không thể cập nhật trạng thái");
+      if (!res.ok) {
+        throw new Error("Không thể cập nhật trạng thái đơn hàng");
       }
-    } catch {
-      toast.error("Lỗi khi cập nhật");
-    }
+      queryClient.invalidateQueries({ queryKey: ["admin-orders"] });
+    };
+
+    toast.promise(promise(), {
+      loading: "Đang cập nhật trạng thái...",
+      success: "Cập nhật trạng thái thành công!",
+      error: (err) => err.message || "Lỗi khi cập nhật trạng thái",
+      finally: () => setUpdatingId(null),
+    });
   };
 
   const filtered = orders.filter((o) => {
@@ -139,7 +144,8 @@ export default function AdminOrdersPage() {
           value={o.status}
           onChange={(e) => handleUpdateStatus(o.id, e.target.value)}
           onClick={(e) => e.stopPropagation()}
-          className="text-xs rounded-full border-0 py-1 px-2 font-semibold cursor-pointer bg-transparent focus:outline-none focus:ring-1 focus:ring-[#425733]/30"
+          disabled={updatingId !== null}
+          className="text-xs rounded-full border-0 py-1 px-2 font-semibold cursor-pointer bg-transparent focus:outline-none focus:ring-1 focus:ring-[#425733]/30 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {UPDATE_OPTIONS.map((opt) => (
             <option key={opt.value} value={opt.value}>{opt.label}</option>

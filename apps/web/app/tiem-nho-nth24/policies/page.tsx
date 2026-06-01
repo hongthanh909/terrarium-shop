@@ -10,6 +10,7 @@ export default function AdminPoliciesPage() {
   const [policies, setPolicies] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchPolicies();
@@ -29,17 +30,22 @@ export default function AdminPoliciesPage() {
 
   const handleDelete = async (id: string) => {
     if (!confirm("Bạn có chắc chắn muốn xóa chính sách này?")) return;
-    try {
+    setDeletingId(id);
+    
+    const promise = async () => {
       const res = await fetch(`/api/admin/policies/${id}`, { method: "DELETE" });
-      if (res.ok) {
-        toast.success("Xóa chính sách thành công");
-        fetchPolicies();
-      } else {
-        toast.error("Lỗi khi xóa chính sách");
+      if (!res.ok) {
+        throw new Error("Lỗi khi xóa chính sách");
       }
-    } catch {
-      toast.error("Lỗi kết nối");
-    }
+      fetchPolicies();
+    };
+
+    toast.promise(promise(), {
+      loading: "Đang xóa chính sách...",
+      success: "Xóa chính sách thành công!",
+      error: (err) => err.message || "Lỗi khi xóa chính sách",
+      finally: () => setDeletingId(null),
+    });
   };
 
   const filtered = policies.filter(p => p.title.toLowerCase().includes(search.toLowerCase()));
@@ -125,7 +131,7 @@ export default function AdminPoliciesPage() {
                             <Edit className="w-3.5 h-3.5" />
                           </Link>
                         </Button>
-                        <Button variant="outline" size="icon" onClick={() => handleDelete(policy.id)} className="h-8 w-8 text-red-600 border-red-200 hover:bg-red-50">
+                        <Button variant="outline" size="icon" onClick={() => handleDelete(policy.id)} disabled={deletingId !== null} className="h-8 w-8 text-red-600 border-red-200 hover:bg-red-50 disabled:opacity-50 disabled:cursor-not-allowed">
                           <Trash2 className="w-3.5 h-3.5" />
                         </Button>
                       </div>

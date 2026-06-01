@@ -72,49 +72,49 @@ export default function AdminOrderDetailPage() {
   };
 
   const handleUpdateStatus = async (newStatus: string) => {
-
     setUpdating(true);
-    try {
+    const promise = async () => {
       const response = await fetch(`/api/orders/${orderId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: newStatus }),
       });
 
-      if (response.ok) {
-        fetchOrder();
-      } else {
-        toast.error("Failed to update order status");
+      if (!response.ok) {
+        throw new Error("Không thể cập nhật trạng thái đơn hàng");
       }
-    } catch (error) {
-      console.error("Error updating order:", error);
-      toast.error("Error updating order status");
-    } finally {
-      setUpdating(false);
-    }
+      await fetchOrder();
+    };
+
+    toast.promise(promise(), {
+      loading: "Đang cập nhật trạng thái đơn hàng...",
+      success: "Cập nhật trạng thái thành công!",
+      error: (err) => err.message || "Lỗi khi cập nhật trạng thái đơn hàng",
+      finally: () => setUpdating(false),
+    });
   };
 
   const handleUpdatePaymentStatus = async (newStatus: string) => {
-
     setUpdating(true);
-    try {
+    const promise = async () => {
       const response = await fetch(`/api/orders/${orderId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ paymentStatus: newStatus }),
       });
 
-      if (response.ok) {
-        fetchOrder();
-      } else {
-        toast.error("Failed to update payment status");
+      if (!response.ok) {
+        throw new Error("Không thể cập nhật trạng thái thanh toán");
       }
-    } catch (error) {
-      console.error("Error updating order:", error);
-      toast.error("Error updating payment status");
-    } finally {
-      setUpdating(false);
-    }
+      await fetchOrder();
+    };
+
+    toast.promise(promise(), {
+      loading: "Đang cập nhật trạng thái thanh toán...",
+      success: "Cập nhật trạng thái thanh toán thành công!",
+      error: (err) => err.message || "Lỗi khi cập nhật trạng thái thanh toán",
+      finally: () => setUpdating(false),
+    });
   };
 
   const handlePrint = () => {

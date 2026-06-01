@@ -47,6 +47,7 @@ export default function AdminProductsPage() {
   const [maxPrice, setMaxPrice] = useState<string>("");
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [confirmBulkDelete, setConfirmBulkDelete] = useState(false);
+  const [actionLoading, setActionLoading] = useState(false);
 
   const handleDelete = async (id: string) => {
     setConfirmDeleteId(id);
@@ -58,30 +59,34 @@ export default function AdminProductsPage() {
       old ? old.filter((p) => p.id !== id) : []
     );
     setConfirmDeleteId(null);
+    setActionLoading(true);
 
-    try {
+    const promise = async () => {
       const response = await fetch(`/api/products/${id}`, {
         method: "DELETE",
       });
 
-      if (response.ok) {
-        toast.success("Xóa sản phẩm thành công!");
-        // Refetch to ensure consistency
-        queryClient.invalidateQueries({ queryKey: ["admin-products"] });
-      } else {
-        toast.error("Không thể xóa sản phẩm");
+      if (!response.ok) {
+        throw new Error("Không thể xóa sản phẩm");
+      }
+      queryClient.invalidateQueries({ queryKey: ["admin-products"] });
+    };
+
+    toast.promise(promise(), {
+      loading: "Đang xóa sản phẩm...",
+      success: "Xóa sản phẩm thành công!",
+      error: (err) => {
         // Revert optimistic update
         queryClient.invalidateQueries({ queryKey: ["admin-products"] });
-      }
-    } catch (error) {
-      console.error("Error deleting product:", error);
-      toast.error("Lỗi khi xóa sản phẩm");
-      queryClient.invalidateQueries({ queryKey: ["admin-products"] });
-    }
+        return err.message || "Lỗi khi xóa sản phẩm";
+      },
+      finally: () => setActionLoading(false),
+    });
   };
 
   const handlePin = async (id: string, currentlyPinned: boolean) => {
-    try {
+    setActionLoading(true);
+    const promise = async () => {
       const response = await fetch(`/api/admin/products/${id}/pin`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -90,37 +95,44 @@ export default function AdminProductsPage() {
         }),
       });
 
-      if (response.ok) {
-        toast.success(currentlyPinned ? "Đã bỏ ghim sản phẩm" : "Đã ghim sản phẩm trong 7 ngày");
-        queryClient.invalidateQueries({ queryKey: ["admin-products"] });
-      } else {
-        toast.error("Không thể thay đổi trạng thái ghim");
+      if (!response.ok) {
+        throw new Error("Không thể ghim/bỏ ghim sản phẩm");
       }
-    } catch (error) {
-      toast.error("Lỗi khi ghim sản phẩm");
-    }
+      queryClient.invalidateQueries({ queryKey: ["admin-products"] });
+    };
+
+    toast.promise(promise(), {
+      loading: currentlyPinned ? "Đang bỏ ghim sản phẩm..." : "Đang ghim sản phẩm...",
+      success: currentlyPinned ? "Đã bỏ ghim sản phẩm thành công!" : "Đã ghim sản phẩm thành công trong 7 ngày!",
+      error: (err) => err.message || "Lỗi khi thay đổi ghim sản phẩm",
+      finally: () => setActionLoading(false),
+    });
   };
 
   const handleSetWeekly = async (id: string) => {
-    try {
-      const reason = prompt("Nhập lý do sản phẩm này nổi bật trong tuần (Tùy chọn):", "");
-      if (reason === null) return; // User cancelled
+    const reason = prompt("Nhập lý do sản phẩm này nổi bật trong tuần (Tùy chọn):", "");
+    if (reason === null) return; // User cancelled
 
+    setActionLoading(true);
+    const promise = async () => {
       const response = await fetch(`/api/admin/products/${id}/weekly`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ reason }),
       });
 
-      if (response.ok) {
-        toast.success("Đã đặt làm Sản Phẩm Của Tuần!");
-        queryClient.invalidateQueries({ queryKey: ["admin-products"] });
-      } else {
-        toast.error("Không thể thay đổi Sản Phẩm Của Tuần");
+      if (!response.ok) {
+        throw new Error("Không thể đặt làm Sản Phẩm Của Tuần");
       }
-    } catch (error) {
-      toast.error("Lỗi khi đặt Sản Phẩm Của Tuần");
-    }
+      queryClient.invalidateQueries({ queryKey: ["admin-products"] });
+    };
+
+    toast.promise(promise(), {
+      loading: "Đang đặt làm Sản Phẩm Của Tuần...",
+      success: "Đã đặt làm Sản Phẩm Của Tuần thành công!",
+      error: (err) => err.message || "Lỗi khi đặt Sản Phẩm Của Tuần",
+      finally: () => setActionLoading(false),
+    });
   };
 
   const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -143,26 +155,30 @@ export default function AdminProductsPage() {
   };
 
   const doBulkDelete = async () => {
-    try {
+    setConfirmBulkDelete(false);
+    setActionLoading(true);
+
+    const promise = async () => {
       const response = await fetch("/api/products/bulk", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ids: selectedIds }),
       });
 
-      if (response.ok) {
-        toast.success(`Đã xóa ${selectedIds.length} sản phẩm thành công!`);
-        setSelectedIds([]);
-        queryClient.invalidateQueries({ queryKey: ["admin-products"] });
-      } else {
-        toast.error("Không thể xóa sản phẩm");
+      if (!response.ok) {
+        throw new Error("Không thể xóa các sản phẩm đã chọn");
       }
-    } catch (error) {
-      console.error("Error bulk deleting:", error);
-      toast.error("Lỗi khi xóa sản phẩm");
-    } finally {
-      setConfirmBulkDelete(false);
-    }
+
+      setSelectedIds([]);
+      queryClient.invalidateQueries({ queryKey: ["admin-products"] });
+    };
+
+    toast.promise(promise(), {
+      loading: "Đang xóa các sản phẩm đã chọn...",
+      success: `Xóa thành công các sản phẩm đã chọn!`,
+      error: (err) => err.message || "Lỗi khi xóa các sản phẩm",
+      finally: () => setActionLoading(false),
+    });
   };
 
   const filteredProducts = products.filter((product: any) => {
@@ -287,7 +303,8 @@ export default function AdminProductsPage() {
                     type="checkbox"
                     checked={selectedIds.length === filteredProducts.length && filteredProducts.length > 0}
                     onChange={handleSelectAll}
-                    className="w-4 h-4 rounded border-gray-300 text-[#425733] focus:ring-[#425733]"
+                    disabled={actionLoading}
+                    className="w-4 h-4 rounded border-gray-300 text-[#425733] focus:ring-[#425733] disabled:opacity-50"
                   />
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -321,7 +338,8 @@ export default function AdminProductsPage() {
                       type="checkbox"
                       checked={selectedIds.includes(product.id)}
                       onChange={() => handleSelect(product.id)}
-                      className="w-4 h-4 rounded border-gray-300 text-[#425733] focus:ring-[#425733]"
+                      disabled={actionLoading}
+                      className="w-4 h-4 rounded border-gray-300 text-[#425733] focus:ring-[#425733] disabled:opacity-50"
                     />
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -370,14 +388,16 @@ export default function AdminProductsPage() {
                     <div className="flex justify-end gap-2">
                       <button
                         onClick={() => handleSetWeekly(product.id)}
-                        className="text-amber-500 hover:text-amber-700 p-1"
+                        disabled={actionLoading}
+                        className="text-amber-500 hover:text-amber-700 p-1 disabled:opacity-30 disabled:cursor-not-allowed"
                         title="Đặt làm Weekly Featured"
                       >
                         <Star className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => handlePin(product.id, !!product.pinnedUntil && new Date(product.pinnedUntil) > new Date())}
-                        className={`p-1 ${!!product.pinnedUntil && new Date(product.pinnedUntil) > new Date() ? 'text-[#425733] fill-[#425733]' : 'text-gray-400 hover:text-[#425733]'}`}
+                        disabled={actionLoading}
+                        className={`p-1 disabled:opacity-30 disabled:cursor-not-allowed ${!!product.pinnedUntil && new Date(product.pinnedUntil) > new Date() ? 'text-[#425733] fill-[#425733]' : 'text-gray-400 hover:text-[#425733]'}`}
                         title={!!product.pinnedUntil && new Date(product.pinnedUntil) > new Date() ? "Bỏ ghim" : "Ghim 7 ngày"}
                       >
                         <Pin className="w-4 h-4" />
@@ -399,7 +419,8 @@ export default function AdminProductsPage() {
                       </Link>
                       <button
                         onClick={() => handleDelete(product.id)}
-                        className="text-red-600 hover:text-red-900 p-1"
+                        disabled={actionLoading}
+                        className="text-red-600 hover:text-red-900 p-1 disabled:opacity-30 disabled:cursor-not-allowed"
                         title="Delete"
                       >
                         <Trash2 className="w-4 h-4" />
