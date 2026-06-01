@@ -376,7 +376,7 @@ export default function Home() {
       </section>
 
       {/* Features Section */}
-      <section className="py-24 px-6 bg-gradient-to-b from-white to-[#f0f4ec]">
+      <section className="py-24 px-6 bg-gradient-to-b from-white to-[#f0f4ec] overflow-hidden">
         <div className="max-w-7xl mx-auto">
           <ScrollReveal direction="up">
             <div className="text-center mb-16">
@@ -384,42 +384,257 @@ export default function Home() {
               <h2 className="text-4xl font-bold text-[hsl(220,14%,25%)]">Tất Cả Bạn Cần</h2>
             </div>
           </ScrollReveal>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+
+          {/* Premium customized accordion styles from user code sample */}
+          <style dangerouslySetInnerHTML={{ __html: `
+            .wi-timeline-wrapper {
+              display: flex;
+              width: 100%;
+              height: 26rem;
+              padding: 1rem 0;
+              overflow: hidden;
+            }
+
+            .wi-card {
+              margin-left: 1rem;
+              margin-right: 1rem;
+              position: relative;
+              flex: 1;
+              background: #ffffff;
+              border: 1px solid rgba(0,0,0,0.05);
+              border-radius: 1.5rem;
+              overflow: hidden;
+              cursor: pointer;
+              transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+              display: flex;
+              flex-direction: column;
+              justify-content: flex-end;
+              padding: 2.2rem;
+              box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            }
+
+            /* First card is active by default */
+            .wi-card.active {
+              flex: 3.5;
+              background: linear-gradient(135deg, #1e2e16, #425733);
+              border-color: transparent;
+            }
+
+            .wi-card:hover {
+              flex: 3.5 !important;
+              background: linear-gradient(135deg, #1e2e16, #425733) !important;
+              border-color: transparent !important;
+              box-shadow: 0 20px 40px rgba(66, 87, 51, 0.18) !important;
+            }
+
+            .wi-timeline-wrapper:hover .wi-card.active:not(:hover) {
+              flex: 1;
+              background: #ffffff;
+              border-color: rgba(0,0,0,0.05);
+              box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            }
+
+            .wi-content {
+              opacity: 0;
+              transform: translateY(1.5rem);
+              transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            }
+
+            .wi-card.active .wi-content,
+            .wi-card:hover .wi-content {
+              opacity: 1;
+              transform: translateY(0);
+            }
+
+            .wi-timeline-wrapper:hover .wi-card.active:not(:hover) .wi-content {
+              opacity: 0;
+              transform: translateY(1.5rem);
+            }
+
+            .wi-content h3 {
+              color: hsl(220,14%,25%);
+              margin: 0 0 0.75rem 0;
+              font-size: 1.35rem;
+              font-weight: 700;
+              transition: color 0.4s;
+            }
+            
+            .wi-card.active .wi-content h3,
+            .wi-card:hover .wi-content h3 {
+              color: #ffffff;
+            }
+            
+            .wi-timeline-wrapper:hover .wi-card.active:not(:hover) .wi-content h3 {
+              color: hsl(220,14%,25%);
+            }
+
+            .wi-content p {
+              color: rgba(255,255,255,0.85);
+              font-size: 0.95rem;
+              line-height: 1.6;
+              margin: 0;
+              text-align: justify;
+              transition: color 0.4s;
+            }
+            
+            .wi-timeline-wrapper:hover .wi-card.active:not(:hover) .wi-content p {
+              color: hsl(220,14%,45%);
+            }
+
+            .wi-year {
+              position: absolute;
+              top: 2rem;
+              left: 2rem;
+              font-size: 2.2rem;
+              font-weight: 800;
+              color: #425733;
+              transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+              z-index: 10;
+              display: flex;
+              align-items: center;
+              gap: 0.75rem;
+            }
+            
+            .wi-icon-wrapper {
+              width: 3.5rem;
+              height: 3.5rem;
+              border-radius: 1rem;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+            }
+
+            .wi-card.active .wi-year,
+            .wi-card:hover .wi-year {
+              color: rgba(255,255,255, 0.15);
+              font-size: 4rem;
+              top: 1rem;
+              left: auto;
+              right: 2rem;
+            }
+            
+            .wi-card.active .wi-icon-wrapper,
+            .wi-card:hover .wi-icon-wrapper {
+              background: rgba(255,255,255,0.15) !important;
+              color: #ffffff !important;
+              transform: scale(1.1);
+            }
+            
+            .wi-timeline-wrapper:hover .wi-card.active:not(:hover) .wi-year {
+              color: #425733;
+              font-size: 2.2rem;
+              top: 2rem;
+              left: 2rem;
+              right: auto;
+            }
+            
+            .wi-timeline-wrapper:hover .wi-card.active:not(:hover) .wi-icon-wrapper {
+              transform: scale(1);
+            }
+
+            @media (max-width: 768px) {
+              .wi-timeline-wrapper {
+                flex-direction: column;
+                height: auto;
+                overflow: visible;
+                padding: 1rem 0;
+                gap: 1.5rem;
+              }
+
+              .wi-card {
+                width: 100%;
+                flex: none;
+                min-height: 14rem;
+                background: linear-gradient(135deg, #1e2e16, #425733) !important;
+                border: none !important;
+                box-shadow: 0 10px 35px rgba(66, 87, 51, 0.15) !important;
+                margin-left: 0;
+                margin-right: 0;
+              }
+
+              .wi-content {
+                opacity: 1 !important;
+                transform: translateY(0) !important;
+              }
+              
+              .wi-content h3 {
+                color: #ffffff !important;
+                font-size: 1.5rem !important;
+                margin-bottom: 0.5rem;
+              }
+              
+              .wi-content p {
+                color: rgba(255,255,255,0.85) !important;
+              }
+
+              .wi-year {
+                color: rgba(255,255,255, 0.15) !important;
+                font-size: 3.5rem !important;
+                top: 1.5rem;
+                right: 2rem;
+                left: auto;
+              }
+              
+              .wi-icon-wrapper {
+                background: rgba(255,255,255,0.15) !important;
+                color: #ffffff !important;
+              }
+
+              .wi-timeline-wrapper:hover .wi-card.active:not(:hover) {
+                flex: none;
+                background: linear-gradient(135deg, #1e2e16, #425733) !important;
+              }
+            }
+          `}} />
+
+          {/* Accordion Wrapper */}
+          <div className="wi-timeline-wrapper">
             {[
               {
-                icon: <Sprout className="w-8 h-8" />,
+                id: "01",
+                icon: <Sprout className="w-6 h-6" />,
                 title: "Thân Thiện Môi Trường",
                 desc: "Vật liệu được tìm nguồn bền vững và cây trồng được chọn lọc từ vườn ươm địa phương.",
-                color: "text-[#425733]",
                 bg: "bg-[#e3ebdd]",
+                color: "text-[#425733]",
+                isActive: true, // First active by default
               },
               {
-                icon: <Truck className="w-8 h-8" />,
+                id: "02",
+                icon: <Truck className="w-6 h-6" />,
                 title: "Vận Chuyển An Toàn",
                 desc: "Đảm bảo giao hàng tận nơi với lớp chống sốc đặc biệt, cây xanh luôn tươi tốt.",
-                color: "text-[hsl(210,50%,50%)]",
                 bg: "bg-[hsl(210,50%,94%)]",
+                color: "text-[hsl(210,50%,50%)]",
               },
               {
-                icon: <Shield className="w-8 h-8" />,
+                id: "03",
+                icon: <Shield className="w-6 h-6" />,
                 title: "Bảo Hành Cây Sống",
                 desc: "Hỗ trợ thay cây miễn phí trong 30 ngày nếu terrarium của bạn không phát triển.",
-                color: "text-[hsl(260,40%,55%)]",
                 bg: "bg-[hsl(260,40%,94%)]",
+                color: "text-[hsl(260,40%,55%)]",
               },
-            ].map((item, index) => (
-              <ScrollReveal key={item.title} direction="up" delay={index * 0.15}>
-                <Card className="border-0 shadow-soft hover:shadow-soft-lg transition-all duration-300 hover:-translate-y-1 group cursor-default overflow-hidden h-full">
-                  <CardContent className="p-8 h-full flex flex-col">
-                    <div className={`w-16 h-16 rounded-2xl ${item.bg} ${item.color} flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300`}>
-                      {item.icon}
-                    </div>
-                    <h3 className="text-xl font-bold mb-3 text-[hsl(220,14%,25%)]">{item.title}</h3>
-                    <p className="text-[hsl(220,14%,45%)] leading-relaxed flex-1">{item.desc}</p>
-                  </CardContent>
-                </Card>
-              </ScrollReveal>
+            ].map((item) => (
+              <div 
+                key={item.id} 
+                className={`wi-card ${item.isActive ? "active" : ""}`}
+              >
+                {/* Index / Icon */}
+                <div className="wi-year">
+                  <div className={`wi-icon-wrapper ${item.bg} ${item.color}`}>
+                    {item.icon}
+                  </div>
+                  <span className="font-mono">{item.id}</span>
+                </div>
+                
+                {/* Content */}
+                <div className="wi-content">
+                  <h3>{item.title}</h3>
+                  <p className="text-gray-600">{item.desc}</p>
+                </div>
+              </div>
             ))}
           </div>
         </div>
