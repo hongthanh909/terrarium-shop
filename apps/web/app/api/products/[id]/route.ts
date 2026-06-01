@@ -112,15 +112,15 @@ export async function PUT(
       const updatedProduct = await tx.product.update({
         where: { id },
         data: {
-          slug,
-          name,
-          basePrice,
-          salePrice,
-          saleEndDate,
-          type,
-          categoryId: categoryId,
-          status,
-          images,
+          ...(slug !== undefined && { slug }),
+          ...(name !== undefined && { name }),
+          ...(basePrice !== undefined && { basePrice }),
+          salePrice: salePrice,
+          saleEndDate: saleEndDate,
+          ...(type !== undefined && { type }),
+          ...(categoryId !== undefined && categoryId !== null && { categoryId }),
+          ...(status !== undefined && { status }),
+          ...(images !== undefined && { images }),
         },
       });
 
