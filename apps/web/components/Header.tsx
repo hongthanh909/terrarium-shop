@@ -47,15 +47,15 @@ function NavLink({ href, label }: { href: string; label: string }) {
       style={{ position: "relative", display: "inline-block", overflow: "hidden" }}
       className="px-4 py-1.5 rounded-full text-sm font-medium select-none"
     >
-      {/* Expanding circle background */}
+      {/* Expanding circle background — hidden by default, expands on hover */}
       <span
         aria-hidden
         style={{
           position: "absolute",
           top: "50%",
           left: "0.5rem",
-          transform: `translate(0, -50%)`,
-          width: hovered ? "100%" : "1.75rem",
+          transform: "translateY(-50%)",
+          width: hovered ? "calc(100% - 0.5rem)" : "0",
           height: "1.75rem",
           background: "rgba(255,255,255,0.18)",
           borderRadius: "1rem",
