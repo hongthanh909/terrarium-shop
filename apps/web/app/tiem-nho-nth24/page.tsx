@@ -14,6 +14,7 @@ import {
   ArrowDownRight,
   Tag,
   LayoutGrid,
+  LayoutDashboard,
 } from "lucide-react";
 
 interface Stats {
@@ -275,11 +276,12 @@ export default function AdminDashboard() {
         <h3 className="font-semibold text-gray-800 mb-4">Hành Động Nhanh</h3>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
           {[
-            { href: "/tiem-nho-nth24/products/create", icon: Package,      label: "Thêm Sản Phẩm" },
-            { href: "/tiem-nho-nth24/orders",          icon: ShoppingCart,  label: "Đơn Hàng" },
-            { href: "/tiem-nho-nth24/categories",      icon: LayoutGrid,    label: "Danh Mục" },
-            { href: "/tiem-nho-nth24/discounts",       icon: Tag,           label: "Giảm Giá" },
-            { href: "/tiem-nho-nth24/reviews",         icon: MessageSquare, label: "Đánh Giá" },
+            { href: "/tiem-nho-nth24/homepage",        icon: LayoutDashboard, label: "Giao Diện" },
+            { href: "/tiem-nho-nth24/products/create", icon: Package,         label: "Thêm Sản Phẩm" },
+            { href: "/tiem-nho-nth24/orders",          icon: ShoppingCart,    label: "Đơn Hàng" },
+            { href: "/tiem-nho-nth24/categories",      icon: LayoutGrid,      label: "Danh Mục" },
+            { href: "/tiem-nho-nth24/discounts",       icon: Tag,             label: "Giảm Giá" },
+            { href: "/tiem-nho-nth24/reviews",         icon: MessageSquare,   label: "Đánh Giá" },
           ].map(({ href, icon: Icon, label }) => (
             <Link
               key={href}

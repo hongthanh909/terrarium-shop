@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Settings, Store, Globe, Bell, Shield, Save, CheckCircle } from "lucide-react";
+import { Settings, Store, Globe, Bell, Shield, Save, CheckCircle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { toast } from "sonner";
 
 interface ShopSettings {
   shopName: string;
@@ -16,19 +17,51 @@ interface ShopSettings {
   bankBranch: string;
 }
 
+const DEFAULT_SETTINGS: ShopSettings = {
+  shopName: "Tiệm Rêu Decor",
+  shopEmail: "contact@tiemreudecor.vn",
+  shopPhone: "",
+  shopAddress: "",
+  bankName: "",
+  bankAccountNumber: "",
+  bankAccountName: "",
+  bankBranch: "",
+};
+
 export default function AdminSettingsPage() {
-  const [settings, setSettings] = useState<ShopSettings>({
-    shopName: "Tiệm Rêu Decor",
-    shopEmail: "contact@tiemreudecor.vn",
-    shopPhone: "0912 345 678",
-    shopAddress: "TP. Hồ Chí Minh, Việt Nam",
-    bankName: "Vietcombank",
-    bankAccountNumber: "",
-    bankAccountName: "",
-    bankBranch: "",
-  });
+  const [settings, setSettings] = useState<ShopSettings>(DEFAULT_SETTINGS);
+  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+
+  // Load settings from DB on mount
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const res = await fetch("/api/settings");
+        if (!res.ok) throw new Error("Failed to load settings");
+        const data = await res.json();
+
+        setSettings({
+          shopName: data.shopName ?? DEFAULT_SETTINGS.shopName,
+          shopEmail: data.shopEmail ?? DEFAULT_SETTINGS.shopEmail,
+          shopPhone: data.shopPhone ?? DEFAULT_SETTINGS.shopPhone,
+          shopAddress: data.shopAddress ?? DEFAULT_SETTINGS.shopAddress,
+          bankName: data.bankName ?? DEFAULT_SETTINGS.bankName,
+          bankAccountNumber: data.bankAccountNumber ?? DEFAULT_SETTINGS.bankAccountNumber,
+          bankAccountName: data.bankAccountName ?? DEFAULT_SETTINGS.bankAccountName,
+          bankBranch: data.bankBranch ?? DEFAULT_SETTINGS.bankBranch,
+        });
+      } catch (err) {
+        console.error("Error loading settings:", err);
+        toast.error("Không thể tải cài đặt. Sử dụng giá trị mặc định.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSettings();
+  }, []);
 
   const handleChange = (field: keyof ShopSettings, value: string) => {
     setSettings((prev) => ({ ...prev, [field]: value }));
@@ -37,12 +70,36 @@ export default function AdminSettingsPage() {
 
   const handleSave = async () => {
     setSaving(true);
-    // TODO: Lưu settings vào DB hoặc API khi sẵn sàng
-    await new Promise((r) => setTimeout(r, 800));
-    setSaving(false);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 3000);
+    try {
+      const res = await fetch("/api/settings", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(settings),
+      });
+
+      if (!res.ok) throw new Error("Lưu thất bại");
+
+      setSaved(true);
+      toast.success("Đã lưu cài đặt thành công!");
+      setTimeout(() => setSaved(false), 3000);
+    } catch (err) {
+      console.error("Error saving settings:", err);
+      toast.error("Không thể lưu cài đặt. Vui lòng thử lại.");
+    } finally {
+      setSaving(false);
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-24">
+        <div className="flex flex-col items-center gap-3 text-gray-400">
+          <Loader2 className="w-8 h-8 animate-spin" />
+          <p className="text-sm">Đang tải cài đặt...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-4xl space-y-8">
@@ -62,10 +119,7 @@ export default function AdminSettingsPage() {
         >
           {saving ? (
             <>
-              <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-              </svg>
+              <Loader2 className="animate-spin h-4 w-4" />
               Đang lưu...
             </>
           ) : saved ? (
@@ -96,6 +150,7 @@ export default function AdminSettingsPage() {
                 value={settings.shopName}
                 onChange={(e) => handleChange("shopName", e.target.value)}
                 className="border-gray-200"
+                placeholder="VD: Tiệm Rêu Decor"
               />
             </div>
             <div>
@@ -105,6 +160,7 @@ export default function AdminSettingsPage() {
                 value={settings.shopEmail}
                 onChange={(e) => handleChange("shopEmail", e.target.value)}
                 className="border-gray-200"
+                placeholder="VD: contact@shop.vn"
               />
             </div>
             <div>
@@ -113,6 +169,7 @@ export default function AdminSettingsPage() {
                 value={settings.shopPhone}
                 onChange={(e) => handleChange("shopPhone", e.target.value)}
                 className="border-gray-200"
+                placeholder="VD: 0912 345 678"
               />
             </div>
             <div>
@@ -121,6 +178,7 @@ export default function AdminSettingsPage() {
                 value={settings.shopAddress}
                 onChange={(e) => handleChange("shopAddress", e.target.value)}
                 className="border-gray-200"
+                placeholder="VD: TP. Hồ Chí Minh, Việt Nam"
               />
             </div>
           </div>

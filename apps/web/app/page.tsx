@@ -31,6 +31,38 @@ export const metadata: Metadata = {
 // ─── Async streaming sub-components ───────────────────────────────────────────
 
 async function HeroCarouselSection() {
+  // 1. Ưu tiên banner custom từ Admin → SiteSetting "hero_banners"
+  try {
+    const bannerSetting = await prisma.siteSetting.findUnique({
+      where: { key: "hero_banners" },
+    });
+
+    if (bannerSetting && Array.isArray(bannerSetting.value)) {
+      const activeBanners = (bannerSetting.value as any[])
+        .filter((b: any) => b.isActive !== false)
+        .sort((a: any, b: any) => (a.order ?? 0) - (b.order ?? 0));
+
+      if (activeBanners.length > 0) {
+        // Convert banner → Product format cho HeroCarousel
+        const bannerProducts = activeBanners.map((b: any, index: number) => ({
+          id: b.id ?? `banner-${index}`,
+          slug: b.link ? b.link.replace(/^\//, "") : "#",
+          name: b.title ?? "Khám Phá Tiệm Rêu Décor",
+          basePrice: 0,
+          salePrice: null,
+          images: [b.imageUrl],
+          category: b.subtitle ? { name: b.subtitle } : undefined,
+          isBanner: true, // flag để HeroCarousel biết đây là banner thuần
+        }));
+
+        return <HeroCarousel products={bannerProducts as any} />;
+      }
+    }
+  } catch (e) {
+    console.error("HeroCarouselSection: Failed to load banners from DB", e);
+  }
+
+  // 2. Fallback: sản phẩm nổi bật từ DB
   let products: any[] = [];
   try {
     products = await prisma.product.findMany({
@@ -88,6 +120,7 @@ async function HeroCarouselSection() {
 
   return <HeroCarousel products={products as any} />;
 }
+
 
 async function FeaturedProductsSection() {
   let products: any[] = [];

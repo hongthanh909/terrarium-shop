@@ -21,3 +21,27 @@ export async function GET() {
     return NextResponse.json({ error: "Failed to fetch site settings" }, { status: 500 });
   }
 }
+
+export async function PUT(request: NextRequest) {
+  try {
+    const body = await request.json();
+
+    // body is a key-value map: { shopName: "...", shopEmail: "...", ... }
+    const updates = Object.entries(body);
+
+    await Promise.all(
+      updates.map(([key, value]) =>
+        prisma.siteSetting.upsert({
+          where: { key },
+          update: { value: value as any },
+          create: { key, value: value as any },
+        })
+      )
+    );
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("Error saving site settings:", error);
+    return NextResponse.json({ error: "Failed to save site settings" }, { status: 500 });
+  }
+}

@@ -155,7 +155,7 @@ export default function CheckoutPendingPage() {
 
   return (
     <main className="min-h-screen bg-[#f4f8f0] py-10 px-4">
-      <div className="max-w-md mx-auto space-y-5">
+      <div className="max-w-lg mx-auto space-y-5">
 
         {/* Header */}
         <div className="text-center space-y-1">
@@ -185,23 +185,30 @@ export default function CheckoutPendingPage() {
 
         {/* QR Code */}
         <div className="bg-white rounded-2xl p-6 border border-[#daebd0] shadow-sm">
-          <div className="flex justify-center mb-4">
-            <div className="relative p-3 bg-white rounded-xl border-4 border-[#425733] shadow-lg">
+          <div className="flex flex-col items-center mb-4">
+            <div className="relative p-4 bg-white rounded-2xl border-[6px] border-[#425733] shadow-xl">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={qrUrl}
                 alt="QR chuyển khoản"
-                className="w-52 h-52 rounded-lg"
+                className="w-72 h-72 rounded-lg block"
                 onError={(e) => {
                   const img = e.target as HTMLImageElement;
                   img.style.display = "none";
                   (img.nextElementSibling as HTMLElement).style.display = "flex";
                 }}
               />
-              <div className="w-52 h-52 items-center justify-center flex-col gap-2 text-center hidden bg-gray-50 rounded-lg">
-                <span className="text-3xl">🏦</span>
-                <p className="text-xs text-gray-500">Nhập thủ công theo thông tin bên dưới</p>
+              <div className="w-72 h-72 items-center justify-center flex-col gap-2 text-center hidden bg-gray-50 rounded-lg">
+                <span className="text-4xl">🏦</span>
+                <p className="text-sm text-gray-500">Nhập thủ công theo thông tin bên dưới</p>
               </div>
+            </div>
+            {/* VietQR badge */}
+            <div className="mt-2 flex items-center gap-1.5 text-xs text-gray-400 font-medium">
+              <span className="inline-block w-3 h-3 rounded-sm bg-[#e53935]" />
+              <span>VietQR</span>
+              <span className="text-gray-300">•</span>
+              <span>Quét bằng app ngân hàng bất kỳ</span>
             </div>
           </div>
 
