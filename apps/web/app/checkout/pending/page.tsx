@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { CheckCircle2, Clock, AlertTriangle, Copy, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { supabaseClient } from "@/lib/supabaseClient";
 
 // SePay VA — KienLongBank (chuyển khoản vào số này để SePay tự động xác nhận)
 const BANK_NAME = "KienLongBank";
@@ -63,12 +64,50 @@ export default function CheckoutPendingPage() {
     }
   }, [orderId, orderNumber, router]);
 
-  // Poll trạng thái mỗi 12 giây
+  // Lắng nghe sự kiện Realtime tự động cập nhật & Dự phòng Polling 15s
   useEffect(() => {
+    if (!orderId) return;
+
+    // 1. Kiểm tra trạng thái ban đầu ngay khi vào trang
     checkStatus();
-    const interval = setInterval(checkStatus, 12000);
-    return () => clearInterval(interval);
-  }, [checkStatus]);
+
+    // 2. Đăng ký Supabase Realtime lắng nghe sự thay đổi của đơn hàng
+    console.log(`[Supabase Realtime] Đang đăng ký lắng nghe thay đổi đơn hàng: ${orderId}`);
+    const channel = supabaseClient
+      .channel(`order-status-${orderId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "orders", // Khớp chính xác map table "orders" trong Prisma schema!
+          filter: `id=eq.${orderId}`,
+        },
+        (payload: any) => {
+          console.log("[Supabase Realtime] Nhận được cập nhật đơn hàng:", payload);
+          const newPaymentStatus = payload.new?.paymentStatus;
+          
+          if (newPaymentStatus === "PAID") {
+            setPaymentStatus("PAID");
+            setTimeout(() => {
+              router.push(`/checkout/success?order=${orderNumber}`);
+            }, 1200);
+          }
+        }
+      )
+      .subscribe((status) => {
+        console.log(`[Supabase Realtime] Trạng thái kết nối kênh: ${status}`);
+      });
+
+    // 3. Cơ chế Polling dự phòng (15 giây) phòng trường hợp mạng yếu hoặc chưa bật Replication
+    const interval = setInterval(checkStatus, 15000);
+
+    // Cleanup khi rời trang
+    return () => {
+      clearInterval(interval);
+      supabaseClient.removeChannel(channel);
+    };
+  }, [orderId, orderNumber, checkStatus, router]);
 
   // Đồng hồ đếm ngược local (giảm mỗi giây)
   useEffect(() => {
