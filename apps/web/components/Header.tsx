@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { SearchPalette, SearchTrigger } from "@/components/ui/search-palette";
 import { Search } from "lucide-react";
+import { usePathname } from "next/navigation";
 
 const NAV_LINKS = [
   { href: "/", label: "Trang chủ" },
@@ -38,6 +39,8 @@ const POLICY_LINKS = [
 
 /** ─── Animated NavLink — expanding circle effect ─────────────────────────── */
 function NavLink({ href, label }: { href: string; label: string }) {
+  const pathname = usePathname();
+  const isActive = pathname === href || (href !== "/" && pathname?.startsWith(href));
   const [hovered, setHovered] = useState(false);
   return (
     <Link
@@ -53,9 +56,9 @@ function NavLink({ href, label }: { href: string; label: string }) {
         style={{
           position: "absolute",
           top: "50%",
-          left: "0.5rem",
+          left: "0.25rem",
           transform: "translateY(-50%)",
-          width: hovered ? "calc(100% - 0.5rem)" : "0",
+          width: (isActive || hovered) ? "calc(100% - 0.5rem)" : "0",
           height: "1.75rem",
           background: "rgba(255,255,255,0.18)",
           borderRadius: "1rem",
@@ -68,7 +71,7 @@ function NavLink({ href, label }: { href: string; label: string }) {
         style={{
           position: "relative",
           zIndex: 1,
-          color: hovered ? "#ffffff" : "rgba(255,255,255,0.72)",
+          color: (isActive || hovered) ? "#ffffff" : "rgba(255,255,255,0.72)",
           transition: "color 0.3s ease",
           display: "block",
           whiteSpace: "nowrap",
