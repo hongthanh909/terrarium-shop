@@ -373,5 +373,6 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
           </>
         )}
       </div>
+    </div>
   );
 }
