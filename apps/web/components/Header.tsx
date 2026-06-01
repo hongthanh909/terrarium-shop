@@ -36,7 +36,52 @@ const POLICY_LINKS = [
   { href: "/policies/faq", label: "FAQ" },
 ];
 
+/** ─── Animated NavLink — expanding circle effect ─────────────────────────── */
+function NavLink({ href, label }: { href: string; label: string }) {
+  const [hovered, setHovered] = useState(false);
+  return (
+    <Link
+      href={href}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{ position: "relative", display: "inline-block", overflow: "hidden" }}
+      className="px-4 py-1.5 rounded-full text-sm font-medium select-none"
+    >
+      {/* Expanding circle background */}
+      <span
+        aria-hidden
+        style={{
+          position: "absolute",
+          top: "50%",
+          left: "0.5rem",
+          transform: `translate(0, -50%)`,
+          width: hovered ? "100%" : "1.75rem",
+          height: "1.75rem",
+          background: "rgba(255,255,255,0.18)",
+          borderRadius: "1rem",
+          transition: "width 0.42s cubic-bezier(0.65, 0, 0.076, 1)",
+          pointerEvents: "none",
+        }}
+      />
+      {/* Label */}
+      <span
+        style={{
+          position: "relative",
+          zIndex: 1,
+          color: hovered ? "#ffffff" : "rgba(255,255,255,0.72)",
+          transition: "color 0.3s ease",
+          display: "block",
+          whiteSpace: "nowrap",
+        }}
+      >
+        {label}
+      </span>
+    </Link>
+  );
+}
+
 export default function Header() {
+
   const { getCartCount, items, removeItem, updateQuantity } = useCartStore();
   const [cartOpen, setCartOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -102,13 +147,7 @@ export default function Header() {
             {/* Center nav */}
             <nav className="hidden md:flex items-center gap-0.5">
               {NAV_LINKS.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className="px-4 py-1.5 rounded-full text-sm font-medium text-white/75 hover:text-white hover:bg-white/15 transition-all duration-200"
-                >
-                  {link.label}
-                </Link>
+                <NavLink key={link.href} href={link.href} label={link.label} />
               ))}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
