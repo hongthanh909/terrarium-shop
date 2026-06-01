@@ -1,5 +1,18 @@
 import { prisma } from "@/lib/prisma";
-import { PrismaClient, DiscountType, DiscountApplicableTo } from "@prisma/client";
+
+// String constants matching DB values (no Prisma enum exists for these)
+const DiscountType = {
+  PERCENTAGE: "PERCENTAGE",
+  FIXED: "FIXED",
+  FREE_SHIPPING: "FREE_SHIPPING",
+} as const;
+
+const DiscountApplicableTo = {
+  ALL: "ALL",
+  CATEGORIES: "CATEGORIES",
+  PRODUCTS: "PRODUCTS",
+  COMBOS: "COMBOS",
+} as const;
 
 
 export interface ValidationResult {
