@@ -118,10 +118,10 @@ export async function PUT(
           salePrice: salePrice,
           saleEndDate: saleEndDate,
           ...(type !== undefined && { type }),
-          ...(categoryId !== undefined && categoryId !== null && { categoryId }),
+          ...(categoryId !== undefined && categoryId !== null && { category: { connect: { id: categoryId } } }),
           ...(status !== undefined && { status }),
           ...(images !== undefined && { images }),
-        },
+        } as any,
       });
 
       // Delete existing variants and recreate

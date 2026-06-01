@@ -194,10 +194,10 @@ export async function POST(request: NextRequest) {
           ...(finalSalePrice != null && { salePrice: finalSalePrice }),
           ...(finalSaleEndDate && { saleEndDate: finalSaleEndDate }),
           type,
-          ...(categoryId && { categoryId }),
-          status,
+          ...(categoryId !== undefined && categoryId !== null && { category: { connect: { id: categoryId } } }),
+          status: status as any,
           images,
-        },
+        } as any,
       });
 
       // Create variants

@@ -62,7 +62,7 @@ export async function PUT(
       where: { id: params.id },
       data: {
         ...(approved !== undefined && { approved }),
-        status: resolvedStatus,
+        ...(resolvedStatus && { status: resolvedStatus } as any),
       },
     });
 
