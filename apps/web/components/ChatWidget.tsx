@@ -14,7 +14,8 @@ import { Textarea } from "@/components/ui/textarea";
 interface ChatMessage {
   role: "user" | "assistant";
   content: string;
-  source?: "ai" | "db" | "fallback"; // để debug
+  source?: "ai" | "db" | "fallback";
+  isStreaming?: boolean; // đang stream chưa xong
 }
 
 const QUICK_QUESTIONS = [
@@ -37,6 +38,7 @@ export default function ChatWidget() {
   ]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -49,11 +51,19 @@ export default function ChatWidget() {
     }
   }, [open]);
 
+  // Cleanup khi unmount
+  useEffect(() => {
+    return () => {
+      abortControllerRef.current?.abort();
+    };
+  }, []);
+
   const sendMessage = async (text: string) => {
     if (!text.trim() || isSending) return;
 
     const userMsg = text.trim();
     setMessage("");
+
     const newMessages: ChatMessage[] = [
       ...messages,
       { role: "user", content: userMsg },
@@ -61,11 +71,20 @@ export default function ChatWidget() {
     setMessages(newMessages);
     setIsSending(true);
 
-    // Chuẩn bị history (loại bỏ tin nhắn đầu tiên của bot)
     const history = newMessages.slice(1).map((m) => ({
       role: m.role,
       content: m.content,
     }));
+
+    // Thêm tin nhắn bot rỗng (sẽ fill dần bằng stream)
+    setMessages((prev) => [
+      ...prev,
+      { role: "assistant", content: "", isStreaming: true },
+    ]);
+
+    // AbortController để cancel stream nếu cần
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
 
     try {
       const res = await fetch("/api/consult", {
@@ -73,34 +92,102 @@ export default function ChatWidget() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           message: userMsg,
-          history: history.slice(0, -1), // Không gửi tin nhắn user vừa thêm (đã trong message)
+          history: history.slice(0, -1),
         }),
+        signal: controller.signal,
       });
-      const data = await res.json();
 
-      // Cập nhật trạng thái AI
-      if (data.source === "ai") setIsAIAvailable(true);
-      else if (data.source === "fallback") setIsAIAvailable(false);
+      const contentType = res.headers.get("Content-Type") ?? "";
 
-      setMessages((prev) => [
-        ...prev,
-        {
+      // ── STREAMING MODE (Ollama online) ──────────────────
+      if (contentType.includes("text/event-stream")) {
+        setIsAIAvailable(true);
+
+        const reader = res.body!.getReader();
+        const decoder = new TextDecoder();
+        let buffer = "";
+        let fullContent = "";
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split("\n");
+          buffer = lines.pop() ?? "";
+
+          for (const line of lines) {
+            if (!line.startsWith("data: ")) continue;
+            const data = line.slice(6).trim();
+            if (data === "[DONE]") break;
+
+            try {
+              const parsed = JSON.parse(data);
+              const token = parsed.token ?? "";
+              if (token) {
+                fullContent += token;
+                // Cập nhật từng token vào tin nhắn cuối cùng
+                setMessages((prev) => {
+                  const updated = [...prev];
+                  updated[updated.length - 1] = {
+                    role: "assistant",
+                    content: fullContent,
+                    source: "ai",
+                    isStreaming: true,
+                  };
+                  return updated;
+                });
+              }
+            } catch {
+              // Parse error → bỏ qua token này
+            }
+          }
+        }
+
+        // Stream xong → tắt isStreaming
+        setMessages((prev) => {
+          const updated = [...prev];
+          updated[updated.length - 1] = {
+            role: "assistant",
+            content: fullContent || "Xin lỗi, tôi chưa thể trả lời câu này.",
+            source: "ai",
+            isStreaming: false,
+          };
+          return updated;
+        });
+      }
+      // ── FALLBACK MODE (JSON bình thường) ───────────────
+      else {
+        const data = await res.json();
+
+        if (data.source === "fallback") setIsAIAvailable(false);
+
+        setMessages((prev) => {
+          const updated = [...prev];
+          updated[updated.length - 1] = {
+            role: "assistant",
+            content: data.response || "Xin lỗi, tôi chưa hiểu câu hỏi của bạn.",
+            source: data.source,
+            isStreaming: false,
+          };
+          return updated;
+        });
+      }
+    } catch (err: unknown) {
+      if (err instanceof Error && err.name === "AbortError") return; // User huỷ
+
+      setMessages((prev) => {
+        const updated = [...prev];
+        updated[updated.length - 1] = {
           role: "assistant",
-          content: data.response || "Xin lỗi, tôi chưa hiểu câu hỏi của bạn.",
-          source: data.source,
-        },
-      ]);
-    } catch {
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: "assistant",
-          content:
-            "Xin lỗi, có lỗi xảy ra. Vui lòng thử lại hoặc liên hệ trực tiếp nhé! 🌿",
-        },
-      ]);
+          content: "Xin lỗi, có lỗi xảy ra. Vui lòng thử lại hoặc liên hệ trực tiếp nhé! 🌿",
+          isStreaming: false,
+        };
+        return updated;
+      });
     } finally {
       setIsSending(false);
+      abortControllerRef.current = null;
     }
   };
 
@@ -111,11 +198,18 @@ export default function ChatWidget() {
     }
   };
 
+  // Typing cursor animation khi đang stream
+  const StreamingCursor = () => (
+    <span
+      className="inline-block w-0.5 h-3.5 bg-[#425733] ml-0.5 align-middle animate-pulse"
+      aria-hidden="true"
+    />
+  );
+
   return (
     <>
       {/* Floating button */}
       <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-2">
-        {/* Tooltip hint khi chưa mở */}
         {!open && (
           <div className="bg-[#425733] text-white text-xs px-3 py-1.5 rounded-full shadow-lg animate-pulse">
             Tư vấn AI 24/7 🤖
@@ -132,7 +226,6 @@ export default function ChatWidget() {
           ) : (
             <>
               <MessageCircle className="w-6 h-6 text-white" />
-              {/* Dot indicator */}
               <span className="absolute -top-0.5 -right-0.5 w-3 h-3 bg-green-400 rounded-full border-2 border-white" />
             </>
           )}
@@ -187,26 +280,23 @@ export default function ChatWidget() {
                         : "bg-white text-gray-800 rounded-bl-sm shadow-sm"
                     }`}
                   >
-                    {msg.content}
+                    {/* Nếu đang stream và chưa có nội dung → hiện typing dots */}
+                    {msg.isStreaming && msg.content === "" ? (
+                      <div className="flex gap-1.5 items-center py-0.5">
+                        <span className="w-1.5 h-1.5 bg-[#425733] rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
+                        <span className="w-1.5 h-1.5 bg-[#425733] rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
+                        <span className="w-1.5 h-1.5 bg-[#425733] rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+                      </div>
+                    ) : (
+                      <>
+                        {msg.content}
+                        {/* Cursor nhấp nháy khi đang stream có nội dung */}
+                        {msg.isStreaming && <StreamingCursor />}
+                      </>
+                    )}
                   </div>
                 </div>
               ))}
-
-              {/* Typing indicator */}
-              {isSending && (
-                <div className="flex gap-2 justify-start">
-                  <div className="w-7 h-7 rounded-full bg-[#425733] flex items-center justify-center flex-shrink-0">
-                    <Bot className="w-4 h-4 text-white" />
-                  </div>
-                  <div className="bg-white rounded-2xl rounded-bl-sm px-4 py-3 shadow-sm">
-                    <div className="flex gap-1.5 items-center">
-                      <span className="w-1.5 h-1.5 bg-[#425733] rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
-                      <span className="w-1.5 h-1.5 bg-[#425733] rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
-                      <span className="w-1.5 h-1.5 bg-[#425733] rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
-                    </div>
-                  </div>
-                </div>
-              )}
               <div ref={messagesEndRef} />
             </div>
 
@@ -238,6 +328,7 @@ export default function ChatWidget() {
                 className="flex-1 resize-none rounded-xl border-[#c8d5be] focus:border-[#425733] focus-visible:ring-[#425733]/30 text-sm min-h-[40px] max-h-[100px]"
                 rows={1}
                 onKeyDown={handleKeyDown}
+                disabled={isSending}
               />
               <Button
                 onClick={() => sendMessage(message)}

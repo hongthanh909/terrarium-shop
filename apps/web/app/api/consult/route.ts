@@ -1,14 +1,15 @@
 /**
- * AI Consultation API Route — v2 (Nâng cấp: RAG thật sự từ DB)
+ * AI Consultation API Route — v3 (Streaming)
  *
- * Luồng xử lý thông minh:
- * 1. Load sản phẩm từ DB → inject vào System Prompt (RAG đơn giản)
- * 2. Gọi Ollama với context sản phẩm thật → AI biết shop có gì và tư vấn chính xác
- * 3. Nếu Ollama offline → fallback DB query trực tiếp
- * 4. Nếu DB lỗi → fallback knowledge base tĩnh
+ * - Khi Ollama online: stream từng token về client (như ChatGPT gõ từng chữ)
+ * - Khi Ollama offline: fallback về DB query hoặc knowledge base tĩnh (vẫn JSON bình thường)
  *
  * POST /api/consult
  * Body: { message: string, history?: { role: "user"|"assistant", content: string }[] }
+ *
+ * Response headers:
+ *   Content-Type: text/event-stream  (khi AI streaming)
+ *   Content-Type: application/json   (khi fallback)
  */
 
 import { NextResponse } from "next/server";
@@ -16,8 +17,8 @@ import { prisma } from "@/lib/prisma";
 
 // =============================================
 // LOAD CATALOG SẢN PHẨM THẬT TỪ DB
-// Cache 5 phút để không phải query DB mỗi request
 // Trả về object có type để system prompt xử lý đúng
+// Cache 5 phút để tránh query DB mỗi request
 // =============================================
 type CatalogResult =
   | { type: "ok"; text: string }
@@ -34,7 +35,6 @@ const CACHE_TTL_MS = 5 * 60 * 1000; // 5 phút
 async function getProductCatalog(): Promise<CatalogResult> {
   const now = Date.now();
 
-  // Dùng cache nếu còn hợp lệ
   if (productCatalogCache && now - productCatalogCache.fetchedAt < CACHE_TTL_MS) {
     return productCatalogCache.result;
   }
@@ -52,7 +52,7 @@ async function getProductCatalog(): Promise<CatalogResult> {
         careGuide: { select: { watering: true, sunlight: true, temperature: true } },
       },
       orderBy: [{ featured: "desc" }, { createdAt: "desc" }],
-      take: 30, // Lấy tối đa 30 sản phẩm để không vượt context window
+      take: 30,
     });
 
     if (products.length === 0) {
@@ -68,7 +68,7 @@ async function getProductCatalog(): Promise<CatalogResult> {
           : `${Number(p.basePrice).toLocaleString("vi-VN")}₫`;
         const stock = p.inventory > 0 ? `còn hàng (${p.inventory} sp)` : "hết hàng";
         const care = p.careGuide
-          ? ` | Tưới: ${p.careGuide.watering}, Sáng: ${p.careGuide.sunlight}, Nhiệt độ: ${p.careGuide.temperature}`
+          ? ` | Tưới: ${p.careGuide.watering}, Sáng: ${p.careGuide.sunlight}`
           : "";
         const featured = p.featured ? " ⭐" : "";
         return `- ${p.name}${featured} [${p.category.name}] — ${price} — ${stock}${care}`;
@@ -84,7 +84,7 @@ async function getProductCatalog(): Promise<CatalogResult> {
 }
 
 // =============================================
-// SYSTEM PROMPT ĐỘNG (nội dung phụ thuộc vào tình trạng catalog)
+// SYSTEM PROMPT ĐỘNG
 // =============================================
 async function buildSystemPrompt(): Promise<string> {
   const catalog = await getProductCatalog();
@@ -141,7 +141,7 @@ const FALLBACK_KNOWLEDGE: Record<string, string> = {
   "tưới nước": "💧 Hướng dẫn tưới:\n• Terrarium kín: 2-3 tuần/lần, xịt sương nhẹ\n• Terrarium mở: 3-5 ngày/lần\n• Lá héo = thiếu nước | Nấm mốc = thừa nước",
   "ánh sáng": "☀️ Yêu cầu ánh sáng:\n• Ánh sáng gián tiếp là tốt nhất\n• Tránh nắng trực tiếp (cháy lá)\n• Đèn LED grow light thay thế tốt\n• Đặt cách cửa sổ 1-2m",
   "phòng tối": "🌙 Cây phù hợp nơi ít sáng:\n• Fern (Dương xỉ)\n• Moss (Rêu)\n• Pothos (Trầu bà)\n• Fittonia (Cây thảm)\n→ Bổ sung đèn LED grow light nếu cần",
-  "mua": "🛒 Cách mua hàng:\n• Vào trang Sản Phẩm → thêm vào giỏ hàng\n• Thanh toán COD hoặc chuyển khoản ngân hàng\n• Giao hàng toàn quốc 3-5 ngày\n• Miễn phí ship đơn từ 500.000₫",
+  "mua": "🛒 Cách mua hàng:\n• Vào trang Sản Phẩm → thêm vào giỏ hàng\n• Thanh toán COD hoặc chuyển khoản\n• Giao hàng toàn quốc 3-5 ngày\n• Miễn phí ship đơn từ 500.000₫",
   "vận chuyển": "🚚 Thông tin giao hàng:\n• Tiêu chuẩn: 3-5 ngày (30.000₫)\n• Nhanh: 1-2 ngày (50.000₫)\n• Đóng gói cẩn thận, chống va đập\n• Miễn phí khi đơn ≥ 500.000₫",
   "bảo hành": "🛡️ Chính sách bảo hành:\n• Bảo hành cây sống 7 ngày\n• Đổi trả nếu hư hỏng khi vận chuyển\n• Hỗ trợ tư vấn chăm sóc miễn phí suốt thời gian sử dụng",
 };
@@ -165,38 +165,37 @@ function getFallbackResponse(message: string): string {
 }
 
 // =============================================
-// OLLAMA CALL (với System Prompt động có sản phẩm thật)
+// STREAMING RESPONSE TỪ OLLAMA
+// Trả về ReadableStream — client đọc từng token khi nhận
 // =============================================
-async function callOllama(
+async function streamFromOllama(
   message: string,
   history: { role: string; content: string }[]
-): Promise<string | null> {
+): Promise<ReadableStream<Uint8Array> | null> {
   const ollamaUrl = process.env.OLLAMA_BASE_URL;
   if (!ollamaUrl) return null;
 
   try {
-    // Build system prompt động (có catalog sản phẩm từ DB)
     const systemPrompt = await buildSystemPrompt();
-
     const messages = [
       { role: "system", content: systemPrompt },
-      ...history.slice(-8), // Giữ 8 tin nhắn gần nhất (tiết kiệm token hơn vì system prompt dài hơn)
+      ...history.slice(-8),
       { role: "user", content: message },
     ];
 
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 30000); // 30s timeout
+    const timeout = setTimeout(() => controller.abort(), 60000); // 60s timeout cho stream
 
-    const response = await fetch(`${ollamaUrl}/api/chat`, {
+    const ollamaRes = await fetch(`${ollamaUrl}/api/chat`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         model: process.env.OLLAMA_MODEL || "llama3.2:3b",
         messages,
-        stream: false,
+        stream: true, // ← BẬT STREAMING
         options: {
-          temperature: 0.65,   // Giảm nhẹ temperature để trả lời chính xác hơn về sản phẩm
-          num_predict: 600,    // Tăng nhẹ để đủ chỗ liệt kê sản phẩm + giải thích
+          temperature: 0.65,
+          num_predict: 600,
           top_p: 0.9,
         },
       }),
@@ -204,11 +203,55 @@ async function callOllama(
     });
 
     clearTimeout(timeout);
+    if (!ollamaRes.ok || !ollamaRes.body) return null;
 
-    if (!response.ok) return null;
+    // Transform Ollama NDJSON stream → SSE text stream cho client
+    const encoder = new TextEncoder();
+    const ollamaBody = ollamaRes.body;
 
-    const data = await response.json();
-    return data?.message?.content || null;
+    const readable = new ReadableStream<Uint8Array>({
+      async start(streamController) {
+        const reader = ollamaBody.getReader();
+        const decoder = new TextDecoder();
+        let buffer = "";
+
+        try {
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split("\n");
+            buffer = lines.pop() ?? ""; // Giữ dòng chưa hoàn chỉnh
+
+            for (const line of lines) {
+              if (!line.trim()) continue;
+              try {
+                const json = JSON.parse(line);
+                const token = json?.message?.content ?? "";
+                if (token) {
+                  // Gửi từng token dạng SSE: "data: <token>\n\n"
+                  streamController.enqueue(encoder.encode(`data: ${JSON.stringify({ token })}\n\n`));
+                }
+                if (json?.done) {
+                  // Báo kết thúc stream
+                  streamController.enqueue(encoder.encode(`data: [DONE]\n\n`));
+                }
+              } catch {
+                // Dòng JSON không hợp lệ → bỏ qua
+              }
+            }
+          }
+        } catch {
+          // Stream bị đứt giữa chừng → gửi DONE
+          streamController.enqueue(encoder.encode(`data: [DONE]\n\n`));
+        } finally {
+          streamController.close();
+        }
+      },
+    });
+
+    return readable;
   } catch {
     return null;
   }
@@ -228,18 +271,23 @@ export async function POST(request: Request) {
 
     const trimmedMessage = message.trim();
 
-    // Thử gọi Ollama với system prompt có catalog sản phẩm thật
-    const aiResponse = await callOllama(trimmedMessage, history);
+    // ── Thử Streaming từ Ollama ──────────────────────────
+    const stream = await streamFromOllama(trimmedMessage, history);
 
-    if (aiResponse) {
-      return NextResponse.json({
-        response: aiResponse,
-        source: "ai",
+    if (stream) {
+      // Trả về SSE stream — client sẽ đọc từng token
+      return new Response(stream, {
+        headers: {
+          "Content-Type": "text/event-stream",
+          "Cache-Control": "no-cache",
+          Connection: "keep-alive",
+          "X-Source": "ai", // Header để client biết đang dùng AI thật
+        },
       });
     }
 
-    // Fallback lớp 2: Nếu Ollama offline, query DB trực tiếp khi hỏi về sản phẩm
-    if (/sản phẩm|terrarium|cây|rêu|moss|fern|mua|gợi ý|recommend|muốn|cần|tìm/i.test(trimmedMessage)) {
+    // ── Fallback lớp 2: DB query trực tiếp ──────────────
+    if (/sản phẩm|terrarium|cây|rêu|moss|fern|mua|gợi ý|muốn|cần|tìm/i.test(trimmedMessage)) {
       try {
         const products = await prisma.product.findMany({
           where: { status: "ACTIVE", inventory: { gt: 0 } },
@@ -270,14 +318,13 @@ export async function POST(request: Request) {
           });
         }
       } catch {
-        // DB query lỗi → tiếp tục dùng fallback
+        // tiếp tục fallback
       }
     }
 
-    // Fallback lớp 3: knowledge base tĩnh
-    const fallbackResponse = getFallbackResponse(trimmedMessage);
+    // ── Fallback lớp 3: Knowledge base tĩnh ─────────────
     return NextResponse.json({
-      response: fallbackResponse,
+      response: getFallbackResponse(trimmedMessage),
       source: "fallback",
     });
   } catch (error) {
