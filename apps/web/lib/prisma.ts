@@ -5,18 +5,25 @@ const globalForPrisma = globalThis as unknown as {
 };
 
 // ─── Build Phase ──────────────────────────────────────────────────────────────
-// During `next build`, skip real DB connections to prevent timeout failures
-// in static analysis / ISR prerendering.
 const isBuildPhase = process.env.NEXT_PHASE === "phase-production-build";
 
+// ─── URL helper ───────────────────────────────────────────────────────────────
+// Chỉ thêm connection_limit=1 khi dùng Supabase PgBouncer (pooler.supabase.com)
+// Với PostgreSQL local (localhost) hoặc VPS thì KHÔNG thêm — để Prisma dùng pool mặc định
+function buildDatabaseUrl(): string {
+  const url = process.env.DATABASE_URL ?? "";
+  const isSupabasePgBouncer =
+    url.includes("pooler.supabase.com") && url.includes("pgbouncer=true");
+  if (isSupabasePgBouncer && !url.includes("connection_limit")) {
+    const sep = url.includes("?") ? "&" : "?";
+    return `${url}${sep}connection_limit=1`;
+  }
+  return url; // local PostgreSQL or VPS — use as-is, no artificial limits
+}
+
 // ─── Runtime Singleton ────────────────────────────────────────────────────────
-// Reuse the same PrismaClient across warm serverless invocations (both dev and
-// production). This is the pattern recommended by Prisma for Next.js:
-// https://www.prisma.io/docs/guides/other/troubleshooting-orm/help-articles/nextjs-prisma-client-dev-practices
-//
-// NOTE: Auth queries do NOT use this singleton — see lib/auth.ts.
-//       Auth creates its own short-lived client with explicit $disconnect()
-//       to guarantee connection release and prevent PgBouncer pool exhaustion.
+// Reuse the same PrismaClient across warm serverless invocations (dev & prod).
+// Ref: https://www.prisma.io/docs/guides/other/troubleshooting-orm/help-articles/nextjs-prisma-client-dev-practices
 export const prisma: PrismaClient = isBuildPhase
   ? (new Proxy({} as any, {
       get(_target, prop) {
@@ -48,30 +55,13 @@ export const prisma: PrismaClient = isBuildPhase
     }) as PrismaClient)
   : (globalForPrisma.prisma ??
       new PrismaClient({
-        // Supabase + Prisma official recommendation:
-        // - DATABASE_URL: PgBouncer (port 6543, transaction mode) với pgbouncer=true
-        //   → Prisma tắt prepared statements, PgBouncer quản lý connection pool
-        // - connection_limit=1: Prisma chỉ giữ 1 connection trong pool riêng của nó,
-        //   để PgBouncer làm nhiệm vụ multiplexing — tránh pool exhaustion
-        // Ref: https://supabase.com/docs/guides/database/connecting-to-postgres#prisma
         datasources: {
-          db: {
-            url: (() => {
-              const base = process.env.DATABASE_URL ?? "";
-              // Thêm connection_limit=1 nếu chưa có (tránh duplicate)
-              if (base.includes("connection_limit")) return base;
-              const sep = base.includes("?") ? "&" : "?";
-              return `${base}${sep}connection_limit=1`;
-            })(),
-          },
+          db: { url: buildDatabaseUrl() },
         },
         log: process.env.NODE_ENV === "development" ? ["error", "warn"] : ["error"],
       }));
 
-
-
-// Cache the singleton globally so it survives hot-module replacement (dev)
-// and is reused across warm serverless invocations (production).
+// Cache singleton globally — survives HMR in dev, reused in production
 if (!globalForPrisma.prisma) {
   globalForPrisma.prisma = prisma;
 }

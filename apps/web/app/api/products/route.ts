@@ -97,23 +97,47 @@ export async function GET(request: NextRequest) {
       ];
     }
 
-    const products = await prisma.product.findMany({
-      where,
-      include: {
-        category: true,
-        variants: true,
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
-      skip: (page - 1) * limit,
-      take: limit,
-    });
+    const [products, total] = await Promise.all([
+      prisma.product.findMany({
+        where,
+        select: {
+          id: true,
+          slug: true,
+          name: true,
+          basePrice: true,
+          salePrice: true,
+          saleEndDate: true,
+          type: true,
+          inventory: true,
+          featured: true,
+          status: true,
+          images: true,
+          categoryId: true,
+          createdAt: true,
+          updatedAt: true,
+          category: { select: { id: true, name: true, slug: true } },
+          variants: { select: { id: true, variantType: true, value: true, priceAdjustment: true, inventory: true, sku: true } },
+        },
+        orderBy: { createdAt: "desc" },
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      prisma.product.count({ where }),
+    ]);
 
-    const total = await prisma.product.count({ where });
+    // Serialize Decimal → number (Prisma Decimal không phải plain object)
+    const serialized = products.map((p) => ({
+      ...p,
+      basePrice: Number(p.basePrice),
+      salePrice: p.salePrice != null ? Number(p.salePrice) : null,
+      variants: p.variants.map((v) => ({
+        ...v,
+        priceAdjustment: Number(v.priceAdjustment),
+      })),
+    }));
 
     return NextResponse.json({
-      products,
+      products: serialized,
       pagination: {
         page,
         limit,

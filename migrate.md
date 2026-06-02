@@ -3,7 +3,123 @@
 > **Dự án**: Terrarium Shop — Next.js 14 Full-stack Monorepo  
 > **Mục tiêu**: Chuyển toàn bộ từ Vercel + Supabase Hosted → VPS tự quản lý  
 > **Tên miền**: tiemreudecor.com (giữ nguyên)  
-> **Tính năng mới**: AI tư vấn 24/7 dùng Ollama (Llama 3)
+> **Tính năng mới**: AI tư vấn 24/7 dùng Ollama (Llama 3.2:3b)
+
+---
+
+## 🏗️ Cấu Trúc VPS Sau Khi Migrate — Nhìn Từ Góc Toàn Cảnh
+
+Toàn bộ dự án **FE + BE + DB + AI + Storage** sẽ cùng sống trên **1 VPS duy nhất** (Vietnix VPS Cheap 3, 4GB RAM / 40GB SSD / 4vCPU):
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                   VPS — Vietnix VPS Cheap 3                    │
+│                   Ubuntu 22.04 LTS / 4GB RAM                   │
+│                                                                 │
+│  ┌──────────────────────────────────────────────────────────┐  │
+│  │ NGINX (Reverse Proxy + SSL — Cổng 80 & 443)              │  │
+│  │ • Nhận toàn bộ traffic từ internet                       │  │
+│  │ • Tự động redirect HTTP → HTTPS                          │  │
+│  │ • Phân phối đến đúng dịch vụ bên trong                  │  │
+│  └──────────┬───────────────────────────────────────────────┘  │
+│             │ Cổng 3000 (nội bộ)                               │
+│  ┌──────────▼───────────────────────────────────────────────┐  │
+│  │ NEXT.JS APP (PM2 — 2 instances cluster mode)              │  │
+│  │                                                           │  │
+│  │  FE (Frontend React)         BE (API Routes)              │  │
+│  │  ─────────────────────       ─────────────────────        │  │
+│  │  /                           /api/products                │  │
+│  │  /san-pham/[slug]            /api/orders                  │  │
+│  │  /checkout                   /api/payment                 │  │
+│  │  /don-hang                   /api/consult (AI)            │  │
+│  │  /tiem-nho-nth24 (admin)     /api/admin/stats             │  │
+│  │  ...                         /api/blog ...                │  │
+│  └──────────┬────────────┬──────────────────────────────────┘  │
+│             │            │                                      │
+│      Cổng 5432    Cổng 11434    Cổng 9000                      │
+│      (nội bộ)     (nội bộ)     (nội bộ)                       │
+│  ┌───────────┐  ┌─────────────┐  ┌─────────────────────────┐  │
+│  │POSTGRESQL │  │ OLLAMA AI   │  │ MINIO STORAGE           │  │
+│  │           │  │             │  │                          │  │
+│  │ products  │  │ llama3.2:3b │  │ Ảnh sản phẩm           │  │
+│  │ orders    │  │ ~2GB RAM    │  │ Banner trang chủ        │  │
+│  │ users     │  │ khi có chat │  │ → Serve qua:            │  │
+│  │ blog      │  │             │  │ storage.tiemreudecor    │  │
+│  │ settings  │  │             │  │ .com (Nginx proxy)      │  │
+│  └───────────┘  └─────────────┘  └─────────────────────────┘  │
+│                                                                 │
+│  📁 SSD 40GB (Lưu trữ vĩnh viễn)                              │
+│  ├── /home/deploy/terrarium-shop/  ← Code FE+BE (~2GB)        │
+│  ├── /var/lib/postgresql/          ← Dữ liệu DB (~0.5GB)     │
+│  ├── /root/.ollama/models/         ← File AI llama3.2 (~2GB) │
+│  ├── /data/minio/                  ← Ảnh sản phẩm (~2–5GB)  │
+│  └── /swapfile                     ← RAM ảo dự phòng (4GB)   │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                  Internet / Khách hàng
+                  https://tiemreudecor.com
+```
+
+---
+
+## 🗂️ Dữ Liệu Phân Bổ Trên SSD (40GB) và RAM (4GB)
+
+### Ổ cứng SSD (Lưu trữ vĩnh viễn — không mất khi reboot)
+
+| Thành phần | Chứa gì | Ước tính |
+|-----------|---------|----------|
+| Hệ điều hành (Ubuntu 22.04) | Linux kernel, systemd, users | ~6 GB |
+| Phần mềm cài đặt | Nginx, PM2, PostgreSQL, Ollama binary | ~1 GB |
+| Mã nguồn FE+BE (Next.js) | Code React, API Routes, node_modules, .next build | ~2 GB |
+| File model AI (llama3.2:3b) | Các tham số AI — cất yên trên SSD, nạp RAM khi dùng | ~2 GB |
+| Cơ sở dữ liệu (PostgreSQL) | Sản phẩm, đơn hàng, users, blog, cài đặt | ~0.5 GB |
+| Ảnh/File (MinIO Storage) | Ảnh sản phẩm, banner trang chủ | ~1–5 GB |
+| Swap File (RAM ảo dự phòng) | Dùng SSD làm "RAM ảo" khi 4GB RAM vật lý đầy | ~4 GB |
+| **Tổng sử dụng** | | **~16–20 GB / 40 GB** |
+| **Còn trống** | Dùng cho logs, backup DB, tăng trưởng dữ liệu | **~20–24 GB** |
+
+### RAM (Phân bổ khi đang chạy — xóa sạch khi reboot)
+
+| Trạng thái | Thành phần chiếm RAM | Tổng RAM dùng |
+|-----------|---------------------|--------------|
+| **Bình thường** (khách lướt shop) | OS ~800MB + Nginx ~50MB + Next.js ~300MB + PostgreSQL ~150MB + Ollama chờ ~100MB | **~1.4 GB / 4 GB** ✅ |
+| **Có người chat AI** | Bình thường + Model AI nạp vào RAM ~2GB | **~3.4 GB / 4 GB** ⚠️ |
+| **Quá tải** (nhiều người chat cùng lúc) | Vượt 4GB RAM → tự động dùng Swap từ SSD | **4GB RAM + Swap** 🔄 |
+
+---
+
+## ✅ Checklist Hoàn Thiện TRƯỚC KHI Mua VPS
+
+> Đây là những việc cần làm sẵn trên máy local để khi có VPS chỉ cần SSH vào và deploy 1 lần là xong.
+
+### Nhóm A — Kết nối Database Local (Ưu tiên #1 — Giải quyết timeout)
+
+- [ ] **A1** — Kết nối PostgreSQL local (port 5432 đã sẵn sàng trên máy bạn)
+  - Đặt `DATABASE_URL=postgresql://postgres:<password>@localhost:5432/terrarium_shop` vào `.env`
+  - Chạy `npx prisma db push` để tạo schema
+  - Chạy `npx prisma db seed` để có dữ liệu mẫu
+  - Restart dev server và test lại toàn bộ API (không còn timeout)
+
+### Nhóm B — Hoàn thiện tính năng (làm trước khi migrate)
+
+- [ ] **B1** — Test AI Chat Widget (`/api/consult`) — gửi câu hỏi → nhận trả lời từ Ollama
+- [ ] **B2** — Test toàn bộ flow mua hàng: xem SP → thêm giỏ → checkout → thanh toán
+- [ ] **B3** — Test admin: đăng nhập → thêm SP → upload ảnh → quản lý đơn hàng
+- [ ] **B4** — Đảm bảo `NEXT_PUBLIC_SITE_URL=https://tiemreudecor.com` đúng trong env production
+
+### Nhóm C — Chuẩn bị file cấu hình VPS (làm sẵn, lưu vào repo)
+
+- [ ] **C1** — Tạo file `.env.production.example` mẫu (không chứa password thật) làm template
+- [x] **C2** — File `ecosystem.config.js` cho PM2 (xem Phase 4 bên dưới) ✅
+- [x] **C3** — Thư mục `.github/workflows/deploy.yml` cho CI/CD (xem Phase 5) ✅
+- [ ] **C4** — Tạo script `scripts/setup-vps.sh` — chạy 1 lần để cài toàn bộ phần mềm
+
+### Nhóm D — Backup dữ liệu Supabase hiện tại
+
+- [ ] **D1** — Export toàn bộ DB từ Supabase thành file `.sql`
+- [ ] **D2** — Tải toàn bộ ảnh sản phẩm từ Supabase Storage về máy local
+- [ ] **D3** — Giảm DNS TTL của `tiemreudecor.com` xuống 300 giây (trước khi đổi IP 24h)
 
 ---
 
@@ -79,6 +195,7 @@
 
 | Phase | Mô tả | Ước tính thời gian |
 |-------|-------|-------------------|
+| **Phase 0** | Hoàn thiện code + test local (làm TRƯỚC khi mua VPS) | 1–2 ngày |
 | **Phase 1** | Chuẩn bị — hoàn thiện code + tích hợp Ollama AI local | Đã xong ✅ |
 | **Phase 2** | Setup VPS (PostgreSQL + MinIO + Ollama) | 1 ngày |
 | **Phase 3** | Migrate dữ liệu từ Supabase sang VPS | 2–4 giờ |
