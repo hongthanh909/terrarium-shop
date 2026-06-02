@@ -25,7 +25,7 @@ function extractProductLinks(text: string): { name: string; slug: string; price:
   const products: { name: string; slug: string; price: string }[] = [];
   const lines = text.split("\n");
   for (const line of lines) {
-    const linkMatch = line.match(/Link:\s*(\/san-pham\/[\w-]+)/);
+    const linkMatch = line.match(/Link:\s*(\/products\/[\w-]+)/);
     if (linkMatch) {
       const slug = linkMatch[1];
       const nameMatch = line.match(/^[-•]\s*([^[⭐]+)/);
@@ -43,7 +43,7 @@ function extractProductLinks(text: string): { name: string; slug: string; price:
 }
 
 function renderContent(content: string) {
-  const cleaned = content.replace(/\s*\|\s*Link:\s*\/san-pham\/[\w-]+/g, "");
+  const cleaned = content.replace(/\s*\|\s*Link:\s*\/products\/[\w-]+/g, "");
   return cleaned.split("\n").map((line, i) => (
     <span key={i} className="block">
       {line.split(/(\*\*[^*]+\*\*)/g).map((part, j) =>
@@ -252,7 +252,7 @@ export default function ChatWidget() {
           <div style={{ display: "flex", gap: 4, flexShrink: 0 }}>
             {/* Shop link */}
             <a
-              href="/san-pham"
+              href="/products"
               title="Xem sản phẩm"
               style={{
                 width: 30, height: 30, borderRadius: 8,
@@ -471,7 +471,7 @@ export default function ChatWidget() {
           borderTop: "1px solid #f0f4ee",
         }}>
           <a
-            href="/san-pham"
+            href="/products"
             style={{
               fontSize: 11, color: "#4a7c3f",
               textDecoration: "none", display: "inline-flex",

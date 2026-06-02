@@ -72,7 +72,7 @@ async function getProductCatalog(): Promise<CatalogResult> {
           ? ` | Tưới: ${p.careGuide.watering}, Sáng: ${p.careGuide.sunlight}`
           : "";
         const featured = p.featured ? " ⭐" : "";
-        return `- ${p.name}${featured} [${p.category.name}] — ${price} — ${stock}${care} | Link: /san-pham/${p.slug}`;
+        return `- ${p.name}${featured} [${p.category.name}] — ${price} — ${stock}${care} | Link: /products/${p.slug}`;
       })
       .join("\n");
 
@@ -90,13 +90,17 @@ async function getProductCatalog(): Promise<CatalogResult> {
 async function buildSystemPrompt(): Promise<string> {
   const catalog = await getProductCatalog();
 
-  const baseRole = `Bạn là trợ lý tư vấn AI của "Tiệm Rêu" - cửa hàng chuyên về terrarium, cây cảnh tiểu cảnh và thiên nhiên thu nhỏ tại Việt Nam.
+  const baseRole = `Bạn là trợ lý tư vấn AI bán hàng chuyên nghiệp của "Tiệm Rêu" - thương hiệu terrarium, tiểu cảnh và thiên nhiên thu nhỏ hàng đầu tại Việt Nam.
 
-Quy tắc trả lời TUYỆT ĐỐI phải tuân thủ:
-- Luôn dùng tiếng Việt, thân thiện và chuyên nghiệp
-- Trả lời ngắn gọn (3-5 câu), dùng emoji nhẹ nhàng 🌿
-- Với câu hỏi kỹ thuật chăm sóc: trả lời chi tiết, chính xác
-- Khuyến khích khách đặt hàng trực tiếp trên website`;
+Quy tắc ứng xử và nghiệp vụ bán hàng TUYỆT ĐỐI tuân thủ:
+- Luôn sử dụng tiếng Việt ấm áp, lịch sự, thân thiện và dùng emoji 🌿 nhẹ nhàng.
+- TRÁNH trả lời các chủ đề ngoài ngành (toán học, chính trị, code, học tập, khoa học khác, v.v.). Nếu khách hỏi ngoài lề, hãy từ chối khéo léo và hướng khách quay lại chủ đề terrarium, cây cảnh hoặc dịch vụ của Tiệm Rêu.
+- Trả lời ngắn gọn, cô đọng (3-5 câu), tập trung giải quyết đúng câu hỏi của khách hàng.
+- Chăm sóc kỹ thuật: Nếu khách hỏi cách chăm sóc hoặc xử lý sự cố (nấm mốc, héo lá, sâu hại), hãy hướng dẫn chi tiết, chính xác và khoa học.
+- Kỹ thuật chốt đơn & bán hàng:
+  1. Khi tư vấn, hãy LUÔN gợi ý và khuyến khích khách hàng nhấn vào thẻ liên kết sản phẩm gợi ý (Link dạng /products/[slug]) ở bên dưới để xem hình ảnh và đặt mua.
+  2. Bán chéo (Cross-selling): Nếu khách quan tâm đến bình terrarium kín, hãy gợi ý nhẹ nhàng mua kèm dụng cụ (như Nhíp dài tỉa cây, bình xịt phun sương mịn) để dễ chăm sóc.
+  3. Thúc đẩy doanh số bằng Freeship: Biết rằng shop "Miễn phí vận chuyển cho đơn hàng từ 500.000₫". Nếu đơn hàng của khách gần đạt mức này, hãy khuyên khách lấy thêm phụ kiện hoặc rêu để được freeship toàn quốc.`;
 
   if (catalog.type === "ok") {
     return `${baseRole}
@@ -185,7 +189,7 @@ async function streamFromOllama(
     ];
 
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 60000); // 60s timeout cho stream
+    const timeout = setTimeout(() => controller.abort(), 30000); // 30s timeout cho stream để tiết kiệm tài nguyên VPS
 
     const ollamaRes = await fetch(`${ollamaUrl}/api/chat`, {
       method: "POST",
@@ -196,8 +200,9 @@ async function streamFromOllama(
         stream: true, // ← BẬT STREAMING
         options: {
           temperature: 0.65,
-          num_predict: 600,
+          num_predict: 350, // Giới hạn token sinh ra để tiết kiệm RAM/CPU VPS và tăng tốc độ phản hồi
           top_p: 0.9,
+          stop: ["\nUser:", "User:"], // Ngăn AI tự sinh tiếp hội thoại thừa
         },
       }),
       signal: controller.signal,
@@ -271,6 +276,13 @@ export async function POST(request: Request) {
     }
 
     const trimmedMessage = message.trim();
+
+    // ── Guardrail cho VPS: Chặn các tin nhắn quá dài tránh làm tràn bộ nhớ AI ────────
+    if (trimmedMessage.length > 400) {
+      return NextResponse.json({
+        response: "Dạ, câu hỏi của anh/chị hơi dài một chút. Anh/chị có thể tóm tắt ngắn gọn lại dưới 400 ký tự để em hỗ trợ tư vấn nhanh nhất được không ạ? 🌿",
+      });
+    }
 
     // ── Thử Streaming từ Ollama ──────────────────────────
     const stream = await streamFromOllama(trimmedMessage, history);
