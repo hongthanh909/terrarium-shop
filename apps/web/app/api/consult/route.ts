@@ -1,9 +1,11 @@
 /**
- * AI Consultation API Route
+ * AI Consultation API Route — v2 (Nâng cấp: RAG thật sự từ DB)
  *
- * Tích hợp Ollama (self-hosted LLM) để tư vấn terrarium 24/7.
- * - Khi OLLAMA_BASE_URL được set và Ollama đang chạy → dùng AI thật
- * - Khi Ollama không khả dụng → fallback thông minh dùng data sản phẩm từ DB
+ * Luồng xử lý thông minh:
+ * 1. Load sản phẩm từ DB → inject vào System Prompt (RAG đơn giản)
+ * 2. Gọi Ollama với context sản phẩm thật → AI biết shop có gì và tư vấn chính xác
+ * 3. Nếu Ollama offline → fallback DB query trực tiếp
+ * 4. Nếu DB lỗi → fallback knowledge base tĩnh
  *
  * POST /api/consult
  * Body: { message: string, history?: { role: "user"|"assistant", content: string }[] }
@@ -13,23 +15,123 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
 // =============================================
-// SYSTEM PROMPT cho Ollama
+// LOAD CATALOG SẢN PHẨM THẬT TỪ DB
+// Cache 5 phút để không phải query DB mỗi request
+// Trả về object có type để system prompt xử lý đúng
 // =============================================
-const SYSTEM_PROMPT = `Bạn là trợ lý tư vấn AI của "Tiệm Rêu" - cửa hàng chuyên về terrarium, cây cảnh tiểu cảnh và thiên nhiên thu nhỏ tại Việt Nam.
+type CatalogResult =
+  | { type: "ok"; text: string }
+  | { type: "empty" }
+  | { type: "error" };
 
-Vai trò của bạn:
-- Tư vấn về chăm sóc terrarium, cây moss, cây cảnh nhỏ
-- Giúp khách chọn sản phẩm phù hợp với không gian và sở thích
-- Giải đáp câu hỏi về giá cả, vận chuyển, bảo hành
-- Hướng dẫn cách chăm sóc từng loại cây
+let productCatalogCache: {
+  result: CatalogResult;
+  fetchedAt: number;
+} | null = null;
 
-Quy tắc trả lời:
+const CACHE_TTL_MS = 5 * 60 * 1000; // 5 phút
+
+async function getProductCatalog(): Promise<CatalogResult> {
+  const now = Date.now();
+
+  // Dùng cache nếu còn hợp lệ
+  if (productCatalogCache && now - productCatalogCache.fetchedAt < CACHE_TTL_MS) {
+    return productCatalogCache.result;
+  }
+
+  try {
+    const products = await prisma.product.findMany({
+      where: { status: "ACTIVE" },
+      select: {
+        name: true,
+        basePrice: true,
+        salePrice: true,
+        inventory: true,
+        featured: true,
+        category: { select: { name: true } },
+        careGuide: { select: { watering: true, sunlight: true, temperature: true } },
+      },
+      orderBy: [{ featured: "desc" }, { createdAt: "desc" }],
+      take: 30, // Lấy tối đa 30 sản phẩm để không vượt context window
+    });
+
+    if (products.length === 0) {
+      const result: CatalogResult = { type: "empty" };
+      productCatalogCache = { result, fetchedAt: now };
+      return result;
+    }
+
+    const text = products
+      .map((p) => {
+        const price = p.salePrice
+          ? `${Number(p.salePrice).toLocaleString("vi-VN")}₫ (sale từ ${Number(p.basePrice).toLocaleString("vi-VN")}₫)`
+          : `${Number(p.basePrice).toLocaleString("vi-VN")}₫`;
+        const stock = p.inventory > 0 ? `còn hàng (${p.inventory} sp)` : "hết hàng";
+        const care = p.careGuide
+          ? ` | Tưới: ${p.careGuide.watering}, Sáng: ${p.careGuide.sunlight}, Nhiệt độ: ${p.careGuide.temperature}`
+          : "";
+        const featured = p.featured ? " ⭐" : "";
+        return `- ${p.name}${featured} [${p.category.name}] — ${price} — ${stock}${care}`;
+      })
+      .join("\n");
+
+    const result: CatalogResult = { type: "ok", text };
+    productCatalogCache = { result, fetchedAt: now };
+    return result;
+  } catch {
+    return { type: "error" };
+  }
+}
+
+// =============================================
+// SYSTEM PROMPT ĐỘNG (nội dung phụ thuộc vào tình trạng catalog)
+// =============================================
+async function buildSystemPrompt(): Promise<string> {
+  const catalog = await getProductCatalog();
+
+  const baseRole = `Bạn là trợ lý tư vấn AI của "Tiệm Rêu" - cửa hàng chuyên về terrarium, cây cảnh tiểu cảnh và thiên nhiên thu nhỏ tại Việt Nam.
+
+Quy tắc trả lời TUYỆT ĐỐI phải tuân thủ:
 - Luôn dùng tiếng Việt, thân thiện và chuyên nghiệp
-- Trả lời ngắn gọn, dễ hiểu (tối đa 3-4 câu mỗi đoạn)
-- Dùng emoji phù hợp để tạo cảm giác thân thiện 🌿
-- Nếu khách hỏi về sản phẩm cụ thể, hãy gợi ý họ xem trang Sản Phẩm
-- Nếu hỏi về đặt hàng/thanh toán/giao hàng, hướng dẫn đặt trực tiếp trên website
-- KHÔNG bịa thông tin về giá hay sản phẩm cụ thể nếu không chắc chắn`;
+- Trả lời ngắn gọn (3-5 câu), dùng emoji nhẹ nhàng 🌿
+- Với câu hỏi kỹ thuật chăm sóc: trả lời chi tiết, chính xác
+- Khuyến khích khách đặt hàng trực tiếp trên website`;
+
+  if (catalog.type === "ok") {
+    return `${baseRole}
+
+DANH SÁCH SẢN PHẨM HIỆN CÓ TRONG SHOP (dữ liệu thật từ hệ thống):
+${catalog.text}
+
+Quy tắc về sản phẩm:
+- Khi khách hỏi mua sắm: GỢI Ý TỐI ĐA 3 sản phẩm PHÙ HỢP NHẤT từ danh sách trên, kèm giá rõ ràng
+- Ưu tiên sản phẩm ⭐ (featured) và "còn hàng"
+- TUYỆT ĐỐI KHÔNG đề xuất bất kỳ sản phẩm nào KHÔNG CÓ trong danh sách trên
+- Nếu sản phẩm "hết hàng", vẫn có thể đề cập nhưng ghi rõ là hết hàng`;
+  }
+
+  if (catalog.type === "empty") {
+    return `${baseRole}
+
+THÔNG TIN QUAN TRỌNG: Hiện tại shop CHƯA CÓ SẢN PHẨM nào đang bán.
+
+Quy tắc về sản phẩm (BẮT BUỘC):
+- TUYỆT ĐỐI KHÔNG liệt kê, đề xuất, hay bịa ra bất kỳ tên sản phẩm hoặc giá tiền nào
+- Khi khách hỏi về sản phẩm/mua hàng: thành thật nói shop đang cập nhật sản phẩm mới
+- Đề nghị khách liên hệ Zalo/Facebook của shop để biết thêm thông tin
+- Vẫn có thể tư vấn kiến thức chăm sóc terrarium nói chung`;
+  }
+
+  // catalog.type === "error"
+  return `${baseRole}
+
+THÔNG TIN QUAN TRỌNG: Hệ thống không thể tải danh sách sản phẩm lúc này.
+
+Quy tắc về sản phẩm (BẮT BUỘC):
+- TUYỆT ĐỐI KHÔNG đoán mò, bịa ra hay liệt kê bất kỳ tên sản phẩm hoặc giá tiền nào
+- Khi khách hỏi về sản phẩm cụ thể: xin lỗi và đề nghị khách xem trực tiếp trang Sản Phẩm
+- Vẫn có thể tư vấn kiến thức chăm sóc terrarium nói chung`;
+}
 
 // =============================================
 // FALLBACK KNOWLEDGE BASE (khi Ollama offline)
@@ -39,8 +141,7 @@ const FALLBACK_KNOWLEDGE: Record<string, string> = {
   "tưới nước": "💧 Hướng dẫn tưới:\n• Terrarium kín: 2-3 tuần/lần, xịt sương nhẹ\n• Terrarium mở: 3-5 ngày/lần\n• Lá héo = thiếu nước | Nấm mốc = thừa nước",
   "ánh sáng": "☀️ Yêu cầu ánh sáng:\n• Ánh sáng gián tiếp là tốt nhất\n• Tránh nắng trực tiếp (cháy lá)\n• Đèn LED grow light thay thế tốt\n• Đặt cách cửa sổ 1-2m",
   "phòng tối": "🌙 Cây phù hợp nơi ít sáng:\n• Fern (Dương xỉ)\n• Moss (Rêu)\n• Pothos (Trầu bà)\n• Fittonia (Cây thảm)\n→ Bổ sung đèn LED grow light nếu cần",
-  "giá": "💰 Giá tham khảo:\n• Terrarium mini: từ 150.000₫\n• Terrarium trung: từ 300.000₫\n• Terrarium lớn: từ 500.000₫\nXem chi tiết và đặt hàng tại trang Sản Phẩm nhé!",
-  "mua": "🛒 Cách mua hàng:\n• Vào trang Sản Phẩm → thêm vào giỏ hàng\n• Thanh toán COD hoặc chuyển khoản\n• Giao hàng toàn quốc 3-5 ngày\n• Miễn phí ship đơn từ 500.000₫",
+  "mua": "🛒 Cách mua hàng:\n• Vào trang Sản Phẩm → thêm vào giỏ hàng\n• Thanh toán COD hoặc chuyển khoản ngân hàng\n• Giao hàng toàn quốc 3-5 ngày\n• Miễn phí ship đơn từ 500.000₫",
   "vận chuyển": "🚚 Thông tin giao hàng:\n• Tiêu chuẩn: 3-5 ngày (30.000₫)\n• Nhanh: 1-2 ngày (50.000₫)\n• Đóng gói cẩn thận, chống va đập\n• Miễn phí khi đơn ≥ 500.000₫",
   "bảo hành": "🛡️ Chính sách bảo hành:\n• Bảo hành cây sống 7 ngày\n• Đổi trả nếu hư hỏng khi vận chuyển\n• Hỗ trợ tư vấn chăm sóc miễn phí suốt thời gian sử dụng",
 };
@@ -48,25 +149,23 @@ const FALLBACK_KNOWLEDGE: Record<string, string> = {
 function getFallbackResponse(message: string): string {
   const lower = message.toLowerCase();
 
-  // Greetings
   if (/xin chào|hello|hi|chào|alo/.test(lower)) {
-    return "Xin chào! 🌿 Tôi là trợ lý AI của Tiệm Rêu. Tôi có thể giúp bạn về:\n• Chăm sóc terrarium\n• Chọn sản phẩm phù hợp\n• Giá cả và đặt hàng\n• Vận chuyển và bảo hành\n\nBạn cần tư vấn gì?";
+    return "Xin chào! 🌿 Tôi là trợ lý AI của Tiệm Rêu. Tôi có thể giúp bạn về:\n• Gợi ý sản phẩm terrarium phù hợp\n• Chăm sóc cây và thiết kế tiểu cảnh\n• Giá cả, đặt hàng và vận chuyển\n\nBạn cần tư vấn gì?";
   }
 
   if (/cảm ơn|thank/.test(lower)) {
     return "Không có gì! 😊 Chúc bạn chăm sóc terrarium thật vui. Nếu cần hỗ trợ thêm, cứ hỏi nhé! 🌱";
   }
 
-  // Knowledge base matching
   for (const [keyword, response] of Object.entries(FALLBACK_KNOWLEDGE)) {
     if (lower.includes(keyword)) return response;
   }
 
-  return "Cảm ơn câu hỏi của bạn! 🌿 Tôi có thể tư vấn về chăm sóc terrarium, chọn cây, giá cả và đặt hàng. Bạn hãy hỏi cụ thể hơn hoặc liên hệ trực tiếp qua trang Liên Hệ để được hỗ trợ nhanh nhé!";
+  return "Cảm ơn câu hỏi của bạn! 🌿 Tôi có thể tư vấn về sản phẩm terrarium, cách chăm sóc cây, giá cả và đặt hàng. Bạn hãy hỏi cụ thể hơn hoặc liên hệ trực tiếp qua trang Liên Hệ để được hỗ trợ nhanh nhé!";
 }
 
 // =============================================
-// OLLAMA CALL
+// OLLAMA CALL (với System Prompt động có sản phẩm thật)
 // =============================================
 async function callOllama(
   message: string,
@@ -76,9 +175,12 @@ async function callOllama(
   if (!ollamaUrl) return null;
 
   try {
+    // Build system prompt động (có catalog sản phẩm từ DB)
+    const systemPrompt = await buildSystemPrompt();
+
     const messages = [
-      { role: "system", content: SYSTEM_PROMPT },
-      ...history.slice(-10), // Giữ 10 tin nhắn gần nhất để tiết kiệm token
+      { role: "system", content: systemPrompt },
+      ...history.slice(-8), // Giữ 8 tin nhắn gần nhất (tiết kiệm token hơn vì system prompt dài hơn)
       { role: "user", content: message },
     ];
 
@@ -89,12 +191,12 @@ async function callOllama(
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        model: process.env.OLLAMA_MODEL || "llama3",
+        model: process.env.OLLAMA_MODEL || "llama3.2:3b",
         messages,
         stream: false,
         options: {
-          temperature: 0.7,
-          num_predict: 512, // Giới hạn độ dài phản hồi
+          temperature: 0.65,   // Giảm nhẹ temperature để trả lời chính xác hơn về sản phẩm
+          num_predict: 600,    // Tăng nhẹ để đủ chỗ liệt kê sản phẩm + giải thích
           top_p: 0.9,
         },
       }),
@@ -108,7 +210,6 @@ async function callOllama(
     const data = await response.json();
     return data?.message?.content || null;
   } catch {
-    // Ollama không khả dụng (timeout, không chạy, v.v.)
     return null;
   }
 }
@@ -127,33 +228,44 @@ export async function POST(request: Request) {
 
     const trimmedMessage = message.trim();
 
-    // Thử gọi Ollama trước
+    // Thử gọi Ollama với system prompt có catalog sản phẩm thật
     const aiResponse = await callOllama(trimmedMessage, history);
 
     if (aiResponse) {
       return NextResponse.json({
         response: aiResponse,
-        source: "ai", // Để debug biết đang dùng AI thật
+        source: "ai",
       });
     }
 
-    // Fallback: Kiểm tra nếu hỏi về sản phẩm cụ thể → truy vấn DB
-    if (/sản phẩm|terrarium|cây|rêu|moss|fern/i.test(trimmedMessage)) {
+    // Fallback lớp 2: Nếu Ollama offline, query DB trực tiếp khi hỏi về sản phẩm
+    if (/sản phẩm|terrarium|cây|rêu|moss|fern|mua|gợi ý|recommend|muốn|cần|tìm/i.test(trimmedMessage)) {
       try {
         const products = await prisma.product.findMany({
-          where: { status: "ACTIVE" },
-          select: { name: true, basePrice: true, category: { select: { name: true } } },
+          where: { status: "ACTIVE", inventory: { gt: 0 } },
+          select: {
+            name: true,
+            basePrice: true,
+            salePrice: true,
+            category: { select: { name: true } },
+            featured: true,
+          },
           take: 5,
-          orderBy: { featured: "desc" },
+          orderBy: [{ featured: "desc" }, { createdAt: "desc" }],
         });
 
         if (products.length > 0) {
           const productList = products
-            .map((p) => `• ${p.name} (${p.category.name}) — ${Number(p.basePrice).toLocaleString("vi-VN")}₫`)
+            .map((p) => {
+              const price = p.salePrice
+                ? `${Number(p.salePrice).toLocaleString("vi-VN")}₫ (sale)`
+                : `${Number(p.basePrice).toLocaleString("vi-VN")}₫`;
+              return `• ${p.name} [${p.category.name}] — ${price}`;
+            })
             .join("\n");
 
           return NextResponse.json({
-            response: `🌿 Một số sản phẩm nổi bật hiện có:\n${productList}\n\nXem đầy đủ tại trang Sản Phẩm nhé!`,
+            response: `🌿 Một số sản phẩm nổi bật đang có hàng tại Tiệm Rêu:\n${productList}\n\nXem đầy đủ và đặt hàng tại trang Sản Phẩm nhé!`,
             source: "db",
           });
         }
@@ -162,7 +274,7 @@ export async function POST(request: Request) {
       }
     }
 
-    // Fallback cuối: knowledge base tĩnh
+    // Fallback lớp 3: knowledge base tĩnh
     const fallbackResponse = getFallbackResponse(trimmedMessage);
     return NextResponse.json({
       response: fallbackResponse,
