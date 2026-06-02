@@ -1,0 +1,81 @@
+name: 🚀 Deploy to VPS
+
+# Trigger: tự động chạy khi push lên branch main
+on:
+  push:
+    branches: [main]
+  # Cho phép chạy thủ công từ GitHub Actions tab
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Deploy to Vietnix VPS
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      # ── 1. Checkout code ──────────────────────────────────────────────────
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v4
+
+      # ── 2. SSH vào VPS và deploy ──────────────────────────────────────────
+      - name: 🔐 Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}          # IP VPS: vd 103.xx.xx.xx
+          username: ${{ secrets.VPS_USER }}       # User SSH: deploy
+          key: ${{ secrets.VPS_SSH_KEY }}         # Private key (xem hướng dẫn bên dưới)
+          port: 22
+          script: |
+            set -e  # Dừng nếu có lỗi
+            echo "🕐 $(date) — Bắt đầu deploy..."
+
+            # ── Vào thư mục app ──────────────────────────────────────────────
+            cd /home/deploy/terrarium-shop
+
+            # ── Pull code mới nhất từ GitHub ─────────────────────────────────
+            echo "📦 Pulling latest code..."
+            git pull origin main
+
+            # ── Cài dependencies (chỉ install production + đã có cache) ──────
+            echo "📚 Installing dependencies..."
+            npm ci --workspace=apps/web --prefer-offline
+
+            # ── Generate Prisma Client ────────────────────────────────────────
+            echo "🗄️  Generating Prisma client..."
+            cd apps/web
+            npx prisma generate
+
+            # ── Migrate DB (không reset, chỉ apply migration mới) ────────────
+            echo "🔄 Running DB migrations..."
+            npx prisma migrate deploy
+
+            # ── Build production (Next.js) ────────────────────────────────────
+            echo "🏗️  Building Next.js..."
+            npm run build
+
+            # ── Restart app với PM2 ───────────────────────────────────────────
+            echo "🔁 Restarting PM2..."
+            cd /home/deploy/terrarium-shop
+            pm2 reload ecosystem.config.js --env production || pm2 start ecosystem.config.js --env production
+
+            # ── Lưu PM2 process list ──────────────────────────────────────────
+            pm2 save
+
+            echo "✅ Deploy hoàn tất lúc $(date)!"
+
+      # ── 3. Thông báo kết quả ──────────────────────────────────────────────
+      - name: ✅ Deploy Success Notification
+        if: success()
+        run: |
+          echo "🎉 Deploy thành công!"
+          echo "🌐 Site: https://tiemreudecor.com"
+          echo "📊 Commit: ${{ github.sha }}"
+          echo "👤 By: ${{ github.actor }}"
+
+      - name: ❌ Deploy Failed Notification
+        if: failure()
+        run: |
+          echo "💥 Deploy thất bại!"
+          echo "📊 Commit: ${{ github.sha }}"
+          echo "🔍 Xem logs tại: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
