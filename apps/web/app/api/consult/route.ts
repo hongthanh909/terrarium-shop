@@ -44,6 +44,7 @@ async function getProductCatalog(): Promise<CatalogResult> {
       where: { status: "ACTIVE" },
       select: {
         name: true,
+        slug: true,
         basePrice: true,
         salePrice: true,
         inventory: true,
@@ -71,7 +72,7 @@ async function getProductCatalog(): Promise<CatalogResult> {
           ? ` | Tưới: ${p.careGuide.watering}, Sáng: ${p.careGuide.sunlight}`
           : "";
         const featured = p.featured ? " ⭐" : "";
-        return `- ${p.name}${featured} [${p.category.name}] — ${price} — ${stock}${care}`;
+        return `- ${p.name}${featured} [${p.category.name}] — ${price} — ${stock}${care} | Link: /san-pham/${p.slug}`;
       })
       .join("\n");
 
