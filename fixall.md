@@ -3,6 +3,11 @@
 > Ngày kiểm tra: 2026-06-02  
 > Phạm vi: Toàn bộ API routes, logic user→admin, DB connection
 
+> [!IMPORTANT]
+> **Root cause quan trọng**: Prisma singleton (`lib/prisma.ts`) được lưu trong `globalThis` của Node.js process.
+> Khi thay đổi cấu hình singleton, **bắt buộc phải restart toàn bộ dev server** (không phải hot-reload).
+> Hot module reload chỉ reload route files, không reset `globalThis`.
+
 ---
 
 ## Tóm tắt nhanh

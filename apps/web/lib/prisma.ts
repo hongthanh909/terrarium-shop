@@ -48,16 +48,26 @@ export const prisma: PrismaClient = isBuildPhase
     }) as PrismaClient)
   : (globalForPrisma.prisma ??
       new PrismaClient({
-        // Ưu tiên DIRECT_URL (bypass PgBouncer) để tránh pool exhaustion.
-        // DIRECT_URL dùng port 5432 (direct PostgreSQL), không qua PgBouncer (port 6543).
-        // Điều này quan trọng khi nhiều API route chạy đồng thời.
+        // Supabase + Prisma official recommendation:
+        // - DATABASE_URL: PgBouncer (port 6543, transaction mode) với pgbouncer=true
+        //   → Prisma tắt prepared statements, PgBouncer quản lý connection pool
+        // - connection_limit=1: Prisma chỉ giữ 1 connection trong pool riêng của nó,
+        //   để PgBouncer làm nhiệm vụ multiplexing — tránh pool exhaustion
+        // Ref: https://supabase.com/docs/guides/database/connecting-to-postgres#prisma
         datasources: {
           db: {
-            url: process.env.DIRECT_URL || process.env.DATABASE_URL,
+            url: (() => {
+              const base = process.env.DATABASE_URL ?? "";
+              // Thêm connection_limit=1 nếu chưa có (tránh duplicate)
+              if (base.includes("connection_limit")) return base;
+              const sep = base.includes("?") ? "&" : "?";
+              return `${base}${sep}connection_limit=1`;
+            })(),
           },
         },
         log: process.env.NODE_ENV === "development" ? ["error", "warn"] : ["error"],
       }));
+
 
 
 // Cache the singleton globally so it survives hot-module replacement (dev)
