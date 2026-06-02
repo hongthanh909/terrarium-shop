@@ -1,20 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
-import { uploadImage } from "@/lib/supabase";
+import { uploadFile } from "@/lib/storage";
 
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
     const file = formData.get("file") as File;
-    const bucket = formData.get("bucket") as string || "products";
+    const bucket = (formData.get("bucket") as string) || "products";
 
     if (!file) {
-      return NextResponse.json(
-        { error: "No file provided" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "No file provided" }, { status: 400 });
     }
 
-    // Validate file type (only images)
+    // Validate file type (chỉ nhận ảnh)
     if (!file.type.startsWith("image/")) {
       return NextResponse.json(
         { error: "Only image files are allowed" },
@@ -22,8 +19,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validate file size (max 5MB)
-    const maxSize = 5 * 1024 * 1024; // 5MB
+    // Validate file size (tối đa 5MB)
+    const maxSize = 5 * 1024 * 1024;
     if (file.size > maxSize) {
       return NextResponse.json(
         { error: "File size must be less than 5MB" },
@@ -31,12 +28,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const publicUrl = await uploadImage(file, bucket);
+    // Upload qua Storage abstraction layer
+    // Tự động dùng Supabase hoặc MinIO tùy STORAGE_PROVIDER env
+    const publicUrl = await uploadFile(file, bucket);
 
     return NextResponse.json({
       success: true,
       url: publicUrl,
       fileName: publicUrl.split("/").pop(),
+      provider: process.env.STORAGE_PROVIDER || "supabase",
     });
   } catch (error) {
     console.error("Error uploading image:", error);

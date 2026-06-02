@@ -5,8 +5,8 @@ import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 import {
   Package, Settings, Home,
-  ShoppingCart, Percent, FileText, MessageSquare, LogOut,
-  Grid3X3, ExternalLink, Star, ShieldCheck, LayoutDashboard,
+  ShoppingCart, Percent, FileText, LogOut,
+  Grid3X3, ExternalLink, Star, ShieldCheck, LayoutDashboard, Compass,
 } from "lucide-react";
 import { Toaster } from "sonner";
 
@@ -42,6 +42,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   const menuItems = [
     { href: "/tiem-nho-nth24", label: "Bảng Điều Khiển", icon: Home },
     { href: "/tiem-nho-nth24/homepage", label: "Giao Diện", icon: LayoutDashboard },
+    { href: "/tiem-nho-nth24/explore", label: "Khám Phá", icon: Compass },
     { href: "/tiem-nho-nth24/products", label: "Sản phẩm", icon: Package },
     { href: "/tiem-nho-nth24/categories", label: "Danh mục", icon: Grid3X3 },
     { href: "/tiem-nho-nth24/orders", label: "Đơn hàng", icon: ShoppingCart },
