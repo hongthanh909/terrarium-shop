@@ -48,8 +48,17 @@ export const prisma: PrismaClient = isBuildPhase
     }) as PrismaClient)
   : (globalForPrisma.prisma ??
       new PrismaClient({
+        // Ưu tiên DIRECT_URL (bypass PgBouncer) để tránh pool exhaustion.
+        // DIRECT_URL dùng port 5432 (direct PostgreSQL), không qua PgBouncer (port 6543).
+        // Điều này quan trọng khi nhiều API route chạy đồng thời.
+        datasources: {
+          db: {
+            url: process.env.DIRECT_URL || process.env.DATABASE_URL,
+          },
+        },
         log: process.env.NODE_ENV === "development" ? ["error", "warn"] : ["error"],
       }));
+
 
 // Cache the singleton globally so it survives hot-module replacement (dev)
 // and is reused across warm serverless invocations (production).

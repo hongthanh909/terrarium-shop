@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { verifyAdminRequest, unauthorizedResponse } from "@/lib/admin-auth";
 
 export const dynamic = "force-dynamic";
 
@@ -24,6 +25,10 @@ export async function GET() {
 
 export async function PUT(request: NextRequest) {
   try {
+    // Admin-only: vấn đề bảo mật — chỉ admin mới được cập nhật cài đặt website
+    const admin = await verifyAdminRequest(request);
+    if (!admin) return unauthorizedResponse();
+
     const body = await request.json();
 
     // body is a key-value map: { shopName: "...", shopEmail: "...", ... }

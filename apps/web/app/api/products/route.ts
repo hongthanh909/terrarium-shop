@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 import { createProductSchema } from "@/lib/validations";
 import { z } from "zod";
@@ -9,15 +9,6 @@ import { logAdminAction } from "@/lib/audit";
 import { revalidatePath } from "next/cache";
 
 export async function GET(request: NextRequest) {
-  const client = new PrismaClient({
-    datasources: {
-      db: {
-        url: process.env.DIRECT_URL || process.env.DATABASE_URL,
-      },
-    },
-    log: ["error"],
-  });
-
   try {
     const { searchParams } = new URL(request.url);
     const slug = searchParams.get("slug");
@@ -29,7 +20,7 @@ export async function GET(request: NextRequest) {
 
     if (slug) {
       // Get single product by slug
-      const product = await client.product.findUnique({
+      const product = await prisma.product.findUnique({
         where: { slug },
         include: {
           category: true,
@@ -61,7 +52,7 @@ export async function GET(request: NextRequest) {
       let userVoted = false;
 
       if (customerId) {
-        const vote = await client.productVote.findUnique({
+        const vote = await prisma.productVote.findUnique({
           where: {
             productId_customerId: {
               productId: product.id,
@@ -106,7 +97,7 @@ export async function GET(request: NextRequest) {
       ];
     }
 
-    const products = await client.product.findMany({
+    const products = await prisma.product.findMany({
       where,
       include: {
         category: true,
@@ -119,7 +110,7 @@ export async function GET(request: NextRequest) {
       take: limit,
     });
 
-    const total = await client.product.count({ where });
+    const total = await prisma.product.count({ where });
 
     return NextResponse.json({
       products,
@@ -138,21 +129,10 @@ export async function GET(request: NextRequest) {
       { error: "Internal server error" },
       { status: 500 }
     );
-  } finally {
-    await client.$disconnect().catch(() => {});
   }
 }
 
 export async function POST(request: NextRequest) {
-  const client = new PrismaClient({
-    datasources: {
-      db: {
-        url: process.env.DIRECT_URL || process.env.DATABASE_URL,
-      },
-    },
-    log: ["error"],
-  });
-
   try {
     const admin = await verifyAdminRequest(request);
     if (!admin) return unauthorizedResponse();
@@ -184,7 +164,7 @@ export async function POST(request: NextRequest) {
     const finalSalePrice = salePrice ?? (body.salePrice != null ? parseFloat(body.salePrice) : null);
     const finalSaleEndDate = saleEndDate ?? (body.saleEndDate ? new Date(body.saleEndDate) : null);
 
-    const product = await client.$transaction(async (tx) => {
+    const product = await prisma.$transaction(async (tx) => {
       // Create product
       const newProduct = await tx.product.create({
         data: {
@@ -273,7 +253,5 @@ export async function POST(request: NextRequest) {
       { error: "Internal server error" },
       { status: 500 }
     );
-  } finally {
-    await client.$disconnect().catch(() => {});
   }
 }

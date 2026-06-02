@@ -1,18 +1,9 @@
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
-  const client = new PrismaClient({
-    datasources: {
-      db: {
-        url: process.env.DIRECT_URL || process.env.DATABASE_URL,
-      },
-    },
-    log: ["error"],
-  });
-
   try {
     const now = new Date();
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -23,17 +14,17 @@ export async function GET() {
     // Batch 1: lightweight count queries (fast, run in parallel)
     const [totalProducts, totalOrders, totalCustomers, pendingOrders, pendingReviews] =
       await Promise.all([
-        client.product.count({ where: { status: "ACTIVE" } }),
-        client.order.count(),
-        client.customer.count(),
-        client.order.count({ where: { status: "PENDING" } }),
-        client.review.count({ where: { approved: false } }),
+        prisma.product.count({ where: { status: "ACTIVE" } }),
+        prisma.order.count(),
+        prisma.customer.count(),
+        prisma.order.count({ where: { status: "PENDING" } }),
+        prisma.review.count({ where: { approved: false } }),
       ]);
 
     // Batch 2: heavier aggregations + data fetch
-    const [monthOrders, lastMonthOrders, recentOrders, topProducts] = await Promise.all([
+    const [monthOrders, lastMonthOrders, recentOrders, topProductsRaw] = await Promise.all([
       // This month revenue
-      client.order.aggregate({
+      prisma.order.aggregate({
         where: {
           createdAt: { gte: startOfMonth },
           OR: [
@@ -44,7 +35,7 @@ export async function GET() {
         _sum: { total: true },
       }),
       // Last month revenue
-      client.order.aggregate({
+      prisma.order.aggregate({
         where: {
           createdAt: { gte: startOfLastMonth, lte: endOfLastMonth },
           OR: [
@@ -55,7 +46,7 @@ export async function GET() {
         _sum: { total: true },
       }),
       // Recent 6 orders
-      client.order.findMany({
+      prisma.order.findMany({
         take: 6,
         orderBy: { createdAt: "desc" },
         select: {
@@ -68,7 +59,7 @@ export async function GET() {
         },
       }),
       // Top 5 products by sold quantity
-      client.orderItem.groupBy({
+      prisma.orderItem.groupBy({
         by: ["productId"],
         _sum: { quantity: true },
         orderBy: { _sum: { quantity: "desc" } },
@@ -77,20 +68,20 @@ export async function GET() {
     ]);
 
 
-    // Fetch product names for top products
-    const topProductsWithNames = await Promise.all(
-      topProducts.map(async (item) => {
-        const product = await client.product.findUnique({
-          where: { id: item.productId },
-          select: { name: true, slug: true },
-        });
-        return {
-          name: product?.name || "Sản phẩm không tìm thấy",
-          slug: product?.slug || "",
-          totalSold: item._sum.quantity || 0,
-        };
-      })
+    // Fix N+1: fetch all top product names in ONE query instead of N queries
+    const productIds = topProductsRaw.map((item) => item.productId);
+    const productMap = await prisma.product.findMany({
+      where: { id: { in: productIds } },
+      select: { id: true, name: true, slug: true },
+    }).then((products) =>
+      Object.fromEntries(products.map((p) => [p.id, p]))
     );
+
+    const topProductsWithNames = topProductsRaw.map((item) => ({
+      name: productMap[item.productId]?.name || "Sản phẩm không tìm thấy",
+      slug: productMap[item.productId]?.slug || "",
+      totalSold: item._sum.quantity || 0,
+    }));
 
     // Revenue change %
     const thisMonthRevenue = Number(monthOrders._sum.total || 0);
@@ -120,7 +111,5 @@ export async function GET() {
   } catch (error) {
     console.error("Admin stats error:", error);
     return NextResponse.json({ error: "Lỗi tải thống kê" }, { status: 500 });
-  } finally {
-    await client.$disconnect().catch(() => {});
   }
 }
