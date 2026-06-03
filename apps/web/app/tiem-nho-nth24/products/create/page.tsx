@@ -17,6 +17,13 @@ interface Category {
   slug: string;
 }
 
+const formatVND = (value: string | number) => {
+  if (value === undefined || value === null) return "";
+  const clean = String(value).replace(/\D/g, ""); // Keep only digits
+  if (!clean) return "";
+  return new Intl.NumberFormat("vi-VN").format(parseInt(clean));
+};
+
 export default function CreateProductPage() {
   const router = useRouter();
   const mainImageInputRef = useRef<HTMLInputElement>(null);
@@ -54,7 +61,7 @@ export default function CreateProductPage() {
   });
 
   useEffect(() => {
-    fetch("/api/categories")
+    fetch("/api/categories?nocache=true")
       .then((r) => r.json())
       .then((data) => setCategories(Array.isArray(data) ? data : (data.categories ?? [])))
       .catch(() => {});
@@ -118,11 +125,17 @@ export default function CreateProductPage() {
     setLoading(true);
     try {
       const allImages = [mainImage, ...subImages.filter(Boolean)];
+      
+      const cleanPrice = (val: string) => {
+        if (!val) return 0;
+        return parseFloat(val.replace(/\./g, "")) || 0;
+      };
+
       const productData: Record<string, unknown> = {
         ...formData,
-        basePrice: parseFloat(formData.basePrice) || 0,
+        basePrice: cleanPrice(formData.basePrice),
         // Sale price: chỉ gửi nếu có giá
-        salePrice: formData.salePrice ? parseFloat(formData.salePrice) : null,
+        salePrice: formData.salePrice ? cleanPrice(formData.salePrice) : null,
         // Sale end date: datetime-local đã là giờ VN, append +07:00 để parse đúng
         saleEndDate: formData.saleEndDate
           ? new Date(formData.saleEndDate + ":00+07:00").toISOString()
@@ -189,19 +202,17 @@ export default function CreateProductPage() {
             />
             <FormField
               label="Giá cơ bản (VNĐ) *"
-              type="number"
+              type="text"
               value={formData.basePrice}
-              onChange={(e) => setFormData({ ...formData, basePrice: e.target.value })}
+              onChange={(e) => setFormData({ ...formData, basePrice: formatVND(e.target.value) })}
               required
-              min="0"
-              placeholder="299000"
+              placeholder="299.000"
             />
             <FormField
               label="Giá khuyến mãi (VNĐ)"
-              type="number"
+              type="text"
               value={formData.salePrice}
-              onChange={(e) => setFormData({ ...formData, salePrice: e.target.value })}
-              min="0"
+              onChange={(e) => setFormData({ ...formData, salePrice: formatVND(e.target.value) })}
               placeholder="Để trống nếu không giảm giá"
             />
             <FormField

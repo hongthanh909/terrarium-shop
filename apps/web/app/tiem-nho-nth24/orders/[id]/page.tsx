@@ -60,14 +60,14 @@ export default function AdminOrderDetailPage() {
         const data = await response.json();
         setOrder(data);
       } else {
-        toast.error("Order not found");
+        toast.error("Không tìm thấy đơn hàng");
         router.push("/tiem-nho-nth24/orders");
       }
     } catch (error) {
       console.error("Error fetching order:", error);
-      toast.error("Error loading order");
+      toast.error("Lỗi khi tải thông tin đơn hàng");
     } finally {
-      setLoading(false);
+      loading && setLoading(false);
     }
   };
 
@@ -124,7 +124,7 @@ export default function AdminOrderDetailPage() {
   if (loading) {
     return (
       <div className="text-center py-12">
-        <p className="text-gray-500">Loading order details...</p>
+        <p className="text-gray-500">Đang tải chi tiết đơn hàng...</p>
       </div>
     );
   }
@@ -138,166 +138,166 @@ export default function AdminOrderDetailPage() {
       <div className="mb-6">
         <Link
           href="/tiem-nho-nth24/orders"
-          className="inline-flex items-center text-[#425733] hover:text-[#425733] mb-4"
+          className="inline-flex items-center text-[#425733] hover:text-[#364a29] mb-4 gap-1 text-sm"
         >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Orders
+          <ArrowLeft className="w-4 h-4" />
+          Quay lại đơn hàng
         </Link>
         <div className="flex justify-between items-center">
-          <h2 className="text-3xl font-bold text-gray-800">Order #{order.orderNumber}</h2>
+          <h2 className="text-2xl font-bold text-gray-800">Đơn hàng #{order.orderNumber}</h2>
           <button
             onClick={handlePrint}
-            className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+            className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-full hover:bg-gray-50 text-sm font-semibold transition-all"
           >
             <Printer className="w-4 h-4" />
-            Print
+            In hóa đơn
           </button>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Order Details */}
+        {/* Chi tiết đơn hàng */}
         <div className="lg:col-span-2 space-y-6">
-          {/* Order Items */}
-          <div className="bg-white rounded-lg shadow p-6">
-            <h3 className="text-xl font-semibold mb-4">Order Items</h3>
+          {/* Danh sách sản phẩm */}
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+            <h3 className="text-base font-semibold text-gray-800 mb-4">Danh sách sản phẩm</h3>
             <div className="space-y-4">
               {order.items?.map((item) => (
                 <div key={item.id} className="flex gap-4 border-b pb-4 last:border-0">
-                  <div className="w-20 h-20 bg-gray-200 rounded overflow-hidden">
+                  <div className="w-20 h-20 bg-gray-100 rounded-xl overflow-hidden relative flex-shrink-0">
                     {item.productImage ? (
                       <Image
                         src={item.productImage}
                         alt={item.productName}
-                        width={80}
-                        height={80}
-                        className="w-full h-full object-cover"
+                        fill
+                        className="object-cover"
                       />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-gray-400">
-                        No image
+                      <div className="w-full h-full flex items-center justify-center text-xs text-gray-400">
+                        Không có ảnh
                       </div>
                     )}
                   </div>
-                  <div className="flex-1">
-                    <div className="font-semibold">{item.productName}</div>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-semibold text-gray-800 text-sm truncate">{item.productName}</div>
                     {item.variants && item.variants !== "{}" && (
-                      <div className="text-sm text-gray-600">
-                        {item.variants}
+                      <div className="text-xs text-gray-500 mt-1">
+                        Phân loại: {item.variants}
                       </div>
                     )}
-                    <div className="text-sm text-gray-600">
-                      Qty: {item.quantity} x {item.price.toLocaleString("vi-VN")}₫
+                    <div className="text-xs text-gray-500 mt-1">
+                      Số lượng: {item.quantity} x {item.price.toLocaleString("vi-VN")}₫
                     </div>
                   </div>
-                  <div className="text-right font-semibold">
+                  <div className="text-right font-semibold text-sm text-gray-800 shrink-0">
                     {(item.price * item.quantity).toLocaleString("vi-VN")}₫
                   </div>
                 </div>
               ))}
             </div>
 
-            {/* Order Summary */}
-            <div className="mt-6 border-t pt-4 space-y-2">
+            {/* Tổng cộng tiền */}
+            <div className="mt-6 border-t pt-4 space-y-2 text-sm">
               <div className="flex justify-between text-gray-600">
-                <span>Subtotal</span>
+                <span>Tạm tính</span>
                 <span>{order.subtotal.toLocaleString("vi-VN")}₫</span>
               </div>
               <div className="flex justify-between text-gray-600">
-                <span>Shipping</span>
+                <span>Phí vận chuyển</span>
                 <span>{order.shippingFee.toLocaleString("vi-VN")}₫</span>
               </div>
               {order.discount > 0 && (
-                <div className="flex justify-between text-[#425733]">
-                  <span>Discount</span>
+                <div className="flex justify-between text-[#425733] font-medium">
+                  <span>Giảm giá</span>
                   <span>-{order.discount.toLocaleString("vi-VN")}₫</span>
                 </div>
               )}
-              <div className="flex justify-between font-bold text-lg pt-2 border-t">
-                <span>Total</span>
+              <div className="flex justify-between font-bold text-base pt-2 border-t text-gray-800">
+                <span>Tổng tiền</span>
                 <span className="text-[#425733]">{order.total.toLocaleString("vi-VN")}₫</span>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Order Info */}
+        {/* Thông tin phụ */}
         <div className="space-y-6">
-          {/* Status */}
-          <div className="bg-white rounded-lg shadow p-6">
-            <h3 className="text-lg font-semibold mb-4">Status</h3>
+          {/* Trạng thái */}
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+            <h3 className="text-base font-semibold text-gray-800 mb-4">Trạng thái</h3>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Order Status</label>
+                <label className="block text-xs font-semibold text-gray-600 mb-1.5">Trạng thái đơn hàng</label>
                 <select
                   value={order.status}
                   onChange={(e) => handleUpdateStatus(e.target.value)}
                   disabled={updating}
-                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#6d8c5a] disabled:bg-gray-100"
+                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#6d8c5a] disabled:bg-gray-100 text-sm bg-white"
                 >
-                  <option value="PENDING">Pending</option>
-                  <option value="CONFIRMED">Confirmed</option>
-                  <option value="SHIPPED">Shipped</option>
-                  <option value="DELIVERED">Delivered</option>
-                  <option value="CANCELLED">Cancelled</option>
+                  <option value="PENDING">Chờ xử lý (Pending)</option>
+                  <option value="CONFIRMED">Đã xác nhận (Confirmed)</option>
+                  <option value="PROCESSING">Đang xử lý (Processing)</option>
+                  <option value="SHIPPING">Đang giao hàng (Shipping)</option>
+                  <option value="DELIVERED">Đã giao hàng (Delivered)</option>
+                  <option value="CANCELLED">Đã huỷ đơn (Cancelled)</option>
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Payment Status</label>
+                <label className="block text-xs font-semibold text-gray-600 mb-1.5">Trạng thái thanh toán</label>
                 <select
                   value={order.paymentStatus}
                   onChange={(e) => handleUpdatePaymentStatus(e.target.value)}
                   disabled={updating}
-                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#6d8c5a] disabled:bg-gray-100"
+                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#6d8c5a] disabled:bg-gray-100 text-sm bg-white"
                 >
-                  <option value="PENDING">Pending</option>
-                  <option value="PAID">Paid</option>
-                  <option value="REFUNDED">Refunded</option>
+                  <option value="PENDING">Chờ thanh toán (Pending)</option>
+                  <option value="PAID">Đã thanh toán (Paid)</option>
+                  <option value="REFUNDED">Đã hoàn tiền (Refunded)</option>
                 </select>
               </div>
             </div>
           </div>
 
-          {/* Customer Info */}
-          <div className="bg-white rounded-lg shadow p-6">
-            <h3 className="text-lg font-semibold mb-4">Customer Information</h3>
+          {/* Khách hàng */}
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+            <h3 className="text-base font-semibold text-gray-800 mb-4">Thông tin khách hàng</h3>
             <div className="space-y-2 text-sm">
               <div>
-                <span className="text-gray-500">Name:</span>
-                <span className="ml-2 font-medium">{order.customer?.name || "N/A"}</span>
+                <span className="text-gray-500">Họ tên:</span>
+                <span className="ml-2 font-medium text-gray-800">{order.customer?.name || "N/A"}</span>
               </div>
               <div>
                 <span className="text-gray-500">Email:</span>
-                <span className="ml-2">{order.customer?.email || "N/A"}</span>
+                <span className="ml-2 text-gray-800">{order.customer?.email || "N/A"}</span>
               </div>
               <div>
-                <span className="text-gray-500">Phone:</span>
-                <span className="ml-2">{order.customer?.phone || order.shippingInfo?.phone || "N/A"}</span>
+                <span className="text-gray-500">Số điện thoại:</span>
+                <span className="ml-2 text-gray-800">{order.customer?.phone || order.shippingInfo?.phone || "N/A"}</span>
               </div>
             </div>
           </div>
 
-          {/* Shipping Info */}
-          <div className="bg-white rounded-lg shadow p-6">
-            <h3 className="text-lg font-semibold mb-4">Shipping Address</h3>
+          {/* Giao hàng */}
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+            <h3 className="text-base font-semibold text-gray-800 mb-4">Địa chỉ giao hàng</h3>
             <div className="text-sm">
-              <div className="font-medium">{order.shippingInfo?.name || "N/A"}</div>
+              <div className="font-semibold text-gray-800">{order.shippingInfo?.name || "N/A"}</div>
               <div className="text-gray-600 mt-1">{order.shippingInfo?.fullAddress || order.shippingInfo?.address || "N/A"}</div>
-              <div className="text-gray-600 mt-1">{order.shippingInfo?.phone || "N/A"}</div>
+              <div className="text-gray-600 mt-1">SĐT nhận hàng: {order.shippingInfo?.phone || "N/A"}</div>
             </div>
           </div>
 
-          {/* Order Meta */}
-          <div className="bg-white rounded-lg shadow p-6">
-            <h3 className="text-lg font-semibold mb-4">Order Details</h3>
+          {/* Chi tiết thêm */}
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+            <h3 className="text-base font-semibold text-gray-800 mb-4">Chi tiết đơn hàng</h3>
             <div className="space-y-2 text-sm">
               <div>
-                <span className="text-gray-500">Order Number:</span>
-                <span className="ml-2 font-mono">{order.orderNumber}</span>
+                <span className="text-gray-500">Mã đơn hàng:</span>
+                <span className="ml-2 font-mono text-gray-800">{order.orderNumber}</span>
               </div>
               <div>
-                <span className="text-gray-500">Date:</span>
-                <span className="ml-2">{new Date(order.createdAt).toLocaleString("vi-VN")}</span>
+                <span className="text-gray-500">Ngày tạo:</span>
+                <span className="ml-2 text-gray-800">{new Date(order.createdAt).toLocaleString("vi-VN")}</span>
               </div>
             </div>
           </div>

@@ -136,6 +136,11 @@ export async function GET(request: NextRequest) {
       })),
     }));
 
+    const isNocache = status === "all" || searchParams.get("nocache") === "true";
+    const cacheHeader = isNocache
+      ? "no-store, no-cache, must-revalidate, proxy-revalidate"
+      : "public, s-maxage=60, stale-while-revalidate=300";
+
     return NextResponse.json({
       products: serialized,
       pagination: {
@@ -145,7 +150,7 @@ export async function GET(request: NextRequest) {
         totalPages: Math.ceil(total / limit),
       },
     }, {
-      headers: { "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300" },
+      headers: { "Cache-Control": cacheHeader },
     });
   } catch (error) {
     console.error("Error fetching products:", error);

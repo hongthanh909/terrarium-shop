@@ -68,6 +68,18 @@ module.exports = {
         protocol: 'https',
         hostname: '**.googleusercontent.com',
       },
+      {
+        protocol: 'https',
+        hostname: 'storage.tiemreudecor.com',
+      },
+      {
+        protocol: 'http',
+        hostname: '14.225.210.118',
+      },
+      {
+        protocol: 'https',
+        hostname: '14.225.210.118',
+      },
     ],
   },
 

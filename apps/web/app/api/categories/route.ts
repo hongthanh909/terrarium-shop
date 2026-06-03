@@ -70,6 +70,11 @@ export async function GET(request: NextRequest) {
       client.category.count({ where: whereClause })
     ]);
 
+    const isNocache = status === "all" || searchParams.get("nocache") === "true";
+    const cacheHeader = isNocache
+      ? "no-store, no-cache, must-revalidate, proxy-revalidate"
+      : "public, s-maxage=300, stale-while-revalidate=3600";
+
     return NextResponse.json({
       categories,
       pagination: {
@@ -79,7 +84,7 @@ export async function GET(request: NextRequest) {
         totalPages: Math.ceil(total / limit),
       }
     }, {
-      headers: { "Cache-Control": "public, s-maxage=300, stale-while-revalidate=3600" },
+      headers: { "Cache-Control": cacheHeader },
     });
   } catch (error) {
     console.error("Error fetching categories:", error);
