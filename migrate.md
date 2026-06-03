@@ -95,7 +95,7 @@ Toàn bộ dự án **FE + BE + DB + AI + Storage** sẽ cùng sống trên **1 
 
 ### Nhóm A — Kết nối Database Local (Ưu tiên #1 — Giải quyết timeout)
 
-- [ ] **A1** — Kết nối PostgreSQL local (port 5432 đã sẵn sàng trên máy bạn)
+- [x] **A1** — Kết nối PostgreSQL local (port 5432 đã sẵn sàng trên máy bạn) ✅
   - Đặt `DATABASE_URL=postgresql://postgres:<password>@localhost:5432/terrarium_shop` vào `.env`
   - Chạy `npx prisma db push` để tạo schema
   - Chạy `npx prisma db seed` để có dữ liệu mẫu
@@ -103,22 +103,22 @@ Toàn bộ dự án **FE + BE + DB + AI + Storage** sẽ cùng sống trên **1 
 
 ### Nhóm B — Hoàn thiện tính năng (làm trước khi migrate)
 
-- [ ] **B1** — Test AI Chat Widget (`/api/consult`) — gửi câu hỏi → nhận trả lời từ Ollama
-- [ ] **B2** — Test toàn bộ flow mua hàng: xem SP → thêm giỏ → checkout → thanh toán
-- [ ] **B3** — Test admin: đăng nhập → thêm SP → upload ảnh → quản lý đơn hàng
-- [ ] **B4** — Đảm bảo `NEXT_PUBLIC_SITE_URL=https://tiemreudecor.com` đúng trong env production
+- [x] **B1** — Test AI Chat Widget (`/api/consult`) — gửi câu hỏi → nhận trả lời từ Ollama ✅
+- [x] **B2** — Test toàn bộ flow mua hàng: xem SP → thêm giỏ → checkout → thanh toán ✅
+- [x] **B3** — Test admin: đăng nhập → thêm SP → upload ảnh → quản lý đơn hàng ✅
+- [x] **B4** — Đảm bảo `NEXT_PUBLIC_SITE_URL=https://tiemreudecor.com` đúng trong env production ✅
 
 ### Nhóm C — Chuẩn bị file cấu hình VPS (làm sẵn, lưu vào repo)
 
-- [ ] **C1** — Tạo file `.env.production.example` mẫu (không chứa password thật) làm template
+- [x] **C1** — Tạo file `.env.production.example` mẫu (không chứa password thật) làm template ✅
 - [x] **C2** — File `ecosystem.config.js` cho PM2 (xem Phase 4 bên dưới) ✅
 - [x] **C3** — Thư mục `.github/workflows/deploy.yml` cho CI/CD (xem Phase 5) ✅
-- [ ] **C4** — Tạo script `scripts/setup-vps.sh` — chạy 1 lần để cài toàn bộ phần mềm
+- [x] **C4** — Tạo script `scripts/setup-vps.sh` — chạy 1 lần để cài toàn bộ phần mềm ✅
 
 ### Nhóm D — Backup dữ liệu Supabase hiện tại
 
-- [ ] **D1** — Export toàn bộ DB từ Supabase thành file `.sql`
-- [ ] **D2** — Tải toàn bộ ảnh sản phẩm từ Supabase Storage về máy local
+- [x] **D1** — Export toàn bộ DB từ Supabase thành file `.sql` ✅
+- [x] **D2** — Tải toàn bộ ảnh sản phẩm từ Supabase Storage về máy local ✅
 - [ ] **D3** — Giảm DNS TTL của `tiemreudecor.com` xuống 300 giây (trước khi đổi IP 24h)
 
 ---
