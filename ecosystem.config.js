@@ -15,15 +15,15 @@ module.exports = {
       script: "node_modules/.bin/next",
       args: "start",
 
-      // Số lượng instance — "max" = số CPU cores
-      // Với VPS 2 CPU dùng 2, VPS 1 CPU dùng 1
-      instances: 1,
-      exec_mode: "fork",    // dùng "cluster" nếu instances > 1
+      // Số lượng instance — tận dụng 6 vCPU của VPS CHEAP 6
+      // 2 instances = hiệu suất tốt nhất khi có AI Ollama cũng chạy song song trên VPS
+      instances: 2,
+      exec_mode: "cluster",    // cluster mode: cân bằng tải giữa 2 instance
 
       // Tự động restart nếu app crash
       autorestart: true,
       watch: false,         // KHÔNG watch file thay đổi (dùng CI/CD thay)
-      max_memory_restart: "800M",   // Restart nếu dùng quá 800MB RAM
+      max_memory_restart: "1200M",   // VPS 8GB RAM: mỗi instance Next.js giới hạn 1.2GB
 
       // Environment variables (production)
       env_production: {

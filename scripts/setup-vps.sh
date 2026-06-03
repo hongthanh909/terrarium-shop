@@ -146,10 +146,10 @@ log "Cài Ollama AI..."
 curl -fsSL https://ollama.com/install.sh | sh
 systemctl enable --now ollama
 
-log "Tải model llama3.2:3b (~2GB, sẽ mất vài phút)..."
-ollama pull llama3.2:3b
+log "Tải model llama3:8b (~4.7GB, mất khoảng 5-10 phút tùy tốc độ mạng)..."
+ollama pull llama3:8b
 
-log "Ollama đã sẵn sàng, model llama3.2:3b đã cài"
+log "Ollama đã sẵn sàng, model llama3:8b đã cài"
 
 # ============================================================
 # BƯỚC 8: Cài Nginx + Certbot

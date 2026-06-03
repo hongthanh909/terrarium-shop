@@ -16,13 +16,14 @@ Hệ thống tư vấn AI sử dụng **Ollama** để chạy các mô hình ng�
     ```
 
 ### 1.2 Khởi chạy và tải mô hình
-Sau khi cài đặt, hãy tải mô hình AI khuyên dùng về máy (mặc định trong code sử dụng `llama3.2:3b` - nhẹ, thông minh, hỗ trợ tiếng Việt cực tốt và ngốn cực ít RAM):
+Sau khi cài đặt, tải mô hình AI khưyến dùng phù hợp với VPS 8GB RAM:
 ```bash
-# Tải mô hình llama3.2 (khoảng 2.0 GB)
-ollama pull llama3.2:3b
+# ✅ MO HÌNH CHÍNH (VPS CHEAP 6 - 8GB RAM): llama3:8b (~4.7GB)
+# Thông minh hơn, tiếng Việt mượt hơn, chất lượng tư vấn tốt hơn rõ rệt
+ollama pull llama3:8b
 
-# Hoặc tải qwen2.5:3b (mô hình của Alibaba, viết tiếng Việt rất mượt)
-ollama pull qwen2.5:3b
+# Dự phòng (VPS 4-6GB RAM thấp hơn): llama3.2:3b (~2GB, nhẹ hơn nhưng chất lượng thấp hơn)
+# ollama pull llama3.2:3b
 ```
 
 ### 1.3 Cấu hình biến môi trường (Environment Variables)
@@ -31,8 +32,8 @@ Tạo hoặc bổ sung vào file `.env` hoặc cấu hình biến môi trường
 # URL chạy dịch vụ Ollama (Mặc định là port 11434)
 OLLAMA_BASE_URL=http://localhost:11434
 
-# Tên mô hình bạn đã pull ở bước trên
-OLLAMA_MODEL=llama3.2:3b
+# Tên mô hình đã pull ở bước trên
+OLLAMA_MODEL=llama3:8b
 ```
 
 ---
@@ -43,10 +44,10 @@ OLLAMA_MODEL=llama3.2:3b
 
 | Kỹ thuật tối ưu | Chi tiết triển khai | Mục đích & Lợi ích |
 | :--- | :--- | :--- |
-| **Giới hạn câu hỏi đầu vào (Input Filter)** | Chặn ngay các tin nhắn gửi lên vượt quá **400 ký tự**. Trả về phản hồi từ chối thân thiện. | Ngăn chặn việc người dùng copy bài viết dài hoặc spam văn bản lớn làm nghẽn hàng đợi xử lý của AI. |
-| **Giới hạn độ dài câu trả lời (`num_predict`)** | Giảm từ `600` xuống còn **`350` tokens**. | Giảm tải 50% thời gian xử lý của CPU/GPU VPS. AI vẫn viết đủ 4-6 câu tư vấn chất lượng cao nhưng phản hồi nhanh gấp đôi. |
+| **Giới hạn câu hỏi đầu vào (Input Filter)** | Chặn ngay các tin nhắn gửi lên vượt quá **400 ký tự**. Trả về phản hồi từ chối thân thiện. | Ngăn chặn việc người dùng copy bài viết dài hoặc spam văn bản lớn làm nghẽ hàng đợi xử lý của AI. |
+| **Giới hạn độ dài câu trả lời (`num_predict`)** | Đặt **`450` tokens** cho model llama3:8b (mạnh hơn llama3.2:3b, trên VPS 8GB RAM hoàn toàn đủ khả năng). | Cân bằng giữa chất lượng câu trả lời và tốc độ phản hồi. AI viết đủ 3–6 câu tư vấn sâu sắc và chính xác hơn. |
 | **Từ khóa dừng (`stop` sequences)** | Đặt cấu hình `stop: ["\nUser:", "User:"]`. | Ngăn chặn việc AI tự tạo kịch bản, tự viết tiếp lời của người dùng (Hallucination) dẫn đến vòng lặp vô hạn. |
-| **Giảm giới hạn Thời gian chờ (Timeout)** | Rút ngắn từ `60s` xuống còn **`30s`**. | Nếu Ollama bị đơ hoặc VPS quá tải, kết nối sẽ tự động hủy (`Abort`) để giải phóng tài nguyên hệ thống. |
+| **Giảm giới hạn Thời gian chờ (Timeout)** | **60 giây** — llama3:8b cần nhiều hơn để nạp model vào RAM lần đầu, sau đó phản hồi nhanh. | Tránh timeout sớm trên câu hỏi đầu tiên trong phiên. Nếu Ollama bị đơ hoặc VPS quá tải vẫn tự huỷ sau 60s. |
 | **Hệ thống Cache Catalog sản phẩm** | Lưu cache danh sách sản phẩm lấy từ DB trong **5 phút** (`CACHE_TTL_MS = 300000`). | AI luôn có dữ liệu sản phẩm mới nhất nhưng Next.js không cần truy vấn PostgreSQL liên tục trên mỗi câu hỏi chat. |
 
 ---

@@ -189,18 +189,18 @@ async function streamFromOllama(
     ];
 
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 30000); // 30s timeout cho stream để tiết kiệm tài nguyên VPS
+    const timeout = setTimeout(() => controller.abort(), 60000); // 60s timeout — llama3:8b cần thêm thời gian nạp model lần đầu
 
     const ollamaRes = await fetch(`${ollamaUrl}/api/chat`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        model: process.env.OLLAMA_MODEL || "llama3.2:3b",
+        model: process.env.OLLAMA_MODEL || "llama3:8b",
         messages,
         stream: true, // ← BẬT STREAMING
         options: {
           temperature: 0.65,
-          num_predict: 350, // Giới hạn token sinh ra để tiết kiệm RAM/CPU VPS và tăng tốc độ phản hồi
+          num_predict: 450, // llama3:8b trên VPS 8GB RAM có thể sinh 450 token chất lượng tốt hơn 3b
           top_p: 0.9,
           stop: ["\nUser:", "User:"], // Ngăn AI tự sinh tiếp hội thoại thừa
         },
