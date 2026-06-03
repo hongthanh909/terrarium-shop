@@ -312,66 +312,83 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
           zIndex: 30,
         }}
       >
-        <Link href={`/products/${currentProduct.slug}`} className="block relative aspect-[4/3] w-full bg-[#f8faf7] overflow-hidden">
-          {currentProduct.images[0] ? (
-            <Image
-              key={`current-${currentProduct.id}-${currentIndex}`}
-              src={currentProduct.images[0]}
-              alt={currentProduct.name}
-              fill
-              className="object-cover transition-transform duration-700 group-hover/main:scale-105 carousel-image-animate"
-              sizes="(max-width: 768px) 100vw, 600px"
-              priority
-            />
-          ) : (
-            <div className="w-full h-full bg-[#e3ebdd]" />
-          )}
-          
-          {/* Discount Badge */}
-          {discountPercent > 0 && (
-            <div className="absolute top-4 right-4 z-10">
-              <Badge className="bg-red-500 hover:bg-red-600 text-white font-bold px-3 py-1 text-sm shadow-md rounded-md">
-                -{discountPercent}% Ưu đãi
-              </Badge>
-            </div>
-          )}
-        </Link>
+        {(() => {
+          const getLinkHref = (slug: string) => {
+            if (!slug || slug === "#") return "#";
+            if (slug.startsWith("/") || slug.startsWith("http://") || slug.startsWith("https://")) {
+              return slug;
+            }
+            return `/products/${slug}`;
+          };
+          return (
+            <>
+              <Link href={getLinkHref(currentProduct.slug)} className="block relative aspect-[4/3] w-full bg-[#f8faf7] overflow-hidden">
+                {currentProduct.images[0] ? (
+                  <Image
+                    key={`current-${currentProduct.id}-${currentIndex}`}
+                    src={currentProduct.images[0]}
+                    alt={currentProduct.name}
+                    fill
+                    className="object-cover transition-transform duration-700 group-hover/main:scale-105 carousel-image-animate"
+                    sizes="(max-width: 768px) 100vw, 600px"
+                    priority
+                  />
+                ) : (
+                  <div className="w-full h-full bg-[#e3ebdd]" />
+                )}
+                
+                {/* Discount Badge */}
+                {discountPercent > 0 && (
+                  <div className="absolute top-4 right-4 z-10">
+                    <Badge className="bg-red-500 hover:bg-red-600 text-white font-bold px-3 py-1 text-sm shadow-md rounded-md">
+                      -{discountPercent}% Ưu đãi
+                    </Badge>
+                  </div>
+                )}
+              </Link>
 
-        {/* Product Info */}
-        <div className="p-6 bg-white/90 backdrop-blur-sm relative z-10 h-[168px] flex flex-col justify-between">
-          <Link href={`/products/${currentProduct.slug}`} className="flex-1 flex flex-col justify-between">
-            <div>
-              <h3 className="text-2xl font-bold text-gray-800 mb-1 hover:text-[#425733] transition-colors line-clamp-1">
-                {currentProduct.name}
-              </h3>
-              <p className="text-gray-500 text-sm mb-2 line-clamp-1">
-                {currentProduct.category?.name || "Hệ sinh thái terrarium cao cấp"}
-              </p>
-            </div>
-            
-            <div className="flex flex-col justify-end">
-              {salePrice ? (
-                <div className="flex flex-col">
-                  <span className="text-gray-400 line-through text-sm leading-tight">
-                    {basePrice.toLocaleString("vi-VN")}₫
-                  </span>
-                  <span className="text-2xl font-bold text-blue-600 leading-tight">
-                    {salePrice.toLocaleString("vi-VN")}₫
-                  </span>
-                </div>
-              ) : (
-                <div className="flex flex-col">
-                  <span className="text-transparent text-sm select-none leading-tight">
-                    &nbsp;
-                  </span>
-                  <span className="text-2xl font-bold text-blue-600 leading-tight">
-                    {basePrice.toLocaleString("vi-VN")}₫
-                  </span>
-                </div>
-              )}
-            </div>
-          </Link>
-        </div>
+              {/* Product Info */}
+              <div className="p-6 bg-white/90 backdrop-blur-sm relative z-10 h-[168px] flex flex-col justify-between">
+                <Link href={getLinkHref(currentProduct.slug)} className="flex-1 flex flex-col justify-between">
+                  <div>
+                    <h3 className="text-2xl font-bold text-gray-800 mb-1 hover:text-[#425733] transition-colors line-clamp-1">
+                      {currentProduct.name}
+                    </h3>
+                    <p className="text-gray-500 text-sm mb-2 line-clamp-1">
+                      {currentProduct.category?.name || "Hệ sinh thái terrarium cao cấp"}
+                    </p>
+                  </div>
+                  
+                  <div className="flex flex-col justify-end">
+                    {basePrice > 0 ? (
+                      salePrice ? (
+                        <div className="flex flex-col">
+                          <span className="text-gray-400 line-through text-sm leading-tight">
+                            {basePrice.toLocaleString("vi-VN")}₫
+                          </span>
+                          <span className="text-2xl font-bold text-blue-600 leading-tight">
+                            {salePrice.toLocaleString("vi-VN")}₫
+                          </span>
+                        </div>
+                      ) : (
+                        <div className="flex flex-col">
+                          <span className="text-transparent text-sm select-none leading-tight">
+                            &nbsp;
+                          </span>
+                          <span className="text-2xl font-bold text-blue-600 leading-tight">
+                            {basePrice.toLocaleString("vi-VN")}₫
+                          </span>
+                        </div>
+                      )
+                    ) : (
+                      <div className="h-10" />
+                    )}
+                  </div>
+                </Link>
+              </div>
+            </>
+          );
+        })()}
 
         {/* Navigation Arrows */}
         {products.length > 1 && (

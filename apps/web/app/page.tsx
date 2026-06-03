@@ -43,17 +43,36 @@ async function HeroCarouselSection() {
         .sort((a: any, b: any) => (a.order ?? 0) - (b.order ?? 0));
 
       if (activeBanners.length > 0) {
+        // Fetch linked products from DB if any banner has a productId
+        const productIds = activeBanners
+          .map((b: any) => b.productId)
+          .filter((id): id is string => typeof id === "string" && id !== "");
+
+        const productsMap = new Map<string, any>();
+        if (productIds.length > 0) {
+          const dbProducts = await prisma.product.findMany({
+            where: { id: { in: productIds } },
+            include: { category: { select: { name: true } } },
+          });
+          dbProducts.forEach((p) => {
+            productsMap.set(p.id, p);
+          });
+        }
+
         // Convert banner → Product format cho HeroCarousel
-        const bannerProducts = activeBanners.map((b: any, index: number) => ({
-          id: b.id ?? `banner-${index}`,
-          slug: b.link ? b.link.replace(/^\//, "") : "#",
-          name: b.title ?? "Khám Phá Tiệm Rêu Décor",
-          basePrice: 0,
-          salePrice: null,
-          images: [b.imageUrl],
-          category: b.subtitle ? { name: b.subtitle } : undefined,
-          isBanner: true, // flag để HeroCarousel biết đây là banner thuần
-        }));
+        const bannerProducts = activeBanners.map((b: any, index: number) => {
+          const linkedProduct = b.productId ? productsMap.get(b.productId) : null;
+          return {
+            id: b.id ?? `banner-${index}`,
+            slug: linkedProduct ? linkedProduct.slug : (b.link ? b.link : "#"),
+            name: b.title || linkedProduct?.name || "Khám Phá Tiệm Rêu Décor",
+            basePrice: linkedProduct ? Number(linkedProduct.basePrice) : 0,
+            salePrice: linkedProduct && linkedProduct.salePrice != null ? Number(linkedProduct.salePrice) : null,
+            images: [b.imageUrl || linkedProduct?.images?.[0] || ""],
+            category: b.subtitle ? { name: b.subtitle } : (linkedProduct?.category ? { name: linkedProduct.category.name } : undefined),
+            isBanner: true, // flag để HeroCarousel biết đây là banner
+          };
+        });
 
         return <HeroCarousel products={bannerProducts as any} />;
       }

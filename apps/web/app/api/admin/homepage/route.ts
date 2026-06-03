@@ -13,6 +13,7 @@ export interface HomeBanner {
   link?: string;
   order: number;
   isActive: boolean;
+  productId?: string; // ID của sản phẩm liên kết (nếu có)
 }
 
 // GET — Fetch all home banners

@@ -20,6 +20,7 @@ interface HomeBanner {
   link?: string;
   order: number;
   isActive: boolean;
+  productId?: string; // Hướng B: ID sản phẩm liên kết
 }
 
 function generateId() {
@@ -28,25 +29,33 @@ function generateId() {
 
 export default function AdminHomepagePage() {
   const [banners, setBanners] = useState<HomeBanner[]>([]);
+  const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Load existing banners
+  // Load existing banners & products list
   useEffect(() => {
-    const fetchBanners = async () => {
+    const fetchData = async () => {
       try {
         const res = await fetch("/api/admin/homepage");
         const data = await res.json();
         setBanners(data.banners ?? []);
-      } catch {
-        toast.error("Không thể tải danh sách banner");
+
+        const prodRes = await fetch("/api/products?limit=100&status=all");
+        if (prodRes.ok) {
+          const prodData = await prodRes.json();
+          setProducts(prodData.products ?? []);
+        }
+      } catch (err) {
+        toast.error("Không thể tải danh sách dữ liệu");
+        console.error(err);
       } finally {
         setLoading(false);
       }
     };
-    fetchBanners();
+    fetchData();
   }, []);
 
   // Upload image to Supabase Storage
@@ -294,16 +303,48 @@ export default function AdminHomepagePage() {
                       />
                     </div>
                   </div>
-                  <div>
-                    <label className="block text-xs font-medium text-gray-500 mb-1">
-                      Phụ đề (tuỳ chọn)
-                    </label>
-                    <Input
-                      value={banner.subtitle ?? ""}
-                      onChange={(e) => handleFieldChange(banner.id, "subtitle", e.target.value)}
-                      placeholder="VD: Bộ sưu tập mới — Sen Đá & Rêu Tự Nhiên"
-                      className="h-8 text-sm border-gray-200"
-                    />
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    <div>
+                      <label className="block text-xs font-medium text-gray-500 mb-1">
+                        Phụ đề (tuỳ chọn)
+                      </label>
+                      <Input
+                        value={banner.subtitle ?? ""}
+                        onChange={(e) => handleFieldChange(banner.id, "subtitle", e.target.value)}
+                        placeholder="VD: Bộ sưu tập mới — Sen Đá & Rêu Tự Nhiên"
+                        className="h-8 text-sm border-gray-200"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-500 mb-1">
+                        Liên kết sản phẩm (Tự động đồng bộ Giá & Link)
+                      </label>
+                      <select
+                        value={banner.productId ?? ""}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          handleFieldChange(banner.id, "productId", val);
+                          // Tự động điền link và tiêu đề khi chọn sản phẩm
+                          if (val) {
+                            const p = products.find((prod) => prod.id === val);
+                            if (p) {
+                              handleFieldChange(banner.id, "link", `/products/${p.slug}`);
+                              if (!banner.title) {
+                                handleFieldChange(banner.id, "title", p.name);
+                              }
+                            }
+                          }
+                        }}
+                        className="w-full h-8 text-sm rounded-lg border border-gray-200 bg-white px-2 focus:ring-1 focus:ring-[#425733] focus:outline-none"
+                      >
+                        <option value="">-- Không liên kết --</option>
+                        {products.map((p) => (
+                          <option key={p.id} value={p.id}>
+                            {p.name} ({Number(p.basePrice).toLocaleString("vi-VN")}₫)
+                          </option>
+                        ))}
+                      </select>
+                    </div>
                   </div>
 
                   {/* URL readonly */}
@@ -379,7 +420,7 @@ export default function AdminHomepagePage() {
               </div>
 
               {/* Status strip */}
-              <div className={`px-4 py-1.5 flex items-center gap-2 text-xs ${
+              <div className={`px-4 py-1.5 flex items-center flex-wrap gap-y-1 gap-x-2 text-xs ${
                 banner.isActive
                   ? "bg-[#f5fbf0] border-t border-[#daebd0] text-[#5a7a48]"
                   : "bg-gray-50 border-t border-gray-100 text-gray-400"
@@ -392,6 +433,22 @@ export default function AdminHomepagePage() {
                     <span>Link: {banner.link}</span>
                   </>
                 )}
+                {(() => {
+                  const linkedP = banner.productId ? products.find(p => p.id === banner.productId) : null;
+                  if (linkedP) {
+                    const bp = Number(linkedP.basePrice);
+                    const sp = linkedP.salePrice ? Number(linkedP.salePrice) : null;
+                    return (
+                      <>
+                        <span className="text-gray-300 mx-1">•</span>
+                        <span className="text-[#3b592d] font-semibold bg-[#eaf4e5] px-2 py-0.5 rounded-md flex items-center gap-1 border border-[#c2d6b0]/40">
+                          🔗 Đã liên kết: {linkedP.name} ({sp ? `${sp.toLocaleString("vi-VN")}₫ (Khuyến mãi)` : `${bp.toLocaleString("vi-VN")}₫`})
+                        </span>
+                      </>
+                    );
+                  }
+                  return null;
+                })()}
               </div>
             </div>
           ))}

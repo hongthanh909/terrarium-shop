@@ -83,6 +83,30 @@ export function ProductDetailClient({ initialProduct, initialRelated }: { initia
   const [activeTab, setActiveTab] = useState<TabType>("details");
   const [isVoting, setIsVoting] = useState(false);
 
+  // Lightbox state for Option B
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [lightboxIndex, setLightboxIndex] = useState(0);
+
+  // Keyboard controls for Lightbox
+  useEffect(() => {
+    if (!lightboxOpen || !product || !product.images) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setLightboxOpen(false);
+      else if (e.key === "ArrowLeft") {
+        setLightboxIndex((prev) => (prev === 0 ? product.images.length - 1 : prev - 1));
+      } else if (e.key === "ArrowRight") {
+        setLightboxIndex((prev) => (prev === product.images.length - 1 ? 0 : prev + 1));
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [lightboxOpen, product?.images?.length]);
+
+  const handleOpenLightbox = (index: number) => {
+    setLightboxIndex(index);
+    setLightboxOpen(true);
+  };
+
   // Review state
   const [reviews, setReviews] = useState<any[]>([]);
   const [reviewsLoading, setReviewsLoading] = useState(false);
@@ -405,45 +429,177 @@ export function ProductDetailClient({ initialProduct, initialRelated }: { initia
       {/* Product Details */}
       <div className="max-w-7xl mx-auto px-6 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-          {/* Image Gallery */}
+          {/* Image Grid Gallery (Option B) */}
           <div className="flex flex-col gap-4">
-            <div className="aspect-[4/5] sm:aspect-square bg-[#f8faf6] rounded-3xl overflow-hidden relative border border-[#eaefeb] shadow-sm">
-              <Image
-                src={product.images[currentImageIndex] || "https://via.placeholder.com/800x1000?text=No+Image"}
-                alt={product.name}
-                fill
-                sizes="(max-width: 1024px) 100vw, 50vw"
-                className="object-cover transition-transform duration-500 hover:scale-105"
-                priority
-              />
-              {isSale && (
-                <div className="absolute top-4 left-4 bg-red-500 text-white text-sm font-bold px-3 py-1 rounded-full shadow-md z-10">
-                  -{discountPercent}%
+            {product.images && product.images.length > 0 ? (
+              product.images.length === 1 ? (
+                <div 
+                  onClick={() => handleOpenLightbox(0)}
+                  className="aspect-[4/5] sm:aspect-square bg-[#f8faf6] rounded-3xl overflow-hidden relative border border-[#eaefeb] shadow-sm cursor-zoom-in group w-full"
+                >
+                  <Image
+                    src={product.images[0]}
+                    alt={product.name}
+                    fill
+                    sizes="(max-width: 1024px) 100vw, 50vw"
+                    className="object-cover transition-transform duration-500 group-hover:scale-[1.02]"
+                    priority
+                  />
+                  {isSale && (
+                    <div className="absolute top-4 left-4 bg-red-500 text-white text-sm font-bold px-3 py-1 rounded-full shadow-md z-10">
+                      -{discountPercent}%
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
-            
-            {product.images.length > 1 && (
-              <div className="grid grid-cols-5 gap-3">
-                {product.images.map((img: string, index: number) => (
-                  <button
-                    key={index}
-                    onClick={() => setCurrentImageIndex(index)}
-                    className={`relative aspect-square rounded-xl overflow-hidden transition-all duration-200 border-2 ${
-                      currentImageIndex === index 
-                        ? "border-[#425733] shadow-md ring-2 ring-[#425733]/20" 
-                        : "border-transparent opacity-60 hover:opacity-100 hover:border-gray-200"
-                    }`}
+              ) : product.images.length === 2 ? (
+                <div className="grid grid-cols-3 gap-3 aspect-[4/5] sm:aspect-square w-full">
+                  <div 
+                    onClick={() => handleOpenLightbox(0)}
+                    className="col-span-2 relative rounded-3xl overflow-hidden cursor-zoom-in border border-[#eaefeb] shadow-sm group h-full"
                   >
                     <Image
-                      src={img}
-                      alt={`${product.name} - ${index + 1}`}
+                      src={product.images[0]}
+                      alt={product.name}
                       fill
-                      sizes="(max-width: 768px) 20vw, 10vw"
-                      className="object-cover"
+                      sizes="(max-width: 1024px) 100vw, 50vw"
+                      className="object-cover transition-transform duration-500 group-hover:scale-[1.02]"
+                      priority
                     />
-                  </button>
-                ))}
+                    {isSale && (
+                      <div className="absolute top-4 left-4 bg-red-500 text-white text-sm font-bold px-3 py-1 rounded-full shadow-md z-10">
+                        -{discountPercent}%
+                      </div>
+                    )}
+                  </div>
+                  <div 
+                    onClick={() => handleOpenLightbox(1)}
+                    className="col-span-1 relative rounded-2xl overflow-hidden cursor-zoom-in border border-[#eaefeb] shadow-sm group h-full"
+                  >
+                    <Image
+                      src={product.images[1]}
+                      alt={product.name}
+                      fill
+                      sizes="(max-width: 768px) 30vw, 15vw"
+                      className="object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
+                  </div>
+                </div>
+              ) : product.images.length === 3 ? (
+                <div className="grid grid-cols-3 gap-3 aspect-[4/5] sm:aspect-square w-full">
+                  <div 
+                    onClick={() => handleOpenLightbox(0)}
+                    className="col-span-2 relative rounded-3xl overflow-hidden cursor-zoom-in border border-[#eaefeb] shadow-sm group h-full"
+                  >
+                    <Image
+                      src={product.images[0]}
+                      alt={product.name}
+                      fill
+                      sizes="(max-width: 1024px) 100vw, 50vw"
+                      className="object-cover transition-transform duration-500 group-hover:scale-[1.02]"
+                      priority
+                    />
+                    {isSale && (
+                      <div className="absolute top-4 left-4 bg-red-500 text-white text-sm font-bold px-3 py-1 rounded-full shadow-md z-10">
+                        -{discountPercent}%
+                      </div>
+                    )}
+                  </div>
+                  <div className="col-span-1 flex flex-col gap-3 h-full justify-between">
+                    <div 
+                      onClick={() => handleOpenLightbox(1)}
+                      className="relative rounded-2xl overflow-hidden cursor-zoom-in border border-[#eaefeb] shadow-sm group h-[calc(50%-6px)]"
+                    >
+                      <Image
+                        src={product.images[1]}
+                        alt={product.name}
+                        fill
+                        sizes="(max-width: 768px) 30vw, 15vw"
+                        className="object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
+                    </div>
+                    <div 
+                      onClick={() => handleOpenLightbox(2)}
+                      className="relative rounded-2xl overflow-hidden cursor-zoom-in border border-[#eaefeb] shadow-sm group h-[calc(50%-6px)]"
+                    >
+                      <Image
+                        src={product.images[2]}
+                        alt={product.name}
+                        fill
+                        sizes="(max-width: 768px) 30vw, 15vw"
+                        className="object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="grid grid-cols-3 gap-3 aspect-[4/5] sm:aspect-square w-full">
+                  <div 
+                    onClick={() => handleOpenLightbox(0)}
+                    className="col-span-2 relative rounded-3xl overflow-hidden cursor-zoom-in border border-[#eaefeb] shadow-sm group h-full"
+                  >
+                    <Image
+                      src={product.images[0]}
+                      alt={product.name}
+                      fill
+                      sizes="(max-width: 1024px) 100vw, 50vw"
+                      className="object-cover transition-transform duration-500 group-hover:scale-[1.02]"
+                      priority
+                    />
+                    {isSale && (
+                      <div className="absolute top-4 left-4 bg-red-500 text-white text-sm font-bold px-3 py-1 rounded-full shadow-md z-10">
+                        -{discountPercent}%
+                      </div>
+                    )}
+                  </div>
+                  <div className="col-span-1 flex flex-col gap-3 h-full justify-between">
+                    <div 
+                      onClick={() => handleOpenLightbox(1)}
+                      className="relative rounded-2xl overflow-hidden cursor-zoom-in border border-[#eaefeb] shadow-sm group h-[calc(33.33%-8px)]"
+                    >
+                      <Image
+                        src={product.images[1]}
+                        alt={product.name}
+                        fill
+                        sizes="(max-width: 768px) 30vw, 15vw"
+                        className="object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
+                    </div>
+                    <div 
+                      onClick={() => handleOpenLightbox(2)}
+                      className="relative rounded-2xl overflow-hidden cursor-zoom-in border border-[#eaefeb] shadow-sm group h-[calc(33.33%-8px)]"
+                    >
+                      <Image
+                        src={product.images[2]}
+                        alt={product.name}
+                        fill
+                        sizes="(max-width: 768px) 30vw, 15vw"
+                        className="object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
+                    </div>
+                    <div 
+                      onClick={() => handleOpenLightbox(3)}
+                      className="relative rounded-2xl overflow-hidden cursor-zoom-in border border-[#eaefeb] shadow-sm group h-[calc(33.33%-8px)]"
+                    >
+                      <Image
+                        src={product.images[3]}
+                        alt={product.name}
+                        fill
+                        sizes="(max-width: 768px) 30vw, 15vw"
+                        className="object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
+                      {product.images.length > 4 && (
+                        <div className="absolute inset-0 bg-black/50 backdrop-blur-[1px] flex flex-col items-center justify-center text-white select-none">
+                          <span className="font-bold text-lg">+{product.images.length - 3}</span>
+                          <span className="text-[9px] uppercase font-semibold tracking-wider opacity-85 mt-0.5">Xem tất cả</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )
+            ) : (
+              <div className="aspect-[4/5] sm:aspect-square bg-muted rounded-3xl flex items-center justify-center">
+                <span className="text-muted-foreground">Chưa có ảnh</span>
               </div>
             )}
           </div>
@@ -848,6 +1004,88 @@ export function ProductDetailClient({ initialProduct, initialRelated }: { initia
                   </Card>
                 </Link>
               ))}
+            </div>
+          </div>
+        )}
+        {/* Lightbox Modal */}
+        {lightboxOpen && product.images && product.images.length > 0 && (
+          <div className="fixed inset-0 z-50 flex flex-col justify-between bg-black/95 backdrop-blur-md select-none">
+            {/* Header */}
+            <div className="flex items-center justify-between p-4 text-white z-10 bg-gradient-to-b from-black/50 to-transparent">
+              <span className="text-sm font-semibold tracking-wider font-mono bg-white/10 px-3 py-1 rounded-full">
+                {lightboxIndex + 1} / {product.images.length}
+              </span>
+              <button
+                onClick={() => setLightboxOpen(false)}
+                className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition-all text-white/80 hover:text-white"
+                aria-label="Đóng"
+              >
+                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Main Content Area */}
+            <div className="flex-1 flex items-center justify-between px-4 sm:px-12 relative">
+              {/* Prev Button */}
+              <button
+                onClick={() => setLightboxIndex((prev) => (prev === 0 ? product.images.length - 1 : prev - 1))}
+                className="p-3 rounded-xl bg-white/5 hover:bg-white/15 text-white/80 hover:text-white transition-all backdrop-blur-sm z-10"
+                aria-label="Ảnh trước"
+              >
+                <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+
+              {/* Image */}
+              <div className="relative max-w-4xl max-h-[75vh] w-full aspect-square flex items-center justify-center">
+                <Image
+                  src={product.images[lightboxIndex]}
+                  alt={`${product.name} - Phóng to`}
+                  fill
+                  className="object-contain transition-all duration-300"
+                  sizes="100vw"
+                  priority
+                />
+              </div>
+
+              {/* Next Button */}
+              <button
+                onClick={() => setLightboxIndex((prev) => (prev === product.images.length - 1 ? 0 : prev + 1))}
+                className="p-3 rounded-xl bg-white/5 hover:bg-white/15 text-white/80 hover:text-white transition-all backdrop-blur-sm z-10"
+                aria-label="Ảnh sau"
+              >
+                <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Bottom Thumbnails */}
+            <div className="p-6 bg-black/40 border-t border-white/10 backdrop-blur-sm z-10">
+              <div className="flex justify-center gap-3 overflow-x-auto max-w-2xl mx-auto py-2 scrollbar-none">
+                {product.images.map((img: string, idx: number) => (
+                  <button
+                    key={idx}
+                    onClick={() => setLightboxIndex(idx)}
+                    className={`relative w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 transition-all border-2 ${
+                      lightboxIndex === idx
+                        ? "border-[#a8c098] scale-105 ring-2 ring-[#a8c098]/30"
+                        : "border-transparent opacity-50 hover:opacity-100"
+                    }`}
+                  >
+                    <Image
+                      src={img}
+                      alt={`Thumb ${idx + 1}`}
+                      fill
+                      className="object-cover"
+                      sizes="64px"
+                    />
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         )}
