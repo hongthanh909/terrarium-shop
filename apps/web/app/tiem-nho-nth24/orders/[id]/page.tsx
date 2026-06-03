@@ -26,6 +26,7 @@ interface Order {
   shippingInfo: {
     name: string;
     phone: string;
+    email?: string;
     address: string;
     fullAddress: string;
   };
@@ -264,11 +265,11 @@ export default function AdminOrderDetailPage() {
             <div className="space-y-2 text-sm">
               <div>
                 <span className="text-gray-500">Họ tên:</span>
-                <span className="ml-2 font-medium text-gray-800">{order.customer?.name || "N/A"}</span>
+                <span className="ml-2 font-medium text-gray-800">{order.customer?.name || order.shippingInfo?.name || "N/A"}</span>
               </div>
               <div>
                 <span className="text-gray-500">Email:</span>
-                <span className="ml-2 text-gray-800">{order.customer?.email || "N/A"}</span>
+                <span className="ml-2 text-gray-800">{order.customer?.email || order.shippingInfo?.email || "N/A"}</span>
               </div>
               <div>
                 <span className="text-gray-500">Số điện thoại:</span>

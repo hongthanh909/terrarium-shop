@@ -412,6 +412,7 @@ model ShippingInfo {
   orderId       String  @unique
   name          String?
   phone         String?
+  email         String?
   province      String?
   district      String?
   ward          String?

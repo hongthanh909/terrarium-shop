@@ -113,6 +113,7 @@ export default function CheckoutPage() {
         })),
         shippingInfo: {
           name: formData.name,
+          email: formData.email,
           phone: formData.phone,
           province: formData.province,
           district: formData.district,
