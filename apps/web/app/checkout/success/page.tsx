@@ -30,7 +30,7 @@ export default function CheckoutSuccessPage() {
 
   // Transfer info
   const transferContent = `TT ${orderNumber.slice(-8).toUpperCase()}`;
-  const qrUrl = `https://img.vietqr.io/image/${BANK_BIN}-${BANK_ACCOUNT}-compact2.png`
+  const qrUrl = `https://img.vietqr.io/image/${BANK_BIN}-${BANK_ACCOUNT}-compact.png`
     + `?amount=${total}&addInfo=${encodeURIComponent(transferContent)}`
     + `&accountName=${encodeURIComponent(BANK_OWNER)}`;
 
@@ -288,12 +288,16 @@ export default function CheckoutSuccessPage() {
               <div className="p-6 flex flex-col md:flex-row gap-8 items-center">
 
                 {/* QR */}
-                <div className="shrink-0 flex flex-col items-center gap-2">
-                  <div className="p-3 bg-white rounded-xl border-4 border-[#425733] shadow-lg">
+                <div className="shrink-0 flex flex-col items-center gap-2 w-full md:w-auto">
+                  <div className="p-4 bg-white rounded-2xl border border-gray-200 shadow-md flex items-center justify-center">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={qrUrl} alt="QR chuyển khoản" className="w-52 h-52 rounded-lg" />
+                    <img 
+                      src={qrUrl} 
+                      alt="QR chuyển khoản" 
+                      className="w-72 h-auto object-contain rounded-lg" 
+                    />
                   </div>
-                  <p className="text-xs text-gray-400">Quét bằng app ngân hàng bất kỳ</p>
+                  <p className="text-xs text-gray-400 font-medium">Quét bằng app ngân hàng bất kỳ</p>
                 </div>
 
                 {/* Bank info */}

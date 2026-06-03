@@ -44,7 +44,7 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
 
   const currentProduct = products[currentIndex];
   const nextProduct = products[(currentIndex + 1) % products.length] || currentProduct;
-  const nextNextProduct = products[(currentIndex + 2) % products.length] || nextProduct;
+  const prevProduct = products[(currentIndex - 1 + products.length) % products.length] || currentProduct;
   
   // Calculate discount percentage
   const basePrice = Number(currentProduct.basePrice);
@@ -71,8 +71,15 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
           0%, 100% { transform: rotate(45deg) translate(var(--tx), var(--ty)) scale(1); opacity: 0.4; }
           50% { transform: rotate(45deg) translate(calc(var(--tx) + 4px), calc(var(--ty) - 5px)) scale(1.25); opacity: 0.95; }
         }
+        @keyframes fade-in {
+          0% { opacity: 0.4; }
+          100% { opacity: 1; }
+        }
         .carousel-glass-layer {
           transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.8s ease, box-shadow 0.8s ease;
+        }
+        .carousel-image-animate {
+          animation: fade-in 0.5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
         }
         /* Default states */
         .glass-left {
@@ -250,19 +257,21 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
         </svg>
       </div>
 
-      {/* Decorative Glass Card Left (Layer 10: Next-Next Product) */}
+      {/* Decorative Glass Card Left (Layer 10: Prev Product) */}
       <div 
-        className="carousel-glass-layer glass-left absolute inset-0 rounded-[2.5rem] border border-white/20 shadow-2xl overflow-hidden pointer-events-none"
+        onClick={handlePrev}
+        className="carousel-glass-layer glass-left absolute inset-0 rounded-[2.5rem] border border-white/20 shadow-2xl overflow-hidden pointer-events-auto cursor-pointer"
         style={{
           zIndex: 10,
         }}
       >
-        {nextNextProduct.images[0] ? (
+        {prevProduct.images[0] ? (
           <Image
-            src={nextNextProduct.images[0]}
-            alt={nextNextProduct.name}
+            key={`prev-${prevProduct.id}-${currentIndex}`}
+            src={prevProduct.images[0]}
+            alt={prevProduct.name}
             fill
-            className="object-cover filter blur-[2px] brightness-75 transition-all duration-700"
+            className="object-cover filter blur-[2px] brightness-75 transition-all duration-700 carousel-image-animate"
             sizes="400px"
           />
         ) : (
@@ -274,17 +283,19 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
 
       {/* Decorative Glass Card Right (Layer 20: Next Product) */}
       <div 
-        className="carousel-glass-layer glass-right absolute inset-0 rounded-[2.5rem] border border-white/20 shadow-2xl overflow-hidden pointer-events-none"
+        onClick={handleNext}
+        className="carousel-glass-layer glass-right absolute inset-0 rounded-[2.5rem] border border-white/20 shadow-2xl overflow-hidden pointer-events-auto cursor-pointer"
         style={{
           zIndex: 20,
         }}
       >
         {nextProduct.images[0] ? (
           <Image
+            key={`next-${nextProduct.id}-${currentIndex}`}
             src={nextProduct.images[0]}
             alt={nextProduct.name}
             fill
-            className="object-cover filter blur-[0.5px] brightness-[0.88] transition-all duration-700"
+            className="object-cover filter blur-[0.5px] brightness-[0.88] transition-all duration-700 carousel-image-animate"
             sizes="400px"
           />
         ) : (
@@ -304,10 +315,11 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
         <Link href={`/products/${currentProduct.slug}`} className="block relative aspect-[4/3] w-full bg-[#f8faf7] overflow-hidden">
           {currentProduct.images[0] ? (
             <Image
+              key={`current-${currentProduct.id}-${currentIndex}`}
               src={currentProduct.images[0]}
               alt={currentProduct.name}
               fill
-              className="object-cover transition-transform duration-700 group-hover/main:scale-105"
+              className="object-cover transition-transform duration-700 group-hover/main:scale-105 carousel-image-animate"
               sizes="(max-width: 768px) 100vw, 600px"
               priority
             />

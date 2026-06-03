@@ -8,6 +8,7 @@ import { ArrowLeft, Plus, X, Save, Upload, Image as ImageIcon, Star } from "luci
 import { toast } from "sonner";
 import { FormField } from "@/components/admin/ui/FormField";
 import { FormSelect } from "@/components/admin/ui/FormSelect";
+import { compressImage } from "@/lib/image";
 
 interface Category {
   id: string;
@@ -196,8 +197,9 @@ export default function EditProductPage() {
   };
 
   const uploadImage = async (file: File): Promise<string | null> => {
+    const compressed = await compressImage(file);
     const fd = new FormData();
-    fd.append("file", file);
+    fd.append("file", compressed);
     fd.append("bucket", "products");
     const res = await fetch("/api/upload", { method: "POST", body: fd });
     if (!res.ok) { toast.error("Upload thất bại"); return null; }

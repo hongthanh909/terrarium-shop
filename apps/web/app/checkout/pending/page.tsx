@@ -22,7 +22,7 @@ export default function CheckoutPendingPage() {
   const total = Number(searchParams.get("total") || 0);
   const transferContent = `TT ${orderNumber.slice(-8).toUpperCase()}`;
 
-  const qrUrl = `https://img.vietqr.io/image/${BANK_BIN}-${BANK_ACCOUNT}-compact2.png?amount=${total}&addInfo=${encodeURIComponent(transferContent)}&accountName=${encodeURIComponent(BANK_OWNER)}`;
+  const qrUrl = `https://img.vietqr.io/image/${BANK_BIN}-${BANK_ACCOUNT}-compact.png?amount=${total}&addInfo=${encodeURIComponent(transferContent)}&accountName=${encodeURIComponent(BANK_OWNER)}`;
 
   const [secondsLeft, setSecondsLeft] = useState<number | null>(null);
   const [paymentStatus, setPaymentStatus] = useState<"PENDING" | "PAID" | "EXPIRED">("PENDING");
@@ -186,19 +186,19 @@ export default function CheckoutPendingPage() {
         {/* QR Code */}
         <div className="bg-white rounded-2xl p-6 border border-[#daebd0] shadow-sm">
           <div className="flex flex-col items-center mb-4">
-            <div className="relative p-4 bg-white rounded-2xl border-[6px] border-[#425733] shadow-xl">
+            <div className="relative p-4 bg-white rounded-2xl border border-gray-200 shadow-md flex items-center justify-center">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={qrUrl}
                 alt="QR chuyển khoản"
-                className="w-72 h-72 rounded-lg block"
+                className="w-72 h-auto object-contain rounded-lg block"
                 onError={(e) => {
                   const img = e.target as HTMLImageElement;
                   img.style.display = "none";
                   (img.nextElementSibling as HTMLElement).style.display = "flex";
                 }}
               />
-              <div className="w-72 h-72 items-center justify-center flex-col gap-2 text-center hidden bg-gray-50 rounded-lg">
+              <div className="w-72 h-[340px] items-center justify-center flex-col gap-2 text-center hidden bg-gray-50 rounded-lg">
                 <span className="text-4xl">🏦</span>
                 <p className="text-sm text-gray-500">Nhập thủ công theo thông tin bên dưới</p>
               </div>

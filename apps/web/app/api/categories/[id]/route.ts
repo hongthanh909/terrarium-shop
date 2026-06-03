@@ -4,6 +4,7 @@ import { verifyAdminRequest, unauthorizedResponse } from "@/lib/admin-auth";
 import { logAdminAction } from "@/lib/audit";
 import { updateCategorySchema } from "@/lib/validations";
 import { z } from "zod";
+import { revalidatePath } from "next/cache";
 
 export async function GET(
   _request: NextRequest,
@@ -60,11 +61,21 @@ export async function PUT(
       status: category.status,
     });
 
+    // Revalidate user-facing pages
+    revalidatePath("/products");
+    revalidatePath("/");
+
     return NextResponse.json(category);
-  } catch (error) {
+  } catch (error: any) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { error: "Validation error", details: error.errors },
+        { status: 400 }
+      );
+    }
+    if (error?.code === "P2002") {
+      return NextResponse.json(
+        { error: "Đường dẫn (slug) đã tồn tại. Vui lòng chọn đường dẫn khác." },
         { status: 400 }
       );
     }
@@ -114,6 +125,10 @@ export async function DELETE(
     await logAdminAction(admin.id, "DELETE", "Category", id, {
       name: category.name,
     });
+
+    // Revalidate user-facing pages
+    revalidatePath("/products");
+    revalidatePath("/");
 
     return NextResponse.json({ success: true });
   } catch (error) {

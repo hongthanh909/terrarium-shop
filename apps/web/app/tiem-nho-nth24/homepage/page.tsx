@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import Link from "next/link";
+import { compressImage } from "@/lib/image";
 
 interface HomeBanner {
   id: string;
@@ -54,15 +55,12 @@ export default function AdminHomepagePage() {
       toast.error("Chỉ chấp nhận file ảnh");
       return;
     }
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error("Ảnh phải nhỏ hơn 5MB");
-      return;
-    }
 
     setUploading(true);
     try {
+      const compressed = await compressImage(file);
       const formData = new FormData();
-      formData.append("file", file);
+      formData.append("file", compressed);
       formData.append("bucket", "banners");
 
       const res = await fetch("/api/upload", {
