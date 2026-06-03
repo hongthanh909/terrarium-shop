@@ -10,7 +10,7 @@ export async function GET() {
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
     // Chạy song song 4 queries thay vì tuần tự (giảm latency ~3x)
-    const [featured, pinned, topVoted, newArrivals] = await Promise.all([
+    let [featured, pinned, topVoted, newArrivals] = await Promise.all([
       // Featured products
       prisma.product.findMany({
         where: { status: "ACTIVE", featured: true },
@@ -32,7 +32,10 @@ export async function GET() {
           category: true,
           _count: { select: { votes: true } },
         },
-        orderBy: { votes: { _count: "desc" } },
+        orderBy: [
+          { votes: { _count: "desc" } },
+          { createdAt: "desc" },
+        ],
         take: 8,
       }),
       // New arrivals (last 30 days)
@@ -43,6 +46,16 @@ export async function GET() {
         take: 8,
       }),
     ]);
+
+    // Fallback if no new products in the last 30 days
+    if (newArrivals.length === 0) {
+      newArrivals = await prisma.product.findMany({
+        where: { status: "ACTIVE" },
+        include: { category: true },
+        orderBy: { createdAt: "desc" },
+        take: 8,
+      });
+    }
 
     return NextResponse.json({
       featured,

@@ -50,6 +50,7 @@ export default function CreateProductPage() {
     categoryId: "",
     status: "DRAFT",
     inventory: 0,
+    isFeatured: false,
   });
 
   const [careGuide, setCareGuide] = useState({
@@ -255,6 +256,18 @@ export default function CreateProductPage() {
                 { label: "Lưu trữ", value: "ARCHIVED" },
               ]}
             />
+            <div className="flex items-center gap-2 md:col-span-2 py-2">
+              <input
+                type="checkbox"
+                id="isFeatured"
+                checked={formData.isFeatured}
+                onChange={(e) => setFormData({ ...formData, isFeatured: e.target.checked })}
+                className="w-4 h-4 rounded border-gray-300 text-[#425733] focus:ring-[#425733]"
+              />
+              <label htmlFor="isFeatured" className="text-sm font-semibold text-gray-700 cursor-pointer">
+                Sản phẩm nổi bật (Featured) 🔥
+              </label>
+            </div>
           </div>
         </div>
 

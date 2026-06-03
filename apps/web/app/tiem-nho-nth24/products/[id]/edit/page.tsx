@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowLeft, Plus, X, Save, Upload, Image as ImageIcon, Star } from "lucide-react";
+import { ArrowLeft, Plus, X, Save, Upload, Image as ImageIcon, Star, Zap } from "lucide-react";
 import { toast } from "sonner";
 import { FormField } from "@/components/admin/ui/FormField";
 import { FormSelect } from "@/components/admin/ui/FormSelect";
@@ -100,6 +100,7 @@ export default function EditProductPage() {
     categoryId: "",
     status: "DRAFT",
     inventory: 0,
+    isFeatured: false,
   });
 
   const [careGuide, setCareGuide] = useState({
@@ -151,6 +152,7 @@ export default function EditProductPage() {
           categoryId: data.categoryId || "",
           status: data.status,
           inventory: data.inventory || 0,
+          isFeatured: !!data.featured,
         });
 
         // Split main vs sub images
@@ -441,6 +443,47 @@ export default function EditProductPage() {
                 { label: "Lưu trữ", value: "ARCHIVED" },
               ]}
             />
+            <div className="flex flex-col gap-4 md:col-span-2 py-2 border-t border-gray-100 mt-4 pt-4">
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="isFeatured"
+                  checked={formData.isFeatured}
+                  onChange={(e) => setFormData({ ...formData, isFeatured: e.target.checked })}
+                  className="w-4 h-4 rounded border-gray-300 text-[#425733] focus:ring-[#425733]"
+                />
+                <label htmlFor="isFeatured" className="text-sm font-semibold text-gray-700 cursor-pointer">
+                  Sản phẩm nổi bật (Featured) 🔥
+                </label>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={async () => {
+                    if (!confirm("Bạn có chắc chắn muốn cập nhật ngày tạo sản phẩm về hiện tại để đẩy sản phẩm này lên mục Mới Rời Xưởng?")) return;
+                    try {
+                      const res = await fetch(`/api/products/${productId}`, {
+                        method: "PUT",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ createdAt: new Date().toISOString() }),
+                      });
+                      if (res.ok) {
+                        toast.success("Đã đẩy sản phẩm lên mục Mới Rời Xưởng! 🆕");
+                      } else {
+                        toast.error("Không thể cập nhật ngày tạo sản phẩm");
+                      }
+                    } catch {
+                      toast.error("Lỗi kết nối");
+                    }
+                  }}
+                  className="px-4 py-2 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-xl text-xs font-semibold border border-blue-200 transition-colors flex items-center gap-1.5 w-fit"
+                >
+                  <Zap className="w-3.5 h-3.5" />
+                  Đẩy lên mục Mới rời xưởng (Cập nhật ngày tạo về hôm nay)
+                </button>
+              </div>
+            </div>
             {/* Flash Sale End Date — chỉ hiển khi có giá KM */}
             {formData.salePrice && (
               <div className="md:col-span-2">

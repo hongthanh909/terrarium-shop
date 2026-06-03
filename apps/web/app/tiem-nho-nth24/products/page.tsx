@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import Image from "next/image";
-import { Plus, Edit, Trash2, Eye, Search, Filter, Pin, Star } from "lucide-react";
+import { Plus, Edit, Trash2, Eye, Search, Filter, Pin, Star, Flame, Zap } from "lucide-react";
 import { toast } from "sonner";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 
@@ -24,6 +24,7 @@ interface Product {
   images: string[];
   createdAt: string;
   pinnedUntil: string | null;
+  featured?: boolean;
 }
 
 export default function AdminProductsPage() {
@@ -131,6 +132,58 @@ export default function AdminProductsPage() {
       loading: "Đang đặt làm Sản Phẩm Của Tuần...",
       success: "Đã đặt làm Sản Phẩm Của Tuần thành công!",
       error: (err) => err.message || "Lỗi khi đặt Sản Phẩm Của Tuần",
+      finally: () => setActionLoading(false),
+    });
+  };
+
+  const handleToggleFeatured = async (id: string, currentlyFeatured: boolean) => {
+    setActionLoading(true);
+    const promise = async () => {
+      const response = await fetch(`/api/admin/products/${id}/featured`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          featured: !currentlyFeatured
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Không thể cập nhật trạng thái nổi bật");
+      }
+      queryClient.invalidateQueries({ queryKey: ["admin-products"] });
+    };
+
+    toast.promise(promise(), {
+      loading: "Đang cập nhật trạng thái nổi bật...",
+      success: !currentlyFeatured ? "Đã đặt làm sản phẩm Nổi bật! 🔥" : "Đã bỏ sản phẩm khỏi mục Nổi bật.",
+      error: (err) => err.message || "Lỗi khi thay đổi trạng thái nổi bật",
+      finally: () => setActionLoading(false),
+    });
+  };
+
+  const handleRefreshCreatedAt = async (id: string, name: string) => {
+    if (!confirm(`Đẩy sản phẩm "${name}" lên đầu mục "Mới Rời Xưởng"?\nHành động này sẽ cập nhật ngày tạo sản phẩm về thời điểm hiện tại.`)) return;
+
+    setActionLoading(true);
+    const promise = async () => {
+      const response = await fetch(`/api/products/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          createdAt: new Date().toISOString()
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Không thể cập nhật ngày tạo sản phẩm");
+      }
+      queryClient.invalidateQueries({ queryKey: ["admin-products"] });
+    };
+
+    toast.promise(promise(), {
+      loading: "Đang đẩy sản phẩm lên mục Mới...",
+      success: "Đã đẩy sản phẩm lên mục Mới thành công! 🆕",
+      error: (err) => err.message || "Lỗi khi cập nhật ngày tạo sản phẩm",
       finally: () => setActionLoading(false),
     });
   };
@@ -386,6 +439,22 @@ export default function AdminProductsPage() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <div className="flex justify-end gap-2">
+                      <button
+                        onClick={() => handleToggleFeatured(product.id, !!product.featured)}
+                        disabled={actionLoading}
+                        className={`p-1 disabled:opacity-30 disabled:cursor-not-allowed ${product.featured ? 'text-red-500 fill-red-500' : 'text-gray-400 hover:text-red-500'}`}
+                        title={product.featured ? "Bỏ nổi bật" : "Đặt làm Nổi bật"}
+                      >
+                        <Flame className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handleRefreshCreatedAt(product.id, product.name)}
+                        disabled={actionLoading}
+                        className="text-blue-500 hover:text-blue-700 p-1 disabled:opacity-30 disabled:cursor-not-allowed"
+                        title="Đẩy lên mục Mới rời xưởng"
+                      >
+                        <Zap className="w-4 h-4" />
+                      </button>
                       <button
                         onClick={() => handleSetWeekly(product.id)}
                         disabled={actionLoading}

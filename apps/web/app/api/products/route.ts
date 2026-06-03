@@ -184,6 +184,7 @@ export async function POST(request: NextRequest) {
       careGuideData,
       salePrice: salePriceRaw,
       saleEndDate: saleEndDateRaw,
+      isFeatured,
     } = validatedData;
 
     // Resolve sale fields
@@ -206,6 +207,7 @@ export async function POST(request: NextRequest) {
           ...(categoryId !== undefined && categoryId !== null && { category: { connect: { id: categoryId } } }),
           status: status as any,
           images,
+          featured: !!isFeatured,
         } as any,
       });
 

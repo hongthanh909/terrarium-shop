@@ -101,11 +101,13 @@ export async function PUT(
       variants = [],
       variantOptions = [],
       careGuideData,
+      isFeatured,
     } = validatedData;
 
     // Extract sale fields from body
     const salePrice = body.salePrice != null ? (parseFloat(body.salePrice) || null) : null;
     const saleEndDate = body.saleEndDate ? new Date(body.saleEndDate) : null;
+    const createdAt = body.createdAt ? new Date(body.createdAt) : undefined;
 
     const product = await client.$transaction(async (tx) => {
       // Update product
@@ -121,6 +123,8 @@ export async function PUT(
           ...(categoryId !== undefined && categoryId !== null && { category: { connect: { id: categoryId } } }),
           ...(status !== undefined && { status }),
           ...(images !== undefined && { images }),
+          ...(isFeatured !== undefined && { featured: isFeatured }),
+          ...(createdAt !== undefined && { createdAt }),
         } as any,
       });
 

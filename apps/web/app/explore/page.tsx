@@ -19,7 +19,7 @@ export default async function ExplorePage() {
     weekStart.setDate(now.getDate() - now.getDay() + 1);
     weekStart.setHours(0, 0, 0, 0);
 
-    const [featured, pinned, topVoted, newArrivals, weeklyFeaturedData] = await Promise.all([
+    let [featured, pinned, topVoted, newArrivals, weeklyFeaturedData] = await Promise.all([
       prisma.product.findMany({
         where: { status: "ACTIVE", featured: true },
         include: { category: true, _count: { select: { votes: true } } },
@@ -35,7 +35,10 @@ export default async function ExplorePage() {
       prisma.product.findMany({
         where: { status: "ACTIVE" },
         include: { category: true, _count: { select: { votes: true } } },
-        orderBy: { votes: { _count: "desc" } },
+        orderBy: [
+          { votes: { _count: "desc" } },
+          { createdAt: "desc" }
+        ],
         take: 8,
       }),
       prisma.product.findMany({
@@ -49,6 +52,16 @@ export default async function ExplorePage() {
         include: { product: { include: { category: true } } },
       }).catch(() => null),
     ]);
+
+    // Fallback if no new products in the last 30 days
+    if (newArrivals.length === 0) {
+      newArrivals = await prisma.product.findMany({
+        where: { status: "ACTIVE" },
+        include: { category: true, _count: { select: { votes: true } } },
+        orderBy: { createdAt: "desc" },
+        take: 8,
+      });
+    }
 
     const weeklyFeatured = weeklyFeaturedData
       ? {
