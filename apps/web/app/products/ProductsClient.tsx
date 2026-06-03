@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { ProductCard } from "@/components/ui/product-card";
 import { PageTransition, SlideInHeading } from "@/components/ui/page-transition";
 import { useCartStore } from "@/lib/store/cartStore";
+import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 
@@ -43,11 +44,18 @@ export function ProductsClient({
   initialSearch: string;
 }) {
   const router = useRouter();
+  const { data: session } = useSession();
   const [selectedCategory, setSelectedCategory] = useState<string | null>(initialCategory);
   const [searchQuery, setSearchQuery] = useState(initialSearch);
   const { addItem } = useCartStore();
 
   const handleAddToCart = (product: Product) => {
+    // Yêu cầu đăng nhập trước khi thêm vào giỏ hàng
+    if (!session) {
+      toast.error("Đăng nhập để thêm sản phẩm vào giỏ hàng!");
+      router.push(`/login?callbackUrl=/products`);
+      return;
+    }
     const basePrice = parseFloat(product.basePrice.toString());
     const salePrice = product.salePrice ? parseFloat(product.salePrice.toString()) : null;
     const price = salePrice != null && salePrice < basePrice ? salePrice : basePrice;

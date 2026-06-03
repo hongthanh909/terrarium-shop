@@ -183,9 +183,9 @@ export const authOptions: NextAuthOptions = {
   },
 
   pages: {
-    // When NextAuth encounters an unhandled error (e.g. DB down), send to
-    // admin login — NOT the customer /login page.
-    error: ADMIN_LOGIN_PATH,
+    // Gửi lỗi NextAuth chung về trang đăng nhập khách hàng (/login).
+    // Trang admin login tự xử lý lỗi riêng trong page component.
+    error: "/login",
   },
 
   secret: process.env.NEXTAUTH_SECRET,

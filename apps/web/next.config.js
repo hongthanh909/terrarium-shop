@@ -6,13 +6,15 @@ module.exports = {
   // Nén response để giảm băng thông
   compress: true,
 
-  // Bỏ header X-Powered-By để bảo mật và tăng nhẹ hiệu suất
+  // Bỏ header X-Powered-By
   poweredByHeader: false,
 
-  // Tối ưu package imports (tree-shaking tốt hơn = ít module compile hơn)
+  // Output mode — standalone để chạy tốt hơn trên VPS với PM2
+  // (tạo .next/standalone có thể chạy node server.js trực tiếp)
+  output: 'standalone',
+
+  // Tối ưu package imports (tree-shaking tốt hơn)
   experimental: {
-    workerThreads: false,
-    cpus: 1,
     optimizePackageImports: [
       'lucide-react',
       'framer-motion',
@@ -24,7 +26,7 @@ module.exports = {
     ],
   },
 
-  // Giảm logging noise trong dev
+  // Giảm logging noise
   logging: {
     fetches: {
       fullUrl: false,
@@ -33,13 +35,11 @@ module.exports = {
 
   images: {
     formats: ['image/avif', 'image/webp'],
-    // Kích thước thiết bị hợp lý cho mobile/desktop
     deviceSizes: [640, 750, 828, 1080, 1200, 1920],
-    // Kích thước nhỏ cho thumbnail, icon
     imageSizes: [16, 32, 48, 64, 96, 128, 192, 256],
-    // Cache ảnh 1 ngày
     minimumCacheTTL: 86400,
     remotePatterns: [
+      // ── Supabase (dùng trong giai đoạn chuyển đổi) ────────────────────
       {
         protocol: 'https',
         hostname: '**.supabase.co',
@@ -48,6 +48,21 @@ module.exports = {
         protocol: 'https',
         hostname: '**.supabase.com',
       },
+      // ── MinIO Storage VPS ──────────────────────────────────────────────
+      {
+        protocol: 'https',
+        hostname: 'storage.tiemreudecor.com',
+      },
+      // ── Truy cập trực tiếp qua IP VPS (dev/debug) ─────────────────────
+      {
+        protocol: 'http',
+        hostname: '14.225.210.118',
+      },
+      {
+        protocol: 'https',
+        hostname: '14.225.210.118',
+      },
+      // ── Ảnh mẫu và placeholder ────────────────────────────────────────
       {
         protocol: 'https',
         hostname: 'images.unsplash.com',
@@ -60,6 +75,7 @@ module.exports = {
         protocol: 'https',
         hostname: 'placehold.co',
       },
+      // ── Google (avatar, fonts) ────────────────────────────────────────
       {
         protocol: 'https',
         hostname: '**.googleapis.com',
@@ -68,22 +84,10 @@ module.exports = {
         protocol: 'https',
         hostname: '**.googleusercontent.com',
       },
-      {
-        protocol: 'https',
-        hostname: 'storage.tiemreudecor.com',
-      },
-      {
-        protocol: 'http',
-        hostname: '14.225.210.118',
-      },
-      {
-        protocol: 'https',
-        hostname: '14.225.210.118',
-      },
     ],
   },
 
-  // Headers bảo mật + cache tốt hơn
+  // Headers bảo mật
   async headers() {
     return [
       {

@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import {
   ShoppingCart, User, X, Minus, Plus, ShoppingBag,
-  ChevronDown, LogOut, Package, LayoutDashboard, Heart,
+  ChevronDown, LogOut, Package, LayoutDashboard, Heart, Lock,
 } from "lucide-react";
 import { useCartStore, CartItem } from "@/lib/store/cartStore";
 import { useState, useEffect, useCallback } from "react";
@@ -243,7 +243,14 @@ export default function Header() {
               {/* Cart */}
               <button
                 className="relative w-9 h-9 flex items-center justify-center rounded-full text-white/75 hover:text-white hover:bg-white/15 transition-colors"
-                onClick={() => setCartOpen(true)}
+                onClick={() => {
+                  if (!session) {
+                    // Chưa đăng nhập → chuyển sang trang login
+                    window.location.href = "/login?callbackUrl=/";
+                    return;
+                  }
+                  setCartOpen(true);
+                }}
               >
                 <ShoppingCart className="w-5 h-5" />
                 <AnimatePresence>
@@ -288,14 +295,29 @@ export default function Header() {
                   <ShoppingBag className="w-10 h-10 text-[#6d8c5a]" />
                 </div>
                 <p className="font-semibold text-gray-700 mb-1">Giỏ hàng trống</p>
-                <p className="text-sm text-gray-400 mb-5">Hãy thêm sản phẩm để bắt đầu!</p>
-                <Link
-                  href="/products"
-                  onClick={() => setCartOpen(false)}
-                  className="px-5 py-2.5 bg-[#425733] text-white rounded-full text-sm font-semibold hover:bg-[#364a29] transition-colors"
-                >
-                  Khám phá sản phẩm
-                </Link>
+                {!session ? (
+                  <>
+                    <p className="text-sm text-gray-400 mb-5">Đăng nhập để bắt đầu mua sắm!</p>
+                    <Link
+                      href="/login"
+                      onClick={() => setCartOpen(false)}
+                      className="px-5 py-2.5 bg-[#425733] text-white rounded-full text-sm font-semibold hover:bg-[#364a29] transition-colors flex items-center gap-2"
+                    >
+                      <Lock className="w-4 h-4" /> Đăng nhập
+                    </Link>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-sm text-gray-400 mb-5">Hãy thêm sản phẩm để bắt đầu!</p>
+                    <Link
+                      href="/products"
+                      onClick={() => setCartOpen(false)}
+                      className="px-5 py-2.5 bg-[#425733] text-white rounded-full text-sm font-semibold hover:bg-[#364a29] transition-colors"
+                    >
+                      Khám phá sản phẩm
+                    </Link>
+                  </>
+                )}
               </div>
             ) : (
               <div className="space-y-3">

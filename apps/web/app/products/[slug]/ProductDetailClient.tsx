@@ -186,6 +186,12 @@ export function ProductDetailClient({ initialProduct, initialRelated }: { initia
 
   const handleAddToCart = () => {
     if (!product) return;
+    // Yêu cầu đăng nhập trước khi thêm vào giỏ hàng
+    if (!session) {
+      toast.error("Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng");
+      router.push(`/login?callbackUrl=/products/${product.slug}`);
+      return;
+    }
     const { price } = getPriceWithVariants();
     addItem({
       productId: product.id,
@@ -200,6 +206,12 @@ export function ProductDetailClient({ initialProduct, initialRelated }: { initia
 
   const handleBuyNow = () => {
     if (!product) return;
+    // Yêu cầu đăng nhập trước khi mua
+    if (!session) {
+      toast.error("Vui lòng đăng nhập để mua hàng");
+      router.push(`/login?callbackUrl=/products/${product.slug}`);
+      return;
+    }
     const { price } = getPriceWithVariants();
     
     addItem({

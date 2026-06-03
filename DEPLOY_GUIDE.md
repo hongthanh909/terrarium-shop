@@ -1,128 +1,179 @@
-# 🚀 Deploy Guide — tiemreudecor.com
+# 🚀 Deploy Guide — tiemreudecor.com (VPS)
 
-> Cập nhật: 2026-05-27
-> Domain: tiemreudecor.com | Hosting: AZDIGI (cPanel)
-
----
-
-## ❌ Tại sao KHÔNG deploy lên AZDIGI cPanel Shared Hosting?
-
-cPanel **Shared Hosting** dùng Apache/PHP — **không hỗ trợ Node.js server liên tục**.
-Next.js cần 1 process Node.js chạy 24/7 để xử lý requests.
-
-| Yêu cầu | cPanel Shared | Vercel (Free) |
-|---------|:---:|:---:|
-| Node.js runtime | ❌ | ✅ |
-| HTTPS tự động | ⚠️ cần cấu hình | ✅ |
-| PayOS webhook | ❌ (không serve) | ✅ |
-| Custom domain | ✅ | ✅ |
-| Chi phí | đã mua | Miễn phí |
-
-**→ Giải pháp: Deploy Next.js lên Vercel (FREE), trỏ domain tiemreudecor.com về Vercel qua DNS.**
+> Cập nhật: 2026-06-03  
+> Domain: tiemreudecor.com | Hosting: **VPS tự quản lý (14.225.210.118)**  
+> Stack: Ubuntu 22.04 + Nginx + PM2 + PostgreSQL + MinIO + Ollama
 
 ---
 
-## ✅ Quy trình Deploy (Vercel + tiemreudecor.com)
+## 🏗️ Kiến Trúc Hệ Thống
 
-### Bước 1 — Tạo tài khoản Vercel
-
-1. Vào [vercel.com](https://vercel.com) → **Sign Up** bằng GitHub account
-2. Click **"New Project"** → **"Import Git Repository"**
-3. Chọn repo `terrarium-shop`
-
-### Bước 2 — Cấu hình dự án
-
-Vercel hỏi Root Directory → nhập: `apps/web`
-
-### Bước 3 — Thêm Environment Variables
-
-Vào **Settings → Environment Variables**, thêm TỪNG biến sau:
-
-```env
-# Database (giữ nguyên từ .env.local)
-DATABASE_URL=postgresql://postgres.xgblmwclsluvekiwvyxs:WnH5CMLsmVb4wWHK@aws-1-ap-northeast-2.pooler.supabase.com:6543/postgres?pgbouncer=true
-DIRECT_URL=postgresql://postgres.xgblmwclsluvekiwvyxs:WnH5CMLsmVb4wWHK@aws-1-ap-northeast-2.pooler.supabase.com:5432/postgres
-
-# Supabase
-NEXT_PUBLIC_SUPABASE_URL=https://xgblmwclsluvekiwvyxs.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-NEXT_PUBLIC_SUPABASE_BUCKET_NAME=product-images
-
-# NextAuth — ĐỔI thành domain thật!
-NEXTAUTH_URL=https://tiemreudecor.com
-NEXTAUTH_SECRET=f9cc1efca68d2d543a749ca0de9a3ce1d47f06f67416b22091d37f148ebdae72
-
-# Admin
-ADMIN_EMAIL=hongthanh181221@gmail.com
-
-# Bank
-NEXT_PUBLIC_BANK_NAME=TPBank
-NEXT_PUBLIC_BANK_ACCOUNT_NUMBER=07898110079
-NEXT_PUBLIC_BANK_ACCOUNT_NAME=NGUYEN THANH HONG
-NEXT_PUBLIC_BANK_BRANCH=CN Thu Duc
-NEXT_PUBLIC_BANK_BIN=970423
-
-# PayOS — Giữ nguyên
-PAYOS_CLIENT_ID=4d655d58-f4bd-4366-8bc4-e1a3f7ad7db0
-PAYOS_API_KEY=4dc37107-25ed-45cf-9af7-df3072a053af
-PAYOS_CHECKSUM_KEY=ef6ba5ee3e08cfa7214d0924cfaa43accedbcf7c4e7d1cc375248b28d2f44faf
-
-# Site URL — ĐỔI thành domain thật!
-NEXT_PUBLIC_SITE_URL=https://tiemreudecor.com
-
-# Resend (nếu có)
-RESEND_API_KEY=
 ```
-
-> ⚠️ **QUAN TRỌNG:** `NEXTAUTH_URL` và `NEXT_PUBLIC_SITE_URL` phải là `https://tiemreudecor.com` — KHÔNG phải localhost!
-
-### Bước 4 — Deploy
-
-Click **Deploy** → Vercel sẽ tự build và deploy (~3-5 phút)
-
-Sau deploy bạn sẽ có URL dạng: `https://terrarium-shop-xxx.vercel.app`
-
-### Bước 5 — Trỏ domain tiemreudecor.com về Vercel
-
-#### 5.1 Thêm domain vào Vercel
-Vào **Vercel → Settings → Domains** → Thêm `tiemreudecor.com`
-
-Vercel sẽ cung cấp thông tin DNS record:
+[Internet / Khách hàng]
+        │
+        ▼ :80 / :443
+[Nginx — Reverse Proxy + SSL]
+        │ :3000 (nội bộ)
+        ▼
+[Next.js — PM2 Cluster (2 instances)]
+    ├── FE: /, /products, /checkout, /profile...
+    ├── BE: /api/products, /api/orders, /api/payment...
+    └── Admin: /tiem-nho-nth24/*
+        │              │               │
+    :5432           :11434          :9000
+  (local)          (local)         (local)
+[PostgreSQL]   [Ollama AI]     [MinIO Storage]
 ```
-Type: A
-Name: @
-Value: 76.76.21.21
-```
-hoặc
-```
-Type: CNAME
-Name: www
-Value: cname.vercel-dns.com
-```
-
-#### 5.2 Cập nhật DNS trên AZDIGI
-
-1. Đăng nhập AZDIGI → **cPanel** → **Zone Editor** (hoặc DNS Manager)
-2. Tìm bản ghi `A` của `tiemreudecor.com`
-3. **Đổi IP** từ IP AZDIGI → `76.76.21.21` (Vercel IP)
-4. Thêm CNAME: `www` → `cname.vercel-dns.com`
-5. Đợi 15-30 phút để DNS propagate
-
-### Bước 6 — Cập nhật PayOS Webhook
-
-Sau khi domain đã trỏ về Vercel:
-
-1. Đăng nhập [PayOS Dashboard](https://business.payos.vn)
-2. Vào **Cài đặt → Webhook**
-3. Điền URL: `https://tiemreudecor.com/api/payment/webhook`
-4. Test webhook để xác nhận
-
-> ✅ **Lưu ý:** Từ v2 của code, `webhookUrl` đã được gửi kèm mỗi payment link — nên PayOS sẽ tự biết gọi về đâu ngay cả khi dashboard chưa set.
 
 ---
 
-## 🔄 Quy trình Deploy lại (Khi có code mới)
+## ✅ Checklist Deploy Lần Đầu Lên VPS
+
+### Bước 1 — Setup VPS (chạy 1 lần)
+
+```bash
+# SSH vào VPS với quyền root
+ssh root@14.225.210.118
+
+# Upload và chạy setup script
+scp scripts/setup-vps.sh root@14.225.210.118:~/
+ssh root@14.225.210.118 "bash ~/setup-vps.sh"
+```
+
+Script sẽ cài đặt tự động: **Node.js 20, PM2, PostgreSQL 16, MinIO, Ollama, Nginx, Certbot, UFW Firewall**.
+
+---
+
+### Bước 2 — Clone code lên VPS
+
+```bash
+# SSH với user deploy
+ssh deploy@14.225.210.118
+
+# Tạo SSH deploy key nếu chưa có
+ssh-keygen -t ed25519 -C "github-deploy" -f ~/.ssh/github_deploy_key -N ""
+
+# Thêm public key vào GitHub repo
+cat ~/.ssh/github_deploy_key.pub
+# → Copy và thêm vào: GitHub Repo → Settings → Deploy keys → Add deploy key
+
+# Cấu hình SSH config
+cat >> ~/.ssh/config << 'EOF'
+Host github.com
+  IdentityFile ~/.ssh/github_deploy_key
+  IdentitiesOnly yes
+EOF
+
+# Clone repo
+git clone git@github.com:YOUR_USERNAME/terrarium-shop.git
+cd terrarium-shop
+```
+
+---
+
+### Bước 3 — Cấu hình môi trường
+
+```bash
+# Tạo file env từ template VPS
+cp .env.vps.example apps/web/.env.local
+nano apps/web/.env.local
+
+# Điền các giá trị cần thiết:
+# DATABASE_URL=postgresql://terrarium:STRONG_PASSWORD@127.0.0.1:5432/terrarium_db
+# NEXTAUTH_SECRET=$(openssl rand -hex 32)   ← tạo key mới!
+# NEXTAUTH_URL=https://tiemreudecor.com
+# ... (xem file .env.vps.example để biết đầy đủ)
+```
+
+---
+
+### Bước 4 — Migrate data từ Supabase (nếu có)
+
+```bash
+# Trên máy local — export từ Supabase
+pg_dump "postgresql://postgres.xgblmwclsluvekiwvyxs:WnH5CMLsmVb4wWHK@aws-1-ap-northeast-2.pooler.supabase.com:5432/postgres" \
+  --no-owner --no-acl --schema=public \
+  -f terrarium_backup.sql
+
+# Upload lên VPS
+scp terrarium_backup.sql deploy@14.225.210.118:~/
+
+# Import vào PostgreSQL trên VPS
+ssh deploy@14.225.210.118
+psql -U terrarium -d terrarium_db -f ~/terrarium_backup.sql
+```
+
+---
+
+### Bước 5 — Build và Deploy
+
+```bash
+# Trên VPS, trong thư mục /home/deploy/terrarium-shop
+npm install --legacy-peer-deps
+
+cd apps/web
+npx prisma generate
+npx prisma migrate deploy
+
+cd /home/deploy/terrarium-shop
+npm run build
+
+# Chạy với PM2
+pm2 start ecosystem.config.js --env production
+pm2 save
+pm2 startup systemd -u deploy --hp /home/deploy
+# Copy lệnh sudo pm2 startup... và chạy dưới quyền root
+```
+
+---
+
+### Bước 6 — Cấu hình Nginx + SSL
+
+```bash
+# Kiểm tra Nginx config (đã được script setup tạo sẵn)
+sudo nginx -t
+
+# Cấp SSL bằng Certbot
+sudo certbot --nginx -d tiemreudecor.com -d www.tiemreudecor.com
+
+# Nếu có MinIO storage subdomain
+sudo certbot --nginx -d storage.tiemreudecor.com
+
+sudo systemctl reload nginx
+```
+
+---
+
+### Bước 7 — Trỏ DNS
+
+Tại nhà cung cấp tên miền, thêm/sửa các bản ghi DNS:
+
+| Record | Type | Value | TTL |
+|--------|------|-------|-----|
+| `@` (root) | A | `14.225.210.118` | 300 |
+| `www` | A | `14.225.210.118` | 300 |
+| `storage` | A | `14.225.210.118` | 300 |
+
+> ⚠️ Giảm TTL xuống 300 trước khi đổi DNS 24h để propagate nhanh hơn.
+
+---
+
+### Bước 8 — Cập nhật GitHub Secrets (CI/CD)
+
+Vào **GitHub Repo → Settings → Secrets and variables → Actions**:
+
+| Secret | Giá trị |
+|--------|---------|
+| `VPS_HOST` | `14.225.210.118` |
+| `VPS_USER` | `deploy` |
+| `VPS_SSH_KEY` | Nội dung file `/home/deploy/.ssh/github_deploy_key` |
+| `VPS_PORT` | `22` |
+
+Sau khi set secrets, mỗi lần `git push origin main` → GitHub Actions tự động deploy!
+
+---
+
+## 🔄 Quy Trình Deploy Cập Nhật Code (Hàng Ngày)
 
 ```bash
 # Trên máy local, sau khi sửa code:
@@ -130,38 +181,108 @@ git add -A
 git commit -m "fix: mô tả thay đổi"
 git push origin main
 
-# Vercel tự động build và deploy khi bạn push lên GitHub!
-# Không cần làm gì thêm.
+# → GitHub Actions tự động chạy deploy.yml:
+#   1. git pull trên VPS
+#   2. npm install
+#   3. prisma generate + migrate
+#   4. npm run build
+#   5. pm2 reload (zero downtime)
+```
+
+### Deploy thủ công (không cần push)
+
+```bash
+ssh deploy@14.225.210.118
+cd /home/deploy/terrarium-shop
+git pull origin main
+npm install --legacy-peer-deps
+cd apps/web && npx prisma generate && npx prisma migrate deploy && cd ../..
+npm run build
+pm2 reload ecosystem.config.js --env production
 ```
 
 ---
 
-## 🧪 Test sau Deploy
+## 🧪 Test Sau Deploy
 
-### Test PayOS Payment Flow:
-1. Vào `https://tiemreudecor.com/products` → thêm sản phẩm vào giỏ
-2. Checkout → chọn **Chuyển khoản ngân hàng**
-3. Sẽ redirect sang PayOS → QR code hiện ra
-4. Quét QR bằng app ngân hàng → thanh toán
-5. Sau ~5-10 giây, đơn hàng tự đổi sang **PAID / CONFIRMED** ✅
+```bash
+# Kiểm tra app đang chạy
+pm2 status
+curl -I http://localhost:3000
 
-### Test Admin:
-- Vào `https://tiemreudecor.com/admin` → login bằng `hongthanh181221@gmail.com`
-- Kiểm tra đơn hàng có hiện đúng trạng thái không
+# Kiểm tra HTTPS
+curl -I https://tiemreudecor.com
+
+# Xem log realtime
+pm2 logs terrarium-shop --lines 50
+```
+
+### Test Checklist:
+- [ ] Trang chủ load thành công
+- [ ] Đăng ký / đăng nhập user  
+- [ ] Xem sản phẩm, **thêm vào giỏ (cần đăng nhập)**
+- [ ] Đặt hàng COD
+- [ ] Đặt hàng chuyển khoản (QR)
+- [ ] Admin đăng nhập `/tiem-nho-nth24/login`
+- [ ] Admin thêm/sửa sản phẩm + upload ảnh
+- [ ] Webhook thanh toán hoạt động
 
 ---
 
-## ❓ Câu hỏi thường gặp
+## ⚡ Lệnh Thường Dùng
 
-**Q: AZDIGI tôi đã mua thì bỏ phí à?**
-A: Không! Bạn vẫn có thể dùng AZDIGI để host email, hoặc dùng VPS của AZDIGI để deploy sau này. Vercel free plan là đủ cho shop nhỏ.
+```bash
+# === PM2 ===
+pm2 status                          # Xem trạng thái
+pm2 logs terrarium-shop             # Xem log realtime
+pm2 reload terrarium-shop           # Reload không downtime
+pm2 restart terrarium-shop          # Restart hoàn toàn
+pm2 monit                           # Dashboard monitor
 
-**Q: Vercel free có giới hạn gì không?**
-A: Free plan có:
-- 100GB bandwidth/tháng (đủ dùng cho shop nhỏ)
-- Unlimited deployments
-- Auto HTTPS
-- Custom domain
+# === Dịch vụ ===
+sudo systemctl status postgresql
+sudo systemctl status nginx
+sudo systemctl status minio
+sudo systemctl status ollama
 
-**Q: Mỗi lần sửa code có phải deploy lại thủ công không?**
-A: KHÔNG! Vercel auto-deploy mỗi khi bạn `git push`. Cực kỳ tiện.
+# === Database ===
+psql -U terrarium -d terrarium_db   # Truy cập DB
+
+# === Nginx ===
+sudo nginx -t                       # Kiểm tra config
+sudo systemctl reload nginx         # Tải lại config
+
+# === SSL ===
+sudo certbot renew --dry-run        # Test gia hạn SSL
+```
+
+---
+
+## 🚨 Xử Lý Sự Cố
+
+| Triệu chứng | Nguyên nhân | Giải pháp |
+|-------------|-------------|-----------|
+| 502 Bad Gateway | Next.js chưa chạy | `pm2 restart terrarium-shop` |
+| Trang trắng sau deploy | Build lỗi hoặc thiếu env | `pm2 logs terrarium-shop` |
+| Lỗi DB kết nối | PostgreSQL tắt | `sudo systemctl restart postgresql` |
+| Upload ảnh thất bại | MinIO tắt | `sudo systemctl restart minio` |
+| SSL hết hạn | Certbot không tự gia hạn | `sudo certbot renew --force-renewal` |
+| AI không phản hồi | Ollama tắt hoặc RAM đầy | `sudo systemctl restart ollama` |
+| Login chuyển về trang sai | Env `NEXTAUTH_URL` sai | Kiểm tra `apps/web/.env.local` |
+
+---
+
+## 📦 Backup
+
+```bash
+# Backup DB thủ công
+pg_dump -U terrarium terrarium_db | gzip > ~/backup_$(date +%Y%m%d).sql.gz
+
+# Tự động lúc 2AM hàng ngày (đã setup trong crontab)
+# Xem log backup
+tail -f ~/logs/backup.log
+```
+
+---
+
+*Cập nhật: 2026-06-03 | VPS: 14.225.210.118 | Domain: tiemreudecor.com*
