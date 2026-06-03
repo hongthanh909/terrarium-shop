@@ -50,8 +50,8 @@ export async function PUT(
     if (!admin) return unauthorizedResponse();
 
     const { id } = params;
-    const body = await request.json();
-    const { title, slug, content, categoryId, published } = body;
+    const reqData = await request.json();
+    const { title, slug, content, thumbnail, images, intro, body, conclusion, categoryId, published } = reqData;
 
     const existingPost = await prisma.blogPost.findUnique({
       where: { id },
@@ -68,7 +68,7 @@ export async function PUT(
     let publishedAt = existingPost.publishedAt;
     if (published && !existingPost.published) {
       publishedAt = new Date();
-    } else if (!published) {
+    } else if (published === false) {
       publishedAt = null;
     }
 
@@ -78,6 +78,11 @@ export async function PUT(
         ...(title !== undefined && { title }),
         ...(slug !== undefined && { slug }),
         ...(content !== undefined && { content }),
+        ...(thumbnail !== undefined && { thumbnail }),
+        ...(images !== undefined && { images }),
+        ...(intro !== undefined && { intro }),
+        ...(body !== undefined && { body }),
+        ...(conclusion !== undefined && { conclusion }),
         ...(categoryId !== undefined && { categoryId: categoryId || null }),
         ...(published !== undefined && { published }),
         publishedAt,

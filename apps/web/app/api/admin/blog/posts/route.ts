@@ -49,19 +49,12 @@ export async function POST(request: NextRequest) {
     const admin = await verifyAdminRequest(request);
     if (!admin) return unauthorizedResponse();
 
-    const body = await request.json();
-    const { title, slug, content, categoryId, published } = body;
+    const reqData = await request.json();
+    const { title, slug, content, thumbnail, images, intro, body, conclusion, categoryId, published } = reqData;
 
     if (!title || !slug) {
       return NextResponse.json(
         { error: "Tiêu đề và đường dẫn (slug) là bắt buộc" },
-        { status: 400 }
-      );
-    }
-
-    if (!content || content === "<p><br></p>" || content.trim() === "") {
-      return NextResponse.json(
-        { error: "Nội dung bài viết không được để trống" },
         { status: 400 }
       );
     }
@@ -81,7 +74,12 @@ export async function POST(request: NextRequest) {
       data: {
         title,
         slug,
-        content,
+        content: content || null,
+        thumbnail: thumbnail || null,
+        images: Array.isArray(images) ? images : [],
+        intro: intro || null,
+        body: body || null,
+        conclusion: conclusion || null,
         categoryId: categoryId || null,
         published: isPublished,
         publishedAt: isPublished ? new Date() : null,

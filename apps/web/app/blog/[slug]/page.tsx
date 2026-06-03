@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import { unstable_cache } from "next/cache";
+import BlogInteraction from "./BlogInteraction";
 
 // ISR: cache bài viết 1 giờ (nội dung blog ít thay đổi)
 export const dynamic = "force-dynamic";
@@ -39,12 +40,21 @@ function getCachedPost(slug: string) {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const post = await getCachedPost(params.slug)();
   if (!post) return { title: "Bài viết không tìm thấy" };
-  const description = post.content.replace(/<[^>]+>/g, "").slice(0, 160).trim();
+  
+  // Create description from either content, intro or body
+  const rawText = post.intro || post.content || post.body || "";
+  const description = rawText.replace(/<[^>]+>/g, "").slice(0, 160).trim();
+  
   return {
     title: `${post.title} | Blog - Tiệm Rêu Decor`,
     description,
-    openGraph: { title: post.title, description, type: "article",
-      publishedTime: post.publishedAt?.toISOString() },
+    openGraph: { 
+      title: post.title, 
+      description, 
+      type: "article",
+      publishedTime: post.publishedAt?.toISOString(),
+      images: post.thumbnail ? [{ url: post.thumbnail }] : undefined
+    },
   };
 }
 
@@ -55,13 +65,15 @@ export default async function BlogPostPage({ params }: Props) {
     notFound();
   }
 
+  const hasStructuredContent = post.intro || post.body || post.conclusion;
+
   return (
     <main className="min-h-screen bg-[hsl(0,0%,100%)] py-8 px-6">
       <div className="max-w-3xl mx-auto">
         {/* Back Link */}
         <Link
           href="/blog"
-          className="inline-flex items-center text-[#425733] hover:text-[#364a29] mb-6"
+          className="inline-flex items-center text-[#425733] hover:text-[#364a29] mb-6 text-sm font-semibold transition-colors"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
           Về trang Blog
@@ -76,12 +88,12 @@ export default async function BlogPostPage({ params }: Props) {
                 {post.category.name}
               </Badge>
             )}
-            <h1 className="text-4xl font-bold text-[hsl(220,14%,25%)] mb-4">
+            <h1 className="text-3xl sm:text-4xl font-bold text-gray-800 mb-4 leading-tight">
               {post.title}
             </h1>
             {post.publishedAt && (
-              <div className="flex items-center text-sm text-[hsl(220,14%,45%)]">
-                <Calendar className="w-4 h-4 mr-2" />
+              <div className="flex items-center text-xs text-gray-400 font-medium">
+                <Calendar className="w-3.5 h-3.5 mr-1.5" />
                 {new Date(post.publishedAt).toLocaleDateString("vi-VN", {
                   year: "numeric",
                   month: "long",
@@ -91,23 +103,84 @@ export default async function BlogPostPage({ params }: Props) {
             )}
           </header>
 
-          <div className="prose prose-lg max-w-none">
-            <div
-              className="text-[hsl(220,14%,35%)] leading-relaxed"
-              dangerouslySetInnerHTML={{ __html: post.content }}
-            />
+          {/* Blog Banner Thumbnail */}
+          {post.thumbnail && (
+            <div className="mb-8 rounded-2xl overflow-hidden border border-gray-100 shadow-sm aspect-video max-h-[350px]">
+              <img
+                src={post.thumbnail}
+                alt={post.title}
+                className="w-full h-full object-cover"
+              />
+            </div>
+          )}
+
+          <div className="prose prose-emerald max-w-none">
+            {/* Structured Content Rendering */}
+            {hasStructuredContent ? (
+              <div className="space-y-6">
+                {/* Introduction (Mở bài) */}
+                {post.intro && (
+                  <div
+                    className="text-gray-700 leading-relaxed font-medium text-lg border-l-4 border-[#425733] pl-4 italic mb-8"
+                    dangerouslySetInnerHTML={{ __html: post.intro }}
+                  />
+                )}
+
+                {/* Body Content (Thân bài) */}
+                {post.body && (
+                  <div
+                    className="text-gray-600 leading-relaxed text-base space-y-4"
+                    dangerouslySetInnerHTML={{ __html: post.body }}
+                  />
+                )}
+
+                {/* Additional Gallery Images */}
+                {post.images && post.images.length > 0 && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 my-8">
+                    {post.images.map((img, idx) => (
+                      <div key={idx} className="relative aspect-video rounded-xl overflow-hidden shadow-sm border border-gray-100 bg-gray-50">
+                        <img
+                          src={img}
+                          alt={`${post.title} gallery ${idx + 1}`}
+                          className="w-full h-full object-cover hover:scale-102 transition-transform duration-300 cursor-pointer"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Conclusion (Kết bài) */}
+                {post.conclusion && (
+                  <div
+                    className="text-gray-600 leading-relaxed text-base pt-6 border-t border-dashed border-gray-150"
+                    dangerouslySetInnerHTML={{ __html: post.conclusion }}
+                  />
+                )}
+              </div>
+            ) : (
+              /* Fallback to legacy full rich text content column */
+              post.content && (
+                <div
+                  className="text-gray-600 leading-relaxed text-base"
+                  dangerouslySetInnerHTML={{ __html: post.content }}
+                />
+              )
+            )}
           </div>
         </article>
 
+        {/* Customer Interaction Segment (Likes, Comments & Real-time replies) */}
+        <BlogInteraction postId={post.id} slug={post.slug} />
+
         {/* Divider */}
-        <hr className="my-12 border-[#e3ebdd]" />
+        <hr className="my-12 border-gray-100" />
 
         {/* Related Posts */}
         <div className="text-center">
-          <p className="text-[hsl(220,14%,45%)] mb-4">
+          <p className="text-sm text-gray-500 mb-4 font-semibold">
             Thích bài viết này? Khám phá thêm tại
           </p>
-          <Button asChild variant="outline" className="border-[#c8d5be]">
+          <Button asChild variant="outline" className="border-gray-250 hover:bg-gray-50 rounded-full font-semibold px-6">
             <Link href="/blog">Xem Tất Cả Bài Viết</Link>
           </Button>
         </div>
@@ -118,7 +191,7 @@ export default async function BlogPostPage({ params }: Props) {
 
 function Badge({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
-    <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${className}`}>
+    <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${className}`}>
       {children}
     </span>
   );

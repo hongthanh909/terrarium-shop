@@ -12,6 +12,8 @@ export async function generateMetadata({
       select: {
         title: true,
         content: true,
+        intro: true,
+        body: true,
         publishedAt: true,
         category: { select: { name: true } },
       },
@@ -24,8 +26,8 @@ export async function generateMetadata({
       };
     }
 
-    // Lấy ~160 ký tự đầu của content làm description (bỏ HTML tags)
-    const plainText = post.content.replace(/<[^>]+>/g, "").slice(0, 160).trim();
+    // Lấy ~160 ký tự đầu của content/intro/body làm description (bỏ HTML tags)
+    const plainText = (post.content || post.intro || post.body || "").replace(/<[^>]+>/g, "").slice(0, 160).trim();
     const description =
       plainText ||
       `Đọc bài viết "${post.title}" trên blog Tiệm Rêu Décor. Kiến thức chăm sóc terrarium, moss art và cây cảnh mini.`;
