@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
-import { Eye, Package } from "lucide-react";
+import { Eye, Package, ChevronDown } from "lucide-react";
 import { toast } from "sonner";
 import {
   DataTable, FilterBar, SelectFilter, StatusBadge, Pagination,
@@ -17,7 +17,16 @@ interface Order {
   paymentStatus: string;
   total: number;
   createdAt: string;
-  customer: { id: string; name: string; email: string };
+  customer: { id: string; name: string; email: string } | null;
+  shippingInfo?: {
+    name: string;
+    email?: string;
+    phone: string;
+    province?: string;
+    district?: string;
+    ward?: string;
+    fullAddress?: string;
+  } | null;
   items: Array<{ id: string; productName: string; quantity: number; price: number }>;
 }
 
@@ -90,7 +99,13 @@ export default function AdminOrdersPage() {
 
   const filtered = orders.filter((o) => {
     const q = search.toLowerCase();
-    const matchSearch = !q || o.orderNumber.toLowerCase().includes(q) || o.customer?.name?.toLowerCase().includes(q) || o.customer?.email?.toLowerCase().includes(q);
+    const matchSearch =
+      !q ||
+      o.orderNumber.toLowerCase().includes(q) ||
+      o.customer?.name?.toLowerCase().includes(q) ||
+      o.customer?.email?.toLowerCase().includes(q) ||
+      o.shippingInfo?.name?.toLowerCase().includes(q) ||
+      o.shippingInfo?.email?.toLowerCase().includes(q);
     const matchStatus = !filterStatus || o.status === filterStatus;
     return matchSearch && matchStatus;
   });
@@ -110,8 +125,8 @@ export default function AdminOrdersPage() {
       label: "Khách Hàng",
       render: (o) => (
         <div>
-          <p className="font-semibold text-gray-800 text-sm">{o.customer?.name || "—"}</p>
-          <p className="text-xs text-gray-400 truncate max-w-[180px]">{o.customer?.email}</p>
+          <p className="font-semibold text-gray-800 text-sm">{o.customer?.name || o.shippingInfo?.name || "Khách vãng lai"}</p>
+          <p className="text-xs text-gray-400 truncate max-w-[180px]">{o.customer?.email || o.shippingInfo?.email || "—"}</p>
         </div>
       ),
     },
@@ -142,12 +157,12 @@ export default function AdminOrdersPage() {
       render: (o) => {
         const getSelectStyles = (status: string) => {
           const styles: Record<string, string> = {
-            PENDING:    "bg-amber-50 text-amber-700 border-amber-200",
-            CONFIRMED:  "bg-blue-50 text-blue-700 border-blue-200",
-            PROCESSING: "bg-purple-50 text-purple-700 border-purple-200",
-            SHIPPING:   "bg-indigo-50 text-indigo-700 border-indigo-200",
-            DELIVERED:  "bg-[#e3ebdd] text-[#364a29] border-[#c2d6b0]",
-            CANCELLED:  "bg-red-50 text-red-700 border-red-200",
+            PENDING:    "bg-amber-50 text-amber-700 border-amber-200 focus:ring-amber-500/20",
+            CONFIRMED:  "bg-blue-50 text-blue-700 border-blue-200 focus:ring-blue-500/20",
+            PROCESSING: "bg-purple-50 text-purple-700 border-purple-200 focus:ring-purple-500/20",
+            SHIPPING:   "bg-indigo-50 text-indigo-700 border-indigo-200 focus:ring-indigo-500/20",
+            DELIVERED:  "bg-[#e3ebdd] text-[#364a29] border-[#c2d6b0] focus:ring-[#364a29]/20",
+            CANCELLED:  "bg-red-50 text-red-700 border-red-200 focus:ring-red-500/20",
           };
           return styles[status] || "bg-gray-100 text-gray-600 border-gray-200";
         };
@@ -171,7 +186,7 @@ export default function AdminOrdersPage() {
               onChange={(e) => handleUpdateStatus(o.id, e.target.value)}
               onClick={(e) => e.stopPropagation()}
               disabled={updatingId !== null}
-              className={`text-xs rounded-full border py-0.5 pl-5 pr-6 font-semibold cursor-pointer transition-colors focus:outline-none focus:ring-1 focus:ring-[#425733]/30 disabled:opacity-50 disabled:cursor-not-allowed appearance-none bg-[url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%234b5563' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E")] bg-no-repeat bg-[right_0.4rem_center] ${getSelectStyles(o.status)}`}
+              className={`text-xs rounded-full border py-0.5 pl-5.5 pr-7 font-semibold cursor-pointer transition-colors focus:outline-none focus:ring-1 disabled:opacity-50 disabled:cursor-not-allowed appearance-none ${getSelectStyles(o.status)}`}
             >
               {UPDATE_OPTIONS.map((opt) => (
                 <option key={opt.value} value={opt.value} className="bg-white text-gray-700 font-normal">
@@ -179,6 +194,7 @@ export default function AdminOrdersPage() {
                 </option>
               ))}
             </select>
+            <ChevronDown className="absolute right-2 w-3 h-3 pointer-events-none opacity-60 text-current" />
           </div>
         );
       },

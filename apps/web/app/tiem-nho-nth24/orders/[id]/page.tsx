@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowLeft, Check, X, Printer } from "lucide-react";
+import { ArrowLeft, Check, X, Printer, ChevronDown } from "lucide-react";
 import { toast } from "sonner";
 
 interface Order {
@@ -49,6 +49,48 @@ export default function AdminOrderDetailPage() {
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
+
+  const getOrderStatusStyles = (status: string) => {
+    const styles: Record<string, string> = {
+      PENDING:    "bg-amber-50 text-amber-700 border-amber-200 focus:ring-amber-500/20",
+      CONFIRMED:  "bg-blue-50 text-blue-700 border-blue-200 focus:ring-blue-500/20",
+      PROCESSING: "bg-purple-50 text-purple-700 border-purple-200 focus:ring-purple-500/20",
+      SHIPPING:   "bg-indigo-50 text-indigo-700 border-indigo-200 focus:ring-indigo-500/20",
+      DELIVERED:  "bg-[#e3ebdd] text-[#364a29] border-[#c2d6b0] focus:ring-[#364a29]/20",
+      CANCELLED:  "bg-red-50 text-red-700 border-red-200 focus:ring-red-500/20",
+    };
+    return styles[status] || "bg-gray-100 text-gray-600 border-gray-200";
+  };
+
+  const getOrderStatusDot = (status: string) => {
+    const dots: Record<string, string> = {
+      PENDING:    "bg-amber-500",
+      CONFIRMED:  "bg-blue-500",
+      PROCESSING: "bg-purple-500",
+      SHIPPING:   "bg-indigo-500",
+      DELIVERED:  "bg-[#364a29]",
+      CANCELLED:  "bg-red-500",
+    };
+    return dots[status] || "bg-gray-500";
+  };
+
+  const getPaymentStatusStyles = (status: string) => {
+    const styles: Record<string, string> = {
+      PENDING:    "bg-amber-50 text-amber-700 border-amber-200 focus:ring-amber-500/20",
+      PAID:       "bg-[#e3ebdd] text-[#364a29] border-[#c2d6b0] focus:ring-[#364a29]/20",
+      REFUNDED:   "bg-orange-50 text-orange-700 border-orange-200 focus:ring-orange-500/20",
+    };
+    return styles[status] || "bg-gray-100 text-gray-600 border-gray-200";
+  };
+
+  const getPaymentStatusDot = (status: string) => {
+    const dots: Record<string, string> = {
+      PENDING:    "bg-amber-500",
+      PAID:       "bg-[#364a29]",
+      REFUNDED:   "bg-orange-500",
+    };
+    return dots[status] || "bg-gray-500";
+  };
 
   useEffect(() => {
     fetchOrder();
@@ -229,32 +271,40 @@ export default function AdminOrderDetailPage() {
             <div className="space-y-4">
               <div>
                 <label className="block text-xs font-semibold text-gray-600 mb-1.5">Trạng thái đơn hàng</label>
-                <select
-                  value={order.status}
-                  onChange={(e) => handleUpdateStatus(e.target.value)}
-                  disabled={updating}
-                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#6d8c5a] disabled:bg-gray-100 text-sm bg-white"
-                >
-                  <option value="PENDING">Chờ xử lý (Pending)</option>
-                  <option value="CONFIRMED">Đã xác nhận (Confirmed)</option>
-                  <option value="PROCESSING">Đang xử lý (Processing)</option>
-                  <option value="SHIPPING">Đang giao hàng (Shipping)</option>
-                  <option value="DELIVERED">Đã giao hàng (Delivered)</option>
-                  <option value="CANCELLED">Đã huỷ đơn (Cancelled)</option>
-                </select>
+                <div className="relative flex items-center">
+                  <span className={`absolute left-3 w-1.5 h-1.5 rounded-full ${getOrderStatusDot(order.status)} pointer-events-none opacity-80`} />
+                  <select
+                    value={order.status}
+                    onChange={(e) => handleUpdateStatus(e.target.value)}
+                    disabled={updating}
+                    className={`w-full pl-6.5 pr-8 py-1.5 border rounded-full font-semibold text-xs appearance-none cursor-pointer transition-colors focus:outline-none focus:ring-1 disabled:opacity-50 disabled:cursor-not-allowed ${getOrderStatusStyles(order.status)}`}
+                  >
+                    <option value="PENDING">Chờ xử lý (Pending)</option>
+                    <option value="CONFIRMED">Đã xác nhận (Confirmed)</option>
+                    <option value="PROCESSING">Đang xử lý (Processing)</option>
+                    <option value="SHIPPING">Đang giao hàng (Shipping)</option>
+                    <option value="DELIVERED">Đã giao hàng (Delivered)</option>
+                    <option value="CANCELLED">Đã huỷ đơn (Cancelled)</option>
+                  </select>
+                  <ChevronDown className="absolute right-3 w-3.5 h-3.5 pointer-events-none opacity-60 text-current" />
+                </div>
               </div>
               <div>
                 <label className="block text-xs font-semibold text-gray-600 mb-1.5">Trạng thái thanh toán</label>
-                <select
-                  value={order.paymentStatus}
-                  onChange={(e) => handleUpdatePaymentStatus(e.target.value)}
-                  disabled={updating}
-                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#6d8c5a] disabled:bg-gray-100 text-sm bg-white"
-                >
-                  <option value="PENDING">Chờ thanh toán (Pending)</option>
-                  <option value="PAID">Đã thanh toán (Paid)</option>
-                  <option value="REFUNDED">Đã hoàn tiền (Refunded)</option>
-                </select>
+                <div className="relative flex items-center">
+                  <span className={`absolute left-3 w-1.5 h-1.5 rounded-full ${getPaymentStatusDot(order.paymentStatus)} pointer-events-none opacity-80`} />
+                  <select
+                    value={order.paymentStatus}
+                    onChange={(e) => handleUpdatePaymentStatus(e.target.value)}
+                    disabled={updating}
+                    className={`w-full pl-6.5 pr-8 py-1.5 border rounded-full font-semibold text-xs appearance-none cursor-pointer transition-colors focus:outline-none focus:ring-1 disabled:opacity-50 disabled:cursor-not-allowed ${getPaymentStatusStyles(order.paymentStatus)}`}
+                  >
+                    <option value="PENDING">Chờ thanh toán (Pending)</option>
+                    <option value="PAID">Đã thanh toán (Paid)</option>
+                    <option value="REFUNDED">Đã hoàn tiền (Refunded)</option>
+                  </select>
+                  <ChevronDown className="absolute right-3 w-3.5 h-3.5 pointer-events-none opacity-60 text-current" />
+                </div>
               </div>
             </div>
           </div>
