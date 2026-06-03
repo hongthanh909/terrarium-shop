@@ -100,6 +100,25 @@ export default function AdminHomepagePage() {
     }
   };
 
+  const handleAddBannerFromProduct = (productId: string) => {
+    const p = products.find((prod) => prod.id === productId);
+    if (!p) return;
+
+    const newBanner: HomeBanner = {
+      id: generateId(),
+      imageUrl: p.images[0] || "",
+      title: p.name,
+      subtitle: p.category?.name || "",
+      link: `/products/${p.slug}`,
+      order: banners.length + 1,
+      isActive: true,
+      productId: p.id,
+    };
+
+    setBanners((prev) => [...prev, newBanner]);
+    toast.success(`Đã thêm banner liên kết cho sản phẩm "${p.name}"!`);
+  };
+
   const handleFieldChange = (id: string, field: keyof HomeBanner, value: any) => {
     setBanners((prev) =>
       prev.map((b) => (b.id === id ? { ...b, [field]: value } : b))
@@ -203,41 +222,79 @@ export default function AdminHomepagePage() {
         </div>
       </div>
 
-      {/* Upload Zone */}
-      <div
-        className="border-2 border-dashed border-[#c2d6b0] rounded-2xl bg-[#f9fbf7] hover:bg-[#f0f4ec] transition-colors cursor-pointer group"
-        onClick={() => !uploading && fileInputRef.current?.click()}
-      >
-        <div className="flex flex-col items-center justify-center py-10 gap-3">
+      {/* Add Banner Section (2 Options) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Option 1: Custom Image Upload */}
+        <div
+          className="border-2 border-dashed border-[#c2d6b0] rounded-2xl bg-[#f9fbf7] hover:bg-[#f0f4ec] transition-colors cursor-pointer group flex flex-col items-center justify-center py-8 px-4"
+          onClick={() => !uploading && fileInputRef.current?.click()}
+        >
           {uploading ? (
             <>
-              <Loader2 className="w-10 h-10 text-[#425733] animate-spin" />
-              <p className="text-sm text-gray-500">Đang tải ảnh lên Supabase...</p>
+              <Loader2 className="w-10 h-10 text-[#425733] animate-spin mb-3" />
+              <p className="text-sm text-gray-500 text-center">Đang tải ảnh lên Storage...</p>
             </>
           ) : (
             <>
-              <div className="w-14 h-14 rounded-2xl bg-[#e3ebdd] flex items-center justify-center group-hover:scale-105 transition-transform">
-                <Plus className="w-7 h-7 text-[#425733]" />
+              <div className="w-12 h-12 rounded-2xl bg-[#e3ebdd] flex items-center justify-center group-hover:scale-105 transition-transform mb-3">
+                <Plus className="w-6 h-6 text-[#425733]" />
               </div>
               <div className="text-center">
-                <p className="font-semibold text-[#425733]">Thêm banner mới</p>
-                <p className="text-xs text-gray-400 mt-0.5">
+                <p className="font-semibold text-[#425733]">Tải ảnh banner tùy chỉnh</p>
+                <p className="text-xs text-gray-400 mt-1">
                   Click để chọn ảnh • JPG, PNG, WebP • Tối đa 5MB
                 </p>
               </div>
             </>
           )}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) handleImageUpload(file);
+            }}
+          />
         </div>
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/*"
-          className="hidden"
-          onChange={(e) => {
-            const file = e.target.files?.[0];
-            if (file) handleImageUpload(file);
-          }}
-        />
+
+        {/* Option 2: Add Banner from Existing Product */}
+        <div className="border-2 border-[#e3ebdd] rounded-2xl bg-white p-6 flex flex-col justify-between shadow-sm">
+          <div>
+            <div className="flex items-center gap-2 mb-3">
+              <span className="p-2 rounded-xl bg-[#e3ebdd] text-[#425733] flex items-center justify-center">
+                <Plus className="w-5 h-5" />
+              </span>
+              <h3 className="font-semibold text-gray-800">Thêm banner từ Sản phẩm</h3>
+            </div>
+            <p className="text-xs text-gray-500 mb-4 leading-relaxed">
+              Chọn nhanh sản phẩm từ cửa hàng. Hệ thống tự động đồng bộ ảnh đại diện, tên làm tiêu đề, danh mục làm phụ đề và tạo link liên kết.
+            </p>
+            
+            <select
+              className="w-full h-9 text-sm rounded-lg border border-gray-200 bg-white px-2 focus:ring-1 focus:ring-[#425733] focus:outline-none mb-2"
+              defaultValue=""
+              onChange={(e) => {
+                const val = e.target.value;
+                if (val) {
+                  handleAddBannerFromProduct(val);
+                  e.target.value = ""; // reset
+                }
+              }}
+            >
+              <option value="" disabled>-- Chọn sản phẩm có sẵn --</option>
+              {products.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.name} ({Number(p.basePrice).toLocaleString("vi-VN")}₫)
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="text-xs text-gray-400 italic">
+            * Khuyên dùng để đảm bảo giá và thông tin luôn đồng bộ với DB.
+          </div>
+        </div>
       </div>
 
       {/* Banner List */}
