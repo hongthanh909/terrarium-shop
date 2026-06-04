@@ -34,8 +34,7 @@ export async function POST(request: Request) {
     where: { id: payload.productId },
     select: {
       name: true,
-      description: true,
-      price: true,
+      basePrice: true,
       category: { select: { name: true } },
       images: true,
     },

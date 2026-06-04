@@ -2,19 +2,21 @@
 
 /**
  * Generates a prompt for the Ollama model using product data.
- * Only the essential fields are included (name, description, price, category, image URLs).
- * The prompt asks the model to suggest complementary products, care instructions,
- * and warranty advice.
+ * Fields match the actual Prisma Product model:
+ * - name: string
+ * - basePrice: Decimal (serialized as string)
+ * - category: { name: string } | null
+ * - images: string[]  (array of image URLs)
  */
 export function buildProductPrompt(product: {
   name: string;
-  description: string;
-  price: number;
+  basePrice: { toString: () => string } | number | string;
   category: { name: string } | null;
-  images: { url: string }[];
+  images: string[];
 }): string {
   const categoryName = product.category?.name ?? "không xác định";
-  const imageList = product.images.map((i) => i.url).join(", ");
+  const imageList = product.images.slice(0, 3).join(", ");
+  const priceStr = Number(product.basePrice.toString()).toLocaleString("vi-VN");
 
   return `
 Bạn là trợ lý AI của Tiệm Rêu. Dựa trên các thông tin sản phẩm sau, hãy:
@@ -24,12 +26,11 @@ Bạn là trợ lý AI của Tiệm Rêu. Dựa trên các thông tin sản ph�
 
 Thông tin sản phẩm:
 - Tên: ${product.name}
-- Mô tả: ${product.description}
-- Giá: ${product.price.toLocaleString('vi-VN')} VND
+- Giá: ${priceStr} VND
 - Danh mục: ${categoryName}
 - Ảnh: ${imageList}
 
 Trả lời dưới dạng markdown, bao gồm các phần:
 **Sản phẩm đề xuất** (tên, slug giả, giá), **Chăm sóc**, **Bảo hành**.
-`; 
+`;
 }
