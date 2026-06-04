@@ -72,12 +72,20 @@ export async function PUT(
       publishedAt = null;
     }
 
+    // Auto-regenerate content from structured fields when they change
+    const updatedIntro = intro !== undefined ? intro : existingPost.intro;
+    const updatedBody = body !== undefined ? body : existingPost.body;
+    const updatedConclusion = conclusion !== undefined ? conclusion : existingPost.conclusion;
+    const autoContent = content !== undefined
+      ? content
+      : [updatedIntro, updatedBody, updatedConclusion].filter(Boolean).join("\n\n") || null;
+
     const post = await prisma.blogPost.update({
       where: { id },
       data: {
         ...(title !== undefined && { title }),
         ...(slug !== undefined && { slug }),
-        ...(content !== undefined && { content }),
+        content: autoContent,
         ...(thumbnail !== undefined && { thumbnail }),
         ...(images !== undefined && { images }),
         ...(intro !== undefined && { intro }),

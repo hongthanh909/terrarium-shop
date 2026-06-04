@@ -70,11 +70,14 @@ export async function POST(request: NextRequest) {
 
     const isPublished = published === true;
 
+    // Auto-generate content from structured fields if not explicitly provided
+    const autoContent = content || [intro, body, conclusion].filter(Boolean).join("\n\n") || null;
+
     const post = await prisma.blogPost.create({
       data: {
         title,
         slug,
-        content: content || null,
+        content: autoContent,
         thumbnail: thumbnail || null,
         images: Array.isArray(images) ? images : [],
         intro: intro || null,

@@ -1,9 +1,97 @@
 # FIXALL — Báo cáo Kiểm tra & Sửa lỗi Toàn hệ thống
 
-> Ngày kiểm tra gần nhất: 2026-06-04  
-> Phạm vi: Hosting migration, AI model update, UI/Mobile responsive
+> Ngày kiểm tra gần nhất: 2026-06-04 (buổi tối)  
+> Phạm vi: Admin Blog CRUD, DB schema drift, toàn bộ Admin API audit
 
 ---
+
+## 📋 Cập nhật 2026-06-04 (Buổi tối) — Admin Blog & DB Schema Audit
+
+### 🔴 CRITICAL — Đã fix
+
+#### #11 — Blog không đăng được: DB thiếu cột `thumbnail`, `images`, `intro`, `body`, `conclusion`
+
+**Triệu chứng:** Admin bấm "Xuất bản" bài viết Blog → lỗi 500. PM2 error log:
+```
+The column `blog_posts.thumbnail` does not exist in the current database.
+```
+
+**Nguyên nhân gốc rễ:** Prisma schema (`BlogPost` model) đã thêm 5 cột mới (`thumbnail`, `images`, `intro`, `body`, `conclusion`) nhưng **chưa chạy `prisma db push`** trên VPS production. Dự án không dùng Prisma migrations mà dùng `db push`.
+
+**Fix:** 
+```bash
+su - deploy -c 'cd /home/deploy/terrarium-shop/apps/web && npx prisma db push --accept-data-loss'
+```
+Sau đó rebuild Next.js và PM2 reload.
+
+**Status: ✅ ĐÃ FIX**
+
+---
+
+#### #12 — Homepage crash khi `post.content` là null
+
+**File:** `apps/web/app/page.tsx` (dòng 283)
+
+```typescript
+// ❌ SAI — crash nếu content là null (bài viết mới dùng intro/body/conclusion)
+post.content.replace(/<[^>]*>/g, '').slice(0, 150)
+```
+
+**Fix:** Thêm null fallback: `(post.content || post.intro || post.body || '').replace(...)`
+
+**Status: ✅ ĐÃ FIX**
+
+---
+
+### 🟡 MODERATE — Đã fix
+
+#### #13 — Blog `content` field không đồng bộ với `intro`/`body`/`conclusion`
+
+**File:** `apps/web/app/api/admin/blog/posts/route.ts` (POST) và `[id]/route.ts` (PUT)
+
+Admin form gửi `intro`, `body`, `conclusion` riêng biệt nhưng `content` field không được tự động tổng hợp. Nhiều trang (homepage, blog list) dùng `content` để hiển thị preview → bài viết mới sẽ hiển thị trống.
+
+**Fix:** Auto-generate `content = [intro, body, conclusion].filter(Boolean).join("\n\n")` trong cả POST và PUT handler.
+
+**Status: ✅ ĐÃ FIX**
+
+---
+
+#### #14 — Homepage Blog luôn dùng ảnh Unsplash thay vì thumbnail thực
+
+**File:** `apps/web/app/page.tsx` (dòng 275)
+
+Ảnh blog trên trang chủ luôn hiện fallback Unsplash dù bài viết đã có `thumbnail`.
+
+**Fix:** `src={post.thumbnail || post.images?.[0] || fallbackImages[index % 3]}`
+
+**Status: ✅ ĐÃ FIX**
+
+---
+
+### 🟢 INFO — Audit kết quả
+
+| Admin API | Auth | Hoạt động | Ghi chú |
+|-----------|------|-----------|---------|
+| `GET /api/admin/stats` | ✅ Middleware | ✅ OK | Đã fix N+1 trước đó |
+| `GET /api/admin/orders` | ✅ Middleware | ✅ OK | Auth qua middleware, không cần trong route |
+| `PATCH /api/admin/orders` | ✅ Middleware | ✅ OK | Loyalty points logic OK |
+| `GET /api/admin/blog/posts` | ✅ Middleware | ✅ OK (sau db push) | Đã fix schema drift |
+| `POST /api/admin/blog/posts` | ✅ Route + MW | ✅ OK | Đã fix content auto-gen |
+| `PUT /api/admin/blog/posts/[id]` | ✅ Route + MW | ✅ OK | Đã fix content sync |
+| `DELETE /api/admin/blog/posts/[id]` | ✅ Route + MW | ✅ OK | — |
+| `GET /api/admin/blog/categories` | ✅ Middleware | ✅ OK | — |
+| `POST /api/admin/blog/categories` | ✅ Route + MW | ✅ OK | — |
+| `GET /api/admin/explore` | ✅ Middleware | ✅ OK | — |
+| `POST /api/upload` | 🔓 Public | ✅ OK (MinIO) | Upload không yêu cầu auth |
+
+**MinIO Storage:** ✅ Active trên port 9000, upload hoạt động bình thường
+**react-quill:** ✅ Đã cài đặt
+**Fake Reviews:** ✅ 20 reviews đã seed (5 per product × 4 sản phẩm)
+
+---
+
+
 
 ## 📋 Cập nhật 2026-06-04
 # ✅ Session & Admin Security & Navigation & UI Fixes

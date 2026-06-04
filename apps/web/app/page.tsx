@@ -272,7 +272,7 @@ async function LatestBlogSection() {
                   <Card className="overflow-hidden hover:shadow-soft-xl transition-all duration-300 hover:-translate-y-1 group border-0 rounded-2xl h-full flex flex-col">
                     <CardContent className="p-0 flex flex-col h-full">
                       <div className="aspect-video relative overflow-hidden bg-[#f0f4ec]">
-                        <Image src={fallbackImages[index % 3]} alt={post.title} fill className="object-cover group-hover:scale-105 transition-transform duration-500" sizes="(max-width: 768px) 100vw, 33vw" />
+                        <Image src={post.thumbnail || post.images?.[0] || fallbackImages[index % 3]} alt={post.title} fill className="object-cover group-hover:scale-105 transition-transform duration-500" sizes="(max-width: 768px) 100vw, 33vw" />
                         <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors duration-300" />
                       </div>
                       <div className="p-6 flex-1 flex flex-col">
@@ -280,7 +280,7 @@ async function LatestBlogSection() {
                           <Badge variant="secondary" className="text-xs mb-3 w-fit bg-[#e3ebdd] text-[#425733]">{post.category.name}</Badge>
                         )}
                         <h3 className="font-bold text-xl text-[hsl(220,14%,25%)] mb-3 line-clamp-2 group-hover:text-[#425733] transition-colors min-h-[3.5rem]">{post.title}</h3>
-                        <p className="text-sm text-[hsl(220,14%,45%)] line-clamp-3 mb-4 flex-1">{post.content.replace(/<[^>]*>/g, '').slice(0, 150)}...</p>
+                        <p className="text-sm text-[hsl(220,14%,45%)] line-clamp-3 mb-4 flex-1">{(post.content || post.intro || post.body || '').replace(/<[^>]*>/g, '').slice(0, 150)}...</p>
                         <div className="flex items-center gap-2 text-xs font-semibold text-[#6d8c5a] uppercase tracking-wider">
                           <Calendar className="w-3.5 h-3.5" />
                           <span>{post.publishedAt ? new Date(post.publishedAt).toLocaleDateString('vi-VN') : "Mới đây"}</span>
