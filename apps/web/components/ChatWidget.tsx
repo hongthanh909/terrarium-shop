@@ -189,10 +189,8 @@ export default function ChatWidget() {
       <div
         className={`fixed z-[9998] transition-all duration-300 ease-out`}
         style={{
-          bottom: "90px",   // ngay trên nút chat
+          bottom: "90px",
           right: "24px",
-          width: "360px",
-          height: "500px",
           borderRadius: "16px",
           overflow: "hidden",
           display: "flex",
@@ -203,6 +201,22 @@ export default function ChatWidget() {
           pointerEvents: open ? "auto" : "none",
         }}
       >
+        {/* Responsive styles: mobile = full-width, desktop = fixed 360px */}
+        <style>{`
+          .chat-panel-responsive {
+            width: calc(100vw - 48px);
+            height: calc(100vh - 160px);
+            max-height: 600px;
+          }
+          @media (min-width: 640px) {
+            .chat-panel-responsive {
+              width: 360px;
+              height: 500px;
+              max-height: 500px;
+            }
+          }
+        `}</style>
+        <div className="chat-panel-responsive flex flex-col" style={{ borderRadius: "inherit", overflow: "hidden" }}>
         {/* ── HEADER ─────────────────────────────── */}
         <div
           style={{
@@ -481,6 +495,7 @@ export default function ChatWidget() {
             <ExternalLink size={11} />
             Xem tất cả sản phẩm tại shop
           </a>
+        </div>
         </div>
       </div>
 

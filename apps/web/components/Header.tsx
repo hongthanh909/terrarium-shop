@@ -5,6 +5,7 @@ import Image from "next/image";
 import {
   ShoppingCart, User, X, Minus, Plus, ShoppingBag,
   ChevronDown, LogOut, Package, LayoutDashboard, Heart, Lock,
+  Menu,
 } from "lucide-react";
 import { useCartStore, CartItem } from "@/lib/store/cartStore";
 import { useState, useEffect, useCallback } from "react";
@@ -88,9 +89,16 @@ export default function Header() {
   const { getCartCount, items, removeItem, updateQuantity } = useCartStore();
   const [cartOpen, setCartOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [mounted, setMounted] = useState(false);
   const { data: session } = useSession();
+  const pathname = usePathname();
+
+  // Đóng mobile menu khi chuyển trang
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [pathname]);
 
   useEffect(() => {
     useCartStore.persist.rehydrate();
@@ -173,6 +181,15 @@ export default function Header() {
 
             {/* Right actions */}
             <div className="flex items-center gap-1.5">
+              {/* Hamburger — chỉ hiện trên mobile */}
+              <button
+                className="md:hidden w-9 h-9 flex items-center justify-center rounded-full text-white/70 hover:text-white hover:bg-white/15 transition-colors"
+                onClick={() => setMobileMenuOpen(true)}
+                aria-label="Mở menu"
+              >
+                <Menu className="w-5 h-5" />
+              </button>
+
               {/* Search trigger — light variant for green navbar */}
               <SearchTrigger onClick={() => setSearchOpen(true)} light />
 
@@ -274,6 +291,87 @@ export default function Header() {
 
       {/* ─── Search Palette ───────────────────────────────────────────────── */}
       <SearchPalette open={searchOpen} onClose={() => setSearchOpen(false)} />
+
+      {/* ─── Mobile Menu Drawer ────────────────────────────────────────────── */}
+      <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+        <SheetContent side="left" className="w-[280px] sm:w-[320px] p-0 border-0">
+          <div className="flex flex-col h-full bg-gradient-to-b from-[#2d3d23] to-[#1e2e16]">
+            {/* Header */}
+            <SheetHeader className="px-6 pt-6 pb-4 border-b border-white/10">
+              <SheetTitle className="text-left">
+                <span
+                  className="text-xl text-white"
+                  style={{ fontFamily: "'Dancing Script', cursive", fontWeight: 600 }}
+                >
+                  tiệm Rêu Décor
+                </span>
+              </SheetTitle>
+              <SheetDescription className="text-white/50 text-xs text-left">
+                Terrarium & Moss Art
+              </SheetDescription>
+            </SheetHeader>
+
+            {/* Navigation Links */}
+            <nav className="flex-1 overflow-y-auto px-4 py-4">
+              <p className="text-[10px] uppercase tracking-wider text-white/40 font-semibold px-3 mb-2">Điều hướng</p>
+              {NAV_LINKS.map((link) => {
+                const isActive = pathname === link.href || (link.href !== "/" && pathname?.startsWith(link.href));
+                return (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
+                      isActive
+                        ? "bg-white/15 text-white"
+                        : "text-white/70 hover:text-white hover:bg-white/10"
+                    }`}
+                  >
+                    {link.label}
+                  </Link>
+                );
+              })}
+
+              <div className="my-4 h-px bg-white/10" />
+
+              <p className="text-[10px] uppercase tracking-wider text-white/40 font-semibold px-3 mb-2">Chính sách</p>
+              {POLICY_LINKS.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className="flex items-center gap-3 px-3 py-2 rounded-xl text-sm text-white/60 hover:text-white hover:bg-white/10 transition-all duration-200"
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </nav>
+
+            {/* Bottom actions */}
+            <div className="px-4 py-4 border-t border-white/10 space-y-2">
+              {session ? (
+                <>
+                  <div className="px-3 py-2">
+                    <p className="text-sm font-semibold text-white truncate">{session.user?.name}</p>
+                    <p className="text-xs text-white/50 truncate">{session.user?.email}</p>
+                  </div>
+                  <button
+                    onClick={() => { useCartStore.getState().clearCart(); signOut({ callbackUrl: "/" }); }}
+                    className="w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm text-red-300 hover:bg-red-500/20 transition-colors"
+                  >
+                    <LogOut className="w-4 h-4" /> Đăng xuất
+                  </button>
+                </>
+              ) : (
+                <Link
+                  href="/login"
+                  className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-sm font-semibold bg-white/15 text-white hover:bg-white/25 transition-colors"
+                >
+                  <User className="w-4 h-4" /> Đăng nhập
+                </Link>
+              )}
+            </div>
+          </div>
+        </SheetContent>
+      </Sheet>
 
       {/* ─── Cart Drawer ──────────────────────────────────────────────────── */}
       <Sheet open={cartOpen} onOpenChange={setCartOpen}>

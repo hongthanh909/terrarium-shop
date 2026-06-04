@@ -256,7 +256,7 @@ async function LatestBlogSection() {
             </div>
           </ScrollReveal>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-12 mb-12">
             {latestPosts.map((post: any, index: number) => (
               <ScrollReveal key={post.id} direction="up" delay={index * 0.1} className="h-full">
                 <Link href={`/blog/${post.slug}`} className="block h-full">
@@ -379,10 +379,10 @@ export default function Home() {
             </ScrollReveal>
 
             <ScrollReveal direction="up" delay={0.4}>
-              <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+              <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center w-full">
                 <Button
                   size="lg"
-                  className="bg-[#425733] text-white hover:bg-[#364a29] font-semibold rounded-full text-lg px-8 shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5"
+                  className="bg-[#425733] text-white hover:bg-[#364a29] font-semibold rounded-full text-lg px-8 py-3 shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5 w-full sm:w-auto"
                   asChild
                 >
                   <Link href="/products">
@@ -392,7 +392,7 @@ export default function Home() {
                 <Button
                   size="lg"
                   variant="outline"
-                  className="border-2 border-[#425733]/30 text-[#425733] rounded-full hover:bg-[#e3ebdd] font-medium text-lg px-8 transition-all duration-300"
+                  className="border-2 border-[#425733]/30 text-[#425733] rounded-full hover:bg-[#e3ebdd] font-medium text-lg px-8 py-3 transition-all w-full sm:w-auto"
                   asChild
                 >
                   <Link href="#about">Tìm Hiểu Thêm</Link>
@@ -436,7 +436,7 @@ export default function Home() {
 
       {/* Features Section */}
       <section className="py-24 px-6 bg-gradient-to-b from-white to-[#f0f4ec] overflow-hidden">
-        <div className="max-w-7xl mx-auto">
+        <div className="max-w-7xl mx-auto px-6">
           <ScrollReveal direction="up">
             <div className="text-center mb-16">
               <p className="text-[#425733] font-bold text-sm uppercase tracking-wide mb-3">Tại Sao Chọn Chúng Tôi</p>

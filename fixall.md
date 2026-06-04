@@ -1,6 +1,35 @@
 # FIXALL — Báo cáo Kiểm tra & Sửa lỗi Toàn hệ thống
 
-> Ngày kiểm tra: 2026-06-02  
+> Ngày kiểm tra gần nhất: 2026-06-04  
+> Phạm vi: Hosting migration, AI model update, UI/Mobile responsive
+
+---
+
+## 📋 Cập nhật 2026-06-04
+
+### ✅ Dọn dẹp Vercel (đã chuyển sang VPS)
+- Xóa `vercel.json` (root + apps/web)
+- Xóa thư mục `apps/web/.vercel/`
+- Cần xóa project trên Vercel Dashboard thủ công
+
+### ✅ Cập nhật AI Model
+- Model chính: `llama3:8b` (~4.7GB) trên VPS CHEAP 6 (8GB RAM, 6vCPU)
+- Đã đồng bộ `migrate.md`: VPS specs, RAM allocation, SSD usage
+- `consult/route.ts` default model đã đúng: `llama3:8b`
+
+### ✅ Mobile Responsive — Header
+- Thêm hamburger menu icon (`Menu` từ lucide) cho mobile (`md:hidden`)
+- Mobile menu drawer (Sheet, slide from left) với gradient xanh lá
+- Chứa đầy đủ NAV_LINKS + POLICY_LINKS + user actions
+- Tự động đóng khi chuyển trang (`usePathname` listener)
+
+### ✅ Mobile Responsive — ChatWidget
+- Chat panel responsive: full-width trên mobile (<640px), 360px trên desktop
+- Height responsive: `calc(100vh - 160px)` trên mobile, 500px trên desktop
+
+---
+
+> Ngày kiểm tra trước: 2026-06-02  
 > Phạm vi: Toàn bộ API routes, logic user→admin, DB connection
 
 > [!IMPORTANT]
@@ -245,3 +274,17 @@ foreach ($ep in $endpoints) {
   Write-Host "[$($r.StatusCode)] $ep"
 }
 ```
+
+## 🟢 INFO — AI Recommendation Integration
+
+- Added **rateLimiter.ts** utility for simple in‑memory IP‑based rate limiting (used by AI endpoints).
+- Added **aiPrompt.ts** with `buildProductPrompt` to construct system prompts for Ollama model using real product data.
+- Created **/api/ai/recommend** endpoint (`apps/web/app/api/ai/recommend/route.ts`) that:
+  - Validates request and applies rate limiting.
+  - Retrieves product details via Prisma singleton.
+  - Generates a prompt with `buildProductPrompt` and calls Ollama (`llama3:8b`).
+  - Returns markdown recommendation.
+- Updated **ChatWidget** (no direct change required; can now call `/api/ai/recommend` if needed).
+- All changes follow existing code style and security headers.
+
+> [!NOTE] The AI model now receives actual product catalog data; no trend data needed.

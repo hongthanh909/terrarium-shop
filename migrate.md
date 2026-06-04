@@ -3,18 +3,20 @@
 > **Dự án**: Terrarium Shop — Next.js 14 Full-stack Monorepo  
 > **Mục tiêu**: Chuyển toàn bộ từ Vercel + Supabase Hosted → VPS tự quản lý  
 > **Tên miền**: tiemreudecor.com (giữ nguyên)  
-> **Tính năng mới**: AI tư vấn 24/7 dùng Ollama (Llama 3.2:3b)
+> **Tính năng mới**: AI tư vấn 24/7 dùng Ollama (Llama 3:8b — ~4.7GB)  
+> **Hosting**: VPS CHEAP 6 — 8GB RAM / 6 vCPU  
+> **Trạng thái Vercel**: ĐÃ XÓA config (2026-06-04)
 
 ---
 
 ## 🏗️ Cấu Trúc VPS Sau Khi Migrate — Nhìn Từ Góc Toàn Cảnh
 
-Toàn bộ dự án **FE + BE + DB + AI + Storage** sẽ cùng sống trên **1 VPS duy nhất** (Vietnix VPS Cheap 3, 4GB RAM / 40GB SSD / 4vCPU):
+Toàn bộ dự án **FE + BE + DB + AI + Storage** sẽ cùng sống trên **1 VPS duy nhất** (Vietnix VPS Cheap 6, 8GB RAM / 80GB SSD / 6vCPU):
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                   VPS — Vietnix VPS Cheap 3                    │
-│                   Ubuntu 22.04 LTS / 4GB RAM                   │
+│                   VPS — Vietnix VPS Cheap 6                    │
+│                   Ubuntu 22.04 LTS / 8GB RAM                   │
 │                                                                 │
 │  ┌──────────────────────────────────────────────────────────┐  │
 │  │ NGINX (Reverse Proxy + SSL — Cổng 80 & 443)              │  │
@@ -41,8 +43,8 @@ Toàn bộ dự án **FE + BE + DB + AI + Storage** sẽ cùng sống trên **1 
 │  ┌───────────┐  ┌─────────────┐  ┌─────────────────────────┐  │
 │  │POSTGRESQL │  │ OLLAMA AI   │  │ MINIO STORAGE           │  │
 │  │           │  │             │  │                          │  │
-│  │ products  │  │ llama3.2:3b │  │ Ảnh sản phẩm           │  │
-│  │ orders    │  │ ~2GB RAM    │  │ Banner trang chủ        │  │
+│  │ products  │  │ llama3:8b   │  │ Ảnh sản phẩm           │  │
+│  │ orders    │  │ ~4.7GB RAM  │  │ Banner trang chủ        │  │
 │  │ users     │  │ khi có chat │  │ → Serve qua:            │  │
 │  │ blog      │  │             │  │ storage.tiemreudecor    │  │
 │  │ settings  │  │             │  │ .com (Nginx proxy)      │  │
@@ -51,9 +53,9 @@ Toàn bộ dự án **FE + BE + DB + AI + Storage** sẽ cùng sống trên **1 
 │  📁 SSD 40GB (Lưu trữ vĩnh viễn)                              │
 │  ├── /home/deploy/terrarium-shop/  ← Code FE+BE (~2GB)        │
 │  ├── /var/lib/postgresql/          ← Dữ liệu DB (~0.5GB)     │
-│  ├── /root/.ollama/models/         ← File AI llama3.2 (~2GB) │
+│  ├── /root/.ollama/models/         ← File AI llama3:8b (~4.7GB)│
 │  ├── /data/minio/                  ← Ảnh sản phẩm (~2–5GB)  │
-│  └── /swapfile                     ← RAM ảo dự phòng (4GB)   │
+│  └── /swapfile                     ← RAM ảo dự phòng (8GB)   │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
                               │
@@ -63,7 +65,7 @@ Toàn bộ dự án **FE + BE + DB + AI + Storage** sẽ cùng sống trên **1 
 
 ---
 
-## 🗂️ Dữ Liệu Phân Bổ Trên SSD (40GB) và RAM (4GB)
+## 🗂️ Dữ Liệu Phân Bổ Trên SSD (80GB) và RAM (8GB)
 
 ### Ổ cứng SSD (Lưu trữ vĩnh viễn — không mất khi reboot)
 
@@ -72,20 +74,20 @@ Toàn bộ dự án **FE + BE + DB + AI + Storage** sẽ cùng sống trên **1 
 | Hệ điều hành (Ubuntu 22.04) | Linux kernel, systemd, users | ~6 GB |
 | Phần mềm cài đặt | Nginx, PM2, PostgreSQL, Ollama binary | ~1 GB |
 | Mã nguồn FE+BE (Next.js) | Code React, API Routes, node_modules, .next build | ~2 GB |
-| File model AI (llama3.2:3b) | Các tham số AI — cất yên trên SSD, nạp RAM khi dùng | ~2 GB |
+| File model AI (llama3:8b) | Các tham số AI — cất yên trên SSD, nạp RAM khi dùng | ~4.7 GB |
 | Cơ sở dữ liệu (PostgreSQL) | Sản phẩm, đơn hàng, users, blog, cài đặt | ~0.5 GB |
 | Ảnh/File (MinIO Storage) | Ảnh sản phẩm, banner trang chủ | ~1–5 GB |
-| Swap File (RAM ảo dự phòng) | Dùng SSD làm "RAM ảo" khi 4GB RAM vật lý đầy | ~4 GB |
-| **Tổng sử dụng** | | **~16–20 GB / 40 GB** |
-| **Còn trống** | Dùng cho logs, backup DB, tăng trưởng dữ liệu | **~20–24 GB** |
+| Swap File (RAM ảo dự phòng) | Dùng SSD làm "RAM ảo" khi 8GB RAM vật lý đầy | ~8 GB |
+| **Tổng sử dụng** | | **~22–28 GB / 80 GB** |
+| **Còn trống** | Dùng cho logs, backup DB, tăng trưởng dữ liệu | **~52–58 GB** |
 
 ### RAM (Phân bổ khi đang chạy — xóa sạch khi reboot)
 
 | Trạng thái | Thành phần chiếm RAM | Tổng RAM dùng |
 |-----------|---------------------|--------------|
-| **Bình thường** (khách lướt shop) | OS ~800MB + Nginx ~50MB + Next.js ~300MB + PostgreSQL ~150MB + Ollama chờ ~100MB | **~1.4 GB / 4 GB** ✅ |
-| **Có người chat AI** | Bình thường + Model AI nạp vào RAM ~2GB | **~3.4 GB / 4 GB** ⚠️ |
-| **Quá tải** (nhiều người chat cùng lúc) | Vượt 4GB RAM → tự động dùng Swap từ SSD | **4GB RAM + Swap** 🔄 |
+| **Bình thường** (khách lướt shop) | OS ~800MB + Nginx ~50MB + Next.js ~600MB + PostgreSQL ~200MB + Ollama chờ ~100MB | **~1.75 GB / 8 GB** ✅ |
+| **Có người chat AI** | Bình thường + Model AI nạp vào RAM ~4.7GB | **~6.5 GB / 8 GB** ✅ |
+| **Quá tải** (nhiều người chat cùng lúc) | Vượt 8GB RAM → tự động dùng Swap từ SSD | **8GB RAM + Swap** 🔄 |
 
 ---
 
