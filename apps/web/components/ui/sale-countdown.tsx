@@ -31,19 +31,14 @@ export function SaleCountdown({ saleEndDate, className }: SaleCountdownProps) {
 
   if (!timeLeft) return null;
 
-  const isUrgent = timeLeft.totalMs < 60 * 60 * 1000; // < 1 giờ
-
   const pad = (n: number) => String(n).padStart(2, "0");
 
   return (
     <div className={`flex items-center gap-1.5 ${className}`}>
-      <Flame
-        className={`w-3.5 h-3.5 ${isUrgent ? "text-red-500 animate-pulse" : "text-orange-400"}`}
-      />
-      <span className={`text-[11px] font-bold tracking-wider ${isUrgent ? "text-red-500" : "text-orange-500"}`}>
-        {timeLeft.h > 0 ? `${pad(timeLeft.h)}:` : ""}{pad(timeLeft.m)}:{pad(timeLeft.s)}
+      <Flame className="w-4 h-4 text-red-600 animate-pulse" />
+      <span className="text-sm font-mono font-bold text-red-600 tabular-nums">
+        {pad(timeLeft.h)}:{pad(timeLeft.m)}:{pad(timeLeft.s)}
       </span>
-      <span className="text-[10px] text-gray-400 font-medium">còn lại</span>
     </div>
   );
 }

@@ -35,6 +35,10 @@ export default function AdminExplorePage() {
   const [pinning, setPinning] = useState<string | null>(null);
   const [reason, setReason] = useState("");
   const [showProductPicker, setShowProductPicker] = useState(false);
+  // New state for rotation index
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+
 
   const fetchFeatured = useCallback(async () => {
     setLoading(true);
@@ -60,6 +64,15 @@ export default function AdminExplorePage() {
   useEffect(() => {
     fetchFeatured();
   }, [fetchFeatured]);
+
+  // Auto‑rotate featured items every 10 seconds
+  useEffect(() => {
+    if (featured.length === 0) return;
+    const interval = setInterval(() => {
+      setCurrentIndex((prev) => (prev + 1) % featured.length);
+    }, 10000);
+    return () => clearInterval(interval);
+  }, [featured]);
 
   useEffect(() => {
     if (showProductPicker) fetchProducts(search);
@@ -142,7 +155,7 @@ export default function AdminExplorePage() {
         </div>
       </div>
 
-      {/* Danh sách đang ghim */}
+      {/* Danh sách đang ghim (auto‑rotated) */}
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
         <div className="px-5 py-3.5 border-b border-gray-100 flex items-center gap-2">
           <Star className="w-4 h-4 text-amber-500 fill-amber-500" />
@@ -160,42 +173,30 @@ export default function AdminExplorePage() {
             </p>
           </div>
         ) : (
-          <div className="divide-y divide-gray-50">
-            {featured.map((item) => (
+          <div className="relative h-36 flex items-center justify-center overflow-hidden">
+            {/* Fade transition using opacity */}
+            {featured.map((item, idx) => (
               <div
                 key={item.id}
-                className="flex items-center gap-4 px-5 py-3.5 hover:bg-gray-50/50 transition-colors group"
+                className={`absolute inset-0 flex items-center gap-4 px-5 py-3.5 transition-opacity duration-500 ${idx === currentIndex ? "opacity-100" : "opacity-0"}`}
               >
                 {/* Ảnh */}
                 <div className="w-14 h-14 rounded-xl overflow-hidden bg-gray-100 flex-shrink-0">
                   {item.product.images?.[0] ? (
-                    <Image
-                      src={item.product.images[0]}
-                      alt={item.product.name}
-                      width={56}
-                      height={56}
-                      className="w-full h-full object-cover"
-                    />
+                    <Image src={item.product.images[0]} alt={item.product.name} width={56} height={56} className="w-full h-full object-cover" />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-gray-300 text-xs">
-                      No img
-                    </div>
+                    <div className="w-full h-full flex items-center justify-center text-gray-300 text-xs">No img</div>
                   )}
                 </div>
 
                 {/* Info */}
                 <div className="flex-1 min-w-0">
-                  <p className="font-medium text-gray-800 text-sm truncate">
-                    {item.product.name}
-                  </p>
+                  <p className="font-medium text-gray-800 text-sm truncate">{item.product.name}</p>
                   <p className="text-xs text-gray-400 mt-0.5">
-                    {item.product.category.name} ·{" "}
-                    {Number(item.product.basePrice).toLocaleString("vi-VN")}₫
+                    {item.product.category.name} · {Number(item.product.basePrice).toLocaleString("vi-VN")}₫
                   </p>
                   {item.reason && (
-                    <p className="text-xs text-[#425733] mt-0.5 font-medium truncate">
-                      Tiêu đề nổi bật: &ldquo;{item.reason}&rdquo;
-                    </p>
+                    <p className="text-xs text-[#425733] mt-0.5 font-medium truncate">Tiêu đề nổi bật: &ldquo;{item.reason}&rdquo;</p>
                   )}
                 </div>
 
@@ -206,11 +207,7 @@ export default function AdminExplorePage() {
 
                 {/* Status */}
                 <span
-                  className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                    item.product.status === "ACTIVE"
-                      ? "bg-green-100 text-green-700"
-                      : "bg-gray-100 text-gray-500"
-                  }`}
+                  className={`text-xs px-2 py-0.5 rounded-full font-medium ${item.product.status === "ACTIVE" ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"}`}
                 >
                   {item.product.status === "ACTIVE" ? "Đang bán" : item.product.status}
                 </span>
@@ -219,7 +216,7 @@ export default function AdminExplorePage() {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="text-red-400 hover:text-red-600 hover:bg-red-50 opacity-0 group-hover:opacity-100 transition-opacity"
+                  className="text-red-400 hover:text-red-600 hover:bg-red-50 transition-opacity"
                   onClick={() => handleUnpin(item.id, item.product.name)}
                   title="Bỏ ghim"
                 >

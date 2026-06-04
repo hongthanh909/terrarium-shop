@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
+import { CountdownTimer } from "@/components/ui/CountdownTimer";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -412,10 +413,13 @@ export function ProductDetailClient({
 
                   {/* Sale badge */}
                   {isSale && (
-                    <div className="absolute top-3 left-3 bg-red-500 text-white text-xs font-bold px-2.5 py-1 rounded-full shadow z-10">
-                      -{discountPercent}%
-                    </div>
-                  )}
+                      <div className="absolute top-3 left-3 bg-gradient-to-r from-red-600 to-red-500 text-white text-xs font-bold px-2.5 py-1 rounded-full shadow z-10 flex items-center space-x-1">
+                        <span>-{discountPercent}%</span>
+                        {product.saleEndDate && (
+                          <CountdownTimer endsAt={product.saleEndDate} className="ml-1" />
+                        )}
+                      </div>
+                    )}
 
                   {/* Prev/Next arrows (appear on hover) */}
                   {product.images.length > 1 && (

@@ -39,6 +39,15 @@ export function ExploreClient({ featured, pinned, topVoted, newArrivals, weeklyF
   const { addItem } = useCartStore();
   const [activeImageIndex, setActiveImageIndex] = useState(0);
 
+  // Auto‑rotate image every 10 s (≈10 000 ms)
+  useEffect(() => {
+    if (!weeklyFeatured?.product?.images?.length) return;
+    const interval = setInterval(() => {
+      setActiveImageIndex((idx) => (idx + 1) % weeklyFeatured.product.images.length);
+    }, 10000);
+    return () => clearInterval(interval);
+  }, [weeklyFeatured?.product?.images]);
+
   const Section = ({
     title,
     products,
