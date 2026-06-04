@@ -182,17 +182,16 @@ export function ProductDetailClient({
   const getPriceWithVariants = () => {
     if (!product) return { price: 0, base: 0, isSale: false };
     let base = parseFloat(product.basePrice.toString());
-    let currentBase = base;
     const hasSale = product.salePrice && product.salePrice !== null;
     const isSaleValid = hasSale && (!product.saleEndDate || new Date(product.saleEndDate) > new Date());
     let isSale = false;
+    let currentBase = base;
     if (isSaleValid) { currentBase = parseFloat(product.salePrice.toString()); isSale = true; }
     let price = currentBase;
 
-    // Lamp variant: +150k for combo
+    // Lamp variant: +150k for combo (added to final price only, NOT to base for discount calc)
     if (selectedVariants[LAMP_VARIANT_TYPE] === LAMP_COMBO_OPTION) {
       price += LAMP_PRICE_ADJUSTMENT;
-      base += LAMP_PRICE_ADJUSTMENT;
     }
 
     // DB variants
@@ -533,11 +532,6 @@ export function ProductDetailClient({
                         }`}
                       >
                         {opt}
-                        {isCombo && (
-                          <span className={`ml-1.5 text-xs font-bold ${isSelected ? "text-green-300" : "text-[#5a8a45]"}`}>
-                            +150k
-                          </span>
-                        )}
                       </button>
                     );
                   })}

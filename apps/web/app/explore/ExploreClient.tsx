@@ -10,7 +10,8 @@ import { useCartStore } from "@/lib/store/cartStore";
 import { Button } from "@/components/ui/button";
 import { ProductCard } from "@/components/ui/product-card";
 import { PageTransition, SlideInHeading } from "@/components/ui/page-transition";
-import { motion } from "framer-motion";
+import { motion, useScroll, useTransform } from "framer-motion";
+import { useRef } from "react";
 
 interface Product {
   id: string;
@@ -50,23 +51,27 @@ export function ExploreClient({ featured, pinned, topVoted, newArrivals, weeklyF
 
   const Section = ({
     title,
+    subtitle,
     products,
     emptyMessage,
-    icon,
   }: {
     title: string;
+    subtitle?: string;
     products: Product[];
     emptyMessage: string;
-    icon?: React.ReactNode;
   }) => (
-    <section className="mb-16">
-      <SlideInHeading>
-        <div className="flex items-center gap-3 mb-6">
-          {icon && <span className="text-2xl">{icon}</span>}
-          <h2 className="text-2xl font-bold text-[#1a2e12]">{title}</h2>
-          <div className="flex-1 h-px bg-[#d4e4c9] ml-2" />
-        </div>
-      </SlideInHeading>
+    <section className="mb-20">
+      <motion.div
+        className="mb-8"
+        initial={{ opacity: 0, y: 16 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-60px" }}
+        transition={{ duration: 0.5 }}
+      >
+        <h2 className="text-2xl font-bold text-[#1a2e12] tracking-tight">{title}</h2>
+        {subtitle && <p className="text-sm text-gray-400 mt-1">{subtitle}</p>}
+        <div className="mt-3 h-[2px] w-12 bg-gradient-to-r from-[#425733] to-[#a8c49a] rounded-full" />
+      </motion.div>
       {products.length === 0 ? (
         <p className="text-gray-400 py-8 text-center">{emptyMessage}</p>
       ) : (
@@ -96,26 +101,32 @@ export function ExploreClient({ featured, pinned, topVoted, newArrivals, weeklyF
     </section>
   );
 
+  // Scroll-based hero animation: slide left and fade out on scroll
+  const heroRef = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({ target: heroRef, offset: ["start start", "end start"] });
+  const heroX = useTransform(scrollYProgress, [0, 0.6], [0, -300]);
+  const heroOpacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
+
   return (
     <PageTransition>
       <main className="min-h-screen bg-[#fafbf8] py-10 px-6">
         <div className="max-w-7xl mx-auto">
-          {/* Hero */}
-          <motion.div
-            className="text-center mb-14"
-            initial={{ opacity: 0, y: 24 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            <div className="inline-flex items-center gap-2 bg-[#e3ebdd] px-4 py-2 rounded-full text-sm font-medium text-[#425733] mb-4">
-              <Compass className="w-4 h-4" />
-              <span>Khám phá bộ sưu tập</span>
-            </div>
-            <h1 className="text-5xl font-bold text-[#1a2e12] mb-4">Khám Phá</h1>
-            <p className="text-gray-500 max-w-2xl mx-auto">
-              Khám phá bộ sưu tập terrarium tuyệt đẹp — từ sản phẩm nổi bật đến những thiết kế mới nhất
-            </p>
-          </motion.div>
+          {/* Hero — slides left and fades on scroll */}
+          <div ref={heroRef}>
+            <motion.div
+              className="text-center mb-14"
+              style={{ x: heroX, opacity: heroOpacity }}
+            >
+              <div className="inline-flex items-center gap-2 bg-[#e3ebdd] px-4 py-2 rounded-full text-sm font-medium text-[#425733] mb-4">
+                <Compass className="w-4 h-4" />
+                <span>Khám phá bộ sưu tập</span>
+              </div>
+              <h1 className="text-5xl font-bold text-[#1a2e12] mb-4">Khám Phá</h1>
+              <p className="text-gray-500 max-w-2xl mx-auto">
+                Khám phá bộ sưu tập terrarium tuyệt đẹp — từ sản phẩm nổi bật đến những thiết kế mới nhất
+              </p>
+            </motion.div>
+          </div>
 
           {/* Weekly Featured Highlight */}
           {weeklyFeatured && (
@@ -350,10 +361,10 @@ export function ExploreClient({ featured, pinned, topVoted, newArrivals, weeklyF
             </motion.section>
           )}
 
-          <Section title="Sản Phẩm Nổi Bật" icon="🔥" products={featured} emptyMessage="Chưa có sản phẩm nổi bật" />
-          <Section title="Sản Phẩm Được Ghim" icon="📌" products={pinned.filter((p) => p.pinnedUntil && new Date(p.pinnedUntil) > new Date())} emptyMessage="Chưa có sản phẩm được ghim" />
-          <Section title="Được Yêu Thích" icon="❤️" products={topVoted} emptyMessage="Chưa có sản phẩm nào được bình chọn" />
-          <Section title="Mới Rời Xưởng" icon="🆕" products={newArrivals} emptyMessage="Chưa có sản phẩm mới" />
+          <Section title="Sản Phẩm Nổi Bật" subtitle="Được yêu thích và lựa chọn nhiều nhất" products={featured} emptyMessage="Chưa có sản phẩm nổi bật" />
+          <Section title="Sản Phẩm Được Ghim" subtitle="Được admin đề xuất đặc biệt" products={pinned.filter((p) => p.pinnedUntil && new Date(p.pinnedUntil) > new Date())} emptyMessage="Chưa có sản phẩm được ghim" />
+          <Section title="Được Yêu Thích" subtitle="Bình chọn cao nhất từ cộng đồng" products={topVoted} emptyMessage="Chưa có sản phẩm nào được bình chọn" />
+          <Section title="Mới Rời Xưởng" subtitle="Vừa ra mắt, sẵn sàng khám phá" products={newArrivals} emptyMessage="Chưa có sản phẩm mới" />
 
           <motion.div
             className="text-center mt-8"
