@@ -342,8 +342,13 @@ export default function CheckoutPage() {
                       <Image src={item.productImage} alt={item.productName} width={64} height={64} className="w-16 h-16 object-cover rounded" />
                       <div className="flex-1">
                         <p className="font-semibold text-sm">{item.productName}</p>
-                        {item.variants && Object.keys(item.variants).length > 0 && (
-                          <p className="text-xs text-muted-foreground">{Object.entries(item.variants ?? {}).map(([k, v]) => `${k}: ${v}`).join(", ")}</p>
+                        {item.variants && Object.keys(item.variants).filter(k => k !== "Đèn").length > 0 && (
+                          <p className="text-xs text-muted-foreground">
+                            {Object.entries(item.variants ?? {})
+                              .filter(([k]) => k !== "Đèn")
+                              .map(([k, v]) => `${k}: ${v}`)
+                              .join(", ")}
+                          </p>
                         )}
                         <p className="text-xs text-muted-foreground">Qty: {item.quantity}</p>
                         <p className="text-sm font-semibold">{(item.price * item.quantity).toLocaleString("vi-VN")}₫</p>

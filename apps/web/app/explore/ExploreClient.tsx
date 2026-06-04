@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useSession } from "next-auth/react";
-import { Package, Compass, Sparkles } from "lucide-react";
+import { Package, Compass, Sparkles, Check, Sprout, RefreshCw, Sun, Ruler, Gift, ShoppingBasket } from "lucide-react";
 import { toast } from "sonner";
 import { useCartStore } from "@/lib/store/cartStore";
 import { Button } from "@/components/ui/button";
@@ -111,55 +111,106 @@ export function ExploreClient({ featured, pinned, topVoted, newArrivals, weeklyF
           {/* Weekly Featured Highlight */}
           {weeklyFeatured && (
             <motion.section
-              className="mb-14"
+              className="mb-16"
               initial={{ opacity: 0, scale: 0.98 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.2, duration: 0.5 }}
             >
-              <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#3a5229] via-[#536644] to-[#6b8055] p-8 md:p-12 text-white">
-                <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32 blur-3xl" />
-                <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/10 rounded-full -ml-24 -mb-24 blur-2xl" />
-                <div className="relative z-10 max-w-4xl mx-auto text-center">
-                  <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full text-sm font-medium mb-4">
-                    <Sparkles className="w-4 h-4" />
-                    <span>{weeklyFeatured.reason || "Featured của tuần"}</span>
+              <div className="relative overflow-hidden rounded-3xl bg-[#48593e] p-8 md:p-12 text-white border border-[#55694b] shadow-2xl">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -mr-32 -mt-32 blur-3xl" />
+                <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full -ml-24 -mb-24 blur-2xl" />
+                
+                <div className="relative z-10 max-w-5xl mx-auto">
+                  {/* Category / Reason Badge */}
+                  <div className="inline-flex items-center gap-1.5 bg-[#5b6e51] px-4 py-1.5 rounded-full text-xs font-semibold uppercase tracking-wider mb-6 text-white/90 shadow-sm border border-white/10">
+                    <span>🔧 {weeklyFeatured.reason || "Featured của tuần"}</span>
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
-                    <div className="text-left">
-                      <h2 className="text-3xl md:text-4xl font-bold mb-4">{weeklyFeatured.product.name}</h2>
-                      <p className="text-white/90 mb-6 text-base leading-relaxed">
-                        {weeklyFeatured.product.name} là tác phẩm nghệ thuật terrarium độc đáo thuộc danh mục {weeklyFeatured.product.category.name}, được thiết kế tinh xảo từ rêu xanh tự nhiên và các phụ kiện trang trí sống động. Sản phẩm đi kèm đầy đủ phụ kiện và cẩm nang hướng dẫn chăm sóc chi tiết.
-                      </p>
-                      <p className="text-3xl font-bold mb-6">
+
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+                    {/* Left Column: Product Info & Actions */}
+                    <div className="lg:col-span-7 text-left space-y-5">
+                      <h2 className="text-3xl md:text-5xl font-extrabold tracking-tight leading-tight">{weeklyFeatured.product.name}</h2>
+                      
+                      <p className="text-3xl font-extrabold text-[#c3dfb2]">
                         {Number(weeklyFeatured.product.basePrice.toString()).toLocaleString("vi-VN")}₫
                       </p>
-                      <div className="flex gap-3">
-                        <Button asChild size="lg" className="bg-white text-[#3a5229] hover:bg-gray-100 font-bold shadow-md">
-                          <Link href={`/products/${weeklyFeatured.product.slug}`}>Xem chi tiết</Link>
+
+                      <p className="text-white/80 text-sm md:text-base leading-relaxed max-w-xl">
+                        Terrarium {weeklyFeatured.product.name.toLowerCase()} mô phỏng một khu rừng tự nhiên thu nhỏ với hệ thực vật phong phú, rêu xanh và bố cục hài hòa. Được chế tác thủ công tinh xảo, mỗi sản phẩm mang vẻ đẹp nghệ thuật độc nhất vô nhị giúp thư giãn và trang trí sang trọng cho không gian của bạn.
+                      </p>
+
+                      {/* 4 Feature Badges Row */}
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-2">
+                        {[
+                          { icon: <Sprout className="w-4 h-4 text-[#a3e288]" />, text: "Cây thật 100%" },
+                          { icon: <RefreshCw className="w-4 h-4 text-[#93c5fd]" />, text: "Hệ sinh thái kín" },
+                          { icon: <Sun className="w-4 h-4 text-[#fde047]" />, text: "Dễ chăm sóc" },
+                          { icon: <Ruler className="w-4 h-4 text-[#c084fc]" />, text: "Thủ công tinh xảo" }
+                        ].map((feat, i) => (
+                          <div key={i} className="flex items-center gap-2 bg-[#55694b] px-3 py-2.5 rounded-xl text-[11px] font-semibold border border-[#637a58]">
+                            {feat.icon}
+                            <span className="truncate">{feat.text}</span>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Action Buttons */}
+                      <div className="flex flex-wrap gap-3.5 pt-3">
+                        <Button asChild size="lg" className="bg-white text-[#48593e] hover:bg-gray-100 font-bold px-8 rounded-xl shadow-md transition-all hover:scale-[1.02] active:scale-[0.98]">
+                          <Link href={`/products/${weeklyFeatured.product.slug}`}>Xem chi tiết &rarr;</Link>
                         </Button>
-                        <Button asChild size="lg" className="bg-white/20 border-2 border-white text-white hover:bg-white/30 font-semibold backdrop-blur-sm">
-                          <Link href="/products">Xem tất cả</Link>
-                        </Button>
+                        <button
+                          onClick={() => {
+                            const base = parseFloat(weeklyFeatured.product.basePrice.toString());
+                            const sale = weeklyFeatured.product.salePrice ? parseFloat(weeklyFeatured.product.salePrice.toString()) : null;
+                            const price = sale != null && sale < base ? sale : base;
+                            addItem({
+                              productId: weeklyFeatured.product.id,
+                              productName: weeklyFeatured.product.name,
+                              productImage: weeklyFeatured.product.images[0] || "",
+                              price,
+                              quantity: 1,
+                              variants: {}
+                            });
+                            toast.success(`Đã thêm "${weeklyFeatured.product.name}" vào giỏ hàng 🛒`);
+                          }}
+                          className="flex items-center gap-2 bg-[#55694b]/20 border-2 border-white/30 hover:border-white text-white hover:bg-white/10 px-6 py-2.5 rounded-xl text-sm font-semibold transition-all hover:scale-[1.02] active:scale-[0.98] backdrop-blur-sm"
+                        >
+                          <ShoppingBasket className="w-4 h-4" />
+                          Thêm vào giỏ
+                        </button>
                       </div>
                     </div>
-                    <div className="flex flex-col items-center gap-4">
-                      <div className="relative w-full max-w-sm aspect-square rounded-2xl overflow-hidden bg-white/10 backdrop-blur-sm p-4">
+
+                    {/* Right Column: Visual Showcase & Gallery */}
+                    <div className="lg:col-span-5 flex flex-col items-center justify-center gap-4">
+                      {/* Main Image View */}
+                      <div className="relative w-full max-w-[340px] aspect-square rounded-2xl overflow-hidden bg-white/10 backdrop-blur-sm p-3 border border-white/20 group">
+                        {/* Floating leaf tag */}
+                        <div className="absolute top-4 right-4 z-10 bg-[#3a5229]/95 border border-[#ddeedd]/20 backdrop-blur px-3 py-1 rounded-full text-[10px] font-bold tracking-wider flex items-center gap-1.5 text-white/90">
+                          <Sprout className="w-3.5 h-3.5 text-[#a3e288]" />
+                          <span>Cây thật 100%</span>
+                        </div>
+                        
                         {weeklyFeatured.product.images.length > 0 ? (
                           <Image
                             src={weeklyFeatured.product.images[activeImageIndex] || weeklyFeatured.product.images[0]}
                             alt={weeklyFeatured.product.name}
                             fill
-                            sizes="400px"
-                            className="object-cover rounded-xl"
+                            sizes="340px"
+                            className="object-cover rounded-xl transition-transform duration-500 group-hover:scale-105"
+                            priority
                           />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center">
-                            <Package className="w-20 h-20 text-white/50" />
+                            <Package className="w-16 h-16 text-white/40" />
                           </div>
                         )}
                       </div>
+
+                      {/* Thumbnails row */}
                       {weeklyFeatured.product.images.length > 1 && (
-                        <div className="flex gap-2 max-w-sm overflow-x-auto py-1 scrollbar-thin">
+                        <div className="flex gap-2 max-w-full overflow-x-auto py-1 scrollbar-none">
                           {weeklyFeatured.product.images.map((img, idx) => (
                             <button
                               key={idx}
@@ -181,6 +232,67 @@ export function ExploreClient({ featured, pinned, topVoted, newArrivals, weeklyF
                           ))}
                         </div>
                       )}
+                    </div>
+                  </div>
+
+                  {/* Specifications and why choose cards row */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6 border-t border-white/10 mt-8">
+                    {/* Left Box: Product Specifications */}
+                    <div className="bg-[#3e5035]/80 border border-[#506646] p-6 rounded-2xl space-y-4 shadow-inner">
+                      <h3 className="text-base font-bold text-green-200 flex items-center gap-2">
+                        📐 Thông số sản phẩm
+                      </h3>
+                      <div className="grid grid-cols-2 gap-3 text-sm text-white/95">
+                        <div className="flex flex-col p-3 bg-[#4c6142] rounded-xl border border-[#5b7550]">
+                          <span className="text-white/50 text-[10px] uppercase font-bold tracking-wider">Kích thước</span>
+                          <span className="font-bold mt-0.5">20 x 12 x 30 cm</span>
+                        </div>
+                        <div className="flex flex-col p-3 bg-[#4c6142] rounded-xl border border-[#5b7550]">
+                          <span className="text-white/50 text-[10px] uppercase font-bold tracking-wider">Ánh sáng</span>
+                          <span className="font-bold mt-0.5">Đèn LED cảm ứng</span>
+                        </div>
+                        <div className="flex flex-col p-3 bg-[#4c6142] rounded-xl border border-[#5b7550]">
+                          <span className="text-white/50 text-[10px] uppercase font-bold tracking-wider">Bảo hành</span>
+                          <span className="font-bold mt-0.5">6 tháng (đèn & PK)</span>
+                        </div>
+                        <div className="flex flex-col p-3 bg-[#4c6142] rounded-xl border border-[#5b7550]">
+                          <span className="text-white/50 text-[10px] uppercase font-bold tracking-wider">Giao hàng</span>
+                          <span className="font-bold mt-0.5">Toàn quốc 2-3 ngày</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Right Box: Why Choose & Gift Card */}
+                    <div className="bg-[#3e5035]/80 border border-[#506646] p-6 rounded-2xl flex flex-col justify-between gap-4 shadow-inner">
+                      <div className="space-y-3">
+                        <h3 className="text-base font-bold text-green-200">
+                          💡 Vì sao bạn nên chọn Lối rừng nhỏ?
+                        </h3>
+                        <ul className="space-y-2 text-xs md:text-sm text-white/90">
+                          {[
+                            "Mang thiên nhiên và sinh khí vào không gian sống của bạn",
+                            "Thanh lọc không khí xung quanh, giảm căng thẳng mệt mỏi",
+                            "Thiết kế độc bản, sang trọng, phù hợp làm quà tặng ý nghĩa",
+                            "Sản phẩm chế tác thủ công hoàn toàn, mang giá trị nghệ thuật cao"
+                          ].map((text, idx) => (
+                            <li key={idx} className="flex items-start gap-2">
+                              <Check className="w-4 h-4 text-green-300 mt-0.5 flex-shrink-0" />
+                              <span>{text}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+
+                      {/* Gift Box Card */}
+                      <div className="bg-[#2d3a27] border border-[#3e5035] p-3.5 rounded-xl flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-[#48593e] flex items-center justify-center flex-shrink-0">
+                          <Gift className="w-5 h-5 text-red-300" />
+                        </div>
+                        <div>
+                          <p className="font-semibold text-xs text-white">Quà tặng ý nghĩa</p>
+                          <p className="text-[11px] text-white/70 mt-0.5">Phù hợp tặng bạn bè, đối tác, đồng nghiệp và người thân yêu.</p>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>

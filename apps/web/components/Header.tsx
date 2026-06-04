@@ -450,9 +450,12 @@ export default function Header() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="font-semibold text-sm text-gray-800 truncate">{item.productName}</p>
-                      {Object.keys(item.variants ?? {}).length > 0 && (
+                      {Object.keys(item.variants ?? {}).filter(k => k !== "Đèn").length > 0 && (
                         <p className="text-xs text-gray-400 mt-0.5">
-                          {Object.entries(item.variants ?? {}).map(([k, v]) => `${k}: ${v}`).join(" · ")}
+                          {Object.entries(item.variants ?? {})
+                            .filter(([k]) => k !== "Đèn")
+                            .map(([k, v]) => `${k}: ${v}`)
+                            .join(" · ")}
                         </p>
                       )}
                       <p className="text-sm font-bold text-[#425733] mt-1">{item.price.toLocaleString("vi-VN")}₫</p>

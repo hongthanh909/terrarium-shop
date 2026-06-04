@@ -6,6 +6,7 @@ import Link from "next/link";
 import { ChevronLeft, ChevronRight, Star, Heart, Package, ShoppingBasket } from "lucide-react";
 import { useCartStore } from "@/lib/store/cartStore";
 import { toast } from "sonner";
+import { motion } from "framer-motion";
 
 interface Product {
   id: string;
@@ -60,90 +61,48 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
 
   if (!products || products.length === 0) return null;
 
-  // Prepare carousel items: show 3 visible cards
-  const getCardAt = (offset: number) => {
-    const idx = (currentIndex + offset + products.length) % products.length;
-    return products[idx];
-  };
-
   return (
     <div className="relative w-full max-w-[520px] mx-auto py-4">
       {/* Main carousel wrapper */}
       <div className="relative flex items-center justify-center" style={{ minHeight: "480px" }}>
         
-        {/* ── Background cards (decorative) ── */}
-        {products.length > 1 && (
-          <>
-            {/* Left background card */}
-            <div
-              className="absolute w-[280px] rounded-2xl overflow-hidden border border-[#ddeedd] bg-white/60 backdrop-blur-sm cursor-pointer transition-all duration-700 ease-out hover:scale-[1.02]"
-              style={{
-                height: "420px",
-                left: "-20px",
-                top: "30px",
-                transform: "rotate(-6deg) scale(0.85)",
-                opacity: 0.5,
-                zIndex: 1,
-              }}
-              onClick={handlePrev}
-            >
-              {getCardAt(-1).images[0] && (
-                <Image
-                  src={getCardAt(-1).images[0]}
-                  alt={getCardAt(-1).name}
-                  fill
-                  className="object-cover blur-[1px] brightness-90"
-                  sizes="280px"
-                />
-              )}
-            </div>
+        {/* Render visible products stack */}
+        {products.map((product, idx) => {
+          let offset = idx - currentIndex;
+          if (offset < -Math.floor(products.length / 2)) offset += products.length;
+          if (offset > Math.floor(products.length / 2)) offset -= products.length;
 
-            {/* Right background card */}
-            <div
-              className="absolute w-[280px] rounded-2xl overflow-hidden border border-[#ddeedd] bg-white/60 backdrop-blur-sm cursor-pointer transition-all duration-700 ease-out hover:scale-[1.02]"
-              style={{
-                height: "420px",
-                right: "-20px",
-                top: "30px",
-                transform: "rotate(5deg) scale(0.88)",
-                opacity: 0.55,
-                zIndex: 2,
-              }}
-              onClick={handleNext}
-            >
-              {getCardAt(1).images[0] && (
-                <Image
-                  src={getCardAt(1).images[0]}
-                  alt={getCardAt(1).name}
-                  fill
-                  className="object-cover blur-[0.5px] brightness-[0.92]"
-                  sizes="280px"
-                />
-              )}
-            </div>
-          </>
-        )}
+          // Only render left background, center active, and right background cards
+          const isVisible = offset === 0 || offset === 1 || offset === -1;
+          if (!isVisible) return null;
 
-        {/* ── Main product card ── */}
-        <ProductCardHero
-          product={getCardAt(0)}
-          onAddToCart={handleAddToCart}
-          key={`hero-${getCardAt(0).id}-${currentIndex}`}
-        />
+          return (
+            <ProductCardHero
+              key={product.id}
+              product={product}
+              offset={offset}
+              onAddToCart={handleAddToCart}
+              onClickBg={() => {
+                if (offset === -1) handlePrev();
+                if (offset === 1) handleNext();
+              }}
+            />
+          );
+        })}
 
         {/* ── Navigation arrows ── */}
         {products.length > 1 && (
           <>
             <button
               onClick={handlePrev}
-              className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-2 w-10 h-10 bg-white/90 backdrop-blur shadow-lg text-gray-700 rounded-full flex items-center justify-center hover:bg-white hover:scale-110 transition-all z-20"
+              className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 w-10 h-10 bg-white/90 backdrop-blur shadow-lg text-gray-700 rounded-full flex items-center justify-center hover:bg-white hover:scale-110 transition-all z-20"
               aria-label="Trước"
             >
               <ChevronLeft className="w-5 h-5" />
             </button>
             <button
               onClick={handleNext}
-              className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-2 w-10 h-10 bg-white/90 backdrop-blur shadow-lg text-gray-700 rounded-full flex items-center justify-center hover:bg-white hover:scale-110 transition-all z-20"
+              className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 w-10 h-10 bg-white/90 backdrop-blur shadow-lg text-gray-700 rounded-full flex items-center justify-center hover:bg-white hover:scale-110 transition-all z-20"
               aria-label="Sau"
             >
               <ChevronRight className="w-5 h-5" />
@@ -174,14 +133,57 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
 }
 
 
-/* ── Individual Product Card (matches featured card style) ── */
+/* ── Animation parameters for 3D stack transition ── */
+
+const cardVariants = {
+  center: {
+    x: 0,
+    y: 0,
+    scale: 1,
+    rotate: 0,
+    opacity: 1,
+    zIndex: 10,
+    cursor: "default",
+  },
+  right: {
+    x: 95,
+    y: 20,
+    scale: 0.88,
+    rotate: 5,
+    opacity: 0.58,
+    zIndex: 2,
+    cursor: "pointer",
+  },
+  left: {
+    x: -95,
+    y: 20,
+    scale: 0.85,
+    rotate: -6,
+    opacity: 0.52,
+    zIndex: 1,
+    cursor: "pointer",
+  },
+  hidden: {
+    x: 0,
+    y: 50,
+    scale: 0.7,
+    rotate: 0,
+    opacity: 0,
+    zIndex: 0,
+    cursor: "default",
+  }
+};
 
 function ProductCardHero({
   product,
+  offset,
   onAddToCart,
+  onClickBg,
 }: {
   product: Product;
+  offset: number;
   onAddToCart: (p: Product) => void;
+  onClickBg: () => void;
 }) {
   const basePrice = Number(product.basePrice);
   const salePrice = product.salePrice ? Number(product.salePrice) : null;
@@ -200,30 +202,49 @@ function ProductCardHero({
     return `/products/${slug}`;
   };
 
+  const variant = offset === 0 ? "center" : offset === 1 ? "right" : offset === -1 ? "left" : "hidden";
+
   return (
-    <div
-      className="relative w-full max-w-[340px] bg-[#f2f8f2] rounded-2xl overflow-hidden shadow-xl border border-[#ddeedd] flex flex-col animate-in fade-in-0 slide-in-from-right-4 duration-500"
-      style={{ zIndex: 10 }}
+    <motion.div
+      variants={cardVariants}
+      animate={variant}
+      transition={{ type: "spring", stiffness: 260, damping: 26 }}
+      className="absolute w-full max-w-[320px] bg-[#f2f8f2] rounded-2xl overflow-hidden shadow-xl border border-[#ddeedd] flex flex-col hover:shadow-2xl transition-all duration-300"
+      onClick={() => {
+        if (offset !== 0) onClickBg();
+      }}
     >
       {/* ── Image ── */}
       <Link
-        href={getLinkHref(product.slug)}
+        href={offset === 0 ? getLinkHref(product.slug) : "#"}
+        onClick={(e) => {
+          if (offset !== 0) {
+            e.preventDefault();
+            onClickBg();
+          }
+        }}
         className="block relative aspect-[4/3] w-full bg-gray-50 overflow-hidden group"
       >
-        {product.images[0] ? (
-          <Image
-            src={product.images[0]}
-            alt={product.name}
-            fill
-            className="object-cover transition-transform duration-500 group-hover:scale-105"
-            sizes="(max-width: 768px) 100vw, 400px"
-            priority
-          />
-        ) : (
-          <div className="absolute inset-0 flex items-center justify-center text-gray-400">
-            <Package className="w-12 h-12" />
-          </div>
-        )}
+        <motion.div
+          animate={{ filter: offset === 0 ? "none" : "blur(1px) brightness(0.9)" }}
+          transition={{ duration: 0.35 }}
+          className="relative w-full h-full"
+        >
+          {product.images[0] ? (
+            <Image
+              src={product.images[0]}
+              alt={product.name}
+              fill
+              className="object-cover transition-transform duration-500 group-hover:scale-105"
+              sizes="(max-width: 768px) 100vw, 400px"
+              priority={offset === 0}
+            />
+          ) : (
+            <div className="absolute inset-0 flex items-center justify-center text-gray-400">
+              <Package className="w-12 h-12" />
+            </div>
+          )}
+        </motion.div>
 
         {/* Sale badge */}
         {isOnSale && (
@@ -240,8 +261,16 @@ function ProductCardHero({
         </div>
       </Link>
 
-      {/* ── Info ── */}
-      <div className="p-5 flex flex-col flex-1">
+      {/* ── Info (Fades out when not center card) ── */}
+      <motion.div 
+        animate={{ 
+          opacity: offset === 0 ? 1 : 0,
+          height: offset === 0 ? "auto" : 0,
+          pointerEvents: offset === 0 ? "auto" : "none"
+        }}
+        transition={{ duration: 0.3 }}
+        className="p-5 flex flex-col flex-1 overflow-hidden"
+      >
         {/* Category */}
         <span className="text-gray-400 text-[11px] font-semibold uppercase tracking-wider mb-1 block">
           {product.category?.name || "SẢN PHẨM"}
@@ -281,6 +310,7 @@ function ProductCardHero({
         <button
           onClick={(e) => {
             e.preventDefault();
+            e.stopPropagation();
             onAddToCart(product);
           }}
           className="w-full py-2.5 rounded-lg bg-[#3a5229] text-white text-sm font-semibold hover:bg-[#2d3d23] active:scale-[0.98] transition-all flex items-center justify-center gap-2"
@@ -288,7 +318,7 @@ function ProductCardHero({
           <ShoppingBasket className="w-4 h-4" />
           Thêm vào giỏ
         </button>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }

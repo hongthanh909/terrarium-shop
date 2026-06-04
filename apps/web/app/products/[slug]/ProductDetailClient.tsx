@@ -19,7 +19,7 @@ import Image from "next/image";
 
 // ── Lamp variant constants (applies to ALL products) ──────────────────────
 const LAMP_VARIANT_TYPE = "Đèn";
-const LAMP_COMBO_OPTION = "Combo bé + đèn";
+const LAMP_COMBO_OPTION = "Combo bể + đèn";
 const LAMP_NONE_OPTION = "Không kèm đèn";
 const LAMP_PRICE_ADJUSTMENT = 150000;
 
@@ -235,6 +235,9 @@ export function ProductDetailClient({
   const hasCareGuide = !!(product.careGuide && (product.careGuide.watering || product.careGuide.sunlight || product.careGuide.temperature || product.careGuide.humidity));
   const avgRating = reviews.length > 0 ? reviews.reduce((s: number, r: any) => s + r.rating, 0) / reviews.length : 0;
 
+  const isBểProduct = product.category?.name?.toLowerCase().includes("bể") || 
+                       product.category?.slug?.toLowerCase().includes("be");
+
   // DB variants excluding lamp type (in case it exists in DB)
   const dbVariants = (product.variantOptions || []).filter((v: any) => v.variantType !== LAMP_VARIANT_TYPE);
 
@@ -318,8 +321,13 @@ export function ProductDetailClient({
                         </div>
                         <div className="flex-1">
                           <h3 className="font-semibold text-sm">{item.productName}</h3>
-                          {item.variants && Object.keys(item.variants).length > 0 && (
-                            <p className="text-xs text-muted-foreground mt-0.5">{Object.entries(item.variants ?? {}).map(([k, v]) => `${k}: ${v}`).join(" · ")}</p>
+                          {item.variants && Object.keys(item.variants).filter(k => k !== "Đèn").length > 0 && (
+                            <p className="text-xs text-muted-foreground mt-0.5">
+                              {Object.entries(item.variants ?? {})
+                                .filter(([k]) => k !== "Đèn")
+                                .map(([k, v]) => `${k}: ${v}`)
+                                .join(" · ")}
+                            </p>
                           )}
                           <p className="text-primary font-bold mt-1">{(item.price * item.quantity).toLocaleString("vi-VN")}₫</p>
                           <div className="flex items-center gap-2 mt-2">
@@ -495,34 +503,36 @@ export function ProductDetailClient({
               {isSale && <span className="bg-red-100 text-red-600 text-xs font-bold px-2.5 py-1 rounded-full">-{discountPercent}% Ưu đãi giới hạn</span>}
             </div>
 
-            {/* ── Lamp variant (always shown) ── */}
-            <div className="mb-4">
-              <div className="flex flex-wrap gap-2">
-                {[LAMP_COMBO_OPTION, LAMP_NONE_OPTION].map((opt) => {
-                  const isSelected = selectedVariants[LAMP_VARIANT_TYPE] === opt;
-                  const isCombo = opt === LAMP_COMBO_OPTION;
-                  return (
-                    <button
-                      key={opt}
-                      type="button"
-                      onClick={() => setSelectedVariants((prev) => ({ ...prev, [LAMP_VARIANT_TYPE]: opt }))}
-                      className={`px-4 py-2.5 rounded-xl font-semibold text-sm transition-all duration-200 border-2 ${
-                        isSelected
-                          ? "border-[#425733] bg-[#425733] text-white shadow-md"
-                          : "border-gray-200 bg-white text-gray-700 hover:border-[#425733]/60 hover:bg-[#f8faf6]"
-                      }`}
-                    >
-                      {opt}
-                      {isCombo && (
-                        <span className={`ml-1.5 text-xs font-bold ${isSelected ? "text-green-300" : "text-[#5a8a45]"}`}>
-                          +150k
-                        </span>
-                      )}
-                    </button>
-                  );
-                })}
+            {/* ── Lamp variant (only shown for Bể products) ── */}
+            {isBểProduct && (
+              <div className="mb-4">
+                <div className="flex flex-wrap gap-2">
+                  {[LAMP_COMBO_OPTION, LAMP_NONE_OPTION].map((opt) => {
+                    const isSelected = selectedVariants[LAMP_VARIANT_TYPE] === opt;
+                    const isCombo = opt === LAMP_COMBO_OPTION;
+                    return (
+                      <button
+                        key={opt}
+                        type="button"
+                        onClick={() => setSelectedVariants((prev) => ({ ...prev, [LAMP_VARIANT_TYPE]: opt }))}
+                        className={`px-4 py-2.5 rounded-xl font-semibold text-sm transition-all duration-200 border-2 ${
+                          isSelected
+                            ? "border-[#425733] bg-[#425733] text-white shadow-md"
+                            : "border-gray-200 bg-white text-gray-700 hover:border-[#425733]/60 hover:bg-[#f8faf6]"
+                        }`}
+                      >
+                        {opt}
+                        {isCombo && (
+                          <span className={`ml-1.5 text-xs font-bold ${isSelected ? "text-green-300" : "text-[#5a8a45]"}`}>
+                            +150k
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
-            </div>
+            )}
 
             {/* DB Variants (excluding lamp if duplicated) */}
             {dbVariants.length > 0 && (
