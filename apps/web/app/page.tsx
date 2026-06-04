@@ -87,7 +87,10 @@ async function HeroCarouselSection() {
     rawProducts = await prisma.product.findMany({
       where: { featured: true, status: "ACTIVE" },
       take: 4,
-      include: { category: { select: { name: true } } },
+      include: {
+        category: { select: { name: true } },
+        reviews: { where: { approved: true }, select: { rating: true } },
+      },
       orderBy: { createdAt: "desc" },
     });
 
@@ -95,7 +98,10 @@ async function HeroCarouselSection() {
       rawProducts = await prisma.product.findMany({
         where: { status: "ACTIVE" },
         take: 4,
-        include: { category: { select: { name: true } } },
+        include: {
+          category: { select: { name: true } },
+          reviews: { where: { approved: true }, select: { rating: true } },
+        },
         orderBy: { createdAt: "desc" },
       });
     }
@@ -103,17 +109,25 @@ async function HeroCarouselSection() {
     console.error("HeroCarouselSection: DB error", e);
   }
 
-  // Serialize Decimal → Number để tránh lỗi "Decimal objects are not supported"
+  // Serialize Decimal → Number và tính rating
   const products = rawProducts.length > 0
-    ? rawProducts.map((p) => ({
-        id: p.id,
-        slug: p.slug,
-        name: p.name,
-        basePrice: Number(p.basePrice),
-        salePrice: p.salePrice != null ? Number(p.salePrice) : null,
-        images: p.images,
-        category: p.category ? { name: p.category.name } : undefined,
-      }))
+    ? rawProducts.map((p: any) => {
+        const reviews = p.reviews || [];
+        const avgRating = reviews.length > 0
+          ? reviews.reduce((sum: number, r: any) => sum + r.rating, 0) / reviews.length
+          : 0;
+        return {
+          id: p.id,
+          slug: p.slug,
+          name: p.name,
+          basePrice: Number(p.basePrice),
+          salePrice: p.salePrice != null ? Number(p.salePrice) : null,
+          images: p.images,
+          category: p.category ? { name: p.category.name } : undefined,
+          rating: Math.round(avgRating * 10) / 10,
+          reviewCount: reviews.length,
+        };
+      })
     : [
         {
           id: "mock-1",
@@ -122,26 +136,10 @@ async function HeroCarouselSection() {
           basePrice: 450000,
           salePrice: 380000,
           images: ["https://images.unsplash.com/photo-1545241047-6083a3684587?w=800&auto=format&fit=crop&q=80"],
-          category: { name: "Terrarium Hệ Kín" }
+          category: { name: "Terrarium Hệ Kín" },
+          rating: 5.0,
+          reviewCount: 5,
         },
-        {
-          id: "mock-2",
-          slug: "desert-oasis-succulent",
-          name: "Ốc Đảo Sa Mạc - Sen Đá Tự Nhiên",
-          basePrice: 320000,
-          salePrice: null,
-          images: ["https://images.unsplash.com/photo-1463936575829-25148e1db1b8?w=800&auto=format&fit=crop&q=80"],
-          category: { name: "Terrarium Hệ Mở" }
-        },
-        {
-          id: "mock-3",
-          slug: "stream-side-moss-art",
-          name: "Dòng Suối Bình Yên - Bán Cạn Moss Art",
-          basePrice: 650000,
-          salePrice: 590000,
-          images: ["https://images.unsplash.com/photo-1509440159596-0249088772ff?w=800&auto=format&fit=crop&q=80"],
-          category: { name: "Bán Cạn (Paludarium)" }
-        }
       ];
 
   return <HeroCarousel products={products as any} />;
@@ -154,7 +152,10 @@ async function FeaturedProductsSection() {
     products = await prisma.product.findMany({
       where: { featured: true, status: "ACTIVE" },
       take: 4,
-      include: { category: true },
+      include: {
+        category: true,
+        reviews: { where: { approved: true }, select: { rating: true } },
+      },
       orderBy: { createdAt: "desc" },
     });
   } catch (e) {
@@ -188,22 +189,30 @@ async function FeaturedProductsSection() {
           </ScrollReveal>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {products.map((product: any, index: number) => (
-              <ScrollReveal key={product.id} direction="up" delay={index * 0.1} className="h-full">
-                <FeaturedProductCard
-                  id={product.id}
-                  slug={product.slug}
-                  name={product.name}
-                  basePrice={Number(product.basePrice.toString())}
-                  salePrice={product.salePrice != null ? Number(product.salePrice.toString()) : null}
-                  saleEndDate={product.saleEndDate ? product.saleEndDate.toISOString() : null}
-                  images={product.images}
-                  category={product.category ? { name: product.category.name } : undefined}
-                  isNew={product.isNew || false}
-                  isBestseller={product.isBestseller || false}
-                />
-              </ScrollReveal>
-            ))}
+            {products.map((product: any, index: number) => {
+              const reviews = product.reviews || [];
+              const avgRating = reviews.length > 0
+                ? reviews.reduce((sum: number, r: any) => sum + r.rating, 0) / reviews.length
+                : 0;
+              return (
+                <ScrollReveal key={product.id} direction="up" delay={index * 0.1} className="h-full">
+                  <FeaturedProductCard
+                    id={product.id}
+                    slug={product.slug}
+                    name={product.name}
+                    basePrice={Number(product.basePrice.toString())}
+                    salePrice={product.salePrice != null ? Number(product.salePrice.toString()) : null}
+                    saleEndDate={product.saleEndDate ? product.saleEndDate.toISOString() : null}
+                    images={product.images}
+                    category={product.category ? { name: product.category.name } : undefined}
+                    rating={Math.round(avgRating * 10) / 10}
+                    reviewCount={reviews.length}
+                    isNew={product.isNew || false}
+                    isBestseller={product.isBestseller || false}
+                  />
+                </ScrollReveal>
+              );
+            })}
           </div>
         )}
       </div>
