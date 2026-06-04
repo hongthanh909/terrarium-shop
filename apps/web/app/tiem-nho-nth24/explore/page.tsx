@@ -193,8 +193,8 @@ export default function AdminExplorePage() {
                     {Number(item.product.basePrice).toLocaleString("vi-VN")}₫
                   </p>
                   {item.reason && (
-                    <p className="text-xs text-[#425733] mt-0.5 italic truncate">
-                      &ldquo;{item.reason}&rdquo;
+                    <p className="text-xs text-[#425733] mt-0.5 font-medium truncate">
+                      Tiêu đề nổi bật: &ldquo;{item.reason}&rdquo;
                     </p>
                   )}
                 </div>
@@ -249,13 +249,13 @@ export default function AdminExplorePage() {
             {/* Reason input */}
             <div className="px-5 py-3 border-b border-gray-50">
               <label className="text-xs text-gray-500 font-medium">
-                Lý do ghim (tùy chọn)
+                Tiêu đề nổi bật (Badge) (ví dụ: Sản phẩm được đánh giá cao nhất, Bán chạy nhất...)
               </label>
               <input
                 type="text"
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
-                placeholder="Ví dụ: Sản phẩm bán chạy tuần này..."
+                placeholder="Mặc định: Featured của tuần"
                 className="mt-1 w-full text-sm border border-gray-200 rounded-xl px-3 py-2 focus:outline-none focus:border-[#425733]"
               />
             </div>

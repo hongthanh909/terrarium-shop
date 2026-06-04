@@ -15,6 +15,10 @@
   - Thay đổi biểu tượng Giỏ hàng từ xe đẩy hàng (`ShoppingCart`) sang Giỏ xách mây/tre (`ShoppingBasket`) để tiệm cận thiết kế mộc mạc của Tiệm Rêu.
   - Thay thế biểu tượng Đăng nhập / Tài khoản dạng văn bản kèm icon cũ bằng icon outline `User` tối giản và trực quan hơn.
   - Thêm biểu tượng Trái tim (`Heart`) vào thanh điều hướng ở cả desktop (trong navbar chính) và mobile (trong menu trượt side-drawer), liên kết trực tiếp tới trang sản phẩm yêu thích (`/profile/favorites`) giúp người dùng và admin dễ dàng quản lý sản phẩm quan tâm.
+- **Đồng bộ hóa & Tùy chỉnh Sản phẩm Ghim trên Trang Khám Phá (Explore)**:
+  - Đồng bộ hóa toàn diện dữ liệu sản phẩm ghim trên Explore với kho sản phẩm thật (tên, danh mục, giá, tất cả hình ảnh phụ/chính).
+  - Tích hợp khu vực hiển thị ảnh phụ (thumbnails) cho phép người dùng click đổi ảnh trực quan ngay trên block nổi bật (tương tự trang chi tiết sản phẩm).
+  - Cho phép admin tự đặt tiêu đề nổi bật tùy chỉnh (Badge) cho sản phẩm (ví dụ: "Sản phẩm được đánh giá cao nhất", "Sản phẩm của tuần", "Bán chạy nhất"...) qua trường nhập liệu trong trang quản lý của Admin (lưu trữ vào trường `reason` để giữ nguyên cấu trúc database).
 
 
 ### ✅ Dọn dẹp Vercel (đã chuyển sang VPS)

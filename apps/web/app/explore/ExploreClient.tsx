@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useSession } from "next-auth/react";
@@ -36,6 +37,7 @@ interface ExploreProps {
 
 export function ExploreClient({ featured, pinned, topVoted, newArrivals, weeklyFeatured }: ExploreProps) {
   const { addItem } = useCartStore();
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
 
   const Section = ({
     title,
@@ -120,14 +122,14 @@ export function ExploreClient({ featured, pinned, topVoted, newArrivals, weeklyF
                 <div className="relative z-10 max-w-4xl mx-auto text-center">
                   <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full text-sm font-medium mb-4">
                     <Sparkles className="w-4 h-4" />
-                    <span>Featured của tuần</span>
+                    <span>{weeklyFeatured.reason || "Featured của tuần"}</span>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
                     <div className="text-left">
                       <h2 className="text-3xl md:text-4xl font-bold mb-4">{weeklyFeatured.product.name}</h2>
-                      {weeklyFeatured.reason && (
-                        <p className="text-white/90 mb-6 text-lg">{weeklyFeatured.reason}</p>
-                      )}
+                      <p className="text-white/90 mb-6 text-base leading-relaxed">
+                        {weeklyFeatured.product.name} là tác phẩm nghệ thuật terrarium độc đáo thuộc danh mục {weeklyFeatured.product.category.name}, được thiết kế tinh xảo từ rêu xanh tự nhiên và các phụ kiện trang trí sống động. Sản phẩm đi kèm đầy đủ phụ kiện và cẩm nang hướng dẫn chăm sóc chi tiết.
+                      </p>
                       <p className="text-3xl font-bold mb-6">
                         {Number(weeklyFeatured.product.basePrice.toString()).toLocaleString("vi-VN")}₫
                       </p>
@@ -140,14 +142,45 @@ export function ExploreClient({ featured, pinned, topVoted, newArrivals, weeklyF
                         </Button>
                       </div>
                     </div>
-                    <div className="flex justify-center">
+                    <div className="flex flex-col items-center gap-4">
                       <div className="relative w-full max-w-sm aspect-square rounded-2xl overflow-hidden bg-white/10 backdrop-blur-sm p-4">
                         {weeklyFeatured.product.images.length > 0 ? (
-                          <Image src={weeklyFeatured.product.images[0]} alt={weeklyFeatured.product.name} fill sizes="400px" className="object-cover rounded-xl" />
+                          <Image
+                            src={weeklyFeatured.product.images[activeImageIndex] || weeklyFeatured.product.images[0]}
+                            alt={weeklyFeatured.product.name}
+                            fill
+                            sizes="400px"
+                            className="object-cover rounded-xl"
+                          />
                         ) : (
-                          <div className="w-full h-full flex items-center justify-center"><Package className="w-20 h-20 text-white/50" /></div>
+                          <div className="w-full h-full flex items-center justify-center">
+                            <Package className="w-20 h-20 text-white/50" />
+                          </div>
                         )}
                       </div>
+                      {weeklyFeatured.product.images.length > 1 && (
+                        <div className="flex gap-2 max-w-sm overflow-x-auto py-1 scrollbar-thin">
+                          {weeklyFeatured.product.images.map((img, idx) => (
+                            <button
+                              key={idx}
+                              onClick={() => setActiveImageIndex(idx)}
+                              className={`relative w-12 h-12 rounded-lg overflow-hidden border-2 transition-all flex-shrink-0 ${
+                                activeImageIndex === idx
+                                  ? "border-white scale-105 shadow-md"
+                                  : "border-white/20 hover:border-white/50"
+                              }`}
+                            >
+                              <Image
+                                src={img}
+                                alt={`Thumbnail ${idx}`}
+                                fill
+                                sizes="48px"
+                                className="object-cover"
+                              />
+                            </button>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
