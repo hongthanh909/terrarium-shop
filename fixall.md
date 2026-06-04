@@ -6,10 +6,11 @@
 ---
 
 ## 📋 Cập nhật 2026-06-04
-# ✅ Session & Admin Security Enhancements
+# ✅ Session & Admin Security & Navigation Fixes
 - Đặt `session.maxAge` = 1 giờ trong `apps/web/lib/auth.ts` để tự động logout người dùng sau 1 giờ không hoạt động.
 - Admin dashboard (`/tiem-nho-nth24`) luôn yêu cầu đăng nhập lại; nếu không có token hoặc token không phải ADMIN, sẽ chuyển hướng tới `/tiem-nho-nth24/login`.
-- Thêm kiểm tra `Referer` và `ADMIN_IP_WHITELIST` trong `middleware.ts` để bảo vệ URL admin tránh truy cập trái phép.
+- **Sửa lỗi điều hướng Admin**: Sửa kiểm tra `Referer` trong `middleware.ts` thành `ADMIN_SECRET_PATH` thay vì `ADMIN_LOGIN_PATH`. Trước đó, khi đang ở dashboard và chuyển sang các trang con (sản phẩm, khám phá, cài đặt,...), middleware hiểu lầm là deep-link không hợp lệ và chuyển hướng ngược lại trang đăng nhập (tạo vòng lặp chuyển hướng). Hiện tại đã điều hướng bình thường giữa các trang admin.
+- Thêm kiểm tra `ADMIN_IP_WHITELIST` trong `middleware.ts` để bảo vệ URL admin tránh truy cập trái phép.
 
 
 ### ✅ Dọn dẹp Vercel (đã chuyển sang VPS)

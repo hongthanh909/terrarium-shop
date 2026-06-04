@@ -123,9 +123,9 @@ export async function middleware(request: NextRequest) {
     if (token.role !== "ADMIN") {
       return NextResponse.redirect(new URL(ADMIN_LOGIN_PATH, request.url));
     }
-    // Verify Referer header originates from admin login page
+    // Xác thực header Referer bắt nguồn từ các trang admin hoặc trang đăng nhập admin
     const referer = request.headers.get("referer");
-    if (referer && !referer.includes(ADMIN_LOGIN_PATH)) {
+    if (referer && !referer.includes(ADMIN_SECRET_PATH)) {
       return NextResponse.redirect(new URL(ADMIN_LOGIN_PATH, request.url));
     }
     // Verify IP whitelist if configured
