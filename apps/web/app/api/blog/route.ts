@@ -1,10 +1,10 @@
 import { prisma } from "@/lib/prisma";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { unstable_cache } from "next/cache";
 
-// Không dùng force-dynamic — cho phép Next.js cache và unstable_cache hoạt động đúng
+// Route sử dụng request.url (searchParams) nên phải dynamic
+export const dynamic = "force-dynamic";
 
-// Không dùng force-dynamic — cho phép CDN cache response
 // Cache phía server 5 phút, stale-while-revalidate 1 giờ phía CDN
 const getCachedBlogData = unstable_cache(
   async (category: string | null) => {
@@ -27,7 +27,7 @@ const getCachedBlogData = unstable_cache(
   { revalidate: 300 } // 5 phút
 );
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const category = searchParams.get("category");
