@@ -55,6 +55,7 @@ jobs:
             echo "🧹 Cleaning old build cache..."
             cd /home/deploy/terrarium-shop
             rm -rf apps/web/.next
+            rm -rf .turbo/cache
 
             # ── Build production (Turbo monorepo) ────────────────────────────
             echo "🏗️  Building Next.js..."
