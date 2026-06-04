@@ -37,7 +37,7 @@ export async function POST(request: Request) {
       description: true,
       price: true,
       category: { select: { name: true } },
-      images: { select: { url: true } },
+      images: true,
     },
   });
 
