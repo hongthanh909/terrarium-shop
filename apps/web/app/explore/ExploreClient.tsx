@@ -114,7 +114,7 @@ export function ExploreClient({ featured, pinned, topVoted, newArrivals, weeklyF
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.2, duration: 0.5 }}
             >
-              <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#2d3d23] via-[#425733] to-[#536644] p-8 md:p-12 text-white">
+              <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#3a5229] via-[#536644] to-[#6b8055] p-8 md:p-12 text-white">
                 <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32 blur-3xl" />
                 <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/10 rounded-full -ml-24 -mb-24 blur-2xl" />
                 <div className="relative z-10 max-w-4xl mx-auto text-center">
@@ -132,10 +132,10 @@ export function ExploreClient({ featured, pinned, topVoted, newArrivals, weeklyF
                         {Number(weeklyFeatured.product.basePrice.toString()).toLocaleString("vi-VN")}₫
                       </p>
                       <div className="flex gap-3">
-                        <Button asChild size="lg" className="bg-white text-[#425733] hover:bg-white/90 font-bold">
+                        <Button asChild size="lg" className="bg-white text-[#3a5229] hover:bg-gray-100 font-bold shadow-md">
                           <Link href={`/products/${weeklyFeatured.product.slug}`}>Xem chi tiết</Link>
                         </Button>
-                        <Button asChild variant="outline" size="lg" className="border-white text-white hover:bg-white/10">
+                        <Button asChild size="lg" className="bg-white/20 border-2 border-white text-white hover:bg-white/30 font-semibold backdrop-blur-sm">
                           <Link href="/products">Xem tất cả</Link>
                         </Button>
                       </div>

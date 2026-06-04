@@ -366,7 +366,7 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
                           <span className="text-gray-400 line-through text-sm leading-tight">
                             {basePrice.toLocaleString("vi-VN")}₫
                           </span>
-                          <span className="text-2xl font-bold text-blue-600 leading-tight">
+                          <span className="text-2xl font-bold text-[#2d3d23] leading-tight">
                             {salePrice.toLocaleString("vi-VN")}₫
                           </span>
                         </div>
@@ -375,7 +375,7 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
                           <span className="text-transparent text-sm select-none leading-tight">
                             &nbsp;
                           </span>
-                          <span className="text-2xl font-bold text-blue-600 leading-tight">
+                          <span className="text-2xl font-bold text-[#2d3d23] leading-tight">
                             {basePrice.toLocaleString("vi-VN")}₫
                           </span>
                         </div>
