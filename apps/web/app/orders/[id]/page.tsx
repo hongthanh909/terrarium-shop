@@ -209,6 +209,22 @@ export default function OrderDetailPage() {
                 </div>
                 <div className="flex-1">
                   <div className="font-medium text-sm">{item.productName}</div>
+                  {item.variants && item.variants !== "{}" && (
+                    <div className="text-xs text-gray-500 mt-0.5 font-medium">
+                      {(() => {
+                        try {
+                          const parsed = typeof item.variants === "string" ? JSON.parse(item.variants) : item.variants;
+                          const filtered = Object.entries(parsed)
+                            .filter(([k]) => k !== "Đèn")
+                            .map(([k, v]) => `${k}: ${v}`)
+                            .join(", ");
+                          return filtered ? `Phân loại: ${filtered}` : null;
+                        } catch {
+                          return null;
+                        }
+                      })()}
+                    </div>
+                  )}
                   <div className="text-xs text-gray-500 mt-0.5">SL: {item.quantity} × {Number(item.price).toLocaleString("vi-VN")}₫</div>
                 </div>
                 <div className="font-semibold text-sm text-gray-800">

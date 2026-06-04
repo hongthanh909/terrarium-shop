@@ -225,7 +225,16 @@ export default function AdminOrderDetailPage() {
                     <div className="font-semibold text-gray-800 text-sm truncate">{item.productName}</div>
                     {item.variants && item.variants !== "{}" && (
                       <div className="text-xs text-gray-500 mt-1">
-                        Phân loại: {item.variants}
+                        Phân loại: {(() => {
+                          try {
+                            const parsed = typeof item.variants === "string" ? JSON.parse(item.variants) : item.variants;
+                            return Object.entries(parsed)
+                              .map(([k, v]) => `${k}: ${v}`)
+                              .join(", ");
+                          } catch {
+                            return String(item.variants);
+                          }
+                        })()}
                       </div>
                     )}
                     <div className="text-xs text-gray-500 mt-1">

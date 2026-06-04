@@ -131,9 +131,11 @@ export function ExploreClient({ featured, pinned, topVoted, newArrivals, weeklyF
                     <div className="lg:col-span-7 text-left space-y-5">
                       <h2 className="text-3xl md:text-5xl font-extrabold tracking-tight leading-tight">{weeklyFeatured.product.name}</h2>
                       
-                      <p className="text-3xl font-extrabold text-[#c3dfb2]">
-                        {Number(weeklyFeatured.product.basePrice.toString()).toLocaleString("vi-VN")}₫
-                      </p>
+                      <div className="inline-block border-b border-[#c3dfb2] pb-1">
+                        <p className="text-3xl font-extrabold text-[#c3dfb2] tracking-wide">
+                          {Number(weeklyFeatured.product.basePrice.toString()).toLocaleString("vi-VN")}₫
+                        </p>
+                      </div>
 
                       <p className="text-white/80 text-sm md:text-base leading-relaxed max-w-xl">
                         Terrarium {weeklyFeatured.product.name.toLowerCase()} mô phỏng một khu rừng tự nhiên thu nhỏ với hệ thực vật phong phú, rêu xanh và bố cục hài hòa. Được chế tác thủ công tinh xảo, mỗi sản phẩm mang vẻ đẹp nghệ thuật độc nhất vô nhị giúp thư giãn và trang trí sang trọng cho không gian của bạn.
@@ -143,9 +145,9 @@ export function ExploreClient({ featured, pinned, topVoted, newArrivals, weeklyF
                       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-2">
                         {[
                           { icon: <Sprout className="w-4 h-4 text-[#a3e288]" />, text: "Cây thật 100%" },
-                          { icon: <RefreshCw className="w-4 h-4 text-[#93c5fd]" />, text: "Hệ sinh thái kín" },
-                          { icon: <Sun className="w-4 h-4 text-[#fde047]" />, text: "Dễ chăm sóc" },
-                          { icon: <Ruler className="w-4 h-4 text-[#c084fc]" />, text: "Thủ công tinh xảo" }
+                          { icon: <RefreshCw className="w-4 h-4 text-[#93c5fd]" />, text: "Hệ sinh thái khép kín" },
+                          { icon: <Sun className="w-4 h-4 text-[#fde047]" />, text: "Dễ chăm sóc ít bão trì" },
+                          { icon: <Ruler className="w-4 h-4 text-[#c084fc]" />, text: "Thiết kế thủ công tinh xảo" }
                         ].map((feat, i) => (
                           <div key={i} className="flex items-center gap-2 bg-[#55694b] px-3 py-2.5 rounded-xl text-[11px] font-semibold border border-[#637a58]">
                             {feat.icon}
@@ -182,91 +184,111 @@ export function ExploreClient({ featured, pinned, topVoted, newArrivals, weeklyF
                       </div>
                     </div>
 
-                    {/* Right Column: Visual Showcase & Gallery */}
+                    {/* Right Column: Visual Showcase (Vertical Stack Thumbnails on Right) */}
                     <div className="lg:col-span-5 flex flex-col items-center justify-center gap-4">
-                      {/* Main Image View */}
-                      <div className="relative w-full max-w-[340px] aspect-square rounded-2xl overflow-hidden bg-white/10 backdrop-blur-sm p-3 border border-white/20 group">
-                        {/* Floating leaf tag */}
-                        <div className="absolute top-4 right-4 z-10 bg-[#3a5229]/95 border border-[#ddeedd]/20 backdrop-blur px-3 py-1 rounded-full text-[10px] font-bold tracking-wider flex items-center gap-1.5 text-white/90">
-                          <Sprout className="w-3.5 h-3.5 text-[#a3e288]" />
-                          <span>Cây thật 100%</span>
+                      <div className="flex md:flex-row flex-col items-center justify-center gap-4 w-full">
+                        {/* Main Image View */}
+                        <div className="relative w-full max-w-[340px] aspect-square rounded-3xl overflow-hidden bg-white/10 backdrop-blur-sm p-3 border border-white/20 group">
+                          {/* Floating leaf tag */}
+                          <div className="absolute top-4 right-4 z-10 bg-[#3a5229]/95 border border-[#ddeedd]/20 backdrop-blur px-3 py-1 rounded-full text-[10px] font-bold tracking-wider flex items-center gap-1.5 text-white/90">
+                            <Sprout className="w-3.5 h-3.5 text-[#a3e288]" />
+                            <span>Cây thật 100%</span>
+                          </div>
+                          
+                          {weeklyFeatured.product.images.length > 0 ? (
+                            <Image
+                              src={weeklyFeatured.product.images[activeImageIndex] || weeklyFeatured.product.images[0]}
+                              alt={weeklyFeatured.product.name}
+                              fill
+                              sizes="340px"
+                              className="object-cover rounded-2xl transition-transform duration-500 group-hover:scale-105"
+                              priority
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center">
+                              <Package className="w-16 h-16 text-white/40" />
+                            </div>
+                          )}
                         </div>
-                        
-                        {weeklyFeatured.product.images.length > 0 ? (
-                          <Image
-                            src={weeklyFeatured.product.images[activeImageIndex] || weeklyFeatured.product.images[0]}
-                            alt={weeklyFeatured.product.name}
-                            fill
-                            sizes="340px"
-                            className="object-cover rounded-xl transition-transform duration-500 group-hover:scale-105"
-                            priority
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center">
-                            <Package className="w-16 h-16 text-white/40" />
+
+                        {/* Vertical thumbnails stack (on the right of the main image on desktop, row below on mobile) */}
+                        {weeklyFeatured.product.images.length > 1 && (
+                          <div className="flex md:flex-col flex-row gap-2 max-w-full overflow-x-auto py-1 scrollbar-none justify-center">
+                            {weeklyFeatured.product.images.slice(0, 3).map((img, idx) => (
+                              <button
+                                key={idx}
+                                onClick={() => setActiveImageIndex(idx)}
+                                className={`relative w-14 h-14 rounded-xl overflow-hidden border-2 transition-all flex-shrink-0 ${
+                                  activeImageIndex === idx
+                                    ? "border-white scale-105 shadow-md"
+                                    : "border-white/20 hover:border-white/50"
+                                }`}
+                              >
+                                <Image
+                                  src={img}
+                                  alt={`Thumbnail ${idx}`}
+                                  fill
+                                  sizes="56px"
+                                  className="object-cover"
+                                />
+                              </button>
+                            ))}
                           </div>
                         )}
                       </div>
 
-                      {/* Thumbnails row */}
+                      {/* Dot indicators below main image */}
                       {weeklyFeatured.product.images.length > 1 && (
-                        <div className="flex gap-2 max-w-full overflow-x-auto py-1 scrollbar-none">
-                          {weeklyFeatured.product.images.map((img, idx) => (
+                        <div className="flex gap-1.5 mt-2">
+                          {weeklyFeatured.product.images.slice(0, 4).map((_, idx) => (
                             <button
                               key={idx}
                               onClick={() => setActiveImageIndex(idx)}
-                              className={`relative w-12 h-12 rounded-lg overflow-hidden border-2 transition-all flex-shrink-0 ${
-                                activeImageIndex === idx
-                                  ? "border-white scale-105 shadow-md"
-                                  : "border-white/20 hover:border-white/50"
+                              className={`h-2 rounded-full transition-all duration-300 ${
+                                idx === activeImageIndex
+                                  ? "bg-white w-5"
+                                  : "bg-white/40 w-2 hover:bg-white/60"
                               }`}
-                            >
-                              <Image
-                                src={img}
-                                alt={`Thumbnail ${idx}`}
-                                fill
-                                sizes="48px"
-                                className="object-cover"
-                              />
-                            </button>
+                              aria-label={`Slide ${idx + 1}`}
+                            />
                           ))}
                         </div>
                       )}
                     </div>
                   </div>
 
-                  {/* Specifications and why choose cards row */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6 border-t border-white/10 mt-8">
-                    {/* Left Box: Product Specifications */}
-                    <div className="bg-[#3e5035]/80 border border-[#506646] p-6 rounded-2xl space-y-4 shadow-inner">
+                  {/* Specifications, why choose, and gift row: 3 columns layout */}
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 pt-8 border-t border-white/10 mt-8">
+                    {/* Column 1: Product Specifications (Span 4) */}
+                    <div className="lg:col-span-4 bg-[#3e5035]/50 border border-[#506646] p-6 rounded-2xl space-y-4 shadow-sm">
                       <h3 className="text-base font-bold text-green-200 flex items-center gap-2">
                         📐 Thông số sản phẩm
                       </h3>
-                      <div className="grid grid-cols-2 gap-3 text-sm text-white/95">
-                        <div className="flex flex-col p-3 bg-[#4c6142] rounded-xl border border-[#5b7550]">
-                          <span className="text-white/50 text-[10px] uppercase font-bold tracking-wider">Kích thước</span>
+                      <div className="grid grid-cols-2 gap-3 text-xs text-white/95">
+                        <div className="flex flex-col p-3 bg-white/5 rounded-xl border border-white/10 hover:bg-white/10 transition-colors">
+                          <span className="text-white/50 text-[9px] uppercase font-bold tracking-wider">Kích thước</span>
                           <span className="font-bold mt-0.5">20 x 12 x 30 cm</span>
                         </div>
-                        <div className="flex flex-col p-3 bg-[#4c6142] rounded-xl border border-[#5b7550]">
-                          <span className="text-white/50 text-[10px] uppercase font-bold tracking-wider">Ánh sáng</span>
+                        <div className="flex flex-col p-3 bg-white/5 rounded-xl border border-white/10 hover:bg-white/10 transition-colors">
+                          <span className="text-white/50 text-[9px] uppercase font-bold tracking-wider">Ánh sáng</span>
                           <span className="font-bold mt-0.5">Đèn LED cảm ứng</span>
                         </div>
-                        <div className="flex flex-col p-3 bg-[#4c6142] rounded-xl border border-[#5b7550]">
-                          <span className="text-white/50 text-[10px] uppercase font-bold tracking-wider">Bảo hành</span>
+                        <div className="flex flex-col p-3 bg-white/5 rounded-xl border border-white/10 hover:bg-white/10 transition-colors">
+                          <span className="text-white/50 text-[9px] uppercase font-bold tracking-wider">Bảo hành</span>
                           <span className="font-bold mt-0.5">6 tháng (đèn & PK)</span>
                         </div>
-                        <div className="flex flex-col p-3 bg-[#4c6142] rounded-xl border border-[#5b7550]">
-                          <span className="text-white/50 text-[10px] uppercase font-bold tracking-wider">Giao hàng</span>
+                        <div className="flex flex-col p-3 bg-white/5 rounded-xl border border-white/10 hover:bg-white/10 transition-colors">
+                          <span className="text-white/50 text-[9px] uppercase font-bold tracking-wider">Giao hàng</span>
                           <span className="font-bold mt-0.5">Toàn quốc 2-3 ngày</span>
                         </div>
                       </div>
                     </div>
 
-                    {/* Right Box: Why Choose & Gift Card */}
-                    <div className="bg-[#3e5035]/80 border border-[#506646] p-6 rounded-2xl flex flex-col justify-between gap-4 shadow-inner">
-                      <div className="space-y-3">
+                    {/* Column 2: Why Choose checklist (Span 5) */}
+                    <div className="lg:col-span-5 bg-[#3e5035]/50 border border-[#506646] p-6 rounded-2xl flex flex-col justify-between shadow-sm">
+                      <div className="space-y-4">
                         <h3 className="text-base font-bold text-green-200">
-                          💡 Vì sao bạn nên chọn Lối rừng nhỏ?
+                          💡 Vì sao bạn nên chọn {weeklyFeatured.product.name}?
                         </h3>
                         <ul className="space-y-2 text-xs md:text-sm text-white/90">
                           {[
@@ -282,17 +304,17 @@ export function ExploreClient({ featured, pinned, topVoted, newArrivals, weeklyF
                           ))}
                         </ul>
                       </div>
+                    </div>
 
-                      {/* Gift Box Card */}
-                      <div className="bg-[#2d3a27] border border-[#3e5035] p-3.5 rounded-xl flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-[#48593e] flex items-center justify-center flex-shrink-0">
-                          <Gift className="w-5 h-5 text-red-300" />
-                        </div>
-                        <div>
-                          <p className="font-semibold text-xs text-white">Quà tặng ý nghĩa</p>
-                          <p className="text-[11px] text-white/70 mt-0.5">Phù hợp tặng bạn bè, đối tác, đồng nghiệp và người thân yêu.</p>
-                        </div>
+                    {/* Column 3: Gift Card (Span 3) */}
+                    <div className="lg:col-span-3 bg-[#3e5035]/50 border border-[#506646] p-6 rounded-2xl flex flex-col justify-center items-center text-center shadow-sm">
+                      <div className="w-14 h-14 rounded-full bg-[#2d3a27] border border-[#3e5035] flex items-center justify-center mb-3.5 shadow-md">
+                        <Gift className="w-6 h-6 text-red-300" />
                       </div>
+                      <h4 className="font-bold text-sm text-white mb-1.5">Quà tặng ý nghĩa</h4>
+                      <p className="text-xs text-white/70 leading-relaxed">
+                        Phù hợp tặng bạn bè, đối tác, đồng nghiệp và những người thân yêu.
+                      </p>
                     </div>
                   </div>
                 </div>

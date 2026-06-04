@@ -37,9 +37,17 @@ export function ProductDetailClient({
   const [product, setProduct] = useState<any>(initialProduct);
   const [relatedProducts] = useState<any[]>(initialRelated);
   const [loading] = useState(false);
-  // Default: "Không kèm đèn" pre-selected
-  const [selectedVariants, setSelectedVariants] = useState<Record<string, string>>({
-    [LAMP_VARIANT_TYPE]: LAMP_NONE_OPTION,
+
+  const isBểProduct = initialProduct?.category?.name?.toLowerCase().includes("bể") || 
+                       initialProduct?.category?.slug?.toLowerCase().includes("be") ||
+                       initialProduct?.name?.toLowerCase().includes("bể");
+
+  // Default: "Không kèm đèn" pre-selected for Bể products
+  const [selectedVariants, setSelectedVariants] = useState<Record<string, string>>(() => {
+    if (isBểProduct) {
+      return { [LAMP_VARIANT_TYPE]: LAMP_NONE_OPTION } as Record<string, string>;
+    }
+    return {} as Record<string, string>;
   });
   const [quantity, setQuantity] = useState(1);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -235,8 +243,7 @@ export function ProductDetailClient({
   const hasCareGuide = !!(product.careGuide && (product.careGuide.watering || product.careGuide.sunlight || product.careGuide.temperature || product.careGuide.humidity));
   const avgRating = reviews.length > 0 ? reviews.reduce((s: number, r: any) => s + r.rating, 0) / reviews.length : 0;
 
-  const isBểProduct = product.category?.name?.toLowerCase().includes("bể") || 
-                       product.category?.slug?.toLowerCase().includes("be");
+
 
   // DB variants excluding lamp type (in case it exists in DB)
   const dbVariants = (product.variantOptions || []).filter((v: any) => v.variantType !== LAMP_VARIANT_TYPE);

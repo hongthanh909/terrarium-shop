@@ -206,6 +206,7 @@ function ProductCardHero({
 
   return (
     <motion.div
+      layout="position"
       variants={cardVariants}
       animate={variant}
       transition={{ type: "spring", stiffness: 260, damping: 26 }}
@@ -263,12 +264,13 @@ function ProductCardHero({
 
       {/* ── Info (Fades out when not center card) ── */}
       <motion.div 
+        layout
         animate={{ 
           opacity: offset === 0 ? 1 : 0,
           height: offset === 0 ? "auto" : 0,
-          pointerEvents: offset === 0 ? "auto" : "none"
         }}
-        transition={{ duration: 0.3 }}
+        transition={{ type: "spring", stiffness: 260, damping: 26 }}
+        style={{ pointerEvents: offset === 0 ? "auto" : "none" }}
         className="p-5 flex flex-col flex-1 overflow-hidden"
       >
         {/* Category */}
