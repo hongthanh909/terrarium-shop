@@ -140,11 +140,30 @@ export function ExploreClient({ featured, pinned, topVoted, newArrivals, weeklyF
                     <div className="lg:col-span-7 text-left space-y-5">
                       <h2 className="text-3xl md:text-5xl font-extrabold tracking-tight leading-tight">{weeklyFeatured.product.name}</h2>
                       
-                      <div className="inline-block border-b border-[#c3dfb2] pb-1">
-                        <p className="text-3xl font-extrabold text-[#c3dfb2] tracking-wide">
-                          {Number(weeklyFeatured.product.basePrice.toString()).toLocaleString("vi-VN")}₫
-                        </p>
-                      </div>
+                      {(() => {
+                        const base = Number(weeklyFeatured.product.basePrice.toString());
+                        const sale = weeklyFeatured.product.salePrice ? Number(weeklyFeatured.product.salePrice.toString()) : null;
+                        const isOnSale = sale != null && sale < base && (weeklyFeatured.product.saleEndDate == null || new Date(weeklyFeatured.product.saleEndDate) > new Date());
+                        const discountPct = isOnSale ? Math.round(((base - sale!) / base) * 100) : 0;
+                        const displayPrice = isOnSale ? sale! : base;
+                        return (
+                          <div className="flex items-center gap-3">
+                            {isOnSale && (
+                              <span className="px-2.5 py-1 rounded-lg bg-red-500 text-white text-sm font-bold shadow-md animate-pulse">
+                                -{discountPct}%
+                              </span>
+                            )}
+                            <p className="text-3xl font-extrabold text-[#c3dfb2] tracking-wide">
+                              {displayPrice.toLocaleString("vi-VN")}₫
+                            </p>
+                            {isOnSale && (
+                              <p className="text-lg text-white/50 line-through">
+                                {base.toLocaleString("vi-VN")}₫
+                              </p>
+                            )}
+                          </div>
+                        );
+                      })()}
 
                       <p className="text-white/80 text-sm md:text-base leading-relaxed max-w-xl">
                         Terrarium {weeklyFeatured.product.name.toLowerCase()} mô phỏng một khu rừng tự nhiên thu nhỏ với hệ thực vật phong phú, rêu xanh và bố cục hài hòa. Được chế tác thủ công tinh xảo, mỗi sản phẩm mang vẻ đẹp nghệ thuật độc nhất vô nhị giúp thư giãn và trang trí sang trọng cho không gian của bạn.

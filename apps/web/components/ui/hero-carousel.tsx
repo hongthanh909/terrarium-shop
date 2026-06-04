@@ -250,7 +250,7 @@ function ProductCardHero({
         {/* Sale badge */}
         {isOnSale && (
           <div className="absolute top-3 left-3 z-10">
-            <span className="px-2.5 py-1 rounded-lg bg-[#3a5229] text-white text-xs font-bold shadow-md">
+            <span className="px-2.5 py-1 rounded-lg bg-red-500 text-white text-xs font-bold shadow-md">
               -{discountPct}%
             </span>
           </div>

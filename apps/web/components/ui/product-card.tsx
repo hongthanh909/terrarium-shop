@@ -90,7 +90,7 @@ export function ProductCard({
         {/* ── Badges ─────────────────────────────────────────── */}
         <div className="absolute top-2 left-2 flex flex-col gap-1.5 z-10">
           {isOnSale && (
-            <span className="px-2 py-0.5 rounded-md bg-[#3a5229] text-[#FF4136] text-xs font-semibold shadow-sm tracking-wide">
+            <span className="px-2.5 py-1 rounded-lg bg-red-500 text-white text-xs font-bold shadow-md">
               -{discountPct}%
             </span>
           )}
