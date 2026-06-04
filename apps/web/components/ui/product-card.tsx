@@ -63,8 +63,8 @@ export function ProductCard({
       whileHover={{ y: -6 }}
       transition={{ duration: 0.35 }}
       className={cn(
-        "group relative flex flex-col rounded-2xl bg-white p-4 shadow-sm border border-gray-100",
-        "hover:shadow-md transition-all duration-300 h-full",
+        "group relative flex flex-col rounded-2xl bg-[#f2f8f2] p-4 shadow-sm border border-[#ddeedd]",
+        "hover:shadow-md hover:border-[#b8d8b8] transition-all duration-300 h-full",
         className
       )}
     >

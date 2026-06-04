@@ -6,6 +6,11 @@
 ---
 
 ## 📋 Cập nhật 2026-06-04
+# ✅ Session & Admin Security Enhancements
+- Đặt `session.maxAge` = 1 giờ trong `apps/web/lib/auth.ts` để tự động logout người dùng sau 1 giờ không hoạt động.
+- Admin dashboard (`/tiem-nho-nth24`) luôn yêu cầu đăng nhập lại; nếu không có token hoặc token không phải ADMIN, sẽ chuyển hướng tới `/tiem-nho-nth24/login`.
+- Thêm kiểm tra `Referer` và `ADMIN_IP_WHITELIST` trong `middleware.ts` để bảo vệ URL admin tránh truy cập trái phép.
+
 
 ### ✅ Dọn dẹp Vercel (đã chuyển sang VPS)
 - Xóa `vercel.json` (root + apps/web)

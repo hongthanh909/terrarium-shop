@@ -115,18 +115,36 @@ export async function middleware(request: NextRequest) {
 
   // ─── 5. Admin routes (UI) ────────────────────────────────────────────────────
   if (isAdminPath) {
+    // Enforce fresh login: require a valid admin token
     if (!token) {
       return NextResponse.redirect(new URL(ADMIN_LOGIN_PATH, request.url));
     }
+    // Verify role
     if (token.role !== "ADMIN") {
-      // Có session nhưng không phải ADMIN → về trang login admin để đăng nhập lại
       return NextResponse.redirect(new URL(ADMIN_LOGIN_PATH, request.url));
+    }
+    // Verify Referer header originates from admin login page
+    const referer = request.headers.get("referer");
+    if (referer && !referer.includes(ADMIN_LOGIN_PATH)) {
+      return NextResponse.redirect(new URL(ADMIN_LOGIN_PATH, request.url));
+    }
+    // Verify IP whitelist if configured
+    const whitelistEnv = process.env.ADMIN_IP_WHITELIST;
+    if (whitelistEnv) {
+      const allowedIps = whitelistEnv.split(",").map(ip => ip.trim());
+      if (ip && !allowedIps.includes(ip)) {
+        const response = new NextResponse(JSON.stringify({ error: "Unauthorized IP" }), {
+          status: 403,
+          headers: { "Content-Type": "application/json" },
+        });
+        return applySecurityHeaders(response);
+      }
     }
     const response = NextResponse.next();
     response.headers.set("x-user-id", token.id as string);
     response.headers.set("x-user-role", token.role as string);
     response.headers.set("x-pathname", pathname);
-    // Ngăn browser cache trang admin
+    // Prevent browser caching of admin pages
     response.headers.set("Cache-Control", "no-store, no-cache, must-revalidate");
     response.headers.set("Pragma", "no-cache");
     return applySecurityHeaders(response);

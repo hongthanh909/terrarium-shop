@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import {
@@ -83,29 +83,80 @@ export function ProductDetailClient({ initialProduct, initialRelated }: { initia
   const [activeTab, setActiveTab] = useState<TabType>("details");
   const [isVoting, setIsVoting] = useState(false);
 
-  // Lightbox state for Option B
+  // ── Lightbox & Zoom state ─────────────────────────────────────────────
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
+  const [zoomScale, setZoomScale] = useState(1);
+  const [zoomOrigin, setZoomOrigin] = useState({ x: 50, y: 50 }); // percent
+  const [isPanning, setIsPanning] = useState(false);
+  const [panStart, setPanStart] = useState({ x: 0, y: 0 });
+  const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
+  const imgContainerRef = useRef<HTMLDivElement>(null);
+
+  const resetZoom = useCallback(() => {
+    setZoomScale(1);
+    setZoomOrigin({ x: 50, y: 50 });
+    setPanOffset({ x: 0, y: 0 });
+  }, []);
 
   // Keyboard controls for Lightbox
   useEffect(() => {
     if (!lightboxOpen || !product || !product.images) return;
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setLightboxOpen(false);
+      if (e.key === "Escape") { setLightboxOpen(false); resetZoom(); }
       else if (e.key === "ArrowLeft") {
         setLightboxIndex((prev) => (prev === 0 ? product.images.length - 1 : prev - 1));
+        resetZoom();
       } else if (e.key === "ArrowRight") {
         setLightboxIndex((prev) => (prev === product.images.length - 1 ? 0 : prev + 1));
+        resetZoom();
+      } else if (e.key === "+" || e.key === "=") {
+        setZoomScale((s) => Math.min(s + 0.5, 5));
+      } else if (e.key === "-") {
+        setZoomScale((s) => { const next = Math.max(s - 0.5, 1); if (next === 1) { setPanOffset({ x: 0, y: 0 }); } return next; });
       }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [lightboxOpen, product?.images?.length]);
+  }, [lightboxOpen, product?.images?.length, resetZoom]);
+
+  // Wheel to zoom
+  const handleWheel = useCallback((e: React.WheelEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    const rect = imgContainerRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    const ox = ((e.clientX - rect.left) / rect.width) * 100;
+    const oy = ((e.clientY - rect.top) / rect.height) * 100;
+    setZoomScale((prev) => {
+      const delta = e.deltaY < 0 ? 0.25 : -0.25;
+      const next = Math.min(Math.max(prev + delta, 1), 5);
+      if (next === 1) setPanOffset({ x: 0, y: 0 });
+      return next;
+    });
+    setZoomOrigin({ x: ox, y: oy });
+  }, []);
+
+  // Drag to pan
+  const handleMouseDown = useCallback((e: React.MouseEvent) => {
+    if (zoomScale <= 1) return;
+    setIsPanning(true);
+    setPanStart({ x: e.clientX - panOffset.x, y: e.clientY - panOffset.y });
+  }, [zoomScale, panOffset]);
+
+  const handleMouseMove = useCallback((e: React.MouseEvent) => {
+    if (!isPanning) return;
+    setPanOffset({ x: e.clientX - panStart.x, y: e.clientY - panStart.y });
+  }, [isPanning, panStart]);
+
+  const handleMouseUp = useCallback(() => setIsPanning(false), []);
 
   const handleOpenLightbox = (index: number) => {
     setLightboxIndex(index);
     setLightboxOpen(true);
+    resetZoom();
   };
+
+  const closeLightbox = () => { setLightboxOpen(false); resetZoom(); };
 
   // Review state
   const [reviews, setReviews] = useState<any[]>([]);
@@ -317,6 +368,120 @@ export function ProductDetailClient({ initialProduct, initialRelated }: { initia
 
   return (
     <main className="min-h-screen bg-background">
+
+      {/* ── Lightbox Modal with Zoom ──────────────────────────────────────── */}
+      {lightboxOpen && product?.images && (
+        <div
+          className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/90 backdrop-blur-sm"
+          onClick={(e) => { if (e.target === e.currentTarget) closeLightbox(); }}
+        >
+          {/* Close */}
+          <button
+            onClick={closeLightbox}
+            className="absolute top-4 right-4 z-10 w-10 h-10 rounded-full bg-white/10 hover:bg-white/25 text-white flex items-center justify-center transition-colors"
+            aria-label="Đóng"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+
+          {/* Zoom controls */}
+          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-2 z-10 bg-black/40 rounded-full px-3 py-1.5 backdrop-blur-sm">
+            <button
+              onClick={() => setZoomScale((s) => { const n = Math.max(s - 0.5, 1); if (n === 1) setPanOffset({ x: 0, y: 0 }); return n; })}
+              className="w-8 h-8 rounded-full bg-white/15 hover:bg-white/30 text-white flex items-center justify-center transition-colors text-lg font-bold"
+              aria-label="Thu nhỏ"
+            >−</button>
+            <span className="text-white text-sm font-medium min-w-[3rem] text-center select-none">{Math.round(zoomScale * 100)}%</span>
+            <button
+              onClick={() => setZoomScale((s) => Math.min(s + 0.5, 5))}
+              className="w-8 h-8 rounded-full bg-white/15 hover:bg-white/30 text-white flex items-center justify-center transition-colors text-lg font-bold"
+              aria-label="Phóng to"
+            >+</button>
+            {zoomScale > 1 && (
+              <button
+                onClick={resetZoom}
+                className="ml-1 px-3 h-8 rounded-full bg-white/15 hover:bg-white/30 text-white text-xs font-medium transition-colors"
+              >Reset</button>
+            )}
+          </div>
+
+          {/* Prev / Next arrows */}
+          {product.images.length > 1 && (
+            <>
+              <button
+                onClick={() => { setLightboxIndex((p) => (p === 0 ? product.images.length - 1 : p - 1)); resetZoom(); }}
+                className="absolute left-4 top-1/2 -translate-y-1/2 z-10 w-11 h-11 rounded-full bg-white/10 hover:bg-white/25 text-white flex items-center justify-center transition-colors"
+                aria-label="Ảnh trước"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+              </button>
+              <button
+                onClick={() => { setLightboxIndex((p) => (p === product.images.length - 1 ? 0 : p + 1)); resetZoom(); }}
+                className="absolute right-4 top-1/2 -translate-y-1/2 z-10 w-11 h-11 rounded-full bg-white/10 hover:bg-white/25 text-white flex items-center justify-center transition-colors"
+                aria-label="Ảnh tiếp"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+              </button>
+            </>
+          )}
+
+          {/* Image */}
+          <div
+            ref={imgContainerRef}
+            className="relative w-full h-full flex items-center justify-center overflow-hidden select-none"
+            style={{ cursor: zoomScale > 1 ? (isPanning ? "grabbing" : "grab") : "zoom-in" }}
+            onWheel={handleWheel}
+            onMouseDown={handleMouseDown}
+            onMouseMove={handleMouseMove}
+            onMouseUp={handleMouseUp}
+            onMouseLeave={handleMouseUp}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={product.images[lightboxIndex]}
+              alt={product.name}
+              draggable={false}
+              style={{
+                maxWidth: "90vw",
+                maxHeight: "90vh",
+                width: "auto",
+                height: "auto",
+                objectFit: "contain",
+                transform: `scale(${zoomScale}) translate(${panOffset.x / zoomScale}px, ${panOffset.y / zoomScale}px)`,
+                transformOrigin: `${zoomOrigin.x}% ${zoomOrigin.y}%`,
+                transition: isPanning ? "none" : "transform 0.15s ease",
+                userSelect: "none",
+                pointerEvents: "none",
+              }}
+            />
+          </div>
+
+          {/* Thumbnail strip */}
+          {product.images.length > 1 && (
+            <div className="absolute bottom-16 left-1/2 -translate-x-1/2 flex gap-2 z-10">
+              {product.images.map((img: string, i: number) => (
+                <button
+                  key={i}
+                  onClick={() => { setLightboxIndex(i); resetZoom(); }}
+                  className={`w-12 h-12 rounded-lg overflow-hidden border-2 transition-all ${
+                    i === lightboxIndex ? "border-white scale-110" : "border-white/30 opacity-60 hover:opacity-90"
+                  }`}
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={img} alt={`thumb-${i}`} className="w-full h-full object-cover" />
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Counter */}
+          {product.images.length > 1 && (
+            <div className="absolute top-4 left-1/2 -translate-x-1/2 text-white/70 text-sm">
+              {lightboxIndex + 1} / {product.images.length}
+            </div>
+          )}
+        </div>
+      )}
       {/* Cart Sheet */}
       <Sheet open={cartOpen} onOpenChange={setCartOpen}>
         <SheetContent className="sm:max-w-md">
