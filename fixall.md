@@ -6,11 +6,15 @@
 ---
 
 ## 📋 Cập nhật 2026-06-04
-# ✅ Session & Admin Security & Navigation Fixes
+# ✅ Session & Admin Security & Navigation & UI Fixes
 - Đặt `session.maxAge` = 1 giờ trong `apps/web/lib/auth.ts` để tự động logout người dùng sau 1 giờ không hoạt động.
 - Admin dashboard (`/tiem-nho-nth24`) luôn yêu cầu đăng nhập lại; nếu không có token hoặc token không phải ADMIN, sẽ chuyển hướng tới `/tiem-nho-nth24/login`.
 - **Sửa lỗi điều hướng Admin**: Sửa kiểm tra `Referer` trong `middleware.ts` thành `ADMIN_SECRET_PATH` thay vì `ADMIN_LOGIN_PATH`. Trước đó, khi đang ở dashboard và chuyển sang các trang con (sản phẩm, khám phá, cài đặt,...), middleware hiểu lầm là deep-link không hợp lệ và chuyển hướng ngược lại trang đăng nhập (tạo vòng lặp chuyển hướng). Hiện tại đã điều hướng bình thường giữa các trang admin.
 - Thêm kiểm tra `ADMIN_IP_WHITELIST` trong `middleware.ts` để bảo vệ URL admin tránh truy cập trái phép.
+- **Đồng bộ hóa & Cập nhật Icon Navbar**:
+  - Thay đổi biểu tượng Giỏ hàng từ xe đẩy hàng (`ShoppingCart`) sang Giỏ xách mây/tre (`ShoppingBasket`) để tiệm cận thiết kế mộc mạc của Tiệm Rêu.
+  - Thay thế biểu tượng Đăng nhập / Tài khoản dạng văn bản kèm icon cũ bằng icon outline `User` tối giản và trực quan hơn.
+  - Thêm biểu tượng Trái tim (`Heart`) vào thanh điều hướng ở cả desktop (trong navbar chính) và mobile (trong menu trượt side-drawer), liên kết trực tiếp tới trang sản phẩm yêu thích (`/profile/favorites`) giúp người dùng và admin dễ dàng quản lý sản phẩm quan tâm.
 
 
 ### ✅ Dọn dẹp Vercel (đã chuyển sang VPS)

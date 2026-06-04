@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import {
-  ShoppingCart, User, X, Minus, Plus, ShoppingBag,
+  ShoppingBasket, User, X, Minus, Plus, ShoppingBag,
   ChevronDown, LogOut, Package, LayoutDashboard, Heart, Lock,
   Menu,
 } from "lucide-react";
@@ -201,15 +201,25 @@ export default function Header() {
                 <Search className="w-4 h-4" />
               </button>
 
+              {/* Tym (Heart) */}
+              <Link href={session ? "/profile/favorites" : "/login?callbackUrl=/profile/favorites"} className="hidden sm:block">
+                <button
+                  className="w-9 h-9 flex items-center justify-center rounded-full text-white/75 hover:text-white hover:bg-white/15 transition-colors flex-shrink-0"
+                  title="Sản phẩm yêu thích"
+                >
+                  <Heart className="w-5 h-5" />
+                </button>
+              </Link>
+
               {/* User */}
               {session ? (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <button
-                      className="w-9 h-9 rounded-full bg-white/20 text-white border border-white/30 flex items-center justify-center text-sm font-bold hover:bg-white/30 transition-colors flex-shrink-0"
+                      className="w-9 h-9 rounded-full bg-white/20 text-white border border-white/30 flex items-center justify-center hover:bg-white/30 transition-colors flex-shrink-0"
                       title={session.user?.name || "Tài khoản"}
                     >
-                      {session.user?.name?.charAt(0)?.toUpperCase() || "U"}
+                      <User className="w-5 h-5" />
                     </button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="rounded-xl shadow-lg border border-[#e3ebdd] bg-white min-w-[185px]">
@@ -250,9 +260,11 @@ export default function Header() {
                 </DropdownMenu>
               ) : (
                 <Link href="/login">
-                  <button className="px-3 py-1.5 rounded-full text-sm font-medium text-white/75 hover:text-white hover:bg-white/15 transition-all duration-200 flex items-center gap-1.5">
-                    <User className="w-4 h-4" />
-                    <span className="hidden sm:inline">Đăng nhập</span>
+                  <button
+                    className="w-9 h-9 flex items-center justify-center rounded-full text-white/75 hover:text-white hover:bg-white/15 transition-colors flex-shrink-0"
+                    title="Đăng nhập"
+                  >
+                    <User className="w-5 h-5" />
                   </button>
                 </Link>
               )}
@@ -269,7 +281,7 @@ export default function Header() {
                   setCartOpen(true);
                 }}
               >
-                <ShoppingCart className="w-5 h-5" />
+                <ShoppingBasket className="w-5 h-5" />
                 <AnimatePresence>
                   {cartCount > 0 && (
                     <motion.span
@@ -353,6 +365,12 @@ export default function Header() {
                     <p className="text-sm font-semibold text-white truncate">{session.user?.name}</p>
                     <p className="text-xs text-white/50 truncate">{session.user?.email}</p>
                   </div>
+                  <Link
+                    href="/profile/favorites"
+                    className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm text-white/70 hover:text-white hover:bg-white/10 transition-all duration-200"
+                  >
+                    <Heart className="w-4 h-4 fill-red-400 text-red-400" /> Sản phẩm yêu thích
+                  </Link>
                   <button
                     onClick={() => { useCartStore.getState().clearCart(); signOut({ callbackUrl: "/" }); }}
                     className="w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm text-red-300 hover:bg-red-500/20 transition-colors"
@@ -378,7 +396,7 @@ export default function Header() {
         <SheetContent className="sm:max-w-md flex flex-col">
           <SheetHeader className="pb-4 border-b">
             <SheetTitle className="flex items-center gap-2 text-lg font-bold text-gray-800">
-              <ShoppingBag className="w-5 h-5 text-[#425733]" />
+              <ShoppingBasket className="w-5 h-5 text-[#425733]" />
               Giỏ Hàng
             </SheetTitle>
             <SheetDescription className="text-gray-500">
@@ -390,7 +408,7 @@ export default function Header() {
             {items.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-center py-12">
                 <div className="w-20 h-20 rounded-full bg-[#e3ebdd] flex items-center justify-center mb-4">
-                  <ShoppingBag className="w-10 h-10 text-[#6d8c5a]" />
+                  <ShoppingBasket className="w-10 h-10 text-[#6d8c5a]" />
                 </div>
                 <p className="font-semibold text-gray-700 mb-1">Giỏ hàng trống</p>
                 {!session ? (
