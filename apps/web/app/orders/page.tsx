@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -10,6 +10,8 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { OrderTimeline } from "@/components/ui/order-timeline";
+
+
 
 interface Order {
   id: string;
@@ -64,6 +66,15 @@ export default function MyOrdersPage() {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [cancellingId, setCancellingId] = useState<string | null>(null);
   const [confirmCancelId, setConfirmCancelId] = useState<string | null>(null);
+  // Search state for orders page
+  const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedTerm, setDebouncedTerm] = useState("");
+  useEffect(() => {
+    const handler = setTimeout(() => setDebouncedTerm(searchTerm), 300);
+    return () => clearTimeout(handler);
+  }, [searchTerm]);
+
+
   const { data: session } = useSession();
   const customerId = (session?.user as any)?.id;
   const queryClient = useQueryClient();
@@ -78,6 +89,19 @@ export default function MyOrdersPage() {
     enabled: !!customerId,
     refetchInterval: 30000,
     refetchIntervalInBackground: false,
+  });
+
+  // Apply client‑side filtering based on debouncedTerm (case‑insensitive)
+  const filteredOrders = orders.filter((order: Order) => {
+    const term = debouncedTerm.toLowerCase();
+    if (!term) return true;
+    // Assuming order may contain customerName, customerEmail, customerPhone fields
+    return (
+      order.orderNumber.toLowerCase().includes(term) ||
+      (order as any).customerName?.toLowerCase().includes(term) ||
+      (order as any).customerEmail?.toLowerCase().includes(term) ||
+      (order as any).customerPhone?.toLowerCase().includes(term)
+    );
   });
 
   const handleCancelOrder = async (orderId: string, e?: React.MouseEvent) => {
@@ -180,7 +204,7 @@ export default function MyOrdersPage() {
           <div className="bg-white rounded-lg shadow p-8 text-center text-gray-500">
             Đang tải đơn hàng...
           </div>
-        ) : orders.length === 0 ? (
+        ) : filteredOrders.length === 0 ? (
           <div className="bg-white rounded-lg shadow p-8 text-center">
             <Package className="w-16 h-16 mx-auto text-gray-300 mb-4" />
             <h2 className="text-xl font-semibold text-gray-700 mb-2">Chưa Có Đơn Hàng</h2>
@@ -191,7 +215,23 @@ export default function MyOrdersPage() {
           </div>
         ) : (
           <div className="space-y-4">
-            {orders.map((order: Order) => {
+            {/* Search input */}
+            <div className="mb-4 flex items-center">
+              <input
+                type="text"
+                placeholder="Tìm kiếm theo mã đơn, tên, email, SĐT..."
+                value={searchTerm}
+                onChange={e => setSearchTerm(e.target.value)}
+                className="flex-1 px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#425733] transition"
+              />
+              <button
+                onClick={() => setSearchTerm("")}
+                className="ml-2 text-gray-500 hover:text-gray-700"
+              >
+                ✕
+              </button>
+            </div>
+            {filteredOrders.map((order: Order) => {
               const currentStep = getStepIndex(order.status);
               const isCancelled = order.status === "CANCELLED";
               const isExpanded = selectedOrder?.id === order.id;
