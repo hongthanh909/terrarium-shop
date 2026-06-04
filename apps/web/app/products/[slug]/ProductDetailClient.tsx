@@ -161,7 +161,7 @@ export function ProductDetailClient({ initialProduct, initialRelated }: { initia
   // Review state
   const [reviews, setReviews] = useState<any[]>([]);
   const [reviewsLoading, setReviewsLoading] = useState(false);
-  const [canReview, setCanReview] = useState<boolean | null>(null); // null = checking
+  const [canReview, setCanReview] = useState<boolean | null>(null);
   const [reviewForm, setReviewForm] = useState({ rating: 5, title: "", content: "" });
   const [submittingReview, setSubmittingReview] = useState(false);
   const [alreadyReviewed, setAlreadyReviewed] = useState(false);
@@ -180,7 +180,6 @@ export function ProductDetailClient({ initialProduct, initialRelated }: { initia
       })
       .finally(() => setReviewsLoading(false));
 
-    // Check if logged-in user has purchased and can review
     const customerId = (session?.user as any)?.id;
     if (customerId) {
       fetch(`/api/reviews/can-review?productId=${product.id}&customerId=${customerId}`)
@@ -194,6 +193,16 @@ export function ProductDetailClient({ initialProduct, initialRelated }: { initia
       setCanReview(false);
     }
   }, [activeTab, product, session]);
+
+  // Also load reviews on mount to show rating in product info
+  useEffect(() => {
+    if (!product) return;
+    fetch(`/api/reviews?productId=${product.id}`)
+      .then((r) => r.json())
+      .then((data) => {
+        setReviews(Array.isArray(data) ? data : []);
+      });
+  }, [product?.id]);
 
   const handleSubmitReview = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -236,7 +245,6 @@ export function ProductDetailClient({ initialProduct, initialRelated }: { initia
     let base = parseFloat(product.basePrice.toString());
     let currentBase = base;
     
-    // Check sale logic
     const hasSale = product.salePrice && product.salePrice !== null;
     const isSaleValid = hasSale && (!product.saleEndDate || new Date(product.saleEndDate) > new Date());
     let isSale = false;
@@ -253,7 +261,7 @@ export function ProductDetailClient({ initialProduct, initialRelated }: { initia
       if (selectedValue && variant.value === selectedValue) {
         const adjustment = parseFloat(variant.priceAdjustment.toString());
         price += adjustment;
-        base += adjustment; // if sale, original price also increases by variant price
+        base += adjustment;
       }
     });
     return { price, base, isSale };
@@ -261,7 +269,6 @@ export function ProductDetailClient({ initialProduct, initialRelated }: { initia
 
   const handleAddToCart = () => {
     if (!product) return;
-    // Yêu cầu đăng nhập trước khi thêm vào giỏ hàng
     if (!session) {
       toast.error("Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng");
       router.push(`/login?callbackUrl=/products/${product.slug}`);
@@ -281,7 +288,6 @@ export function ProductDetailClient({ initialProduct, initialRelated }: { initia
 
   const handleBuyNow = () => {
     if (!product) return;
-    // Yêu cầu đăng nhập trước khi mua
     if (!session) {
       toast.error("Vui lòng đăng nhập để mua hàng");
       router.push(`/login?callbackUrl=/products/${product.slug}`);
@@ -299,10 +305,8 @@ export function ProductDetailClient({ initialProduct, initialRelated }: { initia
     });
 
     if (items.length === 0) {
-      // Giỏ hàng trống -> vào thẳng checkout
       router.push("/checkout");
     } else {
-      // Giỏ hàng đã có đồ -> mở giỏ hàng để user chọn checkbox
       setCartOpen(true);
     }
   };
@@ -365,6 +369,10 @@ export function ProductDetailClient({ initialProduct, initialRelated }: { initia
     (product.careGuide.watering || product.careGuide.sunlight ||
      product.careGuide.temperature || product.careGuide.humidity)
   );
+
+  const avgRating = reviews.length > 0
+    ? reviews.reduce((s: number, r: any) => s + r.rating, 0) / reviews.length
+    : 0;
 
   return (
     <main className="min-h-screen bg-background">
@@ -482,6 +490,7 @@ export function ProductDetailClient({ initialProduct, initialRelated }: { initia
           )}
         </div>
       )}
+
       {/* Cart Sheet */}
       <Sheet open={cartOpen} onOpenChange={setCartOpen}>
         <SheetContent className="sm:max-w-md">
@@ -584,206 +593,128 @@ export function ProductDetailClient({ initialProduct, initialRelated }: { initia
       </Sheet>
 
       {/* Back */}
-      <div className="max-w-7xl mx-auto px-6 py-4">
-        <Link href="/products" className="inline-flex items-center text-muted-foreground hover:text-primary">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
+        <Link href="/products" className="inline-flex items-center text-muted-foreground hover:text-primary transition-colors">
           <ArrowLeft className="w-4 h-4 mr-2" />
           Quay lại sản phẩm
         </Link>
       </div>
 
-      {/* Product Details */}
-      <div className="max-w-7xl mx-auto px-6 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-          {/* Image Grid Gallery (Option B) */}
-          <div className="flex flex-col gap-4">
-            {product.images && product.images.length > 0 ? (
-              product.images.length === 1 ? (
-                <div 
-                  onClick={() => handleOpenLightbox(0)}
-                  className="aspect-[4/5] sm:aspect-square bg-[#f8faf6] rounded-3xl overflow-hidden relative border border-[#eaefeb] shadow-sm cursor-zoom-in group w-full"
+      {/* ── Product Details ──────────────────────────────────────────────────── */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 pb-12">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 xl:gap-16">
+
+          {/* ── Left: Gallery with thumbnail strip ── */}
+          <div className="flex gap-3">
+            {/* Vertical thumbnail strip (only when multiple images) */}
+            {product.images && product.images.length > 1 && (
+              <div className="flex flex-col gap-2 w-[72px] flex-shrink-0">
+                {product.images.map((img: string, i: number) => (
+                  <button
+                    key={i}
+                    onClick={() => setCurrentImageIndex(i)}
+                    className={`relative w-[72px] h-[72px] rounded-xl overflow-hidden border-2 flex-shrink-0 transition-all duration-200 ${
+                      i === currentImageIndex
+                        ? "border-[#425733] shadow-md ring-2 ring-[#425733]/20"
+                        : "border-gray-200 opacity-65 hover:opacity-100 hover:border-[#425733]/40"
+                    }`}
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={img}
+                      alt={`${product.name} - ảnh ${i + 1}`}
+                      className="w-full h-full object-cover"
+                    />
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* Main image */}
+            <div className="flex-1 min-w-0">
+              {product.images && product.images.length > 0 ? (
+                <div
+                  className="relative rounded-2xl overflow-hidden bg-[#f8faf6] border border-[#eaefeb] shadow-sm cursor-zoom-in group"
+                  style={{ aspectRatio: "4/5" }}
+                  onClick={() => handleOpenLightbox(currentImageIndex)}
                 >
-                  <Image
-                    src={product.images[0]}
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={product.images[currentImageIndex]}
                     alt={product.name}
-                    fill
-                    sizes="(max-width: 1024px) 100vw, 50vw"
-                    className="object-cover transition-transform duration-500 group-hover:scale-[1.02]"
-                    priority
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
                   />
+
+                  {/* Sale badge */}
                   {isSale && (
-                    <div className="absolute top-4 left-4 bg-red-500 text-white text-sm font-bold px-3 py-1 rounded-full shadow-md z-10">
+                    <div className="absolute top-3 left-3 bg-red-500 text-white text-xs font-bold px-2.5 py-1 rounded-full shadow z-10">
                       -{discountPercent}%
                     </div>
                   )}
-                </div>
-              ) : product.images.length === 2 ? (
-                <div className="grid grid-cols-3 gap-3 aspect-[4/5] sm:aspect-square w-full">
-                  <div 
-                    onClick={() => handleOpenLightbox(0)}
-                    className="col-span-2 relative rounded-3xl overflow-hidden cursor-zoom-in border border-[#eaefeb] shadow-sm group h-full"
-                  >
-                    <Image
-                      src={product.images[0]}
-                      alt={product.name}
-                      fill
-                      sizes="(max-width: 1024px) 100vw, 50vw"
-                      className="object-cover transition-transform duration-500 group-hover:scale-[1.02]"
-                      priority
-                    />
-                    {isSale && (
-                      <div className="absolute top-4 left-4 bg-red-500 text-white text-sm font-bold px-3 py-1 rounded-full shadow-md z-10">
-                        -{discountPercent}%
-                      </div>
-                    )}
-                  </div>
-                  <div 
-                    onClick={() => handleOpenLightbox(1)}
-                    className="col-span-1 relative rounded-2xl overflow-hidden cursor-zoom-in border border-[#eaefeb] shadow-sm group h-full"
-                  >
-                    <Image
-                      src={product.images[1]}
-                      alt={product.name}
-                      fill
-                      sizes="(max-width: 768px) 30vw, 15vw"
-                      className="object-cover transition-transform duration-500 group-hover:scale-105"
-                    />
-                  </div>
-                </div>
-              ) : product.images.length === 3 ? (
-                <div className="grid grid-cols-3 gap-3 aspect-[4/5] sm:aspect-square w-full">
-                  <div 
-                    onClick={() => handleOpenLightbox(0)}
-                    className="col-span-2 relative rounded-3xl overflow-hidden cursor-zoom-in border border-[#eaefeb] shadow-sm group h-full"
-                  >
-                    <Image
-                      src={product.images[0]}
-                      alt={product.name}
-                      fill
-                      sizes="(max-width: 1024px) 100vw, 50vw"
-                      className="object-cover transition-transform duration-500 group-hover:scale-[1.02]"
-                      priority
-                    />
-                    {isSale && (
-                      <div className="absolute top-4 left-4 bg-red-500 text-white text-sm font-bold px-3 py-1 rounded-full shadow-md z-10">
-                        -{discountPercent}%
-                      </div>
-                    )}
-                  </div>
-                  <div className="col-span-1 flex flex-col gap-3 h-full justify-between">
-                    <div 
-                      onClick={() => handleOpenLightbox(1)}
-                      className="relative rounded-2xl overflow-hidden cursor-zoom-in border border-[#eaefeb] shadow-sm group h-[calc(50%-6px)]"
-                    >
-                      <Image
-                        src={product.images[1]}
-                        alt={product.name}
-                        fill
-                        sizes="(max-width: 768px) 30vw, 15vw"
-                        className="object-cover transition-transform duration-500 group-hover:scale-105"
-                      />
+
+                  {/* Hover nav arrows */}
+                  {product.images.length > 1 && (
+                    <>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setCurrentImageIndex((prev: number) => (prev === 0 ? product.images.length - 1 : prev - 1));
+                        }}
+                        className="absolute left-2 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/80 hover:bg-white text-gray-700 flex items-center justify-center shadow transition-all opacity-0 group-hover:opacity-100"
+                      >
+                        <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setCurrentImageIndex((prev: number) => (prev === product.images.length - 1 ? 0 : prev + 1));
+                        }}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/80 hover:bg-white text-gray-700 flex items-center justify-center shadow transition-all opacity-0 group-hover:opacity-100"
+                      >
+                        <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+                      </button>
+                    </>
+                  )}
+
+                  {/* Dot indicators */}
+                  {product.images.length > 1 && (
+                    <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
+                      {product.images.map((_: string, i: number) => (
+                        <span
+                          key={i}
+                          className={`block rounded-full transition-all duration-200 ${
+                            i === currentImageIndex ? "w-4 h-1.5 bg-white" : "w-1.5 h-1.5 bg-white/50"
+                          }`}
+                        />
+                      ))}
                     </div>
-                    <div 
-                      onClick={() => handleOpenLightbox(2)}
-                      className="relative rounded-2xl overflow-hidden cursor-zoom-in border border-[#eaefeb] shadow-sm group h-[calc(50%-6px)]"
-                    >
-                      <Image
-                        src={product.images[2]}
-                        alt={product.name}
-                        fill
-                        sizes="(max-width: 768px) 30vw, 15vw"
-                        className="object-cover transition-transform duration-500 group-hover:scale-105"
-                      />
-                    </div>
-                  </div>
+                  )}
                 </div>
               ) : (
-                <div className="grid grid-cols-3 gap-3 aspect-[4/5] sm:aspect-square w-full">
-                  <div 
-                    onClick={() => handleOpenLightbox(0)}
-                    className="col-span-2 relative rounded-3xl overflow-hidden cursor-zoom-in border border-[#eaefeb] shadow-sm group h-full"
-                  >
-                    <Image
-                      src={product.images[0]}
-                      alt={product.name}
-                      fill
-                      sizes="(max-width: 1024px) 100vw, 50vw"
-                      className="object-cover transition-transform duration-500 group-hover:scale-[1.02]"
-                      priority
-                    />
-                    {isSale && (
-                      <div className="absolute top-4 left-4 bg-red-500 text-white text-sm font-bold px-3 py-1 rounded-full shadow-md z-10">
-                        -{discountPercent}%
-                      </div>
-                    )}
-                  </div>
-                  <div className="col-span-1 flex flex-col gap-3 h-full justify-between">
-                    <div 
-                      onClick={() => handleOpenLightbox(1)}
-                      className="relative rounded-2xl overflow-hidden cursor-zoom-in border border-[#eaefeb] shadow-sm group h-[calc(33.33%-8px)]"
-                    >
-                      <Image
-                        src={product.images[1]}
-                        alt={product.name}
-                        fill
-                        sizes="(max-width: 768px) 30vw, 15vw"
-                        className="object-cover transition-transform duration-500 group-hover:scale-105"
-                      />
-                    </div>
-                    <div 
-                      onClick={() => handleOpenLightbox(2)}
-                      className="relative rounded-2xl overflow-hidden cursor-zoom-in border border-[#eaefeb] shadow-sm group h-[calc(33.33%-8px)]"
-                    >
-                      <Image
-                        src={product.images[2]}
-                        alt={product.name}
-                        fill
-                        sizes="(max-width: 768px) 30vw, 15vw"
-                        className="object-cover transition-transform duration-500 group-hover:scale-105"
-                      />
-                    </div>
-                    <div 
-                      onClick={() => handleOpenLightbox(3)}
-                      className="relative rounded-2xl overflow-hidden cursor-zoom-in border border-[#eaefeb] shadow-sm group h-[calc(33.33%-8px)]"
-                    >
-                      <Image
-                        src={product.images[3]}
-                        alt={product.name}
-                        fill
-                        sizes="(max-width: 768px) 30vw, 15vw"
-                        className="object-cover transition-transform duration-500 group-hover:scale-105"
-                      />
-                      {product.images.length > 4 && (
-                        <div className="absolute inset-0 bg-black/50 backdrop-blur-[1px] flex flex-col items-center justify-center text-white select-none">
-                          <span className="font-bold text-lg">+{product.images.length - 3}</span>
-                          <span className="text-[9px] uppercase font-semibold tracking-wider opacity-85 mt-0.5">Xem tất cả</span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
+                <div className="aspect-[4/5] bg-muted rounded-2xl flex items-center justify-center">
+                  <span className="text-muted-foreground text-sm">Chưa có ảnh</span>
                 </div>
-              )
-            ) : (
-              <div className="aspect-[4/5] sm:aspect-square bg-muted rounded-3xl flex items-center justify-center">
-                <span className="text-muted-foreground">Chưa có ảnh</span>
-              </div>
-            )}
+              )}
+            </div>
           </div>
 
-          {/* Product Info */}
+          {/* ── Right: Product Info ── */}
           <div className="flex flex-col">
-            <div className="flex justify-between items-start mb-4">
-              <div className="flex items-center gap-3">
-                <Badge variant="secondary" className="bg-[#e3ebdd] text-[#425733] hover:bg-[#daebd0] px-3 py-1 rounded-full text-xs font-medium">
+
+            {/* Badges row + wishlist */}
+            <div className="flex justify-between items-start mb-3">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="bg-[#e3ebdd] text-[#425733] px-3 py-1 rounded-full text-xs font-semibold">
                   {product.category.name}
-                </Badge>
+                </span>
                 {product.inventory > 0 ? (
-                  <span className="flex items-center gap-1.5 text-sm font-medium text-green-700 bg-green-50 px-2.5 py-1 rounded-full border border-green-200">
-                    <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                  <span className="flex items-center gap-1.5 text-xs font-medium text-green-700 bg-green-50 px-2.5 py-1 rounded-full border border-green-200">
+                    <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
                     Còn hàng
                   </span>
                 ) : (
-                  <span className="flex items-center gap-1.5 text-sm font-medium text-red-600 bg-red-50 px-2.5 py-1 rounded-full border border-red-200">
-                    <span className="w-2 h-2 rounded-full bg-red-500"></span>
+                  <span className="flex items-center gap-1.5 text-xs font-medium text-red-600 bg-red-50 px-2.5 py-1 rounded-full border border-red-200">
+                    <span className="w-2 h-2 rounded-full bg-red-500" />
                     Hết hàng
                   </span>
                 )}
@@ -791,46 +722,70 @@ export function ProductDetailClient({ initialProduct, initialRelated }: { initia
               <button
                 onClick={handleVote}
                 disabled={isVoting}
-                className="flex flex-col items-center gap-1 p-2 -mr-2 rounded-xl hover:bg-red-50 transition-colors disabled:opacity-50 group"
+                className="flex flex-col items-center gap-0.5 p-2 -mr-1 rounded-xl hover:bg-red-50 transition-colors disabled:opacity-50 group"
                 aria-label="Yêu thích"
               >
-                <Heart 
-                  className={`w-7 h-7 transition-colors ${product.userVoted ? 'fill-red-500 text-red-500' : 'text-gray-400 group-hover:text-red-500'}`} 
+                <Heart
+                  className={`w-6 h-6 transition-colors ${product.userVoted ? "fill-red-500 text-red-500" : "text-gray-400 group-hover:text-red-500"}`}
                 />
                 {product.voteCount !== undefined && product.voteCount > 0 && (
-                  <span className={`text-xs font-semibold ${product.userVoted ? 'text-red-500' : 'text-gray-500 group-hover:text-red-500'}`}>
+                  <span className={`text-[10px] font-bold leading-none ${product.userVoted ? "text-red-500" : "text-gray-400"}`}>
                     {product.voteCount}
                   </span>
                 )}
               </button>
             </div>
-            
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-[#1a2e12] leading-tight mb-4 tracking-tight">
+
+            {/* Rating stars */}
+            {reviews.length > 0 && (
+              <div className="flex items-center gap-2 mb-3">
+                <div className="flex gap-0.5">
+                  {[1, 2, 3, 4, 5].map((s) => (
+                    <Star
+                      key={s}
+                      className={`w-4 h-4 ${s <= Math.round(avgRating) ? "fill-yellow-400 text-yellow-400" : "fill-gray-200 text-gray-200"}`}
+                    />
+                  ))}
+                </div>
+                <span className="text-sm font-semibold text-gray-700">{avgRating.toFixed(1)}</span>
+                <span className="text-xs text-gray-400">({reviews.length} đánh giá)</span>
+              </div>
+            )}
+
+            {/* Product name */}
+            <h1 className="text-2xl sm:text-3xl font-bold text-[#1a2e12] leading-tight mb-3 tracking-tight">
               {product.name}
             </h1>
-            
-            <div className="flex flex-wrap items-baseline gap-4 mb-8">
-              <span className="text-4xl font-extrabold text-[#425733]">
+
+            {/* Short description */}
+            <p className="text-sm text-gray-500 leading-relaxed mb-5">
+              Bể kính terrarium với thiết kế tinh tế, kết hợp cây sống và tiểu cảnh thiên nhiên thu nhỏ, mang lại không gian xanh mát, thư giãn. Phù hợp trang trí bàn làm việc hoặc làm quà tặng ý nghĩa.
+            </p>
+
+            {/* Price block */}
+            <div className="flex flex-wrap items-baseline gap-3 mb-6">
+              {isSale && (
+                <span className="text-lg text-gray-400 font-medium line-through">
+                  {originalPrice.toLocaleString("vi-VN")}₫
+                </span>
+              )}
+              <span className="text-3xl sm:text-4xl font-extrabold text-[#425733]">
                 {finalPrice.toLocaleString("vi-VN")}₫
               </span>
               {isSale && (
-                <span className="text-xl text-gray-400 font-medium line-through decoration-gray-300">
-                  {originalPrice.toLocaleString("vi-VN")}₫
+                <span className="bg-red-100 text-red-600 text-xs font-bold px-2.5 py-1 rounded-full">
+                  -{discountPercent}% Ưu đãi giới hạn
                 </span>
               )}
             </div>
 
-            <Separator className="bg-[#eaefeb] mb-8" />
-
             {/* Variant Selection */}
             {product.variantOptions.length > 0 && (
-              <div className="space-y-6 mb-8">
+              <div className="space-y-4 mb-6">
                 {product.variantOptions.map((option: any) => (
                   <div key={option.id}>
-                    <div className="flex justify-between items-center mb-3">
-                      <Label className="text-base font-bold text-[#2d3a24] uppercase tracking-wider text-xs">{option.variantType}</Label>
-                    </div>
-                    <div className="flex flex-wrap gap-2.5">
+                    <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">{option.variantType}</p>
+                    <div className="flex flex-wrap gap-2">
                       {option.options.map((opt: string) => {
                         const isSelected = selectedVariants[option.variantType] === opt;
                         return (
@@ -838,9 +793,9 @@ export function ProductDetailClient({ initialProduct, initialRelated }: { initia
                             key={opt}
                             type="button"
                             onClick={() => setSelectedVariants((prev) => ({ ...prev, [option.variantType]: opt }))}
-                            className={`px-5 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 border-2 ${
-                              isSelected 
-                                ? "border-[#425733] bg-[#425733] text-white shadow-md transform scale-[1.02]" 
+                            className={`px-4 py-2 rounded-xl font-medium text-sm transition-all duration-200 border-2 ${
+                              isSelected
+                                ? "border-[#425733] bg-[#425733] text-white shadow-md"
                                 : "border-gray-200 bg-white text-gray-700 hover:border-[#425733]/50 hover:bg-[#f8faf6]"
                             }`}
                           >
@@ -854,80 +809,73 @@ export function ProductDetailClient({ initialProduct, initialRelated }: { initia
               </div>
             )}
 
-            {/* Actions (Quantity + Buttons) */}
-            <div className="flex flex-col sm:flex-row gap-4 mb-8 mt-auto">
-              <div className="flex flex-col justify-center h-[56px] border-2 border-gray-200 rounded-xl px-2 w-full sm:w-auto bg-white">
-                <div className="flex items-center justify-between gap-4">
-                  <button type="button" onClick={() => setQuantity(Math.max(1, quantity - 1))} className="p-2 text-gray-500 hover:text-[#425733] transition-colors rounded-lg hover:bg-[#f8faf6]">
-                    <Minus className="w-5 h-5" />
-                  </button>
-                  <span className="w-8 text-center text-lg font-bold text-[#1a2e12]">{quantity}</span>
-                  <button type="button" onClick={() => setQuantity(quantity + 1)} className="p-2 text-gray-500 hover:text-[#425733] transition-colors rounded-lg hover:bg-[#f8faf6]">
-                    <Plus className="w-5 h-5" />
-                  </button>
-                </div>
-              </div>
-              
-              <div className="flex gap-3 flex-1">
-                <Button 
-                  size="lg" 
-                  variant="outline" 
-                  className="flex-1 h-[56px] border-2 border-[#425733] text-[#425733] hover:bg-[#f8faf6] rounded-xl font-bold text-base shadow-sm"
-                  onClick={handleAddToCart}
-                  disabled={product.inventory <= 0}
+            {/* Quantity + Action buttons */}
+            <div className="flex items-center gap-3 mb-5">
+              {/* Quantity stepper */}
+              <div className="flex items-center h-12 border-2 border-gray-200 rounded-xl px-1 bg-white flex-shrink-0">
+                <button
+                  type="button"
+                  onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                  className="w-9 h-9 flex items-center justify-center text-gray-500 hover:text-[#425733] transition-colors rounded-lg hover:bg-[#f8faf6]"
                 >
-                  Thêm Vào Giỏ
-                </Button>
-                <Button 
-                  size="lg" 
-                  className="flex-1 h-[56px] bg-[#425733] hover:bg-[#364a29] text-white rounded-xl font-bold text-base shadow-md hover:shadow-lg transition-all"
-                  onClick={handleBuyNow}
-                  disabled={product.inventory <= 0}
+                  <Minus className="w-4 h-4" />
+                </button>
+                <span className="w-8 text-center text-base font-bold text-[#1a2e12]">{quantity}</span>
+                <button
+                  type="button"
+                  onClick={() => setQuantity(quantity + 1)}
+                  className="w-9 h-9 flex items-center justify-center text-gray-500 hover:text-[#425733] transition-colors rounded-lg hover:bg-[#f8faf6]"
                 >
-                  Mua Ngay
-                </Button>
+                  <Plus className="w-4 h-4" />
+                </button>
               </div>
+
+              {/* Thêm vào giỏ */}
+              <Button
+                size="lg"
+                variant="outline"
+                className="flex-1 h-12 border-2 border-[#425733] text-[#425733] hover:bg-[#f8faf6] rounded-xl font-bold text-sm"
+                onClick={handleAddToCart}
+                disabled={product.inventory <= 0}
+              >
+                Thêm Vào Giỏ
+              </Button>
+
+              {/* Mua ngay */}
+              <Button
+                size="lg"
+                className="flex-1 h-12 bg-[#425733] hover:bg-[#364a29] text-white rounded-xl font-bold text-sm shadow-md hover:shadow-lg transition-all"
+                onClick={handleBuyNow}
+                disabled={product.inventory <= 0}
+              >
+                Mua Ngay
+              </Button>
             </div>
 
-            {/* Shipping Info */}
-            <Card className="bg-muted/50">
-              <CardContent className="p-4">
-                <p className="text-sm text-muted-foreground">
-                  <strong>Miễn phí vận chuyển</strong> cho đơn hàng từ 500.000₫
-                </p>
-              </CardContent>
-            </Card>
+            {/* Shipping info */}
+            <div className="flex items-center gap-2 text-xs text-gray-500 mb-5">
+              <svg className="w-4 h-4 text-[#425733] flex-shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8l-.867 12.142A2 2 0 006.128 22h11.744a2 2 0 001.994-1.858L19 8M10 12v6m4-6v6" />
+              </svg>
+              Miễn phí vận chuyển cho đơn hàng từ <strong className="text-gray-700 ml-0.5">500.000₫</strong>
+            </div>
 
-            {/* Trust Badges */}
-            <div className="grid grid-cols-2 gap-3 mt-3">
-              <div className="flex items-start gap-2.5 p-3 bg-[#f6faf4] border border-[#daebd0] rounded-xl">
-                <span className="text-xl flex-shrink-0">✅</span>
-                <div>
-                  <p className="text-xs font-semibold text-[#2d4a1e]">100% Cây Khỏe Mạnh</p>
-                  <p className="text-[11px] text-[#5a7a48] leading-snug mt-0.5">Chọn lọc kỹ, đảm bảo cây sống tốt</p>
+            {/* Trust badges 2×2 */}
+            <div className="grid grid-cols-2 gap-2.5">
+              {[
+                { icon: "✅", title: "Chất lượng tuyển chọn", sub: "Cây khỏe mạnh, dễ chăm sóc" },
+                { icon: "📦", title: "Đóng gói an toàn", sub: "Đảm bảo nguyên vẹn khi vận chuyển" },
+                { icon: "💡", title: "Tư vấn tận tâm", sub: "Hỗ trợ chăm sóc miễn phí mãi mãi" },
+                { icon: "🎁", title: "Quà tặng ý nghĩa", sub: "Thiết kế tinh tế, sang trọng" },
+              ].map((badge) => (
+                <div key={badge.title} className="flex items-start gap-2.5 p-3 bg-[#f6faf4] border border-[#daebd0] rounded-xl">
+                  <span className="text-lg flex-shrink-0 leading-none mt-0.5">{badge.icon}</span>
+                  <div>
+                    <p className="text-xs font-semibold text-[#2d4a1e] leading-tight">{badge.title}</p>
+                    <p className="text-[11px] text-[#5a7a48] leading-snug mt-0.5">{badge.sub}</p>
+                  </div>
                 </div>
-              </div>
-              <div className="flex items-start gap-2.5 p-3 bg-[#f6faf4] border border-[#daebd0] rounded-xl">
-                <span className="text-xl flex-shrink-0">🛡️</span>
-                <div>
-                  <p className="text-xs font-semibold text-[#2d4a1e]">Bảo hành 7 ngày</p>
-                  <p className="text-[11px] text-[#5a7a48] leading-snug mt-0.5">Đổi trả nếu nứt vỡ khi vận chuyển</p>
-                </div>
-              </div>
-              <div className="flex items-start gap-2.5 p-3 bg-[#f6faf4] border border-[#daebd0] rounded-xl">
-                <span className="text-xl flex-shrink-0">💡</span>
-                <div>
-                  <p className="text-xs font-semibold text-[#2d4a1e]">Hỗ trợ trọn đời</p>
-                  <p className="text-[11px] text-[#5a7a48] leading-snug mt-0.5">Tư vấn chăm sóc miễn phí mãi mãi</p>
-                </div>
-              </div>
-              <div className="flex items-start gap-2.5 p-3 bg-[#f6faf4] border border-[#daebd0] rounded-xl">
-                <span className="text-xl flex-shrink-0">🎁</span>
-                <div>
-                  <p className="text-xs font-semibold text-[#2d4a1e]">Tặng kèm Cẩm nang</p>
-                  <p className="text-[11px] text-[#5a7a48] leading-snug mt-0.5">Hướng dẫn chăm sóc chi tiết kèm theo</p>
-                </div>
-              </div>
+              ))}
             </div>
           </div>
         </div>
@@ -960,6 +908,17 @@ export function ProductDetailClient({ initialProduct, initialRelated }: { initia
                 Hướng dẫn chăm sóc
               </button>
             )}
+            <button
+              onClick={() => setActiveTab("reviews")}
+              className={`flex items-center gap-2 px-6 py-3 text-sm font-semibold transition-all border-b-2 -mb-px ${
+                activeTab === "reviews"
+                  ? "border-primary text-primary"
+                  : "border-transparent text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <Star className="w-4 h-4" />
+              Đánh giá {reviews.length > 0 && `(${reviews.length})`}
+            </button>
           </div>
 
           {/* Tab: Product Details */}
@@ -982,7 +941,6 @@ export function ProductDetailClient({ initialProduct, initialRelated }: { initia
           {activeTab === "care" && hasCareGuide && product.careGuide && (
             <div className="bg-white rounded-b-2xl rounded-tr-2xl border border-t-0 border-border p-8">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
-                {/* Watering */}
                 {product.careGuide.watering && (
                   <div className="flex gap-4 p-4 bg-blue-50 rounded-xl border border-blue-100">
                     <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
@@ -994,8 +952,6 @@ export function ProductDetailClient({ initialProduct, initialRelated }: { initia
                     </div>
                   </div>
                 )}
-
-                {/* Sunlight */}
                 {product.careGuide.sunlight && (
                   <div className="flex gap-4 p-4 bg-yellow-50 rounded-xl border border-yellow-100">
                     <div className="w-10 h-10 rounded-full bg-yellow-100 flex items-center justify-center flex-shrink-0">
@@ -1007,8 +963,6 @@ export function ProductDetailClient({ initialProduct, initialRelated }: { initia
                     </div>
                   </div>
                 )}
-
-                {/* Temperature */}
                 {product.careGuide.temperature && (
                   <div className="flex gap-4 p-4 bg-orange-50 rounded-xl border border-orange-100">
                     <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center flex-shrink-0">
@@ -1020,8 +974,6 @@ export function ProductDetailClient({ initialProduct, initialRelated }: { initia
                     </div>
                   </div>
                 )}
-
-                {/* Humidity */}
                 {product.careGuide.humidity && (
                   <div className="flex gap-4 p-4 bg-green-50 rounded-xl border border-green-100">
                     <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
@@ -1034,8 +986,6 @@ export function ProductDetailClient({ initialProduct, initialRelated }: { initia
                   </div>
                 )}
               </div>
-
-              {/* Common Issues */}
               {product.careGuide.commonIssues && (
                 <div className="mb-6 p-4 bg-red-50 rounded-xl border border-red-100">
                   <div className="flex items-center gap-2 mb-2">
@@ -1045,8 +995,6 @@ export function ProductDetailClient({ initialProduct, initialRelated }: { initia
                   <p className="text-sm text-red-700 whitespace-pre-line">{product.careGuide.commonIssues}</p>
                 </div>
               )}
-
-              {/* Video Guide */}
               {product.careGuide.videoUrl && (
                 <div className="p-4 bg-purple-50 rounded-xl border border-purple-100">
                   <div className="flex items-center gap-2 mb-3">
@@ -1072,13 +1020,13 @@ export function ProductDetailClient({ initialProduct, initialRelated }: { initia
             <div className="bg-white rounded-b-2xl rounded-tr-2xl border border-t-0 border-border p-8">
               {alreadyReviewed ? (
                 <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-xl text-green-800 text-sm">
-                  Ban da gui danh gia. Dang cho admin duyet.
+                  Bạn đã gửi đánh giá. Đang chờ admin duyệt.
                 </div>
               ) : canReview ? (
                 <form onSubmit={handleSubmitReview} className="mb-8 p-6 bg-[#f8faf6] border border-[#daebd0] rounded-xl">
-                  <h3 className="font-semibold text-lg mb-4">Danh gia san pham cua ban</h3>
+                  <h3 className="font-semibold text-lg mb-4">Đánh giá sản phẩm của bạn</h3>
                   <div className="mb-4">
-                    <label className="block text-sm font-medium mb-2">Xep hang *</label>
+                    <label className="block text-sm font-medium mb-2">Xếp hạng *</label>
                     <div className="flex gap-1">
                       {[1, 2, 3, 4, 5].map((star) => (
                         <button key={star} type="button" onClick={() => setReviewForm((p) => ({ ...p, rating: star }))} className="p-1">
@@ -1088,41 +1036,41 @@ export function ProductDetailClient({ initialProduct, initialRelated }: { initia
                     </div>
                   </div>
                   <div className="mb-3">
-                    <label className="block text-sm font-medium mb-1">Tieu de (tuy chon)</label>
-                    <input type="text" value={reviewForm.title} onChange={(e) => setReviewForm((p) => ({ ...p, title: e.target.value }))} className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#6d8c5a] focus:outline-none" placeholder="Tom tat danh gia cua ban..." />
+                    <label className="block text-sm font-medium mb-1">Tiêu đề (tùy chọn)</label>
+                    <input type="text" value={reviewForm.title} onChange={(e) => setReviewForm((p) => ({ ...p, title: e.target.value }))} className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#6d8c5a] focus:outline-none" placeholder="Tóm tắt đánh giá của bạn..." />
                   </div>
                   <div className="mb-4">
-                    <label className="block text-sm font-medium mb-1">Noi dung *</label>
-                    <textarea value={reviewForm.content} onChange={(e) => setReviewForm((p) => ({ ...p, content: e.target.value }))} rows={4} required className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#6d8c5a] focus:outline-none" placeholder="Chia se trai nghiem cua ban voi san pham..." />
+                    <label className="block text-sm font-medium mb-1">Nội dung *</label>
+                    <textarea value={reviewForm.content} onChange={(e) => setReviewForm((p) => ({ ...p, content: e.target.value }))} rows={4} required className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#6d8c5a] focus:outline-none" placeholder="Chia sẻ trải nghiệm của bạn với sản phẩm..." />
                   </div>
                   <button type="submit" disabled={submittingReview} className="bg-[#425733] text-white px-6 py-2.5 rounded-full font-semibold hover:bg-[#364a29] disabled:bg-gray-300 transition-colors">
-                    {submittingReview ? "Dang gui..." : "Gui Danh Gia"}
+                    {submittingReview ? "Đang gửi..." : "Gửi Đánh Giá"}
                   </button>
                 </form>
               ) : !session ? (
                 <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-xl text-blue-800 text-sm">
-                  <a href="/login" className="underline font-medium">Dang nhap</a> de danh gia san pham (chi danh cho khach hang da mua hang)
+                  <a href="/login" className="underline font-medium">Đăng nhập</a> để đánh giá sản phẩm (chỉ dành cho khách hàng đã mua hàng)
                 </div>
               ) : (
                 <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-xl text-yellow-800 text-sm">
-                  Ban can mua san pham nay de co the gui danh gia.
+                  Bạn cần mua sản phẩm này để có thể gửi đánh giá.
                 </div>
               )}
               {reviewsLoading ? (
-                <div className="text-center py-8 text-gray-400">Dang tai danh gia...</div>
+                <div className="text-center py-8 text-gray-400">Đang tải đánh giá...</div>
               ) : reviews.length === 0 ? (
                 <div className="text-center py-12 text-gray-400">
                   <Star className="w-12 h-12 mx-auto mb-3 opacity-20" />
-                  <p>Chua co danh gia nao.</p>
+                  <p>Chưa có đánh giá nào.</p>
                 </div>
               ) : (
                 <div className="space-y-4">
-                  <h3 className="font-semibold text-lg">{reviews.length} danh gia</h3>
+                  <h3 className="font-semibold text-lg">{reviews.length} đánh giá</h3>
                   {reviews.map((review: any) => (
                     <div key={review.id} className="border rounded-xl p-5">
                       <div className="flex justify-between items-start mb-2">
                         <div>
-                          <p className="font-medium">{review.customer?.name || "Khach hang"}</p>
+                          <p className="font-medium">{review.customer?.name || "Khách hàng"}</p>
                           <div className="flex gap-0.5 mt-1">
                             {[1, 2, 3, 4, 5].map((s) => (
                               <Star key={s} className={`w-4 h-4 ${s <= review.rating ? "text-yellow-400 fill-yellow-400" : "text-gray-200"}`} />
@@ -1130,7 +1078,7 @@ export function ProductDetailClient({ initialProduct, initialRelated }: { initia
                           </div>
                         </div>
                         <div className="flex items-center gap-2">
-                          {review.verified && <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Da mua hang</span>}
+                          {review.verified && <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Đã mua hàng</span>}
                           <span className="text-xs text-gray-400">{new Date(review.createdAt).toLocaleDateString("vi-VN")}</span>
                         </div>
                       </div>
@@ -1172,7 +1120,8 @@ export function ProductDetailClient({ initialProduct, initialRelated }: { initia
             </div>
           </div>
         )}
-        {/* Lightbox Modal */}
+
+        {/* Lightbox Modal (fullscreen) */}
         {lightboxOpen && product.images && product.images.length > 0 && (
           <div className="fixed inset-0 z-50 flex flex-col justify-between bg-black/95 backdrop-blur-md select-none">
             {/* Header */}
@@ -1193,7 +1142,6 @@ export function ProductDetailClient({ initialProduct, initialRelated }: { initia
 
             {/* Main Content Area */}
             <div className="flex-1 flex items-center justify-between px-4 sm:px-12 relative">
-              {/* Prev Button */}
               <button
                 onClick={() => setLightboxIndex((prev) => (prev === 0 ? product.images.length - 1 : prev - 1))}
                 className="p-3 rounded-xl bg-white/5 hover:bg-white/15 text-white/80 hover:text-white transition-all backdrop-blur-sm z-10"
@@ -1204,7 +1152,6 @@ export function ProductDetailClient({ initialProduct, initialRelated }: { initia
                 </svg>
               </button>
 
-              {/* Image */}
               <div className="relative max-w-4xl max-h-[75vh] w-full aspect-square flex items-center justify-center">
                 <Image
                   src={product.images[lightboxIndex]}
@@ -1216,7 +1163,6 @@ export function ProductDetailClient({ initialProduct, initialRelated }: { initia
                 />
               </div>
 
-              {/* Next Button */}
               <button
                 onClick={() => setLightboxIndex((prev) => (prev === product.images.length - 1 ? 0 : prev + 1))}
                 className="p-3 rounded-xl bg-white/5 hover:bg-white/15 text-white/80 hover:text-white transition-all backdrop-blur-sm z-10"
