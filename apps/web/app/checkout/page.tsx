@@ -161,7 +161,6 @@ export default function CheckoutPage() {
         orderId: order.id,
         orderNumber: order.orderNumber,
         method: formData.paymentMethod,
-        total: String(total),
       });
       router.push(`/checkout/success?${params.toString()}`);
 

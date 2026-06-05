@@ -19,14 +19,18 @@ export default function CheckoutPendingPage() {
 
   const orderId = searchParams.get("orderId") || "";
   const orderNumber = searchParams.get("orderNumber") || "";
-  const total = Number(searchParams.get("total") || 0);
   const transferContent = `TT ${orderNumber.slice(-8).toUpperCase()}`;
-
-  const qrUrl = `https://img.vietqr.io/image/${BANK_BIN}-${BANK_ACCOUNT}-compact.png?amount=${total}&addInfo=${encodeURIComponent(transferContent)}&accountName=${encodeURIComponent(BANK_OWNER)}`;
 
   const [secondsLeft, setSecondsLeft] = useState<number | null>(null);
   const [paymentStatus, setPaymentStatus] = useState<"PENDING" | "PAID" | "EXPIRED">("PENDING");
   const [copied, setCopied] = useState<string | null>(null);
+  // Server-fetched total — never trust URL
+  const [serverTotal, setServerTotal] = useState<number | null>(null);
+
+  // QR URL uses server-validated total only
+  const safeTotal = serverTotal ?? 0;
+  const qrUrl = `https://img.vietqr.io/image/${BANK_BIN}-${BANK_ACCOUNT}-compact.png?amount=${safeTotal}&addInfo=${encodeURIComponent(transferContent)}&accountName=${encodeURIComponent(BANK_OWNER)}`;
+
 
   const copyToClipboard = (text: string, field: string) => {
     navigator.clipboard.writeText(text);
@@ -39,6 +43,11 @@ export default function CheckoutPendingPage() {
     try {
       const res = await fetch(`/api/orders/${orderId}/status`);
       const data = await res.json();
+
+      // Always use server total
+      if (data.total != null) {
+        setServerTotal(data.total);
+      }
 
       if (data.paymentStatus === "PAID") {
         setPaymentStatus("PAID");
@@ -215,7 +224,7 @@ export default function CheckoutPendingPage() {
           {/* Amount */}
           <div className="bg-[#f0f7ea] rounded-xl p-3 text-center mb-4">
             <p className="text-xs text-[#5a7a48] mb-0.5">Số tiền chuyển khoản</p>
-            <p className="text-2xl font-bold text-[#2d4a1e]">{total.toLocaleString("vi-VN")}đ</p>
+            <p className="text-2xl font-bold text-[#2d4a1e]">{(serverTotal ?? 0).toLocaleString("vi-VN")}đ</p>
           </div>
 
           {/* Bank Info Table */}

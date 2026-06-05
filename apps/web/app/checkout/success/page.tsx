@@ -24,20 +24,19 @@ export default function CheckoutSuccessPage() {
   const orderId     = searchParams.get("orderId")     || "";
   const orderNumber = searchParams.get("orderNumber") || "";
   const method      = searchParams.get("method")      || "COD"; // COD | BANK_TRANSFER
-  const total       = Number(searchParams.get("total") || 0);
 
   const isBanking = method === "BANK_TRANSFER";
 
   // Transfer info
   const transferContent = `TT ${orderNumber.slice(-8).toUpperCase()}`;
-  const qrUrl = `https://img.vietqr.io/image/${BANK_BIN}-${BANK_ACCOUNT}-compact.png`
-    + `?amount=${total}&addInfo=${encodeURIComponent(transferContent)}`
-    + `&accountName=${encodeURIComponent(BANK_OWNER)}`;
 
   // ── State ─────────────────────────────────────────────────────────────────
   const [payStatus, setPayStatus]     = useState<PayStatus>(isBanking ? "PENDING" : "PAID");
   const [secondsLeft, setSecondsLeft] = useState<number | null>(null);
   const [copied, setCopied]           = useState<string | null>(null);
+  // total is ALWAYS fetched from server, never from URL
+  const [serverTotal, setServerTotal] = useState<number | null>(null);
+  const [loadingOrder, setLoadingOrder] = useState(true);
 
   const copyToClipboard = (text: string, key: string) => {
     navigator.clipboard.writeText(text).catch(() => {});
@@ -45,12 +44,24 @@ export default function CheckoutSuccessPage() {
     setTimeout(() => setCopied(null), 2000);
   };
 
-  // ── Polling trạng thái ────────────────────────────────────────────────────
+  // QR URL only uses server-validated total
+  const safeTotal = serverTotal ?? 0;
+  const qrUrl = `https://img.vietqr.io/image/${BANK_BIN}-${BANK_ACCOUNT}-compact.png`
+    + `?amount=${safeTotal}&addInfo=${encodeURIComponent(transferContent)}`
+    + `&accountName=${encodeURIComponent(BANK_OWNER)}`;
+
+  // ── Polling trạng thái + lấy total từ server ──────────────────────────────
   const checkStatus = useCallback(async () => {
-    if (!orderId || !isBanking || payStatus !== "PENDING") return;
+    if (!orderId) return;
     try {
       const res  = await fetch(`/api/orders/${orderId}/status`);
       const data = await res.json();
+
+      // Always use server total
+      if (data.total != null) {
+        setServerTotal(data.total);
+      }
+      setLoadingOrder(false);
 
       if (data.paymentStatus === "PAID") {
         setPayStatus("PAID");
@@ -65,12 +76,14 @@ export default function CheckoutSuccessPage() {
       }
     } catch (e) {
       console.error("[success] check status error:", e);
+      setLoadingOrder(false);
     }
-  }, [orderId, isBanking, payStatus]);
+  }, [orderId]);
 
+  // Initial fetch + polling for banking
   useEffect(() => {
+    checkStatus(); // Always fetch once to get total from server
     if (!isBanking || payStatus !== "PENDING") return;
-    checkStatus();
     const iv = setInterval(checkStatus, 8000); // poll mỗi 8 giây
     return () => clearInterval(iv);
   }, [isBanking, payStatus, checkStatus]);
@@ -95,6 +108,18 @@ export default function CheckoutSuccessPage() {
     { label: "Chủ tài khoản",value: BANK_OWNER,       key: "own"  },
     { label: "Nội dung CK",  value: transferContent,  key: "msg"  },
   ];
+
+  // Loading state
+  if (loadingOrder) {
+    return (
+      <main className="min-h-screen bg-[#f4f8f0] flex items-center justify-center px-4">
+        <div className="w-full max-w-md text-center">
+          <div className="w-12 h-12 border-4 border-[#425733] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-gray-500 text-sm">Đang tải thông tin đơn hàng...</p>
+        </div>
+      </main>
+    );
+  }
 
   // ============================================================
   // ① COD hoặc Banking đã PAID → trang Cảm Ơn
@@ -305,7 +330,7 @@ export default function CheckoutSuccessPage() {
                   {/* Số tiền */}
                   <div className="bg-[#f0f7ea] rounded-xl p-4 text-center mb-4 border border-[#c8d5be]">
                     <p className="text-xs text-[#5a7a48] mb-1">Số tiền cần chuyển</p>
-                    <p className="text-3xl font-bold text-[#2d4a1e]">{total.toLocaleString("vi-VN")}đ</p>
+                    <p className="text-3xl font-bold text-[#2d4a1e]">{safeTotal.toLocaleString("vi-VN")}đ</p>
                   </div>
 
                   {/* Fields */}
@@ -389,7 +414,7 @@ export default function CheckoutSuccessPage() {
 
                 <div className="flex justify-between font-bold text-base">
                   <span>Tổng tiền</span>
-                  <span className="text-[#425733]">{total.toLocaleString("vi-VN")}đ</span>
+                  <span className="text-[#425733]">{safeTotal.toLocaleString("vi-VN")}đ</span>
                 </div>
 
                 <hr className="border-[#e8f0e1]" />
