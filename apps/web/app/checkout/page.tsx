@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { toast } from "sonner";
+import { showToast } from "@/components/ui/custom-toast";
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -36,6 +36,8 @@ export default function CheckoutPage() {
 
   const [voucherApplied, setVoucherApplied] = useState(false);
   const [voucherCampaignId, setVoucherCampaignId] = useState<string | null>(null);
+  const [voucherChecking, setVoucherChecking] = useState(false);
+  const [voucherError, setVoucherError] = useState<string | null>(null);
   const [isFreeShipping, setIsFreeShipping] = useState(false);
   const [discount, setDiscount] = useState(0);
   const [shippingFee, setShippingFee] = useState(30000);
@@ -57,10 +59,22 @@ export default function CheckoutPage() {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+    // Reset voucher state when user edits the voucher code
+    if (name === "voucherCode") {
+      setVoucherApplied(false);
+      setVoucherError(null);
+      setDiscount(0);
+      setIsFreeShipping(false);
+      if (!isFreeShipping) {
+        setShippingFee(formData.shippingMethod === "GHN_EXPRESS" ? 50000 : 30000);
+      }
+    }
   };
 
   const handleApplyVoucher = async () => {
     if (!formData.voucherCode.trim()) return;
+    setVoucherChecking(true);
+    setVoucherError(null);
     try {
       const response = await fetch("/api/validate-voucher", {
         method: "POST",
@@ -83,19 +97,26 @@ export default function CheckoutPage() {
           setIsFreeShipping(true);
           setShippingFee(0);
           setDiscount(0);
-          toast.success("🚚 Áp dụng thành công! Miễn phí vận chuyển");
+          showToast.success("Áp dụng thành công!", "Miễn phí vận chuyển cho đơn hàng này");
         } else {
           setDiscount(data.discountAmount || 0);
           setIsFreeShipping(false);
-          toast.success(`✅ Áp dụng thành công! Giảm ${(data.discountAmount || 0).toLocaleString("vi-VN")}₫`);
+          showToast.success("Áp dụng thành công!", `Giảm ${(data.discountAmount || 0).toLocaleString("vi-VN")}₫`);
         }
         setVoucherCampaignId(data.campaign?.id || null);
         setVoucherApplied(true);
+        setVoucherError(null);
       } else {
-        toast.error(data.error || data.message || "Mã giảm giá không hợp lệ");
+        const errorMsg = data.error || data.message || "Mã giảm giá không hợp lệ hoặc đã hết hạn";
+        setVoucherError(errorMsg);
+        setVoucherApplied(false);
+        showToast.error("Voucher không hợp lệ", errorMsg);
       }
     } catch {
-      toast.error("Lỗi kết nối. Vui lòng thử lại.");
+      setVoucherError("Lỗi kết nối. Vui lòng thử lại.");
+      showToast.error("Lỗi kết nối", "Vui lòng thử lại.");
+    } finally {
+      setVoucherChecking(false);
     }
   };
 
@@ -103,7 +124,7 @@ export default function CheckoutPage() {
     e.preventDefault();
 
     if (itemsToCheckout.length === 0) {
-      toast.error("Giỏ hàng trống! Vui lòng chọn sản phẩm trước.");
+      showToast.error("Giỏ hàng trống! Vui lòng chọn sản phẩm trước.");
       return;
     }
 
@@ -147,7 +168,7 @@ export default function CheckoutPage() {
       });
 
       if (!response.ok) {
-        toast.error("Không thể tạo đơn hàng. Vui lòng thử lại.");
+        showToast.error("Không thể tạo đơn hàng. Vui lòng thử lại.");
         return;
       }
 
@@ -166,7 +187,7 @@ export default function CheckoutPage() {
 
     } catch (error) {
       console.error("Error creating order:", error);
-      toast.error("Có lỗi xảy ra. Vui lòng thử lại.");
+      showToast.error("Có lỗi xảy ra. Vui lòng thử lại.");
     } finally {
       setLoading(false);
     }
@@ -311,21 +332,57 @@ export default function CheckoutPage() {
               </CardHeader>
               <CardContent>
                 <div className="flex gap-4">
-                  <Input name="voucherCode" value={formData.voucherCode} onChange={handleInputChange} placeholder="Nhập mã giảm giá" disabled={voucherApplied} />
-                  <Button onClick={handleApplyVoucher} disabled={voucherApplied} variant={voucherApplied ? "secondary" : "default"}>
-                    {voucherApplied ? "Đã áp dụng" : "Áp dụng"}
+                  <Input name="voucherCode" value={formData.voucherCode} onChange={handleInputChange} placeholder="Nhập mã giảm giá" disabled={voucherApplied || voucherChecking} />
+                  <Button
+                    type="button"
+                    onClick={handleApplyVoucher}
+                    disabled={voucherApplied || voucherChecking || !formData.voucherCode.trim()}
+                    variant={voucherApplied ? "secondary" : "default"}
+                  >
+                    {voucherChecking ? "Đang kiểm tra..." : voucherApplied ? "Đã áp dụng" : "Áp dụng"}
                   </Button>
                 </div>
+                {/* Voucher status messages */}
                 {voucherApplied && (
-                  <Badge variant="default" className="mt-2 bg-[#425733]">
-                    Đã áp dụng! Giảm {discount.toLocaleString("vi-VN")}₫
-                  </Badge>
+                  <div className="mt-3 flex items-center gap-2 bg-[#f0f7ea] border border-[#c2d6b0] rounded-lg px-3 py-2">
+                    <span className="w-5 h-5 rounded-full bg-[#425733] flex items-center justify-center flex-shrink-0">
+                      <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                    </span>
+                    <span className="text-sm text-[#2d4a1e] font-medium">
+                      {isFreeShipping ? "Miễn phí vận chuyển!" : `Giảm ${discount.toLocaleString("vi-VN")}₫`}
+                    </span>
+                  </div>
+                )}
+                {voucherError && (
+                  <div className="mt-3 flex items-center gap-2 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+                    <span className="w-5 h-5 rounded-full bg-red-500 flex items-center justify-center flex-shrink-0">
+                      <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                    </span>
+                    <span className="text-sm text-red-700 font-medium">{voucherError}</span>
+                  </div>
                 )}
               </CardContent>
             </Card>
 
-            <Button type="submit" size="lg" className="w-full bg-[#425733] hover:bg-[#364a29]" disabled={loading}>
-              {loading ? "Đang xử lý..." : `Đặt Hàng - ${total.toLocaleString("vi-VN")}₫`}
+            {/* Submit button: disabled when voucher is entered but not validated */}
+            <Button
+              type="submit"
+              size="lg"
+              className="w-full bg-[#425733] hover:bg-[#364a29]"
+              disabled={
+                loading ||
+                voucherChecking ||
+                (formData.voucherCode.trim().length > 0 && !voucherApplied && !voucherError)
+              }
+            >
+              {loading
+                ? "Đang xử lý..."
+                : voucherChecking
+                ? "Đang kiểm tra voucher..."
+                : (formData.voucherCode.trim().length > 0 && !voucherApplied && !voucherError)
+                ? "Vui lòng kiểm tra voucher trước"
+                : `Đặt Hàng - ${total.toLocaleString("vi-VN")}₫`
+              }
             </Button>
           </div>
 

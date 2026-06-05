@@ -1,8 +1,8 @@
-"use client";
+﻿"use client";
 
 import { ProductCard } from "@/components/ui/product-card";
 import { useCartStore } from "@/lib/store/cartStore";
-import { toast } from "sonner";
+import { showToast } from "@/components/ui/custom-toast";
 
 interface FeaturedProductCardProps {
   id: string;
@@ -33,7 +33,7 @@ export function FeaturedProductCard(props: FeaturedProductCardProps) {
       price,
       quantity: 1,
     });
-    toast.success(`Đã thêm "${props.name}" vào giỏ hàng 🛒`);
+    showToast.success(`Đã thêm "${props.name}" vào giỏ hàng 🛒`);
   };
 
   return (

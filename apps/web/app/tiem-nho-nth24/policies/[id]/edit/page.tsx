@@ -1,18 +1,15 @@
-"use client";
+﻿"use client";
 
-import { useState, useEffect, use } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Save } from "lucide-react";
-import { toast } from "sonner";
+import { showToast } from "@/components/ui/custom-toast";
 import { Button } from "@/components/ui/button";
 
-export default function EditPolicyPage({ params }: { params: Promise<{ id: string }> }) {
+export default function CreatePolicyPage() {
   const router = useRouter();
-  const { id } = use(params);
   const [loading, setLoading] = useState(false);
-  const [fetching, setFetching] = useState(true);
-  
   const [formData, setFormData] = useState({
     title: "",
     slug: "",
@@ -22,54 +19,26 @@ export default function EditPolicyPage({ params }: { params: Promise<{ id: strin
     isActive: true,
   });
 
-  useEffect(() => {
-    fetchPolicy();
-  }, [id]);
-
-  const fetchPolicy = async () => {
-    try {
-      const res = await fetch(`/api/admin/policies/${id}`);
-      if (res.ok) {
-        const data = await res.json();
-        setFormData({
-          title: data.title || "",
-          slug: data.slug || "",
-          content: data.content || "",
-          type: data.type || "policy",
-          order: data.order || 0,
-          isActive: data.isActive,
-        });
-      } else {
-        toast.error("Không tìm thấy chính sách");
-        router.push("/tiem-nho-nth24/policies");
-      }
-    } catch {
-      toast.error("Lỗi kết nối");
-    } finally {
-      setFetching(false);
-    }
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      const res = await fetch(`/api/admin/policies/${id}`, {
-        method: "PUT",
+      const res = await fetch("/api/admin/policies", {
+        method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       });
 
       if (res.ok) {
-        toast.success("Cập nhật chính sách thành công");
+        showToast.success("Tạo chính sách thành công");
         router.push("/tiem-nho-nth24/policies");
       } else {
         const error = await res.json();
-        toast.error(error.error || "Có lỗi xảy ra");
+        showToast.error(error.error || "Có lỗi xảy ra");
       }
     } catch (err) {
-      toast.error("Lỗi kết nối");
+      showToast.error("Lỗi kết nối");
     } finally {
       setLoading(false);
     }
@@ -77,13 +46,11 @@ export default function EditPolicyPage({ params }: { params: Promise<{ id: strin
 
   const generateSlug = (text: string) => {
     return text.toLowerCase()
-      .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+      .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // remove accents
       .replace(/đ/g, "d").replace(/Đ/g, "d")
       .replace(/[^a-z0-9\s-]/g, "")
       .trim().replace(/\s+/g, "-");
   };
-
-  if (fetching) return <div className="p-8 text-center text-gray-500">Đang tải dữ liệu...</div>;
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
@@ -91,7 +58,7 @@ export default function EditPolicyPage({ params }: { params: Promise<{ id: strin
         <Button variant="ghost" size="icon" asChild className="rounded-full">
           <Link href="/tiem-nho-nth24/policies"><ArrowLeft className="w-5 h-5" /></Link>
         </Button>
-        <h1 className="text-2xl font-bold text-gray-800">Chỉnh sửa Chính Sách</h1>
+        <h1 className="text-2xl font-bold text-gray-800">Thêm Chính Sách Mới</h1>
       </div>
 
       <form onSubmit={handleSubmit} className="bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-gray-100 space-y-6">
@@ -103,9 +70,10 @@ export default function EditPolicyPage({ params }: { params: Promise<{ id: strin
               required
               value={formData.title}
               onChange={(e) => {
-                setFormData({ ...formData, title: e.target.value });
+                setFormData({ ...formData, title: e.target.value, slug: generateSlug(e.target.value) });
               }}
               className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#425733]/50"
+              placeholder="VD: Chính sách bảo hành"
             />
           </div>
           <div className="space-y-1.5">
@@ -167,6 +135,7 @@ export default function EditPolicyPage({ params }: { params: Promise<{ id: strin
             value={formData.content}
             onChange={(e) => setFormData({ ...formData, content: e.target.value })}
             className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#425733]/50 font-mono"
+            placeholder="<p>Nhập nội dung HTML tại đây...</p>"
           />
         </div>
 
@@ -176,7 +145,7 @@ export default function EditPolicyPage({ params }: { params: Promise<{ id: strin
             disabled={loading}
             className="bg-[#425733] hover:bg-[#364a29] min-w-[120px]"
           >
-            {loading ? "Đang lưu..." : <><Save className="w-4 h-4 mr-2" /> Lưu Thay Đổi</>}
+            {loading ? "Đang lưu..." : <><Save className="w-4 h-4 mr-2" /> Lưu Chính Sách</>}
           </Button>
         </div>
       </form>

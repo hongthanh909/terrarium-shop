@@ -1,10 +1,10 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
 import { Settings, Store, Globe, Bell, Shield, Save, CheckCircle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { toast } from "sonner";
+import { showToast } from "@/components/ui/custom-toast";
 
 interface ShopSettings {
   shopName: string;
@@ -54,7 +54,7 @@ export default function AdminSettingsPage() {
         });
       } catch (err) {
         console.error("Error loading settings:", err);
-        toast.error("Không thể tải cài đặt. Sử dụng giá trị mặc định.");
+        showToast.error("Không thể tải cài đặt. Sử dụng giá trị mặc định.");
       } finally {
         setLoading(false);
       }
@@ -80,11 +80,11 @@ export default function AdminSettingsPage() {
       if (!res.ok) throw new Error("Lưu thất bại");
 
       setSaved(true);
-      toast.success("Đã lưu cài đặt thành công!");
+      showToast.success("Đã lưu cài đặt thành công!");
       setTimeout(() => setSaved(false), 3000);
     } catch (err) {
       console.error("Error saving settings:", err);
-      toast.error("Không thể lưu cài đặt. Vui lòng thử lại.");
+      showToast.error("Không thể lưu cài đặt. Vui lòng thử lại.");
     } finally {
       setSaving(false);
     }

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft, Package, TrendingUp, Clock, CheckCircle, Truck, XCircle, AlertTriangle, CreditCard } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
+import { showToast } from "@/components/ui/custom-toast";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { OrderTimeline } from "@/components/ui/order-timeline";
 
@@ -115,13 +115,13 @@ export default function MyOrdersPage() {
       const res = await fetch(`/api/orders/${orderId}/cancel`, { method: "PATCH" });
       const data = await res.json();
       if (res.ok) {
-        toast.success("Đã hủy đơn hàng thành công");
+        showToast.success("Đã hủy đơn hàng thành công");
         queryClient.invalidateQueries({ queryKey: ["customer-orders", customerId] });
       } else {
-        toast.error(data.error || "Không thể hủy đơn hàng");
+        showToast.error(data.error || "Không thể hủy đơn hàng");
       }
     } catch {
-      toast.error("Có lỗi xảy ra, vui lòng thử lại");
+      showToast.error("Có lỗi xảy ra, vui lòng thử lại");
     } finally {
       setCancellingId(null);
       setConfirmCancelId(null);

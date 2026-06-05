@@ -8,7 +8,7 @@ import {
   ShoppingCart, Percent, FileText, LogOut,
   Grid3X3, ExternalLink, Star, ShieldCheck, LayoutDashboard, Compass,
 } from "lucide-react";
-import { Toaster } from "sonner";
+
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -21,19 +21,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   if (pathname === "/tiem-nho-nth24/login") {
     return (
       <div className="min-h-screen bg-[#f5f7f4]">
-        <Toaster
-          position="top-right"
-          richColors
-          closeButton
-          toastOptions={{
-            duration: 3000,
-            style: { fontFamily: "inherit" },
-            classNames: {
-              success: "font-medium",
-              error: "font-medium",
-            },
-          }}
-        />
+
         {children}
       </div>
     );
@@ -64,19 +52,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
   return (
     <div className="min-h-screen bg-[#f5f7f4]">
-      <Toaster
-        position="top-right"
-        richColors
-        closeButton
-        toastOptions={{
-          duration: 3000,
-          style: { fontFamily: "inherit" },
-          classNames: {
-            success: "font-medium",
-            error: "font-medium",
-          },
-        }}
-      />
+
 
       {/* Sidebar */}
       <aside className="fixed left-0 top-0 h-full w-60 bg-[#2d3d23] text-white flex flex-col shadow-xl">

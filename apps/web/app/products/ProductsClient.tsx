@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -9,7 +9,7 @@ import { ProductCard } from "@/components/ui/product-card";
 import { PageTransition, SlideInHeading } from "@/components/ui/page-transition";
 import { useCartStore } from "@/lib/store/cartStore";
 import { useSession } from "next-auth/react";
-import { toast } from "sonner";
+import { showToast } from "@/components/ui/custom-toast";
 import { motion } from "framer-motion";
 
 interface Product {
@@ -52,7 +52,7 @@ export function ProductsClient({
   const handleAddToCart = (product: Product) => {
     // Yêu cầu đăng nhập trước khi thêm vào giỏ hàng
     if (!session) {
-      toast.error("Đăng nhập để thêm sản phẩm vào giỏ hàng!");
+      showToast.error("Đăng nhập để thêm sản phẩm vào giỏ hàng!");
       router.push(`/login?callbackUrl=/products`);
       return;
     }
@@ -67,7 +67,7 @@ export function ProductsClient({
       quantity: 1,
       variants: {},
     });
-    toast.success(`Đã thêm "${product.name}" vào giỏ hàng 🛒`);
+    showToast.success(`Đã thêm "${product.name}" vào giỏ hàng 🛒`);
   };
 
   const handleSearch = (e: React.FormEvent) => {

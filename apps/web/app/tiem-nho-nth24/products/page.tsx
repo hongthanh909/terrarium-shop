@@ -5,7 +5,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import Image from "next/image";
 import { Plus, Edit, Trash2, Eye, Search, Filter, Pin, Star, Flame, Zap } from "lucide-react";
-import { toast } from "sonner";
+import { showToast } from "@/components/ui/custom-toast";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 
 interface Product {
@@ -73,16 +73,14 @@ export default function AdminProductsPage() {
       queryClient.invalidateQueries({ queryKey: ["admin-products"] });
     };
 
-    toast.promise(promise(), {
-      loading: "Đang xóa sản phẩm...",
-      success: "Xóa sản phẩm thành công!",
-      error: (err) => {
-        // Revert optimistic update
-        queryClient.invalidateQueries({ queryKey: ["admin-products"] });
-        return err.message || "Lỗi khi xóa sản phẩm";
-      },
-      finally: () => setActionLoading(false),
-    });
+    try {
+      await promise();
+      showToast.success("Xóa sản phẩm thành công!");
+    } catch (err: any) {
+      showToast.error("Đã xảy ra lỗi");
+    } finally {
+      setActionLoading(false);
+    }
   };
 
   const handlePin = async (id: string, currentlyPinned: boolean) => {
@@ -102,12 +100,14 @@ export default function AdminProductsPage() {
       queryClient.invalidateQueries({ queryKey: ["admin-products"] });
     };
 
-    toast.promise(promise(), {
-      loading: currentlyPinned ? "Đang bỏ ghim sản phẩm..." : "Đang ghim sản phẩm...",
-      success: currentlyPinned ? "Đã bỏ ghim sản phẩm thành công!" : "Đã ghim sản phẩm thành công trong 7 ngày!",
-      error: (err) => err.message || "Lỗi khi thay đổi ghim sản phẩm",
-      finally: () => setActionLoading(false),
-    });
+    try {
+      await promise();
+      showToast.success("Thành công!");
+    } catch (err: any) {
+      showToast.error(err.message || "Lỗi khi thay đổi ghim sản phẩm");
+    } finally {
+      setActionLoading(false);
+    }
   };
 
   const handleSetWeekly = async (id: string) => {
@@ -128,12 +128,14 @@ export default function AdminProductsPage() {
       queryClient.invalidateQueries({ queryKey: ["admin-products"] });
     };
 
-    toast.promise(promise(), {
-      loading: "Đang đặt làm Sản Phẩm Của Tuần...",
-      success: "Đã đặt làm Sản Phẩm Của Tuần thành công!",
-      error: (err) => err.message || "Lỗi khi đặt Sản Phẩm Của Tuần",
-      finally: () => setActionLoading(false),
-    });
+    try {
+      await promise();
+      showToast.success("Đã đặt làm Sản Phẩm Của Tuần thành công!");
+    } catch (err: any) {
+      showToast.error(err.message || "Lỗi khi đặt Sản Phẩm Của Tuần");
+    } finally {
+      setActionLoading(false);
+    }
   };
 
   const handleToggleFeatured = async (id: string, currentlyFeatured: boolean) => {
@@ -153,12 +155,14 @@ export default function AdminProductsPage() {
       queryClient.invalidateQueries({ queryKey: ["admin-products"] });
     };
 
-    toast.promise(promise(), {
-      loading: "Đang cập nhật trạng thái nổi bật...",
-      success: !currentlyFeatured ? "Đã đặt làm sản phẩm Nổi bật! 🔥" : "Đã bỏ sản phẩm khỏi mục Nổi bật.",
-      error: (err) => err.message || "Lỗi khi thay đổi trạng thái nổi bật",
-      finally: () => setActionLoading(false),
-    });
+    try {
+      await promise();
+      showToast.success("Thành công!");
+    } catch (err: any) {
+      showToast.error(err.message || "Lỗi khi thay đổi trạng thái nổi bật");
+    } finally {
+      setActionLoading(false);
+    }
   };
 
   const handleRefreshCreatedAt = async (id: string, name: string) => {
@@ -180,12 +184,14 @@ export default function AdminProductsPage() {
       queryClient.invalidateQueries({ queryKey: ["admin-products"] });
     };
 
-    toast.promise(promise(), {
-      loading: "Đang đẩy sản phẩm lên mục Mới...",
-      success: "Đã đẩy sản phẩm lên mục Mới thành công! 🆕",
-      error: (err) => err.message || "Lỗi khi cập nhật ngày tạo sản phẩm",
-      finally: () => setActionLoading(false),
-    });
+    try {
+      await promise();
+      showToast.success("Đã đẩy sản phẩm lên mục Mới thành công! 🆕");
+    } catch (err: any) {
+      showToast.error(err.message || "Lỗi khi cập nhật ngày tạo sản phẩm");
+    } finally {
+      setActionLoading(false);
+    }
   };
 
   const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -226,12 +232,14 @@ export default function AdminProductsPage() {
       queryClient.invalidateQueries({ queryKey: ["admin-products"] });
     };
 
-    toast.promise(promise(), {
-      loading: "Đang xóa các sản phẩm đã chọn...",
-      success: `Xóa thành công các sản phẩm đã chọn!`,
-      error: (err) => err.message || "Lỗi khi xóa các sản phẩm",
-      finally: () => setActionLoading(false),
-    });
+    try {
+      await promise();
+      showToast.success("Thành công!");
+    } catch (err: any) {
+      showToast.error(err.message || "Lỗi khi xóa các sản phẩm");
+    } finally {
+      setActionLoading(false);
+    }
   };
 
   const filteredProducts = products.filter((product: any) => {

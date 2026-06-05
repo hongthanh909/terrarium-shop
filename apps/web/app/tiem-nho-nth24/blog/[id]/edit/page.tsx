@@ -1,12 +1,11 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect, useRef } from "react";
-import { useRouter, useParams } from "next/navigation";
-import { ArrowLeft, Save, Upload, X, Plus, MessageSquare, CornerDownRight, ShieldCheck, Eye, EyeOff } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { ArrowLeft, Save, Eye, EyeOff, Upload, X, Image as ImageIcon } from "lucide-react";
 import Link from "next/link";
-import { toast } from "sonner";
+import { showToast } from "@/components/ui/custom-toast";
 import dynamic from "next/dynamic";
-import { supabaseClient } from "@/lib/supabaseClient";
 
 const ReactQuill = dynamic(
   () => import("react-quill").then((mod) => {
@@ -21,36 +20,9 @@ interface BlogCategory {
   name: string;
 }
 
-interface Reply {
-  id: string;
-  content: string;
-  isAdmin: boolean;
-  createdAt: string;
-  user: {
-    name: string;
-    role: string;
-  };
-}
-
-interface Comment {
-  id: string;
-  content: string;
-  createdAt: string;
-  customer: {
-    id: string;
-    name: string;
-    role: string;
-  };
-  replies: Reply[];
-}
-
-export default function EditBlogPostPage() {
+export default function CreateBlogPostPage() {
   const router = useRouter();
-  const params = useParams();
-  const id = params.id as string;
-
   const [saving, setSaving] = useState(false);
-  const [loading, setLoading] = useState(true);
   const [categories, setCategories] = useState<BlogCategory[]>([]);
   
   const [uploadingThumbnail, setUploadingThumbnail] = useState(false);
@@ -68,123 +40,19 @@ export default function EditBlogPostPage() {
     body: "",
     conclusion: "",
     categoryId: "",
-    published: false,
+    published: true,
   });
 
-  // Comments and replies states
-  const [comments, setComments] = useState<Comment[]>([]);
-  const [loadingComments, setLoadingComments] = useState(false);
-  const [replyText, setReplyText] = useState<Record<string, string>>({}); // commentId -> reply content
-  const [submittingReply, setSubmittingReply] = useState<Record<string, boolean>>({});
-
   useEffect(() => {
-    Promise.all([
-      fetch(`/api/admin/blog/posts/${id}`).then((res) => {
-        if (!res.ok) throw new Error("Blog post not found");
-        return res.json();
-      }),
-      fetch("/api/categories").then((res) => res.json().catch(() => [])), // fallback categories list
-    ])
-      .then(([postData, catData]) => {
-        if (postData) {
-          setFormData({
-            title: postData.title || "",
-            slug: postData.slug || "",
-            thumbnail: postData.thumbnail || "",
-            images: Array.isArray(postData.images) ? postData.images : [],
-            intro: postData.intro || "",
-            body: postData.body || "",
-            conclusion: postData.conclusion || "",
-            categoryId: postData.categoryId || "",
-            published: postData.published || false,
-          });
-
-          // Fetch comments using slug
-          if (postData.slug) {
-            fetchComments(postData.slug);
-          }
-        }
-        // Admin categories
-        fetch("/api/admin/blog/categories")
-          .then((res) => res.json())
-          .then((data) => {
-            if (Array.isArray(data)) setCategories(data);
-          })
-          .catch(() => {});
+    fetch("/api/admin/blog/categories")
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data)) setCategories(data);
       })
-      .catch((error) => {
-        console.error(error);
-        toast.error("Không tìm thấy bài viết");
-        router.push("/tiem-nho-nth24/blog");
-      })
-      .finally(() => {
-        setLoading(false);
-      });
-  }, [id, router]);
+      .catch(() => {});
+  }, []);
 
-  const fetchComments = async (slug: string) => {
-    setLoadingComments(true);
-    try {
-      const res = await fetch(`/api/blog/${slug}/comments`);
-      if (res.ok) {
-        const data = await res.json();
-        setComments(data);
-      }
-    } catch (err) {
-      console.error("Error fetching comments:", err);
-    } finally {
-      setLoadingComments(false);
-    }
-  };
-
-  // Real-time comments and replies listener for admin
-  useEffect(() => {
-    if (!id || !formData.slug) return;
-
-    const channel = supabaseClient
-      .channel(`admin-blog-interactions-${id}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "blog_comments",
-        },
-        async (payload) => {
-          const newComment = payload.new;
-          if (newComment && newComment.postId === id) {
-            toast.info("💬 Có bình luận mới trên bài viết này!", {
-              duration: 5000,
-            });
-            fetchComments(formData.slug);
-          }
-        }
-      )
-      .on(
-        "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "blog_replies",
-        },
-        async (payload) => {
-          const newReply = payload.new;
-          if (newReply && !newReply.isAdmin) {
-            fetchComments(formData.slug);
-            toast.info("✉️ Có phản hồi mới từ khách hàng!", {
-              duration: 5000,
-            });
-          }
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabaseClient.removeChannel(channel);
-    };
-  }, [id, formData.slug]);
-
-  // Auto-generate slug from title
+  // Tự động tạo slug từ tiêu đề
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const title = e.target.value;
     const slug = title
@@ -204,7 +72,7 @@ export default function EditBlogPostPage() {
     fd.append("file", file);
     const res = await fetch("/api/upload", { method: "POST", body: fd });
     if (!res.ok) {
-      toast.error("Upload ảnh thất bại");
+      showToast.error("Upload ảnh thất bại");
       return null;
     }
     const data = await res.json();
@@ -219,7 +87,7 @@ export default function EditBlogPostPage() {
     const url = await uploadImage(file);
     if (url) {
       setFormData((prev) => ({ ...prev, thumbnail: url }));
-      toast.success("Tải ảnh đại diện thành công!");
+      showToast.success("Tải ảnh đại diện thành công!");
     }
     setUploadingThumbnail(false);
   };
@@ -241,7 +109,7 @@ export default function EditBlogPostPage() {
         ...prev,
         images: [...prev.images, ...uploadedUrls],
       }));
-      toast.success(`Đã tải thêm ${uploadedUrls.length} ảnh thư viện!`);
+      showToast.success(`Đã tải thêm ${uploadedUrls.length} ảnh thư viện!`);
     }
     setUploadingGallery(false);
   };
@@ -257,77 +125,53 @@ export default function EditBlogPostPage() {
     }));
   };
 
-  const handleReplySubmit = async (commentId: string) => {
-    const text = replyText[commentId]?.trim();
-    if (!text) return;
-
-    setSubmittingReply((prev) => ({ ...prev, [commentId]: true }));
-    try {
-      const res = await fetch(`/api/blog/comments/${commentId}/replies`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content: text }),
-      });
-
-      if (res.ok) {
-        toast.success("Gửi phản hồi thành công!");
-        setReplyText((prev) => ({ ...prev, [commentId]: "" }));
-        // Refresh comments list
-        fetchComments(formData.slug);
-      } else {
-        const data = await res.json();
-        toast.error(data.error || "Gửi phản hồi thất bại");
-      }
-    } catch (err) {
-      console.error("Error submitting reply:", err);
-      toast.error("Lỗi kết nối");
-    } finally {
-      setSubmittingReply((prev) => ({ ...prev, [commentId]: false }));
-    }
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!formData.title.trim()) {
-      toast.error("Vui lòng nhập tiêu đề bài viết");
+      showToast.error("Vui lòng nhập tiêu đề bài viết");
       return;
     }
     if (!formData.slug.trim()) {
-      toast.error("Vui lòng nhập đường dẫn (slug)");
+      showToast.error("Vui lòng nhập đường dẫn (slug)");
+      return;
+    }
+    if (!formData.intro.trim() && !formData.body.trim() && !formData.conclusion.trim()) {
+      showToast.error("Nội dung bài viết không được để trống");
       return;
     }
 
     setSaving(true);
 
     try {
-      const response = await fetch(`/api/admin/blog/posts/${id}`, {
-        method: "PUT",
+      const response = await fetch("/api/admin/blog/posts", {
+        method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       });
 
+      const result = await response.json();
+
       if (response.ok) {
-        toast.success("Cập nhật bài viết thành công!");
+        showToast.success(
+          formData.published
+            ? "Bài viết đã được xuất bản thành công!"
+            : "Đã lưu bài viết dưới dạng bản nháp!"
+        );
         router.push("/tiem-nho-nth24/blog");
       } else {
-        const err = await response.json();
-        toast.error(err.error || "Lỗi khi cập nhật bài viết");
+        showToast.error(result.error || "Lỗi khi tạo bài viết");
       }
     } catch (error) {
       console.error("Error:", error);
-      toast.error("Lỗi kết nối. Vui lòng thử lại.");
+      showToast.error("Lỗi kết nối. Vui lòng thử lại.");
     } finally {
       setSaving(false);
     }
   };
 
-  if (loading) {
-    return <div className="text-center py-12 text-sm text-gray-500">Đang tải dữ liệu bài viết...</div>;
-  }
-
   return (
-    <div className="max-w-4xl mx-auto space-y-8 pb-16">
+    <div className="max-w-4xl mx-auto">
       <div className="mb-6">
         <Link
           href="/tiem-nho-nth24/blog"
@@ -336,11 +180,11 @@ export default function EditBlogPostPage() {
           <ArrowLeft className="w-4 h-4" />
           Quay lại Blog
         </Link>
-        <h2 className="text-2xl font-bold text-gray-800">Chỉnh Sửa Bài Viết</h2>
-        <p className="text-sm text-gray-500">Cập nhật nội dung và quản lý bình luận khách hàng</p>
+        <h2 className="text-2xl font-bold text-gray-800">Tạo Bài Viết Mới</h2>
+        <p className="text-sm text-gray-500">Phân chia cấu trúc bài viết rõ ràng và trực quan</p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-6 pb-12">
         <div className="bg-white rounded-2xl border border-gray-100 p-6 space-y-6 shadow-sm">
           {/* Tiêu đề */}
           <div>
@@ -372,7 +216,7 @@ export default function EditBlogPostPage() {
                 placeholder="tieu-de-bai-viet"
               />
               <p className="text-xs text-gray-400 mt-1">
-                Đường dẫn tĩnh: /blog/{formData.slug || "..."}
+                Tự động tạo từ tiêu đề: /blog/{formData.slug || "..."}
               </p>
             </div>
 
@@ -460,7 +304,7 @@ export default function EditBlogPostPage() {
             </div>
           </div>
 
-          {/* Hidden file inputs */}
+          {/* Hidden inputs for uploading */}
           <input
             ref={thumbnailInputRef}
             type="file"
@@ -565,12 +409,12 @@ export default function EditBlogPostPage() {
             )}
             <div>
               <p className="font-semibold text-sm text-gray-800">
-                {formData.published ? "Đã xuất bản" : "Lưu bản nháp"}
+                {formData.published ? "Xuất bản ngay" : "Lưu bản nháp"}
               </p>
               <p className="text-xs text-gray-400 mt-0.5">
                 {formData.published
-                  ? "Bài viết đang hiển thị trên trang Blog của khách hàng"
-                  : "Bài viết ẩn với khách hàng, lưu trữ dưới dạng nháp"}
+                  ? "Bài viết sẽ hiển thị ngay trên trang Blog của khách hàng"
+                  : "Bài viết sẽ được lưu nhưng chưa hiển thị với khách hàng"}
               </p>
             </div>
             <input
@@ -597,91 +441,18 @@ export default function EditBlogPostPage() {
             className="flex items-center gap-2 bg-[#425733] text-white px-6 py-2.5 rounded-full font-semibold shadow hover:bg-[#364a29] transition-all disabled:bg-gray-400 disabled:cursor-not-allowed text-sm"
           >
             <Save className="w-4 h-4" />
-            {saving ? "Đang lưu..." : "Cập Nhật Bài Viết"}
+            {saving ? "Đang lưu..." : formData.published ? "Xuất Bản Bài Viết" : "Lưu Bản Nháp"}
           </button>
         </div>
       </form>
-
-      {/* Comment Management Panel */}
-      <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm space-y-6">
-        <div className="flex items-center gap-2 border-b pb-4">
-          <MessageSquare className="w-5 h-5 text-[#425733]" />
-          <h3 className="text-lg font-bold text-gray-800">Quản lý bình luận ({comments.length})</h3>
-        </div>
-
-        {loadingComments ? (
-          <p className="text-sm text-gray-400 text-center py-6">Đang tải danh sách bình luận...</p>
-        ) : comments.length === 0 ? (
-          <p className="text-sm text-gray-400 text-center py-6">Chưa có bình luận nào cho bài viết này.</p>
-        ) : (
-          <div className="space-y-6 divide-y divide-gray-50">
-            {comments.map((comment) => (
-              <div key={comment.id} className="pt-4 first:pt-0 space-y-3">
-                {/* Parent Comment */}
-                <div className="flex justify-between items-start gap-4">
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <span className="font-semibold text-sm text-gray-800">{comment.customer?.name}</span>
-                      <span className="text-[10px] text-gray-400">
-                        {new Date(comment.createdAt).toLocaleString("vi-VN")}
-                      </span>
-                    </div>
-                    <p className="text-sm text-gray-600 bg-gray-50 px-4 py-2.5 rounded-2xl inline-block max-w-2xl">
-                      {comment.content}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Replies list */}
-                {comment.replies && comment.replies.length > 0 && (
-                  <div className="pl-6 space-y-3 border-l-2 border-gray-100">
-                    {comment.replies.map((reply) => (
-                      <div key={reply.id} className="flex gap-2.5 items-start">
-                        <CornerDownRight className="w-3.5 h-3.5 text-gray-300 mt-1 shrink-0" />
-                        <div className="space-y-0.5">
-                          <div className="flex items-center gap-2">
-                            <span className="font-semibold text-xs text-gray-800">{reply.user?.name}</span>
-                            {reply.isAdmin && (
-                              <span className="inline-flex items-center gap-0.5 text-[9px] bg-[#e3ebdd] text-[#425733] font-bold px-1.5 py-0.5 rounded-full">
-                                <ShieldCheck className="w-2.5 h-2.5" /> Admin
-                              </span>
-                            )}
-                            <span className="text-[9px] text-gray-400">
-                              {new Date(reply.createdAt).toLocaleString("vi-VN")}
-                            </span>
-                          </div>
-                          <p className="text-xs text-gray-600 bg-gray-50/70 px-3.5 py-2 rounded-xl inline-block max-w-xl">
-                            {reply.content}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {/* Reply Form */}
-                <div className="pl-6 flex gap-2 max-w-2xl">
-                  <input
-                    type="text"
-                    value={replyText[comment.id] || ""}
-                    onChange={(e) => setReplyText((prev) => ({ ...prev, [comment.id]: e.target.value }))}
-                    placeholder="Viết câu trả lời của admin..."
-                    className="flex-1 px-4 py-1.5 border rounded-full text-xs focus:ring-1 focus:ring-[#425733] focus:border-[#425733] focus:outline-none transition-all"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => handleReplySubmit(comment.id)}
-                    disabled={submittingReply[comment.id] || !replyText[comment.id]?.trim()}
-                    className="px-4 py-1.5 bg-[#425733] text-white rounded-full text-xs font-semibold hover:bg-[#364a29] transition-all disabled:bg-gray-300 disabled:cursor-not-allowed shrink-0"
-                  >
-                    {submittingReply[comment.id] ? "Đang gửi..." : "Trả lời"}
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
     </div>
+  );
+}
+
+function Plus(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" {...props}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+    </svg>
   );
 }

@@ -6,7 +6,7 @@ import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import {
   Check, Clock, AlertTriangle, Copy, Package,
-  ArrowRight, Truck, CreditCard, Leaf, Heart, Timer,
+  ArrowRight, Truck, CreditCard, Timer,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -141,29 +141,40 @@ export default function CheckoutSuccessPage() {
   }
 
   // ============================================================
-  // ① COD hoặc Banking đã PAID → trang Cảm Ơn
+  // ① COD hoặc Banking đã PAID → trang Cảm Ơn (REDESIGNED)
   // ============================================================
   if (!isBanking || payStatus === "PAID") {
     return (
       <main className="min-h-screen bg-[#f4f8f0] flex items-center justify-center px-4 py-12">
         <div className="w-full max-w-lg">
           <div className="bg-white rounded-3xl shadow-xl overflow-hidden">
-            <div className="h-2 bg-gradient-to-r from-[#425733] via-[#6aad4a] to-[#425733]" />
+            <div className="h-1.5 bg-gradient-to-r from-[#425733] via-[#6aad4a] to-[#425733]" />
             <div className="px-8 py-10 text-center">
+              {/* Success icon */}
               <div className="relative inline-block mb-6">
-                <div className="w-24 h-24 rounded-full bg-[#e8f5e1] flex items-center justify-center mx-auto shadow-inner">
-                  <Check className="w-12 h-12 text-[#425733] stroke-[2.5]" />
+                <div className="w-20 h-20 rounded-full bg-[#e8f5e1] flex items-center justify-center mx-auto">
+                  <Check className="w-10 h-10 text-[#425733] stroke-[2.5]" />
                 </div>
-                <div className="absolute inset-0 rounded-full animate-ping bg-[#6aad4a] opacity-20 pointer-events-none" />
               </div>
 
-              <div className="flex items-center justify-center gap-2 mb-3">
-                <Leaf className="w-5 h-5 text-[#6aad4a]" />
-                <span className="text-[#6aad4a] font-semibold text-sm tracking-wide uppercase">Tiệm Rêu Décor</span>
-                <Leaf className="w-5 h-5 text-[#6aad4a]" />
+              {/* Logo tiệm */}
+              <div className="flex items-center justify-center gap-3 mb-4">
+                <Image
+                  src="/logo.png"
+                  alt="Tiệm Rêu Décor"
+                  width={36}
+                  height={36}
+                  className="rounded-full"
+                />
+                <span
+                  className="text-lg text-[#425733] font-semibold"
+                  style={{ fontFamily: "'Dancing Script', cursive" }}
+                >
+                  tiệm Rêu Décor
+                </span>
               </div>
 
-              <h1 className="text-3xl font-bold text-[#2d4a1e] mb-2">
+              <h1 className="text-2xl font-bold text-[#2d4a1e] mb-2">
                 {isBanking ? "Thanh Toán Thành Công!" : "Đặt Hàng Thành Công!"}
               </h1>
               <p className="text-gray-500 text-sm mb-6 leading-relaxed">
@@ -173,7 +184,7 @@ export default function CheckoutSuccessPage() {
               </p>
 
               {/* Mã đơn hàng */}
-              <div className="bg-[#f0f7ea] border border-[#c8d5be] rounded-2xl px-6 py-4 mb-6 inline-block w-full">
+              <div className="bg-[#f0f7ea] border border-[#c8d5be] rounded-2xl px-6 py-4 mb-6 w-full">
                 <p className="text-xs text-[#5a7a48] mb-1 font-medium">Mã đơn hàng</p>
                 <p className="font-mono text-xl font-bold text-[#2d4a1e] tracking-wider">{orderNumber}</p>
               </div>
@@ -196,34 +207,93 @@ export default function CheckoutSuccessPage() {
                 </div>
               )}
 
-              {/* Thông tin trạng thái */}
-              <div className="grid grid-cols-2 gap-3 mb-8">
-                <div className="flex items-center gap-3 bg-[#f6faf4] border border-[#daebd0] rounded-xl p-3 text-left">
-                  <span className="text-2xl shrink-0">{isBanking ? "💳" : "🚚"}</span>
-                  <div>
-                    <p className="text-xs font-bold text-[#2d4a1e]">{isBanking ? "Đã thanh toán" : "Thanh toán COD"}</p>
-                    <p className="text-[10px] text-[#5a7a48]">{isBanking ? "Qua chuyển khoản" : "Khi nhận hàng"}</p>
+              {/* Chi tiết giá */}
+              <div className="bg-white border border-gray-100 rounded-xl mb-6 text-left">
+                <div className="px-4 py-3 space-y-2 text-sm">
+                  <div className="flex justify-between text-gray-500">
+                    <span>Tạm tính</span>
+                    <span className="text-gray-700">{subtotal.toLocaleString("vi-VN")}đ</span>
                   </div>
-                </div>
-                <div className="flex items-center gap-3 bg-[#f6faf4] border border-[#daebd0] rounded-xl p-3 text-left">
-                  <span className="text-2xl shrink-0">📦</span>
-                  <div>
-                    <p className="text-xs font-bold text-[#2d4a1e]">Đang xử lý</p>
-                    <p className="text-[10px] text-[#5a7a48]">Shop sẽ sớm đóng gói</p>
+                  <div className="flex justify-between text-gray-500">
+                    <span>Phí vận chuyển</span>
+                    <span className="text-gray-700">{shippingFee.toLocaleString("vi-VN")}đ</span>
+                  </div>
+                  {discount > 0 && (
+                    <div className="flex justify-between text-[#425733] font-medium">
+                      <span>Giảm giá</span>
+                      <span>-{discount.toLocaleString("vi-VN")}đ</span>
+                    </div>
+                  )}
+                  <div className="border-t pt-2 flex justify-between font-bold text-base">
+                    <span>Tổng cộng</span>
+                    <span className="text-[#425733]">{safeTotal.toLocaleString("vi-VN")}đ</span>
                   </div>
                 </div>
               </div>
 
-              <div className="flex items-center justify-center gap-2 text-[#6aad4a] text-sm mb-8">
-                <Heart className="w-4 h-4 fill-current" />
-                <span>Cảm ơn bạn đã lựa chọn sản phẩm xanh của chúng tôi!</span>
-                <Heart className="w-4 h-4 fill-current" />
+              {/* Tình trạng đơn hàng */}
+              <div className="bg-[#f6faf4] border border-[#daebd0] rounded-xl p-4 mb-6 text-left">
+                <p className="text-xs font-bold text-[#2d4a1e] mb-3">Tình trạng đơn hàng</p>
+                <div className="space-y-3">
+                  {/* Step 1: Đã tiếp nhận */}
+                  <div className="flex items-start gap-3">
+                    <div className="w-6 h-6 rounded-full bg-[#425733] flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <Check className="w-3.5 h-3.5 text-white" strokeWidth={3} />
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-[#2d4a1e]">Đã tiếp nhận</p>
+                      <p className="text-[11px] text-gray-400">Đơn hàng đã được ghi nhận thành công</p>
+                    </div>
+                  </div>
+                  {/* Step 2: Đang đóng gói */}
+                  <div className="flex items-start gap-3">
+                    <div className="w-6 h-6 rounded-full bg-[#c8d5be] flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <div className="w-2 h-2 rounded-full bg-white" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-500">Đang đóng gói</p>
+                      <p className="text-[11px] text-gray-400">Shop sẽ sớm chuẩn bị đơn hàng cho bạn</p>
+                    </div>
+                  </div>
+                  {/* Step 3: Giao hàng */}
+                  <div className="flex items-start gap-3">
+                    <div className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <div className="w-2 h-2 rounded-full bg-white" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-400">Đang giao hàng</p>
+                      <p className="text-[11px] text-gray-400">Dự kiến giao hàng: 1-3 ngày làm việc</p>
+                    </div>
+                  </div>
+                  {/* Step 4: Hoàn tất */}
+                  <div className="flex items-start gap-3">
+                    <div className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <div className="w-2 h-2 rounded-full bg-white" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-400">Hoàn tất</p>
+                      <p className="text-[11px] text-gray-400">Đơn hàng đã được giao thành công</p>
+                    </div>
+                  </div>
+                </div>
               </div>
 
+              {/* Thông tin thêm */}
+              <div className="grid grid-cols-2 gap-3 mb-6 text-left">
+                <div className="bg-[#f6faf4] border border-[#daebd0] rounded-xl p-3">
+                  <p className="text-[10px] text-gray-400 mb-0.5">Thanh toán</p>
+                  <p className="text-xs font-bold text-[#2d4a1e]">{isBanking ? "Chuyển khoản" : "COD - Khi nhận hàng"}</p>
+                </div>
+                <div className="bg-[#f6faf4] border border-[#daebd0] rounded-xl p-3">
+                  <p className="text-[10px] text-gray-400 mb-0.5">Thời gian giao hàng</p>
+                  <p className="text-xs font-bold text-[#2d4a1e]">1-3 ngày làm việc</p>
+                </div>
+              </div>
+
+              {/* Buttons */}
               <div className="space-y-3">
                 <Button className="w-full bg-[#425733] hover:bg-[#364a29] h-12 text-base font-semibold rounded-xl" asChild>
                   <Link href="/orders" className="flex items-center justify-center gap-2">
-                    <Package className="w-5 h-5" />
                     Xem Đơn Hàng Của Tôi
                   </Link>
                 </Button>
@@ -238,8 +308,8 @@ export default function CheckoutSuccessPage() {
 
             <div className="bg-[#f0f7ea] border-t border-[#daebd0] px-8 py-4 text-center">
               <p className="text-xs text-[#5a7a48]">
-                📧 Xác nhận đơn hàng sẽ được gửi qua email &nbsp;•&nbsp;
-                📞 Hỗ trợ: tiemreudecor@gmail.com
+                Xác nhận đơn hàng sẽ được gửi qua email &nbsp;•&nbsp;
+                Hỗ trợ: tiemreudecor@gmail.com
               </p>
             </div>
           </div>
@@ -277,7 +347,7 @@ export default function CheckoutSuccessPage() {
   }
 
   // ============================================================
-  // ③ Banking — PENDING (đang chờ chuyển khoản) — REDESIGNED
+  // ③ Banking — PENDING (đang chờ chuyển khoản)
   // ============================================================
   return (
     <main className="min-h-screen bg-[#f4f8f0] py-6 px-4">
@@ -492,6 +562,10 @@ export default function CheckoutSuccessPage() {
                     Chờ thanh toán
                   </span>
                 </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-xs text-gray-500">Thời gian giao hàng</span>
+                  <span className="text-sm font-semibold text-[#425733]">1-3 ngày làm việc</span>
+                </div>
 
                 <hr className="border-[#e8f0e1]" />
 
@@ -506,11 +580,8 @@ export default function CheckoutSuccessPage() {
                 </div>
                 {discount > 0 && (
                   <div className="flex justify-between items-center text-sm">
-                    <span className="flex items-center gap-1.5 text-red-600">
-                      <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-red-500 text-white text-[10px] font-bold">SALE</span>
-                      Giảm giá
-                    </span>
-                    <span className="text-red-600 font-semibold">-{discount.toLocaleString("vi-VN")}đ</span>
+                    <span className="text-[#425733] font-medium">Giảm giá</span>
+                    <span className="text-[#425733] font-semibold">-{discount.toLocaleString("vi-VN")}đ</span>
                   </div>
                 )}
 

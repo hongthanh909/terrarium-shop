@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { Eye, Package, ChevronDown } from "lucide-react";
-import { toast } from "sonner";
+import { showToast } from "@/components/ui/custom-toast";
 import {
   DataTable, FilterBar, SelectFilter, StatusBadge, Pagination,
   type Column,
@@ -89,12 +89,14 @@ export default function AdminOrdersPage() {
       queryClient.invalidateQueries({ queryKey: ["admin-orders"] });
     };
 
-    toast.promise(promise(), {
-      loading: "Đang cập nhật trạng thái...",
-      success: "Cập nhật trạng thái thành công!",
-      error: (err) => err.message || "Lỗi khi cập nhật trạng thái",
-      finally: () => setUpdatingId(null),
-    });
+    try {
+      await promise();
+      showToast.success("Cập nhật trạng thái thành công!");
+    } catch (err: any) {
+      showToast.error(err.message || "Lỗi khi cập nhật trạng thái");
+    } finally {
+      setUpdatingId(null);
+    }
   };
 
   const filtered = orders.filter((o) => {

@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus, Edit, Trash2, Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
-import { toast } from "sonner";
+import { showToast } from "@/components/ui/custom-toast";
 
 interface BlogPost {
   id: string;
@@ -52,12 +52,14 @@ export default function AdminBlogPage() {
       }
       queryClient.invalidateQueries({ queryKey: ["admin-blog-posts"] });
     };
-    toast.promise(promise(), {
-      loading: "Đang xóa bài viết...",
-      success: "Xóa bài viết thành công!",
-      error: (err) => err.message || "Lỗi khi xóa bài viết",
-      finally: () => setDeletingId(null),
-    });
+    try {
+      await promise();
+      showToast.success("Xóa bài viết thành công!");
+    } catch (err: any) {
+      showToast.error(err.message || "Lỗi khi xóa bài viết");
+    } finally {
+      setDeletingId(null);
+    }
   };
 
   const handleTogglePublish = async (post: BlogPost) => {
@@ -74,12 +76,14 @@ export default function AdminBlogPage() {
       }
       queryClient.invalidateQueries({ queryKey: ["admin-blog-posts"] });
     };
-    toast.promise(promise(), {
-      loading: post.published ? "Đang chuyển sang bản nháp..." : "Đang xuất bản...",
-      success: post.published ? "Đã chuyển sang bản nháp" : "Đã xuất bản bài viết!",
-      error: (err) => err.message || "Lỗi khi cập nhật",
-      finally: () => setTogglingId(null),
-    });
+    try {
+      await promise();
+      showToast.success("Thành công!");
+    } catch (err: any) {
+      showToast.error(err.message || "Lỗi khi cập nhật");
+    } finally {
+      setTogglingId(null);
+    }
   };
 
   return (

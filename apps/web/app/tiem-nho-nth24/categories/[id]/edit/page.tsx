@@ -1,248 +1,218 @@
-"use client";
+﻿"use client";
 
-import { useState, useEffect } from "react";
-import { useRouter, useParams } from "next/navigation";
+import { useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { Plus, Edit, Trash2, Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
-import { ArrowLeft, Save } from "lucide-react";
-import { toast } from "sonner";
+import { showToast } from "@/components/ui/custom-toast";
 
-interface Category {
+interface BlogPost {
   id: string;
-  name: string;
+  title: string;
   slug: string;
-  metaDescription: string | null;
-  parentId: string | null;
-  status: string;
+  published: boolean;
+  publishedAt: string | null;
+  createdAt: string;
+  category: { name: string } | null;
 }
 
-export default function EditCategoryPage() {
-  const router = useRouter();
-  const params = useParams();
-  const id = params.id as string;
+export default function AdminBlogPage() {
+  const queryClient = useQueryClient();
+  const [page, setPage] = useState(1);
+  const [limit] = useState(10);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [togglingId, setTogglingId] = useState<string | null>(null);
 
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [allCategories, setAllCategories] = useState<Category[]>([]);
-  const [formData, setFormData] = useState({
-    name: "",
-    slug: "",
-    metaDescription: "",
-    parentId: "",
-    status: "ACTIVE",
+  const { data: postsData, isLoading } = useQuery({
+    queryKey: ["admin-blog-posts", page, limit],
+    queryFn: async () => {
+      const response = await fetch(`/api/admin/blog/posts?page=${page}&limit=${limit}`);
+      const data = await response.json();
+      if (data.posts) {
+        return {
+          posts: data.posts as BlogPost[],
+          totalPages: data.pagination?.totalPages || 1,
+        };
+      }
+      return { posts: [] as BlogPost[], totalPages: 1 };
+    },
   });
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [catRes, allRes] = await Promise.all([
-          fetch(`/api/categories/${id}`),
-          fetch("/api/categories"),
-        ]);
+  const posts = postsData?.posts ?? [];
+  const totalPages = postsData?.totalPages ?? 1;
 
-        if (!catRes.ok) {
-          toast.error("Không tìm thấy danh mục");
-          router.push("/tiem-nho-nth24/categories");
-          return;
-        }
-
-        const cat = await catRes.json();
-        const allData = await allRes.json();
-        const categories = Array.isArray(allData) ? allData : (allData.categories ?? []);
-
-        setAllCategories(categories.filter((c: Category) => c.id !== id));
-        setFormData({
-          name: cat.name || "",
-          slug: cat.slug || "",
-          metaDescription: cat.metaDescription || "",
-          parentId: cat.parentId || "",
-          status: cat.status || "ACTIVE",
-        });
-      } catch (error) {
-        console.error("Error fetching category:", error);
-        toast.error("Lỗi tải danh mục");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, [id, router]);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSaving(true);
-
-    try {
-      const response = await fetch(`/api/categories/${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...formData,
-          parentId: formData.parentId || null,
-        }),
-      });
-
-      if (response.ok) {
-        toast.success("Cập nhật danh mục thành công!");
-        router.push("/tiem-nho-nth24/categories");
-      } else {
+  const handleDelete = async (id: string) => {
+    if (!confirm("Bạn có chắc chắn muốn xóa bài viết này?")) return;
+    setDeletingId(id);
+    const promise = async () => {
+      const response = await fetch(`/api/admin/blog/posts/${id}`, { method: "DELETE" });
+      if (!response.ok) {
         const err = await response.json();
-        toast.error(err.error || "Không thể cập nhật danh mục");
+        throw new Error(err.error || "Không thể xóa bài viết");
       }
-    } catch (error) {
-      console.error("Error updating category:", error);
-      toast.error("Lỗi khi cập nhật danh mục");
+      queryClient.invalidateQueries({ queryKey: ["admin-blog-posts"] });
+    };
+    try {
+      await promise();
+      showToast.success("Xóa bài viết thành công!");
+    } catch (err: any) {
+      showToast.error(err.message || "Lỗi khi xóa bài viết");
     } finally {
-      setSaving(false);
+      setDeletingId(null);
     }
   };
 
-  const autoSlug = (name: string) =>
-    name
-      .toLowerCase()
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .replace(/đ/g, "d")
-      .replace(/[^a-z0-9\s-]/g, "")
-      .trim()
-      .replace(/\s+/g, "-");
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center py-24">
-        <div className="w-8 h-8 border-4 border-[#425733] border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
-  }
+  const handleTogglePublish = async (post: BlogPost) => {
+    setTogglingId(post.id);
+    const promise = async () => {
+      const response = await fetch(`/api/admin/blog/posts/${post.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ published: !post.published }),
+      });
+      if (!response.ok) {
+        const err = await response.json();
+        throw new Error(err.error || "Không thể cập nhật trạng thái");
+      }
+      queryClient.invalidateQueries({ queryKey: ["admin-blog-posts"] });
+    };
+    try {
+      await promise();
+      showToast.success("Thành công!");
+    } catch (err: any) {
+      showToast.error(err.message || "Lỗi khi cập nhật");
+    } finally {
+      setTogglingId(null);
+    }
+  };
 
   return (
-    <div className="max-w-2xl">
-      {/* Header */}
-      <div className="flex items-center gap-4 mb-8">
-        <Link
-          href="/tiem-nho-nth24/categories"
-          className="p-2 rounded-full hover:bg-[#e3ebdd] text-[#425733] transition-colors"
-        >
-          <ArrowLeft className="w-5 h-5" />
-        </Link>
+    <div>
+      <div className="flex justify-between items-center mb-8">
         <div>
-          <h2 className="text-2xl font-bold text-gray-800">Chỉnh Sửa Danh Mục</h2>
-          <p className="text-gray-500 text-sm mt-0.5">Cập nhật thông tin danh mục</p>
+          <h2 className="text-3xl font-bold text-gray-800 mb-1">Bài Viết Blog</h2>
+          <p className="text-gray-500">Quản lý nội dung blog</p>
         </div>
+        <Link
+          href="/tiem-nho-nth24/blog/create"
+          className="flex items-center gap-2 bg-[#425733] text-white px-6 py-3 rounded-full font-semibold shadow hover:-translate-y-0.5 hover:shadow-lg hover:bg-[#364a29] transition-all"
+        >
+          <Plus className="w-5 h-5" />
+          Bài Viết Mới
+        </Link>
       </div>
 
-      <form onSubmit={handleSubmit} className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 space-y-5">
-        {/* Tên */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1.5">
-            Tên danh mục <span className="text-red-500">*</span>
-          </label>
-          <input
-            type="text"
-            value={formData.name}
-            onChange={(e) => {
-              const name = e.target.value;
-              setFormData((prev) => ({
-                ...prev,
-                name,
-                slug: prev.slug === autoSlug(prev.name) ? autoSlug(name) : prev.slug,
-              }));
-            }}
-            required
-            className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6d8c5a] text-sm"
-            placeholder="VD: Bể Cơ Bản"
-          />
-        </div>
-
-        {/* Slug */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1.5">
-            Đường dẫn (slug) <span className="text-red-500">*</span>
-          </label>
-          <input
-            type="text"
-            value={formData.slug}
-            onChange={(e) => setFormData((prev) => ({ ...prev, slug: e.target.value }))}
-            required
-            className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6d8c5a] text-sm font-mono"
-            placeholder="vd: be-co-ban"
-          />
-          <p className="text-xs text-gray-400 mt-1">Chỉ dùng chữ thường, số và dấu gạch ngang</p>
-        </div>
-
-        {/* Danh mục cha */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1.5">
-            Danh mục cha
-          </label>
-          <select
-            value={formData.parentId}
-            onChange={(e) => setFormData((prev) => ({ ...prev, parentId: e.target.value }))}
-            className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6d8c5a] text-sm"
-          >
-            <option value="">Không (Danh mục gốc)</option>
-            {allCategories
-              .filter((c) => !c.parentId) // only root categories as parent
-              .map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
+      <div className="bg-white rounded-lg shadow overflow-hidden">
+        {isLoading ? (
+          <div className="text-center py-16 text-gray-400">Đang tải...</div>
+        ) : posts.length === 0 ? (
+          <div className="text-center py-16 text-gray-400">
+            <p className="mb-3">Chưa có bài viết nào.</p>
+            <Link href="/tiem-nho-nth24/blog/create" className="text-[#425733] underline">
+              Tạo bài viết đầu tiên →
+            </Link>
+          </div>
+        ) : (
+          <table className="w-full">
+            <thead className="bg-gray-50 border-b">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tiêu Đề</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Danh Mục</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Trạng Thái</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ngày Tạo</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Hành Động</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y">
+              {posts.map((post) => (
+                <tr key={post.id} className="hover:bg-gray-50">
+                  <td className="px-6 py-4">
+                    <div className="font-medium text-gray-900">{post.title}</div>
+                    <div className="text-xs text-gray-400 font-mono mt-0.5">/blog/{post.slug}</div>
+                  </td>
+                  <td className="px-6 py-4 text-sm text-gray-500">
+                    {post.category?.name || "—"}
+                  </td>
+                  <td className="px-6 py-4">
+                    <button
+                      onClick={() => handleTogglePublish(post)}
+                      disabled={togglingId !== null || deletingId !== null}
+                      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+                        post.published
+                          ? "bg-[#e3ebdd] text-[#364a29] hover:bg-[#d5e3cc]"
+                          : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                      }`}
+                      title={post.published ? "Nhấn để chuyển sang bản nháp" : "Nhấn để xuất bản"}
+                    >
+                      {togglingId === post.id ? (
+                        <div className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                      ) : post.published ? (
+                        <><Eye className="w-3 h-3" /> Đã Xuất Bản</>
+                      ) : (
+                        <><EyeOff className="w-3 h-3" /> Bản Nháp</>
+                      )}
+                    </button>
+                  </td>
+                  <td className="px-6 py-4 text-sm text-gray-500">
+                    {new Date(post.createdAt).toLocaleDateString("vi-VN")}
+                  </td>
+                  <td className="px-6 py-4 text-right">
+                    <div className="flex justify-end gap-2">
+                      {post.published && (
+                        <Link
+                          href={`/blog/${post.slug}`}
+                          target="_blank"
+                          className="text-blue-500 hover:text-blue-700 p-1"
+                          title="Xem bài viết"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </Link>
+                      )}
+                      <Link
+                        href={`/tiem-nho-nth24/blog/${post.id}/edit`}
+                        className="text-[#425733] hover:text-[#364a29] p-1"
+                        title="Chỉnh sửa"
+                      >
+                        <Edit className="w-4 h-4" />
+                      </Link>
+                      <button
+                        onClick={() => handleDelete(post.id)}
+                        disabled={deletingId !== null || togglingId !== null}
+                        className="text-red-500 hover:text-red-700 p-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                        title="Xóa"
+                      >
+                        {deletingId === post.id
+                          ? <div className="w-4 h-4 border-2 border-red-400 border-t-transparent rounded-full animate-spin" />
+                          : <Trash2 className="w-4 h-4" />}
+                      </button>
+                    </div>
+                  </td>
+                </tr>
               ))}
-          </select>
-        </div>
+            </tbody>
+          </table>
+        )}
 
-        {/* Mô tả */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1.5">
-            Mô tả (Meta Description)
-          </label>
-          <textarea
-            value={formData.metaDescription}
-            onChange={(e) => setFormData((prev) => ({ ...prev, metaDescription: e.target.value }))}
-            rows={3}
-            className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6d8c5a] text-sm resize-none"
-            placeholder="Mô tả ngắn về danh mục này..."
-          />
-        </div>
-
-        {/* Trạng thái */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1.5">Trạng thái</label>
-          <select
-            value={formData.status}
-            onChange={(e) => setFormData((prev) => ({ ...prev, status: e.target.value }))}
-            className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6d8c5a] text-sm"
-          >
-            <option value="ACTIVE">Hoạt động</option>
-            <option value="INACTIVE">Tạm ẩn</option>
-          </select>
-        </div>
-
-        {/* Actions */}
-        <div className="flex justify-end gap-3 pt-2">
-          <Link
-            href="/tiem-nho-nth24/categories"
-            className="px-5 py-2.5 border border-gray-200 rounded-full text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors"
-          >
-            Hủy
-          </Link>
-          <button
-            type="submit"
-            disabled={saving}
-            className="flex items-center gap-2 px-6 py-2.5 bg-[#425733] text-white rounded-full text-sm font-semibold hover:bg-[#364a29] disabled:opacity-60 transition-colors shadow-sm"
-          >
-            {saving ? (
-              <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-              </svg>
-            ) : (
-              <Save className="w-4 h-4" />
-            )}
-            {saving ? "Đang lưu..." : "Lưu thay đổi"}
-          </button>
-        </div>
-      </form>
+        {totalPages > 1 && (
+          <div className="flex justify-center items-center gap-4 py-4 border-t bg-gray-50">
+            <button
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={page === 1}
+              className="px-4 py-2 border rounded-lg hover:bg-white disabled:opacity-50 transition-colors"
+            >
+              Trang trước
+            </button>
+            <span className="text-gray-600 font-medium">Trang {page} / {totalPages}</span>
+            <button
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              disabled={page === totalPages}
+              className="px-4 py-2 border rounded-lg hover:bg-white disabled:opacity-50 transition-colors"
+            >
+              Trang tiếp
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

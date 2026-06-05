@@ -1,194 +1,466 @@
-import { notFound } from 'next/navigation';
-import Link from 'next/link';
-import { ArrowLeft, Clock } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
+﻿"use client";
 
-// Mock data - replace with DB query
-const mockPolicies: Record<string, { title: string; content: string; updatedAt: string }> = {
-  warranty: {
-    title: 'Chính sách bảo hành',
-    content: `
-      <h2 class="text-2xl font-bold mb-4">1. Phạm vi bảo hành</h2>
-      <p class="mb-4">Tất cả sản phẩm terrarium của chúng tôi được bảo hành trong vòng 30 ngày kể từ ngày mua. Bảo hành áp dụng cho:</p>
-      <ul class="list-disc pl-6 mb-4 space-y-2">
-        <li>Lỗi sản xuất, chip kính, khung gỗ bị nứt</li>
-        <li>Thực vật không phát triển (có thể đổi sản phẩm mới)</li>
-        <li)Lỗi thiết kế (lỗi thời gian) – chỉ áp dụng cho các sản phẩm mua trong vòng 7 ngày</li>
-      </ul>
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { ArrowLeft, Package, TrendingUp, Clock, CheckCircle, Truck, XCircle, AlertTriangle, CreditCard } from "lucide-react";
+import { useSession } from "next-auth/react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { showToast } from "@/components/ui/custom-toast";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { OrderTimeline } from "@/components/ui/order-timeline";
 
-      <h2 class="text-2xl font-bold mb-4">2. Điều kiện không được bảo hành</h2>
-      <p class="mb-4">Các trường hợp sau không nằm trong chính sách bảo hành:</p>
-      <ul class="list-disc pl-6 mb-4 space-y-2">
-        <li>Sản phẩm bị hư hỏng do người dùng sử dụng sai cách</li>
-        <li>Thực vật chết do không tưới nước/ chăm sóc không đúng</li>
-        <li>Người dùng tự ý sửa chữa, thay đổi cấu trúc</li>
-      </ul>
 
-      <h2 class="text-2xl font-bold mb-4">3. Quy trình bảo hành</h2>
-      <p class="mb-4">Để được bảo hành, khách hàng cần:</p>
-      <ol class="list-decimal pl-6 mb-4 space-y-2">
-        <li>Liên hệ qua trang Liên Hệ hoặc email support@tiemreudecor.vn</li>
-        <li>Cung cấp hóa đơn/mã đơn hàng và mô tả lỗi</li>
-        <li>Gửi sản phẩm về địa chỉ được hướng dẫn qua email</li>
-        <li>Chúng tôi sẽ kiểm tra và phản hồi trong vòng 3-5 ngày làm việc</li>
-      </ol>
 
-      <h2 class="text-2xl font-bold mb-4">4. Thời gian xử lý</h2>
-      <p class="mb-4">- Bảo hành thay thế: 5-7 ngày làm việc</p>
-      <p class="mb-4">- Hoàn tiền: 7-10 ngày làm việc sau khi nhận được sản phẩm</p>
-    `,
-    updatedAt: '2026-01-15',
-  },
-  shipping: {
-    title: 'Chính sách vận chuyển',
-    content: `
-      <h2 class="text-2xl font-bold mb-4">1. Phương thức vận chuyển</h2>
-      <p class="mb-4">Chúng tôi hợp tác với các đơn vị vận chuyển uy tín:</p>
-      <ul class="list-disc pl-6 mb-4 space-y-2">
-        <li>Giao Hàng Nhanh (GHN) - tiêu chuẩn và express</li>
-        <li>Grab - giao hàng trong 2h (nội thành HCM, HN)</li>
-        <li>Viettel Post - cho khu vực miền Tây</li>
-      </ul>
+interface Order {
+  id: string;
+  orderNumber: string;
+  status: string;
+  paymentStatus: string;
+  paymentMethod: string;
+  total: number;
+  subtotal: number;
+  shippingFee: number;
+  discount: number;
+  createdAt: string;
+  items: Array<{
+    id: string;
+    productName: string;
+    productImage: string;
+    quantity: number;
+    price: number;
+  }>;
+}
 
-      <h2 class="text-2xl font-bold mb-4">2. Thời gian giao hàng</h2>
-      <p class="mb-4">- Nội thành TP.HCM: 1-2 ngày làm việc</p>
-      <p class="mb-4">- Nội thành Hà Nội: 2-3 ngày làm việc</p>
-      <p class="mb-4">- Các tỉnh khác: 3-5 ngày làm việc</p>
+const ORDER_STATUS_STEPS = [
+  { key: "PENDING",    label: "Chờ xác nhận",  icon: Clock },
+  { key: "CONFIRMED",  label: "Đã xác nhận",   icon: CheckCircle },
+  { key: "PROCESSING", label: "Đang đóng gói", icon: Package },
+  { key: "SHIPPING",   label: "Đang giao",      icon: Truck },
+  { key: "DELIVERED",  label: "Đã giao",        icon: CheckCircle },
+];
 
-      <h2 class="text-2xl font-bold mb-4">3. Chi phí vận chuyển</h2>
-      <p class="mb-4">- Miễn phí vận chuyển cho đơn từ 500.000₫</p>
-      <p class="mb-4">- Đơn dưới 500.000₫: 30.000₫</p>
-      <p class="mb-4">- Giao hàng nhanh (2h): 80.000₫</p>
-
-      <h2 class="text-2xl font-bold mb-4">4. Theo dõi đơn hàng</h2>
-      <p class="mb-4">Sau khi đơn hàng được xác nhận, bạn sẽ nhận được mã vận đơn qua email. Sử dụng mã này để theo dõi trên website của đơn vị vận chuyển.</p>
-    `,
-    updatedAt: '2026-01-10',
-  },
-  returns: {
-    title: 'Chính sách đổi trả',
-    content: `
-      <h2 class="text-2xl font-bold mb-4">1. Điều kiện đổi trả</h2>
-      <p class="mb-4">Bạn có thể đổi/trả sản phẩm trong vòng 7 ngày nếu:</p>
-      <ul class="list-disc pl-6 mb-4 space-y-2">
-        <li>Sản phẩm bị lỗi, hư hỏng do nhà sản xuất</li>
-        <li>Sai mẫu, sai size (nếu sản phẩm có size)</li>
-        <li>Sản phẩm không đúng mô tả trên website</li>
-      </ul>
-
-      <h2 class="text-2xl font-bold mb-4">2. Không áp dụng đổi trả</h2>
-      <p class="mb-4">- Sản phẩm đã qua sử dụng</p>
-      <p class="mb-4">- Sản phẩm thiếu phụ kiện, hộp đóng gói</p>
-      <p class="mb-4">- Sản phẩm khuyến mãi, giảm giá (trừ khi lỗi)</p>
-
-      <h2 class="text-2xl font-bold mb-4">3. Quy trình đổi trả</h2>
-      <ol class="list-decimal pl-6 mb-4 space-y-2">
-        <li>Liên hệ hotline hoặc email với mã đơn hàng</li>
-        <li>Đóng gói sản phẩm còn nguyên vẹn</li>
-        <li>Gửi về địa chỉ: 123 Đường ABC, Quận XYZ, TP.HCM</li>
-        <li>Chúng tôi sẽ gửi sản phẩm mới sau khi nhận được hàng cũ</li>
-      </ol>
-
-      <h2 class="text-2xl font-bold mb-4">4. Hoàn tiền</h2>
-      <p class="mb-4">Nếu không đổi được sản phẩm khác, bạn có thể yêu cầu hoàn tiền. Thời gian hoàn tiền: 7-10 ngày làm việc sau khi nhận được sản phẩm.</p>
-    `,
-    updatedAt: '2026-01-05',
-  },
-  privacy: {
-    title: 'Chính sách bảo mật',
-    content: `
-      <h2 class="text-2xl font-bold mb-4">1. Thông tin thu thập</h2>
-      <p class="mb-4">Chúng tôi thu thập các thông tin sau khi bạn đăng ký tài khoản hoặc đặt hàng:</p>
-      <ul class="list-disc pl-6 mb-4 space-y-2">
-        <li>Họ tên, email, số điện thoại</li>
-        <li>Địa chỉ giao hàng</li>
-        <li>Thông tin thanh toán (không lưu trữ thẻ)</li>
-      </ul>
-
-      <h2 class="text-2xl font-bold mb-4">2. Sử dụng thông tin</h2>
-      <p class="mb-4">Thông tin của bạn được sử dụng để:</p>
-      <ul class="list-disc pl-6 mb-4 space-y-2">
-        <li>Xử lý đơn hàng và giao hàng</li>
-        <li>Gửi thông tin khuyến mãi (nếu bạn đồng ý)</li>
-        <li>Cải thiện dịch vụ</li>
-      </ul>
-
-      <h2 class="text-2xl font-bold mb-4">3. Bảo mật</h2>
-      <p class="mb-4">Chúng tôi sử dụng SSL encryption và tuân thủ PCI DSS để bảo vệ thông tin thanh toán. Thông tin cá nhân không được chia sẻ với bên thứ ba trừ khi có sự đồng ý của bạn hoặc yêu cầu pháp luật.</p>
-    `,
-    updatedAt: '2026-02-01',
-  },
-  faq: {
-    title: 'Câu hỏi thường gặp',
-    content: `
-      <h2 class="text-2xl font-bold mb-4">Terrarium là gì?</h2>
-      <p class="mb-4">Terrarium là một hệ sinh thái thu nhỏ được đựng trong thủy tinh, kết hợp thực vật và các vật dụng trang trí. Chúng tự nhiên và dễ chăm sóc.</p>
-
-      <h2 class="text-2xl font-bold mb-4">Terrarium cần chăm sóc như thế nào?</h2>
-      <p class="mb-4">Terrarium của chúng tôi được thiết kế để tự duy trì độ ẩm. Bạn chỉ cần tưới nước nhẹ 1-2 lần/tuần tùy loại. Chi tiết hướng dẫn đi kèm mỗi sản phẩm.</p>
-
-      <h2 class="text-2xl font-bold mb-4">Có thể gửi quà không?</h2>
-      <p class="mb-4">Có! Chúng tôi cung cấp dịch vụ gói quà và thiệp viết tay. Bạn có thể thêm ghi chú khi đặt hàng.</p>
-
-      <h2 class="text-2xl font-bold mb-4">Thời gian đặt hàng là bao lâu?</h2>
-      <p class="mb-4">Sản phẩm có sẵn: giao trong 1-3 ngày. Sản phẩm order/custom: 5-7 ngày làm việc.</p>
-
-      <h2 class="text-2xl font-bold mb-4">Có hỗ trợ ship quốc tế không?</h2>
-      <p class="mb-4">Hiện tại chúng tôi chỉ giao trong Việt Nam. Tuy nhiên, bạn có thể liên hệ để được tư vấn xuất khẩu.</p>
-    `,
-    updatedAt: '2026-02-10',
-  },
+const STATUS_LABELS: Record<string, string> = {
+  PENDING:    "Chờ xác nhận",
+  CONFIRMED:  "Đã xác nhận",
+  PROCESSING: "Đang đóng gói",
+  SHIPPING:   "Đang giao hàng",
+  DELIVERED:  "Đã giao",
+  CANCELLED:  "Đã huỷ",
 };
 
-export default function PolicyDetailPage({
-  params,
-}: {
-  params: { slug: string };
-}) {
-  const policy = mockPolicies[params.slug];
+const PAYMENT_STATUS_LABELS: Record<string, string> = {
+  PENDING:  "Chờ thanh toán",
+  PAID:     "Đã thanh toán",
+  REFUNDED: "Đã hoàn tiền",
+};
 
-  if (!policy) {
-    notFound();
-  }
+const PAYMENT_METHOD_LABELS: Record<string, string> = {
+  COD:           "Thanh toán khi nhận hàng",
+  BANK_TRANSFER: "Chuyển khoản ngân hàng",
+  MOMO:          "Ví MoMo",
+};
+
+export default function MyOrdersPage() {
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [cancellingId, setCancellingId] = useState<string | null>(null);
+  const [confirmCancelId, setConfirmCancelId] = useState<string | null>(null);
+  // Search state for orders page
+  const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedTerm, setDebouncedTerm] = useState("");
+  useEffect(() => {
+    const handler = setTimeout(() => setDebouncedTerm(searchTerm), 300);
+    return () => clearTimeout(handler);
+  }, [searchTerm]);
+
+
+  const { data: session } = useSession();
+  const customerId = (session?.user as any)?.id;
+  const queryClient = useQueryClient();
+  const router = useRouter();
+
+  const { data: orders = [], isLoading: loading } = useQuery({
+    queryKey: ["customer-orders", customerId],
+    queryFn: async () => {
+      const response = await fetch(`/api/orders?customerId=${customerId}`);
+      return response.json();
+    },
+    enabled: !!customerId,
+    refetchInterval: 30000,
+    refetchIntervalInBackground: false,
+  });
+
+  // Apply client‑side filtering based on debouncedTerm (case‑insensitive)
+  const filteredOrders = orders.filter((order: Order) => {
+    const term = debouncedTerm.toLowerCase();
+    if (!term) return true;
+    // Assuming order may contain customerName, customerEmail, customerPhone fields
+    return (
+      order.orderNumber.toLowerCase().includes(term) ||
+      (order as any).customerName?.toLowerCase().includes(term) ||
+      (order as any).customerEmail?.toLowerCase().includes(term) ||
+      (order as any).customerPhone?.toLowerCase().includes(term)
+    );
+  });
+
+  const handleCancelOrder = async (orderId: string, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    setConfirmCancelId(orderId);
+  };
+
+  const doCancel = async (orderId: string) => {
+    setCancellingId(orderId);
+    try {
+      const res = await fetch(`/api/orders/${orderId}/cancel`, { method: "PATCH" });
+      const data = await res.json();
+      if (res.ok) {
+        showToast.success("Đã hủy đơn hàng thành công");
+        queryClient.invalidateQueries({ queryKey: ["customer-orders", customerId] });
+      } else {
+        showToast.error(data.error || "Không thể hủy đơn hàng");
+      }
+    } catch {
+      showToast.error("Có lỗi xảy ra, vui lòng thử lại");
+    } finally {
+      setCancellingId(null);
+      setConfirmCancelId(null);
+    }
+  };
+
+  const getStatusBadge = (status: string) => {
+    const badges: Record<string, string> = {
+      PENDING:    "bg-yellow-100 text-yellow-800 border-yellow-200",
+      CONFIRMED:  "bg-blue-100 text-blue-800 border-blue-200",
+      PROCESSING: "bg-purple-100 text-purple-800 border-purple-200",
+      SHIPPING:   "bg-indigo-100 text-indigo-800 border-indigo-200",
+      DELIVERED:  "bg-[#e3ebdd] text-[#364a29] border-[#c8d5be]",
+      CANCELLED:  "bg-red-100 text-red-800 border-red-200",
+    };
+    return badges[status] || "bg-gray-100 text-gray-800 border-gray-200";
+  };
+
+  const getPaymentStatusBadge = (status: string) => {
+    const badges: Record<string, string> = {
+      PENDING:  "bg-yellow-100 text-yellow-800",
+      PAID:     "bg-[#e3ebdd] text-[#364a29]",
+      REFUNDED: "bg-red-100 text-red-800",
+    };
+    return badges[status] || "bg-gray-100 text-gray-800";
+  };
+
+  const getStepIndex = (status: string) =>
+    ORDER_STATUS_STEPS.findIndex((s) => s.key === status);
+
+  const totalSpent = orders
+    .filter((order: Order) => order.status === "DELIVERED")
+    .reduce((sum: number, order: Order) => sum + order.total, 0);
+
 
   return (
-    <div className="max-w-4xl mx-auto py-12 px-6">
-      {/* Breadcrumb */}
-      <nav className="mb-8">
-        <Link href="/policies" className="inline-flex items-center text-sm text-[hsl(220,14%,45%)] hover:text-[#425733] transition-colors">
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Quay lại danh sách
-        </Link>
-      </nav>
+    <main className="min-h-screen bg-gray-50">
+      <div className="max-w-7xl mx-auto px-6 py-8">
+        <div className="mb-6">
+          <Link
+            href="/"
+            className="inline-flex items-center text-[#425733] hover:text-[#425733] mb-4"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Trang chủ
+          </Link>
+          <h1 className="text-3xl font-bold text-gray-800">Đơn Hàng Của Tôi</h1>
+        </div>
 
-      <article>
-        <header className="mb-8">
-          <h1 className="text-4xl font-bold mb-4">{policy.title}</h1>
-          <div className="flex items-center gap-2 text-sm text-[hsl(220,14%,45%)]">
-            <Clock className="w-4 h-4" />
-            <span>Cập nhật: {new Date(policy.updatedAt).toLocaleDateString('vi-VN')}</span>
+        {/* Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          <div className="bg-white rounded-lg shadow p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-gray-500 text-sm mb-1">Tổng đơn hàng</p>
+                <p className="text-3xl font-bold text-gray-800">{orders.length}</p>
+              </div>
+              <div className="bg-blue-100 p-3 rounded-full">
+                <Package className="w-6 h-6 text-blue-600" />
+              </div>
+            </div>
           </div>
-        </header>
+          <div className="bg-white rounded-lg shadow p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-gray-500 text-sm mb-1">Tổng chi tiêu</p>
+                <p className="text-3xl font-bold text-gray-800">
+                  {totalSpent.toLocaleString("vi-VN")}₫
+                </p>
+              </div>
+              <div className="bg-[#e3ebdd] p-3 rounded-full">
+                <TrendingUp className="w-6 h-6 text-[#425733]" />
+              </div>
+            </div>
+          </div>
+        </div>
 
-        <Separator className="mb-8" />
+        {/* Orders List */}
+        {loading ? (
+          <div className="bg-white rounded-lg shadow p-8 text-center text-gray-500">
+            Đang tải đơn hàng...
+          </div>
+        ) : filteredOrders.length === 0 ? (
+          <div className="bg-white rounded-lg shadow p-8 text-center">
+            <Package className="w-16 h-16 mx-auto text-gray-300 mb-4" />
+            <h2 className="text-xl font-semibold text-gray-700 mb-2">Chưa Có Đơn Hàng</h2>
+            <p className="text-gray-500 mb-4">Bạn chưa có đơn hàng nào.</p>
+            <Link href="/products" className="inline-block bg-[#425733] text-white px-6 py-3 rounded-lg hover:bg-[#364a29]">
+              Mua Sắm Ngay
+            </Link>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {/* Search input */}
+            <div className="mb-4 flex items-center">
+              <input
+                type="text"
+                placeholder="Tìm kiếm theo mã đơn, tên, email, SĐT..."
+                value={searchTerm}
+                onChange={e => setSearchTerm(e.target.value)}
+                className="flex-1 px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#425733] transition"
+              />
+              <button
+                onClick={() => setSearchTerm("")}
+                className="ml-2 text-gray-500 hover:text-gray-700"
+              >
+                ✕
+              </button>
+            </div>
+            {filteredOrders.map((order: Order) => {
+              const currentStep = getStepIndex(order.status);
+              const isCancelled = order.status === "CANCELLED";
+              const isExpanded = selectedOrder?.id === order.id;
+              return (
+                <div key={order.id} className="bg-white rounded-xl shadow hover:shadow-md transition-shadow">
+                  {/* Order Header — clickable */}
+                  <div
+                    className="p-6 cursor-pointer"
+                    onClick={() => setSelectedOrder(isExpanded ? null : order)}
+                  >
+                    <div className="flex justify-between items-start mb-3">
+                      <div>
+                        <div className="font-mono text-sm text-gray-500 mb-0.5">#{order.orderNumber}</div>
+                        <div className="text-xs text-gray-400">
+                          {new Date(order.createdAt).toLocaleDateString("vi-VN", { year: "numeric", month: "long", day: "numeric" })}
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-xl font-bold text-gray-800">{order.total.toLocaleString("vi-VN")}₫</div>
+                        <div className="text-xs text-gray-400">{order.items.length} sản phẩm</div>
+                      </div>
+                    </div>
 
-        <div
-          className="prose prose-lg max-w-none prose-headings:font-bold prose-h2:text-2xl prose-h2:mt-8 prose-h2:mb-4 prose-p:mb-4 prose-ul:mb-4 prose-li:mb-1"
-          dangerouslySetInnerHTML={{ __html: policy.content }}
-        />
-      </article>
+                    {/* Status badges */}
+                    <div className="flex flex-wrap gap-2 mb-4">
+                      <span className={`px-3 py-1 text-xs font-semibold rounded-full border ${getStatusBadge(order.status)}`}>
+                        {STATUS_LABELS[order.status] || order.status}
+                      </span>
+                      <span className={`px-3 py-1 text-xs font-medium rounded-full ${getPaymentStatusBadge(order.paymentStatus)}`}>
+                        {PAYMENT_STATUS_LABELS[order.paymentStatus] || order.paymentStatus}
+                      </span>
+                      {order.paymentMethod && (
+                        <span className="px-3 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-600">
+                          {PAYMENT_METHOD_LABELS[order.paymentMethod] || order.paymentMethod}
+                        </span>
+                      )}
+                    </div>
 
-      {/* CTA */}
-      <div className="mt-12 p-6 bg-[#e3ebdd] rounded-2xl text-center">
-        <h3 className="font-bold mb-2">Còn câu hỏi?</h3>
-        <p className="text-sm text-[hsl(220,14%,45%)] mb-4">
-          Nếu bạn cần thêm thông tin, đừng ngần ngại liên hệ với chúng tôi.
-        </p>
-        <Button asChild>
-          <Link href="/contact">Liên hệ hỗ trợ</Link>
-        </Button>
+                    {/* Progress Timeline (horizontal) */}
+                    {!isCancelled && (
+                      <div className="flex items-center gap-0 mb-4 overflow-x-auto pb-1">
+                        {ORDER_STATUS_STEPS.map((step, index) => {
+                          const done = index <= currentStep;
+                          const active = index === currentStep;
+                          return (
+                            <div key={step.key} className="flex items-center flex-shrink-0">
+                              <div className="flex flex-col items-center">
+                                <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs transition-all ${
+                                  active ? "bg-[#425733] text-white ring-2 ring-[#6d8c5a] ring-offset-1" :
+                                  done ? "bg-[#6d8c5a] text-white" : "bg-gray-100 text-gray-400"
+                                }`}>
+                                  <step.icon className="w-3.5 h-3.5" />
+                                </div>
+                                <span className={`text-[10px] mt-1 whitespace-nowrap ${done ? "text-[#425733] font-medium" : "text-gray-400"}`}>
+                                  {step.label}
+                                </span>
+                              </div>
+                              {index < ORDER_STATUS_STEPS.length - 1 && (
+                                <div className={`h-0.5 w-8 mx-1 mb-4 flex-shrink-0 ${index < currentStep ? "bg-[#6d8c5a]" : "bg-gray-200"}`} />
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+
+                    {isCancelled && (
+                      <div className="flex items-center gap-2 mb-4 text-red-600 text-sm">
+                        <XCircle className="w-4 h-4" />
+                        <span className="font-medium">Đơn hàng đã bị huỷ</span>
+                      </div>
+                    )}
+
+                    {/* Product thumbnails */}
+                    <div className="flex gap-2">
+                      {order.items.slice(0, 4).map((item: any) => (
+                        <div key={item.id} className="w-14 h-14 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
+                          {item.productImage ? (
+                            <Image src={item.productImage} alt={item.productName} width={56} height={56} className="w-full h-full object-cover" />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-gray-300 text-xs">N/A</div>
+                          )}
+                        </div>
+                      ))}
+                      {order.items.length > 4 && (
+                        <div className="w-14 h-14 bg-gray-100 rounded-lg flex items-center justify-center text-gray-500 text-sm font-semibold">
+                          +{order.items.length - 4}
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="mt-3 text-xs text-gray-400 text-center">
+                      {isExpanded ? "▲ Thu gọn" : "▼ Xem chi tiết đơn hàng"}
+                    </div>
+                  </div>
+
+                    {/* Expandable order items */}
+                  {isExpanded && (
+                    <div className="border-t px-6 py-5 bg-gray-50 rounded-b-xl">
+                      {/* Animated Timeline */}
+                      <div className="mb-6">
+                        <h3 className="font-semibold text-gray-800 mb-4">Trạng thái đơn hàng</h3>
+                        <OrderTimeline currentStatus={order.status} />
+                      </div>
+
+                      <h3 className="font-semibold text-gray-800 mb-4">Sản Phẩm Đã Đặt</h3>
+                      <div className="space-y-3 mb-4">
+                        {order.items.map((item: any) => (
+                          <div key={item.id} className="flex gap-4 bg-white rounded-lg p-3">
+                            <div className="w-16 h-16 bg-gray-100 rounded overflow-hidden flex-shrink-0">
+                              {item.productImage ? (
+                                <Image src={item.productImage} alt={item.productName} width={64} height={64} className="w-full h-full object-cover" />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center text-gray-300 text-xs">N/A</div>
+                              )}
+                            </div>
+                            <div className="flex-1">
+                              <div className="font-medium text-sm">{item.productName}</div>
+                              <div className="text-xs text-gray-500 mt-0.5">SL: {item.quantity} × {item.price.toLocaleString("vi-VN")}₫</div>
+                            </div>
+                            <div className="font-semibold text-sm text-gray-800">{(item.price * item.quantity).toLocaleString("vi-VN")}₫</div>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Order total breakdown */}
+                      <div className="bg-white rounded-lg p-4 space-y-2 text-sm">
+                        <div className="flex justify-between text-gray-600">
+                          <span>Tạm tính</span>
+                          <span>{order.subtotal.toLocaleString("vi-VN")}₫</span>
+                        </div>
+                        <div className="flex justify-between text-gray-600">
+                          <span>Phí vận chuyển</span>
+                          <span>{order.shippingFee.toLocaleString("vi-VN")}₫</span>
+                        </div>
+                        {order.discount > 0 && (
+                          <div className="flex justify-between text-[#425733]">
+                            <span>Giảm giá</span>
+                            <span>-{order.discount.toLocaleString("vi-VN")}₫</span>
+                          </div>
+                        )}
+                        <div className="flex justify-between font-bold text-base pt-2 border-t">
+                          <span>Tổng cộng</span>
+                          <span className="text-[#425733]">{order.total.toLocaleString("vi-VN")}₫</span>
+                        </div>
+                      </div>
+
+                      {/* BANK_TRANSFER + PENDING payment → hiện nút Tiếp tục thanh toán + Hủy đơn */}
+                      {order.status === "PENDING" && order.paymentMethod === "BANK_TRANSFER" && order.paymentStatus === "PENDING" && (
+                        <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-xl space-y-3">
+                          <div className="flex items-start gap-3">
+                            <CreditCard className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                            <div className="flex-1">
+                              <p className="text-sm font-semibold text-blue-800">Chưa thanh toán</p>
+                              <p className="text-xs text-blue-600 mt-0.5">Đơn hàng đang chờ chuyển khoản. Quét QR để thanh toán ngay hoặc hủy đơn nếu không muốn tiếp tục.</p>
+                            </div>
+                          </div>
+                          <div className="flex gap-2">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                const params = new URLSearchParams({
+                                  orderId: order.id,
+                                  orderNumber: order.orderNumber,
+                                  total: String(order.total),
+                                });
+                                router.push(`/checkout/pending?${params.toString()}`);
+                              }}
+                              className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-[#425733] rounded-lg hover:bg-[#364a29] transition-colors"
+                            >
+                              <CreditCard className="w-4 h-4" />
+                              Tiếp tục thanh toán (QR)
+                            </button>
+                            <button
+                              onClick={(e) => handleCancelOrder(order.id, e)}
+                              disabled={cancellingId === order.id}
+                              className="px-4 py-2.5 text-sm font-semibold text-red-600 border border-red-300 rounded-lg hover:bg-red-50 transition-colors disabled:opacity-50"
+                            >
+                              {cancellingId === order.id ? "Đang hủy..." : "Hủy đơn"}
+                            </button>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* COD + PENDING → chỉ hiện nút hủy */}
+                      {order.status === "PENDING" && order.paymentMethod !== "BANK_TRANSFER" && (
+                        <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-xl flex items-start gap-3">
+                          <AlertTriangle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+                          <div className="flex-1">
+                            <p className="text-sm font-semibold text-yellow-800">Đơn hàng chưa được xác nhận</p>
+                            <p className="text-xs text-yellow-600 mt-0.5">Bạn có thể hủy đơn trước khi shop xác nhận.</p>
+                          </div>
+                          <button
+                            onClick={(e) => handleCancelOrder(order.id, e)}
+                            disabled={cancellingId === order.id}
+                            className="flex-shrink-0 px-4 py-2 text-sm font-semibold text-red-600 border border-red-300 rounded-lg hover:bg-red-50 transition-colors disabled:opacity-50"
+                          >
+                            {cancellingId === order.id ? "Đang hủy..." : "Hủy đơn"}
+                          </button>
+                        </div>
+                      )}
+
+                      {/* Confirmed — cannot cancel */}
+                      {["CONFIRMED", "PROCESSING", "SHIPPING"].includes(order.status) && (
+                        <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-xl flex items-center gap-2">
+                          <CheckCircle className="w-4 h-4 text-blue-500 flex-shrink-0" />
+                          <p className="text-xs text-blue-700">Đơn hàng đã được xác nhận — không thể hủy. Vui lòng liên hệ shop để được hỗ trợ.</p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
-    </div>
+
+      {/* Custom Confirm Dialog thay confirm() */}
+      <ConfirmDialog
+        open={!!confirmCancelId}
+        onOpenChange={(open) => !open && setConfirmCancelId(null)}
+        title="Hủy đơn hàng"
+        description="Bạn chắc chắn muốn hủy đơn hàng này? Hành động này không thể hoàn tác."
+        confirmLabel={cancellingId ? "Đang hủy..." : "Hủy đơn"}
+        cancelLabel="Giữ lại"
+        variant="danger"
+        onConfirm={() => confirmCancelId && doCancel(confirmCancelId)}
+      />
+    </main>
   );
 }

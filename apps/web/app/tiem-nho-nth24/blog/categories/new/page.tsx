@@ -1,10 +1,10 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Save } from "lucide-react";
 import Link from "next/link";
-import { toast } from "sonner";
+import { showToast } from "@/components/ui/custom-toast";
 import { useQueryClient } from "@tanstack/react-query";
 
 export default function CreateBlogCategoryPage() {
@@ -41,16 +41,16 @@ export default function CreateBlogCategoryPage() {
       });
 
       if (response.ok) {
-        toast.success("Danh mục đã được tạo!");
+        showToast.success("Danh mục đã được tạo!");
         queryClient.invalidateQueries({ queryKey: ["admin-blog-categories"] });
         router.push("/tiem-nho-nth24/blog");
       } else {
         const err = await response.json();
-        toast.error(err.error || "Lỗi khi tạo danh mục");
+        showToast.error(err.error || "Lỗi khi tạo danh mục");
       }
     } catch (error) {
       console.error("Error:", error);
-      toast.error("Lỗi kết nối");
+      showToast.error("Lỗi kết nối");
     } finally {
       setSaving(false);
     }

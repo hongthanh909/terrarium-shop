@@ -1,10 +1,10 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Save } from "lucide-react";
-import { toast } from "sonner";
+import { showToast } from "@/components/ui/custom-toast";
 import { Button } from "@/components/ui/button";
 
 export default function CreatePolicyPage() {
@@ -31,14 +31,14 @@ export default function CreatePolicyPage() {
       });
 
       if (res.ok) {
-        toast.success("Tạo chính sách thành công");
+        showToast.success("Tạo chính sách thành công");
         router.push("/tiem-nho-nth24/policies");
       } else {
         const error = await res.json();
-        toast.error(error.error || "Có lỗi xảy ra");
+        showToast.error(error.error || "Có lỗi xảy ra");
       }
     } catch (err) {
-      toast.error("Lỗi kết nối");
+      showToast.error("Lỗi kết nối");
     } finally {
       setLoading(false);
     }

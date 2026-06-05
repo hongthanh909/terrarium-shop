@@ -1,8 +1,8 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
+import { showToast } from "@/components/ui/custom-toast";
 import {
   Star, StarOff, Search, Trash2, Plus, RefreshCw, ExternalLink,
 } from "lucide-react";
@@ -75,12 +75,12 @@ export default function AdminExplorePage() {
         body: JSON.stringify({ productId, reason: reason || null }),
       });
       if (!res.ok) throw new Error();
-      toast.success("Đã ghim sản phẩm lên trang Khám Phá!");
+      showToast.success("Đã ghim sản phẩm lên trang Khám Phá!");
       setShowProductPicker(false);
       setReason("");
       await fetchFeatured();
     } catch {
-      toast.error("Ghim thất bại, vui lòng thử lại.");
+      showToast.error("Ghim thất bại, vui lòng thử lại.");
     } finally {
       setPinning(null);
     }
@@ -94,10 +94,10 @@ export default function AdminExplorePage() {
         credentials: "include",
       });
       if (!res.ok) throw new Error();
-      toast.success("Đã bỏ ghim sản phẩm.");
+      showToast.success("Đã bỏ ghim sản phẩm.");
       await fetchFeatured();
     } catch {
-      toast.error("Có lỗi xảy ra, vui lòng thử lại.");
+      showToast.error("Có lỗi xảy ra, vui lòng thử lại.");
     }
   };
 

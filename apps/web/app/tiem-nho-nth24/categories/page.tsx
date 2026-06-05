@@ -8,7 +8,7 @@ import {
   Plus, Edit, Trash2, Search, ChevronDown, ChevronRight,
   Package, ExternalLink,
 } from "lucide-react";
-import { toast } from "sonner";
+import { showToast } from "@/components/ui/custom-toast";
 
 interface Category {
   id: string;
@@ -274,12 +274,14 @@ export default function AdminCategoriesPage() {
       }
       queryClient.invalidateQueries({ queryKey: ["admin-categories"] });
     };
-    toast.promise(promise(), {
-      loading: "Đang xóa danh mục...",
-      success: "Đã xóa danh mục",
-      error: (err) => err.message || "Không thể xóa",
-      finally: () => setDeletingId(null),
-    });
+    try {
+      await promise();
+      showToast.success("Đã xóa danh mục");
+    } catch (err: any) {
+      showToast.error(err.message || "Không thể xóa");
+    } finally {
+      setDeletingId(null);
+    }
   };
 
   const handleBulkDelete = async () => {
@@ -299,12 +301,14 @@ export default function AdminCategoriesPage() {
       }
       throw new Error("Không thể xóa");
     };
-    toast.promise(promise(), {
-      loading: "Đang xóa...",
-      success: (ok) => `Đã xóa ${ok} danh mục`,
-      error: (err) => err.message,
-      finally: () => setBulkDeleting(false),
-    });
+    try {
+      const ok = await promise();
+      showToast.success(`Đã xóa ${ok} danh mục`);
+    } catch (err: any) {
+      showToast.error(err.message || "Không thể xóa");
+    } finally {
+      setBulkDeleting(false);
+    }
   };
 
   // Auto-slug
@@ -326,13 +330,13 @@ export default function AdminCategoriesPage() {
       body: JSON.stringify(formData),
     });
     if (res.ok) {
-      toast.success("Tạo danh mục thành công!");
+      showToast.success("Tạo danh mục thành công!");
       setShowCreateModal(false);
       setFormData({ name: "", slug: "", metaDescription: "", parentId: "", status: "ACTIVE" });
       queryClient.invalidateQueries({ queryKey: ["admin-categories"] });
     } else {
       const err = await res.json();
-      toast.error(err.error || "Không thể tạo danh mục");
+      showToast.error(err.error || "Không thể tạo danh mục");
     }
     setSubmitting(false);
   };

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
@@ -7,7 +7,7 @@ import Image from "next/image";
 import {
   ArrowLeft, X, Save, Upload, Image as ImageIcon, Star, Plus,
 } from "lucide-react";
-import { toast } from "sonner";
+import { showToast } from "@/components/ui/custom-toast";
 import { FormField } from "@/components/admin/ui/FormField";
 import { FormSelect } from "@/components/admin/ui/FormSelect";
 import { compressImage } from "@/lib/image";
@@ -89,7 +89,7 @@ export default function CreateProductPage() {
     fd.append("file", compressed);
     fd.append("bucket", "products");
     const res = await fetch("/api/upload", { method: "POST", body: fd });
-    if (!res.ok) { toast.error("Upload thất bại"); return null; }
+    if (!res.ok) { showToast.error("Upload thất bại"); return null; }
     const data = await res.json();
     return data.url;
   };
@@ -99,7 +99,7 @@ export default function CreateProductPage() {
     if (!file) return;
     setUploadingMain(true);
     const url = await uploadImage(file);
-    if (url) { setMainImage(url); toast.success("Đã tải ảnh chính"); }
+    if (url) { setMainImage(url); showToast.success("Đã tải ảnh chính"); }
     setUploadingMain(false);
     if (mainImageInputRef.current) mainImageInputRef.current.value = "";
   };
@@ -107,7 +107,7 @@ export default function CreateProductPage() {
   const handleSubImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     if (subImages.length + files.length > 10) {
-      toast.error("Tối đa 10 ảnh phụ");
+      showToast.error("Tối đa 10 ảnh phụ");
       return;
     }
     setUploadingSub(true);
@@ -117,14 +117,14 @@ export default function CreateProductPage() {
       if (url) urls.push(url);
     }
     setSubImages((prev) => [...prev, ...urls]);
-    if (urls.length) toast.success(`Đã tải ${urls.length} ảnh phụ`);
+    if (urls.length) showToast.success(`Đã tải ${urls.length} ảnh phụ`);
     setUploadingSub(false);
     if (subImageInputRef.current) subImageInputRef.current.value = "";
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!mainImage) { toast.error("Vui lòng tải ảnh chính sản phẩm"); return; }
+    if (!mainImage) { showToast.error("Vui lòng tải ảnh chính sản phẩm"); return; }
     setLoading(true);
     try {
       const allImages = [mainImage, ...subImages.filter(Boolean)];
@@ -160,14 +160,14 @@ export default function CreateProductPage() {
         body: JSON.stringify(productData),
       });
       if (res.ok) {
-        toast.success("Tạo sản phẩm thành công!");
+        showToast.success("Tạo sản phẩm thành công!");
         router.push("/tiem-nho-nth24/products");
       } else {
         const err = await res.json();
-        toast.error(err.error || "Lỗi khi tạo sản phẩm");
+        showToast.error(err.error || "Lỗi khi tạo sản phẩm");
       }
     } catch {
-      toast.error("Lỗi kết nối");
+      showToast.error("Lỗi kết nối");
     } finally {
       setLoading(false);
     }

@@ -1,54 +1,22 @@
-"use client";
+﻿"use client";
 
-import { useState, useEffect } from "react";
-import { useRouter, useParams } from "next/navigation";
-import { ArrowLeft, Save, Trash2 } from "lucide-react";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { ArrowLeft, Save } from "lucide-react";
 import Link from "next/link";
-import { toast } from "sonner";
+import { showToast } from "@/components/ui/custom-toast";
 import { useQueryClient } from "@tanstack/react-query";
 
-export default function EditBlogCategoryPage() {
+export default function CreateBlogCategoryPage() {
   const router = useRouter();
-  const params = useParams();
-  const id = params.id as string;
   const queryClient = useQueryClient();
-
   const [saving, setSaving] = useState(false);
-  const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({
     name: "",
     slug: "",
   });
 
-  useEffect(() => {
-    // There is no specific GET /categories/[id] endpoint, so we fetch all and find it
-    fetch("/api/admin/blog/categories")
-      .then((res) => {
-        if (!res.ok) throw new Error("Not found");
-        return res.json();
-      })
-      .then((data) => {
-        const category = data.find((cat: any) => cat.id === id);
-        if (category) {
-          setFormData({
-            name: category.name || "",
-            slug: category.slug || "",
-          });
-        } else {
-          toast.error("Không tìm thấy danh mục");
-          router.push("/tiem-nho-nth24/blog");
-        }
-      })
-      .catch((error) => {
-        console.error(error);
-        toast.error("Lỗi khi tải danh mục");
-        router.push("/tiem-nho-nth24/blog");
-      })
-      .finally(() => {
-        setLoading(false);
-      });
-  }, [id, router]);
-
+  // Auto-generate slug from name
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const name = e.target.value;
     const slug = name
@@ -66,50 +34,27 @@ export default function EditBlogCategoryPage() {
     setSaving(true);
 
     try {
-      const response = await fetch(`/api/admin/blog/categories/${id}`, {
-        method: "PUT",
+      const response = await fetch("/api/admin/blog/categories", {
+        method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       });
 
       if (response.ok) {
-        toast.success("Cập nhật danh mục thành công!");
+        showToast.success("Danh mục đã được tạo!");
         queryClient.invalidateQueries({ queryKey: ["admin-blog-categories"] });
         router.push("/tiem-nho-nth24/blog");
       } else {
         const err = await response.json();
-        toast.error(err.error || "Lỗi khi cập nhật danh mục");
+        showToast.error(err.error || "Lỗi khi tạo danh mục");
       }
     } catch (error) {
       console.error("Error:", error);
-      toast.error("Lỗi kết nối");
+      showToast.error("Lỗi kết nối");
     } finally {
       setSaving(false);
     }
   };
-
-  const handleDelete = async () => {
-    try {
-      const response = await fetch(`/api/admin/blog/categories/${id}`, {
-        method: "DELETE",
-      });
-
-      if (response.ok) {
-        toast.success("Đã xóa danh mục!");
-        queryClient.invalidateQueries({ queryKey: ["admin-blog-categories"] });
-        router.push("/tiem-nho-nth24/blog");
-      } else {
-        const err = await response.json();
-        toast.error(err.error || "Không thể xóa danh mục");
-      }
-    } catch (error) {
-      toast.error("Lỗi kết nối");
-    }
-  };
-
-  if (loading) {
-    return <div className="text-center py-12">Đang tải dữ liệu...</div>;
-  }
 
   return (
     <div>
@@ -121,16 +66,7 @@ export default function EditBlogCategoryPage() {
           <ArrowLeft className="w-4 h-4 mr-2" />
           Quay lại Blog
         </Link>
-        <div className="flex justify-between items-center">
-          <h2 className="text-3xl font-bold text-gray-800">Chỉnh Sửa Danh Mục</h2>
-          <button
-            onClick={handleDelete}
-            className="flex items-center gap-2 px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-          >
-            <Trash2 className="w-4 h-4" />
-            Xóa danh mục
-          </button>
-        </div>
+        <h2 className="text-3xl font-bold text-gray-800">Tạo Danh Mục Mới</h2>
       </div>
 
       <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow p-6 space-y-4 max-w-2xl">
@@ -156,6 +92,7 @@ export default function EditBlogCategoryPage() {
             className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#6d8c5a] font-mono text-sm"
             placeholder="ten-danh-muc"
           />
+          <p className="text-xs text-gray-500 mt-1">Tự động tạo từ tên, có thể chỉnh sửa</p>
         </div>
 
         <div className="flex justify-end gap-4 pt-4">
@@ -171,7 +108,7 @@ export default function EditBlogCategoryPage() {
             className="flex items-center gap-2 bg-[#425733] text-white px-6 py-3 rounded-full font-semibold shadow-soft hover:-translate-y-0.5 hover:shadow-[0_4px_20px_rgba(66,87,51,0.4)] hover:bg-[#364a29] disabled:bg-gray-400"
           >
             <Save className="w-5 h-5" />
-            {saving ? "Đang lưu..." : "Cập Nhật Danh Mục"}
+            {saving ? "Đang lưu..." : "Lưu Danh Mục"}
           </button>
         </div>
       </form>

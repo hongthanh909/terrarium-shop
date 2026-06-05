@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
@@ -7,7 +7,7 @@ import { Heart, ShoppingBag, ArrowLeft, Loader2, Package } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useCartStore } from "@/lib/store/cartStore";
-import { toast } from "sonner";
+import { showToast } from "@/components/ui/custom-toast";
 import { Button } from "@/components/ui/button";
 
 interface FavoriteProduct {
@@ -44,7 +44,7 @@ export default function FavoritesPage() {
       const data = await res.json();
       setProducts(data);
     } catch (error) {
-      toast.error("Không thể tải danh sách yêu thích");
+      showToast.error("Không thể tải danh sách yêu thích");
     } finally {
       setLoading(false);
     }
@@ -54,9 +54,9 @@ export default function FavoritesPage() {
     try {
       await fetch(`/api/products/${productId}/vote`, { method: "POST" });
       setProducts((prev) => prev.filter((p) => p.id !== productId));
-      toast.success("Đã bỏ khỏi danh sách yêu thích");
+      showToast.success("Đã bỏ khỏi danh sách yêu thích");
     } catch {
-      toast.error("Có lỗi xảy ra");
+      showToast.error("Có lỗi xảy ra");
     }
   };
 
@@ -68,7 +68,7 @@ export default function FavoritesPage() {
       price: product.basePrice,
       quantity: 1,
     });
-    toast.success("Đã thêm vào giỏ hàng!");
+    showToast.success("Đã thêm vào giỏ hàng!");
   };
 
   return (

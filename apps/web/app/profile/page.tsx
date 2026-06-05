@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -9,7 +9,7 @@ import {
   User, Mail, Phone, Star, Award, ShoppingBag,
   Lock, LogOut, ChevronRight, Save, Eye, EyeOff, ArrowLeft
 } from "lucide-react";
-import { toast } from "sonner";
+import { showToast } from "@/components/ui/custom-toast";
 import { useCartStore } from "@/lib/store/cartStore";
 
 interface Order {
@@ -95,13 +95,13 @@ export default function ProfilePage() {
       });
       if (res.ok) {
         queryClient.invalidateQueries({ queryKey: ["customer-profile"] });
-        toast.success("Cập nhật thông tin thành công!");
+        showToast.success("Cập nhật thông tin thành công!");
       } else {
         const err = await res.json();
-        toast.error(err.error || "Cập nhật thất bại");
+        showToast.error(err.error || "Cập nhật thất bại");
       }
     } catch {
-      toast.error("Lỗi kết nối");
+      showToast.error("Lỗi kết nối");
     } finally {
       setSaving(false);
     }
@@ -110,7 +110,7 @@ export default function ProfilePage() {
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
     if (newPassword !== confirmPassword) {
-      toast.error("Mật khẩu xác nhận không khớp");
+      showToast.error("Mật khẩu xác nhận không khớp");
       return;
     }
     setSaving(true);
@@ -121,7 +121,7 @@ export default function ProfilePage() {
         body: JSON.stringify({ action: "change-password", currentPassword, newPassword }),
       });
       if (res.ok) {
-        toast.success("Đổi mật khẩu thành công! Vui lòng đăng nhập lại.");
+        showToast.success("Đổi mật khẩu thành công! Vui lòng đăng nhập lại.");
         setCurrentPassword(""); setNewPassword(""); setConfirmPassword("");
         setTimeout(() => {
           useCartStore.getState().clearCart();
@@ -129,10 +129,10 @@ export default function ProfilePage() {
         }, 2000);
       } else {
         const err = await res.json();
-        toast.error(err.error || "Đổi mật khẩu thất bại");
+        showToast.error(err.error || "Đổi mật khẩu thất bại");
       }
     } catch {
-      toast.error("Lỗi kết nối");
+      showToast.error("Lỗi kết nối");
     } finally {
       setSaving(false);
     }

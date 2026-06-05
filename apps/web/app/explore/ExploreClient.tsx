@@ -1,11 +1,11 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useSession } from "next-auth/react";
 import { Package, Compass, Sparkles, Check, Sprout, RefreshCw, Sun, Ruler, Gift, ShoppingBasket, ChevronLeft, ChevronRight } from "lucide-react";
-import { toast } from "sonner";
+import { showToast } from "@/components/ui/custom-toast";
 import { useCartStore } from "@/lib/store/cartStore";
 import { Button } from "@/components/ui/button";
 import { ProductCard } from "@/components/ui/product-card";
@@ -120,7 +120,7 @@ export function ExploreClient({ featured, pinned, topVoted, newArrivals, weeklyF
                 const sale = product.salePrice ? parseFloat(product.salePrice.toString()) : null;
                 const price = sale != null && sale < base ? sale : base;
                 addItem({ productId: product.id, productName: product.name, productImage: product.images[0] || "", price, quantity: 1, variants: {} });
-                toast.success(`Đã thêm "${product.name}" vào giỏ hàng 🛒`);
+                showToast.success(`Đã thêm "${product.name}" vào giỏ hàng 🛒`);
               }}
             />
           ))}
@@ -261,7 +261,7 @@ export function ExploreClient({ featured, pinned, topVoted, newArrivals, weeklyF
                               quantity: 1,
                               variants: {}
                             });
-                            toast.success(`Đã thêm "${currentFeatured.product.name}" vào giỏ hàng 🛒`);
+                            showToast.success(`Đã thêm "${currentFeatured.product.name}" vào giỏ hàng 🛒`);
                           }}
                           className="flex items-center gap-2 bg-[#55694b]/20 border-2 border-white/30 hover:border-white text-white hover:bg-white/10 px-6 py-2.5 rounded-xl text-sm font-semibold transition-all hover:scale-[1.02] active:scale-[0.98] backdrop-blur-sm"
                         >

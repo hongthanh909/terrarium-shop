@@ -1,10 +1,10 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Plus, Edit, Trash2, Save, X, Clock } from "lucide-react";
 import Link from "next/link";
-import { toast } from "sonner";
+import { showToast } from "@/components/ui/custom-toast";
 
 // ─── Helpers: Vietnam Timezone (UTC+7) ─────────────────────────────────────
 // datetime-local input cần format "YYYY-MM-DDTHH:mm" theo local time
@@ -171,15 +171,15 @@ export default function AdminVouchersPage() {
       });
 
       if (res.ok) {
-        toast.success(editingCampaign ? "Cập nhật phiếu giảm giá thành công!" : "Tạo phiếu giảm giá thành công!");
+        showToast.success(editingCampaign ? "Cập nhật phiếu giảm giá thành công!" : "Tạo phiếu giảm giá thành công!");
         handleCloseModal();
         queryClient.invalidateQueries({ queryKey: ["admin-vouchers"] });
       } else {
         const err = await res.json();
-        toast.error(err.error || "Không thể lưu phiếu giảm giá");
+        showToast.error(err.error || "Không thể lưu phiếu giảm giá");
       }
     } catch {
-      toast.error("Lỗi khi lưu phiếu giảm giá");
+      showToast.error("Lỗi khi lưu phiếu giảm giá");
     } finally {
       setSubmitting(false);
     }
@@ -191,13 +191,13 @@ export default function AdminVouchersPage() {
     try {
       const res = await fetch(`/api/discount-campaigns/${id}`, { method: "DELETE" });
       if (res.ok) {
-        toast.success("Xóa phiếu giảm giá thành công!");
+        showToast.success("Xóa phiếu giảm giá thành công!");
         queryClient.invalidateQueries({ queryKey: ["admin-vouchers"] });
       } else {
-        toast.error("Không thể xóa phiếu giảm giá");
+        showToast.error("Không thể xóa phiếu giảm giá");
       }
     } catch {
-      toast.error("Lỗi khi xóa phiếu giảm giá");
+      showToast.error("Lỗi khi xóa phiếu giảm giá");
     } finally {
       setDeletingId(null);
     }

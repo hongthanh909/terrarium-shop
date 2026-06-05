@@ -5,7 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowLeft, Check, X, Printer, ChevronDown } from "lucide-react";
-import { toast } from "sonner";
+import { showToast } from "@/components/ui/custom-toast";
 
 interface Order {
   id: string;
@@ -103,12 +103,12 @@ export default function AdminOrderDetailPage() {
         const data = await response.json();
         setOrder(data);
       } else {
-        toast.error("Không tìm thấy đơn hàng");
+        showToast.error("Không tìm thấy đơn hàng");
         router.push("/tiem-nho-nth24/orders");
       }
     } catch (error) {
       console.error("Error fetching order:", error);
-      toast.error("Lỗi khi tải thông tin đơn hàng");
+      showToast.error("Lỗi khi tải thông tin đơn hàng");
     } finally {
       loading && setLoading(false);
     }
@@ -129,12 +129,14 @@ export default function AdminOrderDetailPage() {
       await fetchOrder();
     };
 
-    toast.promise(promise(), {
-      loading: "Đang cập nhật trạng thái đơn hàng...",
-      success: "Cập nhật trạng thái thành công!",
-      error: (err) => err.message || "Lỗi khi cập nhật trạng thái đơn hàng",
-      finally: () => setUpdating(false),
-    });
+    try {
+      await promise();
+      showToast.success("Cập nhật trạng thái thành công!");
+    } catch (err: any) {
+      showToast.error(err.message || "Lỗi khi cập nhật trạng thái đơn hàng");
+    } finally {
+      setUpdating(false);
+    }
   };
 
   const handleUpdatePaymentStatus = async (newStatus: string) => {
@@ -152,12 +154,14 @@ export default function AdminOrderDetailPage() {
       await fetchOrder();
     };
 
-    toast.promise(promise(), {
-      loading: "Đang cập nhật trạng thái thanh toán...",
-      success: "Cập nhật trạng thái thanh toán thành công!",
-      error: (err) => err.message || "Lỗi khi cập nhật trạng thái thanh toán",
-      finally: () => setUpdating(false),
-    });
+    try {
+      await promise();
+      showToast.success("Cập nhật trạng thái thanh toán thành công!");
+    } catch (err: any) {
+      showToast.error(err.message || "Lỗi khi cập nhật trạng thái thanh toán");
+    } finally {
+      setUpdating(false);
+    }
   };
 
   const handlePrint = () => {

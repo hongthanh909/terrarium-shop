@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
@@ -8,7 +8,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { toast } from "sonner";
+import { showToast } from "@/components/ui/custom-toast";
 import Link from "next/link";
 import { compressImage } from "@/lib/image";
 
@@ -49,7 +49,7 @@ export default function AdminHomepagePage() {
           setProducts(prodData.products ?? []);
         }
       } catch (err) {
-        toast.error("Không thể tải danh sách dữ liệu");
+        showToast.error("Không thể tải danh sách dữ liệu");
         console.error(err);
       } finally {
         setLoading(false);
@@ -61,7 +61,7 @@ export default function AdminHomepagePage() {
   // Upload image to Supabase Storage
   const handleImageUpload = async (file: File) => {
     if (!file.type.startsWith("image/")) {
-      toast.error("Chỉ chấp nhận file ảnh");
+      showToast.error("Chỉ chấp nhận file ảnh");
       return;
     }
 
@@ -91,9 +91,9 @@ export default function AdminHomepagePage() {
       };
 
       setBanners((prev) => [...prev, newBanner]);
-      toast.success("Đã tải ảnh lên thành công!");
+      showToast.success("Đã tải ảnh lên thành công!");
     } catch (err) {
-      toast.error("Upload ảnh thất bại. Vui lòng thử lại.");
+      showToast.error("Upload ảnh thất bại. Vui lòng thử lại.");
     } finally {
       setUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
@@ -116,7 +116,7 @@ export default function AdminHomepagePage() {
     };
 
     setBanners((prev) => [...prev, newBanner]);
-    toast.success(`Đã thêm banner liên kết cho sản phẩm "${p.name}"!`);
+    showToast.success(`Đã thêm banner liên kết cho sản phẩm "${p.name}"!`);
   };
 
   const handleFieldChange = (id: string, field: keyof HomeBanner, value: any) => {
@@ -133,7 +133,7 @@ export default function AdminHomepagePage() {
 
   const handleDelete = (id: string) => {
     setBanners((prev) => prev.filter((b) => b.id !== id));
-    toast.info("Đã xóa banner. Nhấn Lưu để xác nhận.");
+    showToast.info("Đã xóa banner. Nhấn Lưu để xác nhận.");
   };
 
   const handleMoveUp = (index: number) => {
@@ -161,9 +161,9 @@ export default function AdminHomepagePage() {
       });
       if (!res.ok) throw new Error("Lưu thất bại");
       setBanners(ordered);
-      toast.success("Đã lưu banner trang chủ thành công!");
+      showToast.success("Đã lưu banner trang chủ thành công!");
     } catch {
-      toast.error("Không thể lưu. Vui lòng thử lại.");
+      showToast.error("Không thể lưu. Vui lòng thử lại.");
     } finally {
       setSaving(false);
     }

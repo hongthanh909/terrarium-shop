@@ -5,7 +5,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowLeft, Check, X, Star, Eye } from "lucide-react";
-import { toast } from "sonner";
+import { showToast } from "@/components/ui/custom-toast";
 
 interface Review {
   id: string;
@@ -74,12 +74,14 @@ export default function AdminReviewsPage() {
       return response.json();
     };
 
-    toast.promise(promise(), {
-      loading: "Đang duyệt đánh giá...",
-      success: "Đã duyệt đánh giá thành công!",
-      error: (err) => err.message || "Lỗi khi duyệt đánh giá",
-      finally: () => setProcessingId(null),
-    });
+    try {
+      await promise();
+      showToast.success("Đã duyệt đánh giá thành công!");
+    } catch (err: any) {
+      showToast.error(err.message || "Lỗi khi duyệt đánh giá");
+    } finally {
+      setProcessingId(null);
+    }
   };
 
   const handleReject = async (id: string) => {
@@ -99,12 +101,14 @@ export default function AdminReviewsPage() {
       return response.json();
     };
 
-    toast.promise(promise(), {
-      loading: "Đang từ chối đánh giá...",
-      success: "Đã từ chối đánh giá!",
-      error: (err) => err.message || "Lỗi khi từ chối đánh giá",
-      finally: () => setProcessingId(null),
-    });
+    try {
+      await promise();
+      showToast.success("Đã từ chối đánh giá!");
+    } catch (err: any) {
+      showToast.error(err.message || "Lỗi khi từ chối đánh giá");
+    } finally {
+      setProcessingId(null);
+    }
   };
 
   const renderStars = (rating: number) => {

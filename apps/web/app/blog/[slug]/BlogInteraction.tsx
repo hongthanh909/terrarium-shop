@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { Heart, MessageSquare, CornerDownRight, ShieldCheck, Send, Loader2 } from "lucide-react";
-import { toast } from "sonner";
+import { showToast } from "@/components/ui/custom-toast";
 import { supabaseClient } from "@/lib/supabaseClient";
 
 interface Reply {
@@ -82,9 +82,7 @@ export default function BlogInteraction({ postId, slug }: BlogInteractionProps) 
               // Trigger notification if comment belongs to current user, and the replier isn't the current user
               if (commentData.customerId === currentCustomerId && newReply.userId !== currentCustomerId) {
                 const title = newReply.isAdmin ? "Quản trị viên" : "Ai đó";
-                toast.success(`👋 ${title} đã phản hồi bình luận của bạn: "${newReply.content}"`, {
-                  duration: 6000,
-                });
+                showToast.success(`👋 ${title} đã phản hồi bình luận của bạn: "${newReply.content}"`);
                 
                 // Refresh comments to show the new reply
                 fetchComments();
@@ -132,7 +130,7 @@ export default function BlogInteraction({ postId, slug }: BlogInteractionProps) 
 
   const handleLikeToggle = async () => {
     if (!session?.user) {
-      toast.error("Vui lòng đăng nhập để thích bài viết này!");
+      showToast.error("Vui lòng đăng nhập để thích bài viết này!");
       return;
     }
 
@@ -146,20 +144,20 @@ export default function BlogInteraction({ postId, slug }: BlogInteractionProps) 
         // Rollback
         setLiked(liked);
         setLikesCount((prev) => (liked ? prev + 1 : prev - 1));
-        toast.error("Lỗi khi tương tác");
+        showToast.error("Lỗi khi tương tác");
       }
     } catch {
       // Rollback
       setLiked(liked);
       setLikesCount((prev) => (liked ? prev + 1 : prev - 1));
-      toast.error("Lỗi kết nối");
+      showToast.error("Lỗi kết nối");
     }
   };
 
   const handleCommentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!session?.user) {
-      toast.error("Vui lòng đăng nhập để bình luận!");
+      showToast.error("Vui lòng đăng nhập để bình luận!");
       return;
     }
     if (!commentContent.trim()) return;
@@ -173,15 +171,15 @@ export default function BlogInteraction({ postId, slug }: BlogInteractionProps) 
       });
 
       if (res.ok) {
-        toast.success("Đăng bình luận thành công!");
+        showToast.success("Đăng bình luận thành công!");
         setCommentContent("");
         fetchComments();
       } else {
         const data = await res.json();
-        toast.error(data.error || "Gửi bình luận thất bại");
+        showToast.error(data.error || "Gửi bình luận thất bại");
       }
     } catch {
-      toast.error("Lỗi kết nối");
+      showToast.error("Lỗi kết nối");
     } finally {
       setSubmittingComment(false);
     }
@@ -189,7 +187,7 @@ export default function BlogInteraction({ postId, slug }: BlogInteractionProps) 
 
   const handleReplySubmit = async (commentId: string) => {
     if (!session?.user) {
-      toast.error("Vui lòng đăng nhập để phản hồi!");
+      showToast.error("Vui lòng đăng nhập để phản hồi!");
       return;
     }
     if (!replyContent.trim()) return;
@@ -203,16 +201,16 @@ export default function BlogInteraction({ postId, slug }: BlogInteractionProps) 
       });
 
       if (res.ok) {
-        toast.success("Gửi phản hồi thành công!");
+        showToast.success("Gửi phản hồi thành công!");
         setReplyContent("");
         setActiveReplyId(null);
         fetchComments();
       } else {
         const data = await res.json();
-        toast.error(data.error || "Gửi phản hồi thất bại");
+        showToast.error(data.error || "Gửi phản hồi thất bại");
       }
     } catch {
-      toast.error("Lỗi kết nối");
+      showToast.error("Lỗi kết nối");
     } finally {
       setSubmittingReply(false);
     }

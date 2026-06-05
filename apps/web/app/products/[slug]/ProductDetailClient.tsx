@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { CountdownTimer } from "@/components/ui/CountdownTimer";
@@ -10,7 +10,7 @@ import {
   Package, Sprout, Heart
 } from "lucide-react";
 import { useSession } from "next-auth/react";
-import { toast } from "sonner";
+import { showToast } from "@/components/ui/custom-toast";
 import { useCartStore, CartItem } from "@/lib/store/cartStore";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -157,8 +157,8 @@ export function ProductDetailClient({
   const handleSubmitReview = async (e: React.FormEvent) => {
     e.preventDefault();
     const customerId = (session?.user as any)?.id;
-    if (!customerId) { toast.error("Vui lòng đăng nhập"); return; }
-    if (!reviewForm.content.trim()) { toast.error("Vui lòng nhập nội dung đánh giá"); return; }
+    if (!customerId) { showToast.error("Vui lòng đăng nhập"); return; }
+    if (!reviewForm.content.trim()) { showToast.error("Vui lòng nhập nội dung đánh giá"); return; }
     setSubmittingReview(true);
     try {
       const res = await fetch("/api/reviews", {
@@ -168,13 +168,13 @@ export function ProductDetailClient({
       });
       const data = await res.json();
       if (res.ok) {
-        toast.success("Đánh giá đã được gửi! Đang chờ admin duyệt.");
+        showToast.success("Đánh giá đã được gửi! Đang chờ admin duyệt.");
         setReviewForm({ rating: 5, title: "", content: "" });
         setAlreadyReviewed(true); setCanReview(false);
       } else {
-        toast.error(data.error || "Lỗi khi gửi đánh giá");
+        showToast.error(data.error || "Lỗi khi gửi đánh giá");
       }
-    } catch { toast.error("Lỗi kết nối. Vui lòng thử lại."); }
+    } catch { showToast.error("Lỗi kết nối. Vui lòng thử lại."); }
     finally { setSubmittingReview(false); }
   };
 
@@ -207,7 +207,7 @@ export function ProductDetailClient({
 
   const handleAddToCart = () => {
     if (!product) return;
-    if (!session) { toast.error("Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng"); router.push(`/login?callbackUrl=/products/${product.slug}`); return; }
+    if (!session) { showToast.error("Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng"); router.push(`/login?callbackUrl=/products/${product.slug}`); return; }
     const { price } = getPriceWithVariants();
     addItem({ productId: product.id, productName: product.name, productImage: product.images[0] || "", price, quantity, variants: selectedVariants });
     setCartOpen(true);
@@ -215,14 +215,14 @@ export function ProductDetailClient({
 
   const handleBuyNow = () => {
     if (!product) return;
-    if (!session) { toast.error("Vui lòng đăng nhập để mua hàng"); router.push(`/login?callbackUrl=/products/${product.slug}`); return; }
+    if (!session) { showToast.error("Vui lòng đăng nhập để mua hàng"); router.push(`/login?callbackUrl=/products/${product.slug}`); return; }
     const { price } = getPriceWithVariants();
     addItem({ productId: product.id, productName: product.name, productImage: product.images[0] || "", price, quantity, variants: selectedVariants });
     if (items.length === 0) { router.push("/checkout"); } else { setCartOpen(true); }
   };
 
   const handleVote = async () => {
-    if (!session) { toast.error("Vui lòng đăng nhập để bình chọn"); router.push("/login"); return; }
+    if (!session) { showToast.error("Vui lòng đăng nhập để bình chọn"); router.push("/login"); return; }
     if (!product || isVoting) return;
     setIsVoting(true);
     try {
@@ -230,8 +230,8 @@ export function ProductDetailClient({
       if (!res.ok) throw new Error();
       const data = await res.json();
       setProduct((prev: any) => prev ? { ...prev, userVoted: data.voted, voteCount: (prev.voteCount || 0) + (data.voted ? 1 : -1) } : prev);
-      data.voted ? toast.success("Đã thêm vào mục yêu thích!") : toast.info("Đã bỏ bình chọn.");
-    } catch { toast.error("Có lỗi xảy ra, vui lòng thử lại sau."); }
+      data.voted ? showToast.success("Đã thêm vào mục yêu thích!") : showToast.info("Đã bỏ bình chọn.");
+    } catch { showToast.error("Có lỗi xảy ra, vui lòng thử lại sau."); }
     finally { setIsVoting(false); }
   };
 

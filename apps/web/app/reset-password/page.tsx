@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
@@ -6,7 +6,7 @@ import Link from "next/link";
 import { ArrowLeft, Lock, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { toast } from "sonner";
+import { showToast } from "@/components/ui/custom-toast";
 
 function ResetPasswordForm() {
   const searchParams = useSearchParams();
@@ -37,12 +37,12 @@ function ResetPasswordForm() {
     e.preventDefault();
 
     if (newPassword.length < 6) {
-      toast.error("Mật khẩu phải có ít nhất 6 ký tự");
+      showToast.error("Mật khẩu phải có ít nhất 6 ký tự");
       return;
     }
 
     if (newPassword !== confirmPassword) {
-      toast.error("Mật khẩu xác nhận không khớp");
+      showToast.error("Mật khẩu xác nhận không khớp");
       return;
     }
 
@@ -59,12 +59,12 @@ function ResetPasswordForm() {
 
       if (res.ok) {
         setIsSuccess(true);
-        toast.success(data.message);
+        showToast.success(data.message);
       } else {
-        toast.error(data.error || "Có lỗi xảy ra, vui lòng thử lại");
+        showToast.error(data.error || "Có lỗi xảy ra, vui lòng thử lại");
       }
     } catch (error) {
-      toast.error("Lỗi kết nối. Vui lòng kiểm tra lại mạng.");
+      showToast.error("Lỗi kết nối. Vui lòng kiểm tra lại mạng.");
     } finally {
       setLoading(false);
     }

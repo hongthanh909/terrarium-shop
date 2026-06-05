@@ -1,10 +1,10 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { ArrowLeft, Plus, Edit, Trash2, Save, X } from "lucide-react";
-import { toast } from "sonner";
+import { showToast } from "@/components/ui/custom-toast";
 
 interface DiscountCampaign {
   id: string;
@@ -119,15 +119,15 @@ export default function AdminDiscountsPage() {
       });
 
       if (res.ok) {
-        toast.success(editingCampaign ? "Cập nhật chiến dịch thành công!" : "Tạo chiến dịch thành công!");
+        showToast.success(editingCampaign ? "Cập nhật chiến dịch thành công!" : "Tạo chiến dịch thành công!");
         handleCloseModal();
         queryClient.invalidateQueries({ queryKey: ["admin-discounts"] });
       } else {
         const err = await res.json();
-        toast.error(err.error || "Không thể lưu chiến dịch");
+        showToast.error(err.error || "Không thể lưu chiến dịch");
       }
     } catch {
-      toast.error("Lỗi khi lưu chiến dịch");
+      showToast.error("Lỗi khi lưu chiến dịch");
     } finally {
       setSubmitting(false);
     }
@@ -139,13 +139,13 @@ export default function AdminDiscountsPage() {
     try {
       const res = await fetch(`/api/discount-campaigns/${id}`, { method: "DELETE" });
       if (res.ok) {
-        toast.success("Xóa chiến dịch thành công!");
+        showToast.success("Xóa chiến dịch thành công!");
         queryClient.invalidateQueries({ queryKey: ["admin-discounts"] });
       } else {
-        toast.error("Không thể xóa chiến dịch");
+        showToast.error("Không thể xóa chiến dịch");
       }
     } catch {
-      toast.error("Lỗi khi xóa chiến dịch");
+      showToast.error("Lỗi khi xóa chiến dịch");
     } finally {
       setDeletingId(null);
     }

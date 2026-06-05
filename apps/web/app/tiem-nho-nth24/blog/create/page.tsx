@@ -1,10 +1,10 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Save, Eye, EyeOff, Upload, X, Image as ImageIcon } from "lucide-react";
 import Link from "next/link";
-import { toast } from "sonner";
+import { showToast } from "@/components/ui/custom-toast";
 import dynamic from "next/dynamic";
 
 const ReactQuill = dynamic(
@@ -72,7 +72,7 @@ export default function CreateBlogPostPage() {
     fd.append("file", file);
     const res = await fetch("/api/upload", { method: "POST", body: fd });
     if (!res.ok) {
-      toast.error("Upload ảnh thất bại");
+      showToast.error("Upload ảnh thất bại");
       return null;
     }
     const data = await res.json();
@@ -87,7 +87,7 @@ export default function CreateBlogPostPage() {
     const url = await uploadImage(file);
     if (url) {
       setFormData((prev) => ({ ...prev, thumbnail: url }));
-      toast.success("Tải ảnh đại diện thành công!");
+      showToast.success("Tải ảnh đại diện thành công!");
     }
     setUploadingThumbnail(false);
   };
@@ -109,7 +109,7 @@ export default function CreateBlogPostPage() {
         ...prev,
         images: [...prev.images, ...uploadedUrls],
       }));
-      toast.success(`Đã tải thêm ${uploadedUrls.length} ảnh thư viện!`);
+      showToast.success(`Đã tải thêm ${uploadedUrls.length} ảnh thư viện!`);
     }
     setUploadingGallery(false);
   };
@@ -129,15 +129,15 @@ export default function CreateBlogPostPage() {
     e.preventDefault();
 
     if (!formData.title.trim()) {
-      toast.error("Vui lòng nhập tiêu đề bài viết");
+      showToast.error("Vui lòng nhập tiêu đề bài viết");
       return;
     }
     if (!formData.slug.trim()) {
-      toast.error("Vui lòng nhập đường dẫn (slug)");
+      showToast.error("Vui lòng nhập đường dẫn (slug)");
       return;
     }
     if (!formData.intro.trim() && !formData.body.trim() && !formData.conclusion.trim()) {
-      toast.error("Nội dung bài viết không được để trống");
+      showToast.error("Nội dung bài viết không được để trống");
       return;
     }
 
@@ -153,18 +153,18 @@ export default function CreateBlogPostPage() {
       const result = await response.json();
 
       if (response.ok) {
-        toast.success(
+        showToast.success(
           formData.published
             ? "Bài viết đã được xuất bản thành công!"
             : "Đã lưu bài viết dưới dạng bản nháp!"
         );
         router.push("/tiem-nho-nth24/blog");
       } else {
-        toast.error(result.error || "Lỗi khi tạo bài viết");
+        showToast.error(result.error || "Lỗi khi tạo bài viết");
       }
     } catch (error) {
       console.error("Error:", error);
-      toast.error("Lỗi kết nối. Vui lòng thử lại.");
+      showToast.error("Lỗi kết nối. Vui lòng thử lại.");
     } finally {
       setSaving(false);
     }

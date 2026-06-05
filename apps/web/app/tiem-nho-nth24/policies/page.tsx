@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Plus, Edit, Trash2, Search, AlertCircle } from "lucide-react";
-import { toast } from "sonner";
+import { showToast } from "@/components/ui/custom-toast";
 import { Button } from "@/components/ui/button";
 
 export default function AdminPoliciesPage() {
@@ -22,7 +22,7 @@ export default function AdminPoliciesPage() {
       const data = await res.json();
       setPolicies(Array.isArray(data) ? data : []);
     } catch (error) {
-      toast.error("Lỗi khi tải danh sách chính sách");
+      showToast.error("Lỗi khi tải danh sách chính sách");
     } finally {
       setLoading(false);
     }
@@ -40,12 +40,14 @@ export default function AdminPoliciesPage() {
       fetchPolicies();
     };
 
-    toast.promise(promise(), {
-      loading: "Đang xóa chính sách...",
-      success: "Xóa chính sách thành công!",
-      error: (err) => err.message || "Lỗi khi xóa chính sách",
-      finally: () => setDeletingId(null),
-    });
+    try {
+      await promise();
+      showToast.success("Xóa chính sách thành công!");
+    } catch (err: any) {
+      showToast.error(err.message || "Lỗi khi xóa chính sách");
+    } finally {
+      setDeletingId(null);
+    }
   };
 
   const filtered = policies.filter(p => p.title.toLowerCase().includes(search.toLowerCase()));

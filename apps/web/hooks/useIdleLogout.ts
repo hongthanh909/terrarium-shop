@@ -14,7 +14,7 @@
 
 import { useEffect, useRef, useCallback } from "react";
 import { signOut, useSession } from "next-auth/react";
-import { toast } from "sonner";
+import { showToast } from "@/components/ui/custom-toast";
 import { useCartStore } from "@/lib/store/cartStore";
 
 interface UseIdleLogoutOptions {
@@ -39,7 +39,6 @@ export function useIdleLogout({
   const clearTimers = useCallback(() => {
     if (idleTimer.current)   clearTimeout(idleTimer.current);
     if (warnTimer.current)   clearTimeout(warnTimer.current);
-    if (warnToastId.current) toast.dismiss(warnToastId.current);
     idleTimer.current   = null;
     warnTimer.current   = null;
     warnToastId.current = null;
@@ -47,27 +46,16 @@ export function useIdleLogout({
 
   const handleLogout = useCallback(async () => {
     clearTimers();
-    toast.info("🔒 Phiên đăng nhập đã hết. Đang đăng xuất...", { duration: 3000 });
+    showToast.info("Phiên đăng nhập đã hết. Đang đăng xuất...");
     await new Promise(r => setTimeout(r, 1500));
     useCartStore.getState().clearCart();
     signOut({ callbackUrl: "/login" });
   }, [clearTimers]);
 
   const showWarning = useCallback(() => {
-    const id = toast.warning(
-      `⚠️ Phiên sắp hết — bạn sẽ tự động đăng xuất sau ${warnMinutes} phút nếu không có hoạt động.`,
-      {
-        duration: WARN_MS,
-        action: {
-          label: "Tôi vẫn ở đây",
-          onClick: () => {
-            clearTimers();
-            startTimers();
-          },
-        },
-      }
+    showToast.warning(
+      `Phiên sắp hết — bạn sẽ tự động đăng xuất sau ${warnMinutes} phút nếu không có hoạt động.`
     );
-    warnToastId.current = id;
     warnTimer.current = setTimeout(handleLogout, WARN_MS);
   }, [warnMinutes, WARN_MS, clearTimers, handleLogout]);
 

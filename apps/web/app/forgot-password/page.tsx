@@ -1,11 +1,11 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { toast } from "sonner";
+import { showToast } from "@/components/ui/custom-toast";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
@@ -15,7 +15,7 @@ export default function ForgotPasswordPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) {
-      toast.error("Vui lòng nhập địa chỉ email");
+      showToast.error("Vui lòng nhập địa chỉ email");
       return;
     }
     setLoading(true);
@@ -31,12 +31,12 @@ export default function ForgotPasswordPage() {
 
       if (res.ok) {
         setIsSuccess(true);
-        toast.success(data.message || "Yêu cầu khôi phục mật khẩu đã được gửi!");
+        showToast.success(data.message || "Yêu cầu khôi phục mật khẩu đã được gửi!");
       } else {
-        toast.error(data.error || "Có lỗi xảy ra, vui lòng thử lại");
+        showToast.error(data.error || "Có lỗi xảy ra, vui lòng thử lại");
       }
     } catch (error) {
-      toast.error("Lỗi kết nối. Vui lòng kiểm tra lại mạng.");
+      showToast.error("Lỗi kết nối. Vui lòng kiểm tra lại mạng.");
     } finally {
       setLoading(false);
     }

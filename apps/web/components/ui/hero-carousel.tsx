@@ -1,11 +1,11 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight, Star, Heart, Package, ShoppingBasket } from "lucide-react";
 import { useCartStore } from "@/lib/store/cartStore";
-import { toast } from "sonner";
+import { showToast } from "@/components/ui/custom-toast";
 import { motion } from "framer-motion";
 
 interface Product {
@@ -56,7 +56,7 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
       price,
       quantity: 1,
     });
-    toast.success(`Đã thêm "${product.name}" vào giỏ hàng 🛒`);
+    showToast.success(`Đã thêm "${product.name}" vào giỏ hàng 🛒`);
   }, [addItem]);
 
   if (!products || products.length === 0) return null;
