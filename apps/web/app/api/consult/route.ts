@@ -133,10 +133,22 @@ async function getProductCatalog(): Promise<CatalogResult> {
 }
 
 // =============================================
-// SYSTEM PROMPT ĐỘNG — v4
-// Nâng cấp: chẩn đoán bể, chăm sóc, cross-sell, chốt đơn
+// PAGE CONTEXT TYPE — from ChatWidget
 // =============================================
-async function buildSystemPrompt(): Promise<string> {
+interface PageContext {
+  type: "product" | "blog" | "explore" | "checkout" | "orders" | "consult" | "home" | "general";
+  slug?: string;
+  productName?: string;
+  productPrice?: string;
+  categoryName?: string;
+  blogTitle?: string;
+}
+
+// =============================================
+// SYSTEM PROMPT ĐỘNG — v5 (Page-Context Aware)
+// Nâng cấp: nhận biết trang user đang xem
+// =============================================
+async function buildSystemPrompt(pageContext?: PageContext): Promise<string> {
   const catalog = await getProductCatalog();
 
   const baseRole = `Bạn là trợ lý tư vấn AI bán hàng chuyên nghiệp của "Tiệm Rêu" — thương hiệu terrarium, tiểu cảnh và thiên nhiên thu nhỏ hàng đầu tại Việt Nam.
@@ -196,7 +208,7 @@ Khi khách chưa biết chọn gì, hãy hỏi nhẹ nhàng:
 Từ đó gợi ý 1-3 sản phẩm phù hợp nhất từ danh sách.`;
 
   if (catalog.type === "ok") {
-    return `${baseRole}
+    let prompt = `${baseRole}
 
 ═══ DANH SÁCH SẢN PHẨM SHOP (dữ liệu thật) ═══
 ${catalog.text}
@@ -206,24 +218,70 @@ Quy tắc sản phẩm:
 - Ưu tiên sản phẩm ⭐ (nổi bật) và "còn hàng"
 - KHÔNG đề xuất sản phẩm không có trong danh sách trên
 - Sản phẩm "hết hàng" → vẫn đề cập nhưng ghi rõ hết hàng`;
+
+    // Inject page context
+    if (pageContext?.type === "product" && pageContext.productName) {
+      prompt += `\n\n═══ NGỮ CẢNH TRANG HIỆN TẠI ═══\nKhách đang xem SẢN PHẨM: "${pageContext.productName}"${pageContext.productPrice ? ` — Giá: ${pageContext.productPrice}` : ""}${pageContext.categoryName ? ` — Danh mục: ${pageContext.categoryName}` : ""}\n- Ưu tiên trả lời về sản phẩm này\n- Gợi ý mua kèm phụ kiện, so sánh với SP cùng danh mục`;
+    } else if (pageContext?.type === "explore") {
+      prompt += `\n\n═══ NGỮ CẢNH ═══\nKhách đang xem trang KHÁM PHÁ. Gợi ý sản phẩm hot, deal giảm giá.`;
+    } else if (pageContext?.type === "checkout") {
+      prompt += `\n\n═══ NGỮ CẢNH ═══\nKhách đang THANH TOÁN. Hỗ trợ vận chuyển, mã giảm giá, chính sách đổi trả.`;
+    } else if (pageContext?.type === "orders") {
+      prompt += `\n\n═══ NGỮ CẢNH ═══\nKhách đang xem ĐƠN HÀNG. Hỗ trợ tình trạng đơn, bảo hành, đổi trả.`;
+    } else if (pageContext?.type === "blog") {
+      prompt += `\n\n═══ NGỮ CẢNH ═══\nKhách đang đọc BLOG. Gợi ý sản phẩm liên quan.`;
+    }
+
+    return prompt;
   }
 
   if (catalog.type === "empty") {
-    return `${baseRole}
+    let prompt = `${baseRole}
 
 THÔNG TIN QUAN TRỌNG: Hiện tại shop CHƯA CÓ SẢN PHẨM đang bán.
 - TUYỆT ĐỐI KHÔNG bịa tên sản phẩm hoặc giá tiền
 - Khi khách hỏi sản phẩm: nói shop đang cập nhật, đề nghị liên hệ Zalo/Facebook
 - Vẫn tư vấn kiến thức chăm sóc terrarium nói chung`;
+
+    if (pageContext?.type && pageContext.type !== "general" && pageContext.type !== "home") {
+      prompt += `\n\nKhách đang ở trang: ${pageContext.type.toUpperCase()}.`;
+    }
+
+    return prompt;
   }
 
   // catalog.type === "error"
-  return `${baseRole}
+  let prompt = `${baseRole}
 
 THÔNG TIN QUAN TRỌNG: Không thể tải danh sách sản phẩm lúc này.
 - TUYỆT ĐỐI KHÔNG đoán mò hoặc bịa sản phẩm/giá
 - Khi khách hỏi sản phẩm: xin lỗi và đề nghị xem trực tiếp trang Sản Phẩm
 - Vẫn tư vấn kiến thức chăm sóc terrarium nói chung`;
+
+  // ── Inject page context ──────────────────────
+  if (pageContext) {
+    switch (pageContext.type) {
+      case "product":
+        if (pageContext.productName) {
+          prompt += `\n\n═══ NGỮ CẢNH TRANG HIỆN TẠI ═══\nKhách đang xem SẢN PHẨM: "${pageContext.productName}"${pageContext.productPrice ? ` — Giá: ${pageContext.productPrice}` : ""}${pageContext.categoryName ? ` — Danh mục: ${pageContext.categoryName}` : ""}\n- Ưu tiên trả lời về sản phẩm này (chăm sóc, ưu nhược điểm, so sánh, gợi ý mua kèm)\n- Nếu khách hỏi sản phẩm khác → vẫn gợi ý nhưng nhắc sản phẩm đang xem`;
+        }
+        break;
+      case "blog":
+        prompt += `\n\n═══ NGỮ CẢNH TRANG HIỆN TẠI ═══\nKhách đang đọc BLOG. Có thể gợi ý sản phẩm liên quan đến bài viết hoặc tư vấn chăm sóc.`;
+        break;
+      case "explore":
+        prompt += `\n\n═══ NGỮ CẢNH TRANG HIỆN TẠI ═══\nKhách đang xem trang KHÁM PHÁ (explore). Giúp khách tìm sản phẩm phù hợp, so sánh, gợi ý hot deal.`;
+        break;
+      case "checkout":
+        prompt += `\n\n═══ NGỮ CẢNH TRANG HIỆN TẠI ═══\nKhách đang ở trang THANH TOÁN. Tập trung hỗ trợ: vận chuyển, mã giảm giá, phương thức thanh toán, chính sách đổi trả.`;
+        break;
+      case "orders":
+        prompt += `\n\n═══ NGỮ CẢNH TRANG HIỆN TẠI ═══\nKhách đang xem ĐƠN HÀNG. Hỗ trợ: tình trạng đơn, bảo hành, đổi trả, liên hệ shop.`;
+        break;
+    }
+  }
+
+  return prompt;
 }
 
 // =============================================
@@ -269,7 +327,8 @@ function getFallbackResponse(message: string): string {
 // =============================================
 async function streamFromOllama(
   message: string,
-  history: { role: string; content: string }[]
+  history: { role: string; content: string }[],
+  pageContext?: PageContext
 ): Promise<ReadableStream<Uint8Array> | null> {
   const ollamaUrl = process.env.OLLAMA_BASE_URL;
   if (!ollamaUrl) return null;
@@ -282,7 +341,7 @@ async function streamFromOllama(
   activeOllamaRequests++;
 
   try {
-    const systemPrompt = await buildSystemPrompt();
+    const systemPrompt = await buildSystemPrompt(pageContext);
     const messages = [
       { role: "system", content: systemPrompt },
       ...history.slice(-6), // Giới hạn 6 tin nhắn gần nhất (tiết kiệm token)
@@ -382,7 +441,7 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { message, history = [] } = body;
+    const { message, history = [], pageContext } = body;
 
     if (!message || typeof message !== "string" || message.trim().length === 0) {
       return NextResponse.json({ response: "Vui lòng nhập câu hỏi." });
@@ -398,7 +457,7 @@ export async function POST(request: Request) {
     }
 
     // ── Thử Streaming từ Ollama ──────────────────
-    const stream = await streamFromOllama(trimmedMessage, history);
+    const stream = await streamFromOllama(trimmedMessage, history, pageContext);
 
     if (stream) {
       return new Response(stream, {

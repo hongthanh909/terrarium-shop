@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
+import { usePathname } from "next/navigation";
 import {
   MessageCircle, Send, Bot, Sparkles, X,
   ShoppingBag, ExternalLink, RefreshCw
@@ -14,12 +15,47 @@ interface ChatMessage {
   suggestedProducts?: { name: string; slug: string; price: string }[];
 }
 
-const QUICK_QUESTIONS = [
-  "Cách chăm sóc terrarium?",
-  "Sản phẩm phòng ít sáng?",
-  "Chính sách vận chuyển?",
-  "Terrarium cho người mới?",
-];
+interface PageContext {
+  type: "product" | "blog" | "explore" | "checkout" | "orders" | "consult" | "home" | "general";
+  slug?: string;
+  productName?: string;
+  productPrice?: string;
+  categoryName?: string;
+  blogTitle?: string;
+}
+
+const QUICK_QUESTIONS: Record<string, string[]> = {
+  product: [
+    "Sản phẩm này phù hợp phòng nào?",
+    "Cách chăm sóc sản phẩm này?",
+    "Có sản phẩm tương tự không?",
+    "Mua kèm phụ kiện gì?",
+  ],
+  blog: [
+    "Cách chăm sóc terrarium?",
+    "Sản phẩm phù hợp cho phòng tối?",
+    "Chính sách vận chuyển?",
+    "Terrarium cho người mới?",
+  ],
+  explore: [
+    "Sản phẩm nào đang hot?",
+    "Gợi ý quà tặng dưới 500k?",
+    "Sản phẩm nào mới nhất?",
+    "Terrarium cho người mới?",
+  ],
+  checkout: [
+    "Chính sách vận chuyển?",
+    "Có mã giảm giá nào không?",
+    "Bao lâu thì nhận hàng?",
+    "Đổi trả thế nào?",
+  ],
+  general: [
+    "Cách chăm sóc terrarium?",
+    "Sản phẩm phù hợp phòng tối?",
+    "Chính sách vận chuyển?",
+    "Terrarium cho người mới?",
+  ],
+};
 
 function extractProductLinks(text: string): { name: string; slug: string; price: string }[] {
   const products: { name: string; slug: string; price: string }[] = [];
@@ -55,26 +91,139 @@ function renderContent(content: string) {
   ));
 }
 
-const INITIAL_MESSAGE: ChatMessage = {
-  role: "assistant",
-  content: "Xin chào! 👋 Tôi là trợ lý AI của **Tiệm Rêu**.\nTôi có thể giúp bạn:\n• Tư vấn chọn terrarium phù hợp\n• Hướng dẫn chăm sóc cây\n• Gợi ý sản phẩm và giá cả",
-};
+function getPageContext(pathname: string): PageContext {
+  if (pathname.match(/^\/products\/[\w-]+$/)) {
+    return { type: "product", slug: pathname.replace("/products/", "") };
+  }
+  if (pathname.startsWith("/blog")) {
+    return { type: "blog" };
+  }
+  if (pathname === "/explore") {
+    return { type: "explore" };
+  }
+  if (pathname.startsWith("/checkout")) {
+    return { type: "checkout" };
+  }
+  if (pathname.startsWith("/orders")) {
+    return { type: "orders" };
+  }
+  if (pathname === "/consult") {
+    return { type: "consult" };
+  }
+  if (pathname === "/") {
+    return { type: "home" };
+  }
+  return { type: "general" };
+}
+
+function getWelcomeMessage(ctx: PageContext): string {
+  switch (ctx.type) {
+    case "product":
+      if (ctx.productName) {
+        return `Xin chào! 👋 Bạn đang xem **${ctx.productName}**${ctx.productPrice ? ` (${ctx.productPrice})` : ""}.\nHỏi tôi bất cứ điều gì về sản phẩm này nhé:\n• Chăm sóc & bảo hành\n• Sản phẩm tương tự\n• Gợi ý mua kèm phụ kiện`;
+      }
+      return "Xin chào! 👋 Tôi là trợ lý AI của **Tiệm Rêu**.\nBạn đang xem chi tiết sản phẩm — hỏi tôi về sản phẩm này nhé!";
+    case "blog":
+      return "Xin chào! 👋 Tôi là trợ lý AI của **Tiệm Rêu**.\nBạn đang đọc blog — tôi có thể giúp bạn:\n• Tìm kiếm sản phẩm liên quan\n• Tư vấn chăm sóc terrarium\n• Giải đáp thắc mắc";
+    case "explore":
+      return "Xin chào! 👋 Tôi là trợ lý AI của **Tiệm Rêu**.\nBạn đang khám phá bộ sưu tập — tôi có thể giúp:\n• Gợi ý sản phẩm phù hợp với bạn\n• So sánh các sản phẩm\n• Tư vấn quà tặng";
+    case "checkout":
+      return "Xin chào! 👋 Bạn đang thanh toán.\nTôi có thể giúp bạn:\n• Thông tin vận chuyển & giao hàng\n• Hỗ trợ mã giảm giá\n• Chính sách đổi trả";
+    case "orders":
+      return "Xin chào! 👋 Bạn đang xem đơn hàng.\nTôi có thể giúp bạn:\n• Kiểm tra tình trạng đơn hàng\n• Chính sách đổi trả & bảo hành\n• Hỗ trợ liên hệ shop";
+    case "home":
+      return "Xin chào! 👋 Tôi là trợ lý AI của **Tiệm Rêu**.\nTôi có thể giúp bạn:\n• Tư vấn chọn terrarium phù hợp\n• Hướng dẫn chăm sóc cây\n• Gợi ý sản phẩm và giá cả";
+    default:
+      return "Xin chào! 👋 Tôi là trợ lý AI của **Tiệm Rêu**.\nTôi có thể giúp bạn:\n• Tư vấn chọn terrarium phù hợp\n• Hướng dẫn chăm sóc cây\n• Gợi ý sản phẩm và giá cả";
+  }
+}
 
 const MAX_MESSAGES_PER_SESSION = 30;
-const SEND_COOLDOWN_MS = 3000; // 3 giây giữa các tin nhắn
+const SEND_COOLDOWN_MS = 3000;
 const MAX_INPUT_LENGTH = 400;
 
 export default function ChatWidget() {
+  const pathname = usePathname() ?? "";
+
   const [open, setOpen] = useState(false);
   const [message, setMessage] = useState("");
   const [isSending, setIsSending] = useState(false);
   const [isAIAvailable, setIsAIAvailable] = useState<boolean | null>(null);
-  const [messages, setMessages] = useState<ChatMessage[]>([INITIAL_MESSAGE]);
   const [isCooldown, setIsCooldown] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
+
+  // ── Page context ───────────────────────────────
+  const [pageCtx, setPageCtx] = useState<PageContext>(() => getPageContext(pathname));
+  const [productData, setProductData] = useState<{ name: string; price: string; category: string } | null>(null);
+
+  // Detect page changes → update context & reset chat
+  const prevPathRef = useRef(pathname);
+  useEffect(() => {
+    if (pathname !== prevPathRef.current) {
+      prevPathRef.current = pathname;
+      const ctx = getPageContext(pathname);
+      setPageCtx(ctx);
+      setProductData(null);
+
+      // Fetch product info if on a product detail page
+      if (ctx.type === "product" && ctx.slug) {
+        fetch(`/api/products?slug=${ctx.slug}`)
+          .then(r => r.ok ? r.json() : null)
+          .then(data => {
+            if (data) {
+              const product = data;
+              const price = product.salePrice
+                ? `${Number(product.salePrice).toLocaleString("vi-VN")}₫`
+                : `${Number(product.basePrice).toLocaleString("vi-VN")}₫`;
+              setProductData({
+                name: product.name,
+                price,
+                category: product.category?.name || "",
+              });
+            }
+          })
+          .catch(() => { /* silent */ });
+      }
+    }
+  }, [pathname]);
+
+  // Build enriched page context for API
+  const enrichedCtx = useMemo<PageContext>(() => {
+    if (pageCtx.type === "product" && productData) {
+      return {
+        ...pageCtx,
+        productName: productData.name,
+        productPrice: productData.price,
+        categoryName: productData.category,
+      };
+    }
+    return pageCtx;
+  }, [pageCtx, productData]);
+
+  // Initial message depends on context
+  const initialMessage = useMemo<ChatMessage>(() => ({
+    role: "assistant",
+    content: getWelcomeMessage(enrichedCtx),
+  }), [enrichedCtx]);
+
+  const [messages, setMessages] = useState<ChatMessage[]>([initialMessage]);
+
+  // Reset messages when initial message changes (page navigation)
+  const prevWelcomeRef = useRef(initialMessage.content);
+  useEffect(() => {
+    if (initialMessage.content !== prevWelcomeRef.current) {
+      prevWelcomeRef.current = initialMessage.content;
+      setMessages([initialMessage]);
+      setIsAIAvailable(null);
+    }
+  }, [initialMessage]);
+
   const messageCount = messages.filter(m => m.role === "user").length;
+
+  // Quick questions for current page type
+  const quickQs = QUICK_QUESTIONS[enrichedCtx.type] || QUICK_QUESTIONS.general;
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -88,7 +237,7 @@ export default function ChatWidget() {
 
   const resetChat = () => {
     abortControllerRef.current?.abort();
-    setMessages([INITIAL_MESSAGE]);
+    setMessages([initialMessage]);
     setMessage("");
     setIsSending(false);
     setIsCooldown(false);
@@ -98,7 +247,6 @@ export default function ChatWidget() {
   const sendMessage = async (text: string) => {
     if (!text.trim() || isSending || isCooldown) return;
     
-    // Max messages per session
     if (messageCount >= MAX_MESSAGES_PER_SESSION) {
       setMessages((prev) => [...prev, {
         role: "assistant",
@@ -127,7 +275,11 @@ export default function ChatWidget() {
       const res = await fetch("/api/consult", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: userMsg, history: history.slice(0, -1) }),
+        body: JSON.stringify({
+          message: userMsg,
+          history: history.slice(0, -1),
+          pageContext: enrichedCtx,
+        }),
         signal: controller.signal,
       });
 
@@ -189,7 +341,6 @@ export default function ChatWidget() {
     } finally {
       setIsSending(false);
       abortControllerRef.current = null;
-      // Cooldown 3s after sending
       setIsCooldown(true);
       setTimeout(() => setIsCooldown(false), SEND_COOLDOWN_MS);
     }
@@ -202,6 +353,11 @@ export default function ChatWidget() {
   const Cursor = () => (
     <span className="inline-block w-[2px] h-3.5 bg-[#4a7c3f] ml-0.5 align-middle rounded-full animate-pulse" />
   );
+
+  // ── Page-aware label for tooltip ──
+  const tooltipLabel = enrichedCtx.type === "product" && enrichedCtx.productName
+    ? `Hỏi AI về ${enrichedCtx.productName.length > 15 ? enrichedCtx.productName.slice(0, 15) + "…" : enrichedCtx.productName}`
+    : "Tư vấn AI 24/7 🌿";
 
   return (
     <>
@@ -223,7 +379,7 @@ export default function ChatWidget() {
           pointerEvents: open ? "auto" : "none",
         }}
       >
-        {/* Responsive styles: mobile = full-width, desktop = fixed 360px */}
+        {/* Responsive styles */}
         <style>{`
           .chat-panel-responsive {
             width: calc(100vw - 48px);
@@ -232,9 +388,9 @@ export default function ChatWidget() {
           }
           @media (min-width: 640px) {
             .chat-panel-responsive {
-              width: 360px;
-              height: 500px;
-              max-height: 500px;
+              width: 380px;
+              height: 520px;
+              max-height: 520px;
             }
           }
         `}</style>
@@ -286,7 +442,6 @@ export default function ChatWidget() {
 
           {/* Action buttons */}
           <div style={{ display: "flex", gap: 4, flexShrink: 0 }}>
-            {/* Shop link */}
             <a
               href="/products"
               title="Xem sản phẩm"
@@ -299,7 +454,6 @@ export default function ChatWidget() {
             >
               <ShoppingBag size={14} />
             </a>
-            {/* Refresh */}
             <button
               onClick={resetChat}
               title="Làm mới cuộc trò chuyện"
@@ -313,7 +467,6 @@ export default function ChatWidget() {
             >
               <RefreshCw size={14} />
             </button>
-            {/* Close */}
             <button
               onClick={() => setOpen(false)}
               title="Thu nhỏ"
@@ -426,12 +579,12 @@ export default function ChatWidget() {
                 </div>
               )}
 
-              {/* Quick reply chips — chỉ hiện sau tin nhắn đầu tiên của bot */}
+              {/* Quick reply chips — only after first bot message when no user messages yet */}
               {i === 0 && msg.role === "assistant" && !isSending && messages.length === 1 && (
                 <div style={{ marginTop: 10, marginLeft: 33 }}>
-                  <p style={{ fontSize: 11, color: "#7a9272", marginBottom: 6 }}>Câu hỏi thường gặp:</p>
+                  <p style={{ fontSize: 11, color: "#7a9272", marginBottom: 6 }}>Câu hỏi gợi ý:</p>
                   <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-                    {QUICK_QUESTIONS.map((q) => (
+                    {quickQs.map((q) => (
                       <button
                         key={q}
                         onClick={() => sendMessage(q)}
@@ -459,7 +612,7 @@ export default function ChatWidget() {
         {/* ── INPUT AREA ──────────────────────────── */}
         <div style={{
           background: "white",
-          borderTop: "1px solid #e2ead f",
+          borderTop: "1px solid #e2eadf",
           padding: "10px 12px",
           display: "flex",
           alignItems: "flex-end",
@@ -489,7 +642,6 @@ export default function ChatWidget() {
                 fontFamily: "inherit",
               }}
             />
-            {/* Character count — show when near limit */}
             {message.length > 300 && (
               <span style={{
                 position: "absolute", right: 4, bottom: 2,
@@ -551,9 +703,13 @@ export default function ChatWidget() {
               cursor: "pointer", userSelect: "none",
               boxShadow: "0 2px 10px rgba(74,124,63,0.4)",
               animation: "chatPulse 2.5s ease-in-out infinite",
+              maxWidth: 200,
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
             }}
           >
-            Tư vấn AI 24/7 🌿
+            {tooltipLabel}
           </div>
         )}
 
