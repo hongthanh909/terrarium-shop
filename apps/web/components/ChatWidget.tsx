@@ -60,15 +60,21 @@ const INITIAL_MESSAGE: ChatMessage = {
   content: "Xin chào! 👋 Tôi là trợ lý AI của **Tiệm Rêu**.\nTôi có thể giúp bạn:\n• Tư vấn chọn terrarium phù hợp\n• Hướng dẫn chăm sóc cây\n• Gợi ý sản phẩm và giá cả",
 };
 
+const MAX_MESSAGES_PER_SESSION = 30;
+const SEND_COOLDOWN_MS = 3000; // 3 giây giữa các tin nhắn
+const MAX_INPUT_LENGTH = 400;
+
 export default function ChatWidget() {
   const [open, setOpen] = useState(false);
   const [message, setMessage] = useState("");
   const [isSending, setIsSending] = useState(false);
   const [isAIAvailable, setIsAIAvailable] = useState<boolean | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([INITIAL_MESSAGE]);
+  const [isCooldown, setIsCooldown] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
+  const messageCount = messages.filter(m => m.role === "user").length;
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -85,12 +91,25 @@ export default function ChatWidget() {
     setMessages([INITIAL_MESSAGE]);
     setMessage("");
     setIsSending(false);
+    setIsCooldown(false);
     setIsAIAvailable(null);
   };
 
   const sendMessage = async (text: string) => {
-    if (!text.trim() || isSending) return;
+    if (!text.trim() || isSending || isCooldown) return;
+    
+    // Max messages per session
+    if (messageCount >= MAX_MESSAGES_PER_SESSION) {
+      setMessages((prev) => [...prev, {
+        role: "assistant",
+        content: "Dạ cuộc trò chuyện đã khá dài rồi 🌿 Để được tư vấn chi tiết hơn, anh/chị liên hệ trực tiếp qua Zalo hoặc Facebook của Tiệm Rêu nhé!\n\nHoặc bấm nút 🔄 để bắt đầu cuộc trò chuyện mới.",
+        isStreaming: false,
+      }]);
+      return;
+    }
+    
     const userMsg = text.trim();
+    if (userMsg.length > MAX_INPUT_LENGTH) return;
     setMessage("");
 
     const newMessages: ChatMessage[] = [...messages, { role: "user", content: userMsg }];
@@ -170,6 +189,9 @@ export default function ChatWidget() {
     } finally {
       setIsSending(false);
       abortControllerRef.current = null;
+      // Cooldown 3s after sending
+      setIsCooldown(true);
+      setTimeout(() => setIsCooldown(false), SEND_COOLDOWN_MS);
     }
   };
 
@@ -444,32 +466,47 @@ export default function ChatWidget() {
           gap: 8,
           flexShrink: 0,
         }}>
-          <textarea
-            ref={textareaRef}
-            value={message}
-            onChange={(e) => {
-              setMessage(e.target.value);
-              e.target.style.height = "auto";
-              e.target.style.height = Math.min(e.target.scrollHeight, 80) + "px";
-            }}
-            onKeyDown={handleKey}
-            disabled={isSending}
-            placeholder="Nhập câu hỏi của bạn..."
-            rows={1}
-            style={{
-              flex: 1, resize: "none", border: "none", outline: "none",
-              background: "transparent", fontSize: 13, lineHeight: 1.5,
-              color: "#1f2d1c", minHeight: 36, maxHeight: 80,
-              fontFamily: "inherit",
-            }}
-          />
+          <div style={{ flex: 1, position: "relative" }}>
+            <textarea
+              ref={textareaRef}
+              value={message}
+              onChange={(e) => {
+                const val = e.target.value;
+                if (val.length <= MAX_INPUT_LENGTH) {
+                  setMessage(val);
+                }
+                e.target.style.height = "auto";
+                e.target.style.height = Math.min(e.target.scrollHeight, 80) + "px";
+              }}
+              onKeyDown={handleKey}
+              disabled={isSending || isCooldown || messageCount >= MAX_MESSAGES_PER_SESSION}
+              placeholder={isCooldown ? "Đợi chút..." : messageCount >= MAX_MESSAGES_PER_SESSION ? "Đã đạt giới hạn tin nhắn" : "Nhập câu hỏi của bạn..."}
+              rows={1}
+              style={{
+                width: "100%", resize: "none", border: "none", outline: "none",
+                background: "transparent", fontSize: 13, lineHeight: 1.5,
+                color: "#1f2d1c", minHeight: 36, maxHeight: 80,
+                fontFamily: "inherit",
+              }}
+            />
+            {/* Character count — show when near limit */}
+            {message.length > 300 && (
+              <span style={{
+                position: "absolute", right: 4, bottom: 2,
+                fontSize: 10, fontWeight: 600,
+                color: message.length >= MAX_INPUT_LENGTH ? "#dc2626" : "#9ca3af",
+              }}>
+                {message.length}/{MAX_INPUT_LENGTH}
+              </span>
+            )}
+          </div>
           <button
             onClick={() => sendMessage(message)}
-            disabled={isSending || !message.trim()}
+            disabled={isSending || isCooldown || !message.trim() || messageCount >= MAX_MESSAGES_PER_SESSION}
             style={{
               width: 36, height: 36, borderRadius: 10,
-              background: message.trim() && !isSending ? "#4a7c3f" : "#c5d9c0",
-              border: "none", cursor: message.trim() && !isSending ? "pointer" : "default",
+              background: message.trim() && !isSending && !isCooldown ? "#4a7c3f" : "#c5d9c0",
+              border: "none", cursor: message.trim() && !isSending && !isCooldown ? "pointer" : "default",
               display: "flex", alignItems: "center", justifyContent: "center",
               flexShrink: 0, transition: "background 0.2s",
             }}
