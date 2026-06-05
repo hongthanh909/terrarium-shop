@@ -285,26 +285,36 @@ THÔNG TIN QUAN TRỌNG: Không thể tải danh sách sản phẩm lúc này.
 }
 
 // =============================================
-// FALLBACK KNOWLEDGE BASE (khi Ollama offline)
+// FALLBACK KNOWLEDGE BASE (from Database)
+// Cached for 5 minutes, admin-editable
 // =============================================
-const FALLBACK_KNOWLEDGE: Record<string, string> = {
-  "chăm sóc": "🌿 Để chăm sóc terrarium:\n• Đặt nơi có ánh sáng gián tiếp\n• Tưới nước 1-2 tuần/lần (terrarium kín) hoặc 3-5 ngày/lần (mở)\n• Cắt tỉa lá vàng định kỳ\n• Tránh ánh nắng trực tiếp",
-  "tưới nước": "💧 Hướng dẫn tưới:\n• Terrarium kín: 2-3 tuần/lần, xịt sương nhẹ\n• Terrarium mở: 3-5 ngày/lần\n• Lá héo = thiếu nước | Nấm mốc = thừa nước",
-  "ánh sáng": "☀️ Yêu cầu ánh sáng:\n• Ánh sáng gián tiếp là tốt nhất\n• Tránh nắng trực tiếp (cháy lá)\n• Đèn LED grow light thay thế tốt\n• Đặt cách cửa sổ 1-2m",
-  "phòng tối": "🌙 Cây phù hợp nơi ít sáng:\n• Fern (Dương xỉ)\n• Moss (Rêu)\n• Pothos (Trầu bà)\n• Fittonia (Cây thảm)\n→ Bổ sung đèn LED grow light nếu cần",
-  "nấm": "🔬 Xử lý nấm mốc trong bể:\n• Mở nắp 24-48h cho thoáng khí\n• Dùng tăm bông lau sạch nấm\n• Giảm tần suất tưới\n• Thêm than hoạt tính vào lớp đất\n• Nếu nặng: thay đất mới",
-  "côn trùng": "🐛 Xử lý côn trùng nhỏ:\n• Để đất khô hơn giữa các lần tưới\n• Phủ cát mỏng lên mặt đất\n• Dùng bẫy dính vàng\n• Tránh dùng thuốc trừ sâu hóa học",
-  "héo": "🍂 Cây bị héo:\n• Lá mềm rũ = thiếu nước → tưới nhẹ\n• Lá vàng + đất ướt = thừa nước → mở nắp thoáng, giảm tưới\n• Lá cháy viền = nắng trực tiếp → di chuyển vào chỗ mát",
-  "mua": "🛒 Cách mua hàng:\n• Vào trang Sản Phẩm → thêm vào giỏ hàng\n• Thanh toán COD hoặc chuyển khoản\n• Giao hàng toàn quốc 3-5 ngày\n• Miễn phí ship đơn từ 500.000₫",
-  "vận chuyển": "🚚 Thông tin giao hàng:\n• Tiêu chuẩn: 3-5 ngày (30.000₫)\n• Nhanh: 1-2 ngày (50.000₫)\n• Đóng gói cẩn thận, chống va đập\n• Miễn phí khi đơn ≥ 500.000₫",
-  "bảo hành": "🛡️ Chính sách bảo hành:\n• Bảo hành cây sống 7 ngày\n• Đổi trả nếu hư hỏng khi vận chuyển\n• Hỗ trợ tư vấn chăm sóc miễn phí suốt thời gian sử dụng",
-  "voucher": "🎟️ Voucher giảm giá:\n• Xem mã giảm giá tại trang Khám Phá\n• Nhập mã khi thanh toán\n• Một số voucher có giới hạn số lượng\n• Miễn phí ship cho đơn từ 500.000₫",
-  "combo": "🎁 Combo sản phẩm:\n• Combo tiết kiệm hơn mua lẻ\n• Phù hợp làm quà tặng\n• Có thể thêm đèn LED\n• Xem tại trang Sản Phẩm mục Combo",
-  "terrarium kín": "🫙 Terrarium kín (bể kín):\n• Hệ sinh thái tự cung tự cấp\n• Tưới 2-3 tuần/lần (rất ít)\n• Ánh sáng gián tiếp\n• Nếu quá nhiều sương → mở nắp 30 phút/ngày\n• Phù hợp: người bận rộn, ít kinh nghiệm",
-  "terrarium mở": "🌱 Terrarium mở:\n• Cần tưới thường xuyên hơn (3-5 ngày/lần)\n• Thoáng khí tốt, ít nấm mốc\n• Phù hợp: cây mọng nước, xương rồng, fern\n• Cần chú ý độ ẩm môi trường",
-};
+let knowledgeCache: { keyword: string; response: string; priority: number }[] | null = null;
+let knowledgeCacheTime = 0;
+const KNOWLEDGE_CACHE_TTL = 5 * 60 * 1000; // 5 phút
 
-function getFallbackResponse(message: string): string {
+async function getKnowledgeBase(): Promise<{ keyword: string; response: string; priority: number }[]> {
+  const now = Date.now();
+  if (knowledgeCache && now - knowledgeCacheTime < KNOWLEDGE_CACHE_TTL) {
+    return knowledgeCache;
+  }
+
+  try {
+    const entries = await prisma.aiKnowledge.findMany({
+      where: { isActive: true },
+      select: { keyword: true, response: true, priority: true },
+      orderBy: [{ priority: "desc" }, { createdAt: "desc" }],
+    });
+    knowledgeCache = entries;
+    knowledgeCacheTime = now;
+    return entries;
+  } catch (err) {
+    console.error("Failed to load AI knowledge from DB:", err);
+    // Return empty if DB fails — sẽ dùng default response
+    return knowledgeCache || [];
+  }
+}
+
+async function getFallbackResponse(message: string): Promise<string> {
   const lower = message.toLowerCase();
 
   if (/xin chào|hello|hi|chào|alo/.test(lower)) {
@@ -315,8 +325,14 @@ function getFallbackResponse(message: string): string {
     return "Dạ không có gì! 😊 Chúc anh/chị chăm sóc terrarium thật vui. Nếu cần hỗ trợ thêm, cứ hỏi em nhé! 🌱";
   }
 
-  for (const [keyword, response] of Object.entries(FALLBACK_KNOWLEDGE)) {
-    if (lower.includes(keyword)) return response;
+  // Query from database
+  const knowledge = await getKnowledgeBase();
+
+  // Match by keyword (sorted by priority already)
+  for (const entry of knowledge) {
+    if (lower.includes(entry.keyword)) {
+      return entry.response;
+    }
   }
 
   return "Dạ cảm ơn anh/chị! 🌿 Em có thể tư vấn về sản phẩm terrarium, cách chăm sóc cây, xử lý sự cố bể, giá cả và đặt hàng. Anh/chị hỏi cụ thể hơn để em hỗ trợ tốt nhất nhé!";
@@ -509,7 +525,7 @@ export async function POST(request: Request) {
 
     // ── Fallback lớp 3: Knowledge base tĩnh ─────
     return NextResponse.json({
-      response: getFallbackResponse(trimmedMessage),
+      response: await getFallbackResponse(trimmedMessage),
       source: "fallback",
     });
   } catch (error) {

@@ -757,3 +757,24 @@ model AuditLog {
 
   @@map("audit_logs")
 }
+
+// ============================================
+// 13. AI KNOWLEDGE BASE
+// Nội dung kiến thức cho chatbot AI (fallback khi Ollama offline)
+// Admin có thể thêm/sửa/xóa qua giao diện admin
+// ============================================
+
+model AiKnowledge {
+  id        String   @id @default(cuid())
+  keyword   String   // Từ khóa để match (ví dụ: "chăm sóc", "tưới nước")
+  response  String   // Nội dung trả lời (hỗ trợ markdown/emoji)
+  category  String   @default("general") // Phân loại: general, care, shipping, policy, product
+  priority  Int      @default(0) // Thứ tự ưu tiên (cao hơn = ưu tiên hơn)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([isActive, priority])
+  @@index([keyword])
+  @@map("ai_knowledge")
+}
