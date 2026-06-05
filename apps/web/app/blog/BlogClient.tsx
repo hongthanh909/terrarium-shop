@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import Link from "next/link";
-import { Calendar, Tag, BookOpen } from "lucide-react";
+import { Calendar, Tag, BookOpen, ImageOff } from "lucide-react";
 import { PageTransition } from "@/components/ui/page-transition";
 import { motion } from "framer-motion";
 
@@ -11,6 +11,7 @@ interface BlogPost {
   slug: string;
   title: string;
   content: string;
+  thumbnail: string | null;
   published: boolean;
   publishedAt: string | null;
   category: { id: string; slug: string; name: string } | null;
@@ -108,27 +109,52 @@ export function BlogClient({
                   whileHover={{ y: -4 }}
                 >
                   <Link href={`/blog/${post.slug}`} className="block h-full">
-                    <div className="group h-full bg-[#f0f4ed] border border-[#d4e4c9] rounded-2xl overflow-hidden shadow-[0_2px_12px_rgba(66,87,51,0.08)] hover:shadow-[0_16px_40px_rgba(66,87,51,0.16)] hover:border-[#425733]/40 transition-all duration-300">
-                      <div className="h-1 bg-gradient-to-r from-[#425733] via-[#6d8c5a] to-[#425733] opacity-60 group-hover:opacity-100 transition-opacity" />
-                      <div className="p-6">
+                    <div className="group h-full bg-white border border-[#d4e4c9] rounded-2xl overflow-hidden shadow-[0_2px_12px_rgba(66,87,51,0.08)] hover:shadow-[0_16px_40px_rgba(66,87,51,0.16)] hover:border-[#425733]/40 transition-all duration-300">
+                      
+                      {/* Thumbnail Image */}
+                      <div className="relative w-full aspect-[16/9] overflow-hidden bg-[#f0f4ed]">
+                        {post.thumbnail ? (
+                          <img
+                            src={post.thumbnail}
+                            alt={post.title}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center">
+                            <div className="text-center">
+                              <ImageOff className="w-10 h-10 mx-auto text-[#a8c49a] mb-2" />
+                              <p className="text-xs text-[#7a9b6a]">Chưa có ảnh</p>
+                            </div>
+                          </div>
+                        )}
+                        {/* Category overlay badge */}
                         {post.category && (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#d4e4c9] text-[#425733] text-[10px] font-semibold uppercase tracking-wider mb-3">
+                          <span className="absolute top-3 left-3 inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/90 backdrop-blur-sm text-[#425733] text-[10px] font-bold uppercase tracking-wider shadow-sm border border-white/50">
                             <Tag className="w-3 h-3" />
                             {post.category.name}
                           </span>
                         )}
-                        <h3 className="text-lg font-bold text-[#1a2e12] mb-3 group-hover:text-[#425733] transition-colors line-clamp-2 leading-snug">
+                      </div>
+
+                      {/* Content */}
+                      <div className="p-5">
+                        <h3 className="text-lg font-bold text-[#1a2e12] mb-2 group-hover:text-[#425733] transition-colors line-clamp-2 leading-snug">
                           {post.title}
                         </h3>
-                        <p className="text-gray-500 text-sm line-clamp-3 mb-4 leading-relaxed">
-                          {post.content.replace(/<[^>]+>/g, "").substring(0, 150)}...
+                        <p className="text-gray-500 text-sm line-clamp-2 mb-4 leading-relaxed">
+                          {(post.content || "").replace(/<[^>]+>/g, "").substring(0, 120)}...
                         </p>
-                        {post.publishedAt && (
-                          <div className="flex items-center text-xs text-gray-400">
-                            <Calendar className="w-3 h-3 mr-1" />
-                            {new Date(post.publishedAt).toLocaleDateString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh" })}
-                          </div>
-                        )}
+                        <div className="flex items-center justify-between">
+                          {post.publishedAt && (
+                            <div className="flex items-center text-xs text-gray-400">
+                              <Calendar className="w-3 h-3 mr-1" />
+                              {new Date(post.publishedAt).toLocaleDateString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh" })}
+                            </div>
+                          )}
+                          <span className="text-xs font-semibold text-[#425733] group-hover:underline">
+                            Đọc thêm →
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </Link>

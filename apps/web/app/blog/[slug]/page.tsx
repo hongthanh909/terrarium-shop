@@ -2,59 +2,29 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Calendar, Tag } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
-import { unstable_cache } from "next/cache";
 import BlogInteraction from "./BlogInteraction";
 
-// ISR: cache bài viết 1 giờ, revalidate khi có truy cập mới
-export const revalidate = 3600;
+// force-dynamic to avoid ISR/cache issues in standalone mode
+export const dynamic = "force-dynamic";
 
 interface Props {
   params: { slug: string };
 }
 
-function getCachedPost(slug: string) {
-  return unstable_cache(
-    async () => {
-      try {
-        return await prisma.blogPost.findUnique({
-          where: { slug, published: true },
-          include: { category: true },
-        });
-      } catch {
-        return null;
-      }
-    },
-    [`blog-post-${slug}`],
-    { revalidate: 3600 }
-  );
-}
-
-// SEO: generate per-post metadata
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const post = await getCachedPost(params.slug)();
-  if (!post) return { title: "Bài viết không tìm thấy" };
-  
-  // Create description from either content, intro or body
-  const rawText = post.intro || post.content || post.body || "";
-  const description = rawText.replace(/<[^>]+>/g, "").slice(0, 160).trim();
-  
-  return {
-    title: `${post.title} | Blog - Tiệm Rêu Decor`,
-    description,
-    openGraph: { 
-      title: post.title, 
-      description, 
-      type: "article",
-      publishedTime: post.publishedAt?.toISOString(),
-      images: post.thumbnail ? [{ url: post.thumbnail }] : undefined
-    },
-  };
-}
+// NOTE: generateMetadata is in layout.tsx — do NOT duplicate here
 
 export default async function BlogPostPage({ params }: Props) {
-  const post = await getCachedPost(params.slug)();
+  let post: any = null;
+
+  try {
+    post = await prisma.blogPost.findUnique({
+      where: { slug: params.slug, published: true },
+      include: { category: true },
+    });
+  } catch (error) {
+    console.error("[BlogPost] DB error:", error);
+  }
 
   if (!post) {
     notFound();
@@ -132,7 +102,7 @@ export default async function BlogPostPage({ params }: Props) {
                 {/* Additional Gallery Images */}
                 {post.images && post.images.length > 0 && (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 my-8">
-                    {post.images.map((img, idx) => (
+                    {post.images.map((img: string, idx: number) => (
                       <div key={idx} className="relative aspect-video rounded-xl overflow-hidden shadow-sm border border-gray-100 bg-gray-50">
                         <img
                           src={img}
