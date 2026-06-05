@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
@@ -194,9 +194,9 @@ export function ExploreClient({ featured, pinned, topVoted, newArrivals, weeklyF
                     <span>🔧 {currentFeatured.reason || "Featured của tuần"}</span>
                   </div>
 
-                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
                     {/* Left Column: Product Info & Actions */}
-                    <div className="lg:col-span-7 text-left space-y-5">
+                    <div className="lg:col-span-7 text-left space-y-4 lg:min-h-[320px]">
                       <h2 className="text-3xl md:text-5xl font-extrabold tracking-tight leading-tight">{currentFeatured.product.name}</h2>
                       
                       {(() => {
@@ -224,7 +224,7 @@ export function ExploreClient({ featured, pinned, topVoted, newArrivals, weeklyF
                         );
                       })()}
 
-                      <p className="text-white/80 text-sm md:text-base leading-relaxed max-w-xl">
+                      <p className="text-white/80 text-xs md:text-sm leading-relaxed max-w-xl line-clamp-3">
                         Terrarium {currentFeatured.product.name.toLowerCase()} mô phỏng một khu rừng tự nhiên thu nhỏ với hệ thực vật phong phú, rêu xanh và bố cục hài hòa. Được chế tác thủ công tinh xảo, mỗi sản phẩm mang vẻ đẹp nghệ thuật độc nhất vô nhị giúp thư giãn và trang trí sang trọng cho không gian của bạn.
                       </p>
 
@@ -272,10 +272,10 @@ export function ExploreClient({ featured, pinned, topVoted, newArrivals, weeklyF
                     </div>
 
                     {/* Right Column: Visual Showcase */}
-                    <div className="lg:col-span-5 flex flex-col items-center justify-center gap-4">
+                    <div className="lg:col-span-5 flex flex-col items-center justify-start gap-4">
                       <div className="flex md:flex-row flex-col items-center justify-center gap-4 w-full">
-                        {/* Main Image View */}
-                        <div className="relative w-full max-w-[340px] aspect-square rounded-3xl overflow-hidden bg-white/10 backdrop-blur-sm p-3 border border-white/20 group">
+                        {/* Main Image View — fixed size */}
+                        <div className="relative w-full max-w-[340px] h-[340px] rounded-3xl overflow-hidden bg-white/10 backdrop-blur-sm p-3 border border-white/20 group flex-shrink-0">
                           {/* Floating leaf tag */}
                           <div className="absolute top-4 right-4 z-10 bg-[#3a5229]/95 border border-[#ddeedd]/20 backdrop-blur px-3 py-1 rounded-full text-[10px] font-bold tracking-wider flex items-center gap-1.5 text-white/90">
                             <Sprout className="w-3.5 h-3.5 text-[#a3e288]" />
