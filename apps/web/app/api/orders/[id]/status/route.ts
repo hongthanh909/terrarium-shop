@@ -21,13 +21,32 @@ export async function GET(
         paymentStatus: true,
         paymentMethod: true,
         total: true,
+        subtotal: true,
+        discount: true,
+        shippingFee: true,
         createdAt: true,
+        items: {
+          select: {
+            id: true,
+            productName: true,
+            productImage: true,
+            quantity: true,
+            price: true,
+            variants: true,
+          },
+        },
       },
     });
 
     if (!order) {
       return NextResponse.json({ error: "Order not found" }, { status: 404 });
     }
+
+    // Serialize items
+    const serializedItems = order.items.map((item) => ({
+      ...item,
+      price: Number(item.price),
+    }));
 
     // Kiểm tra hết hạn thanh toán (chỉ áp dụng với BANK_TRANSFER + PENDING)
     if (
@@ -59,6 +78,7 @@ export async function GET(
           status: "CANCELLED",
           expired: true,
           orderNumber: order.orderNumber,
+          items: serializedItems,
         });
       }
 
@@ -72,7 +92,11 @@ export async function GET(
         remainingSeconds: Math.max(0, Math.floor(remainingMs / 1000)),
         orderNumber: order.orderNumber,
         total: Number(order.total),
+        subtotal: Number(order.subtotal),
+        discount: Number(order.discount),
+        shippingFee: Number(order.shippingFee),
         createdAt: order.createdAt,
+        items: serializedItems,
       });
     }
 
@@ -82,8 +106,11 @@ export async function GET(
       expired: false,
       orderNumber: order.orderNumber,
       total: Number(order.total),
-      // Frontend dùng để detect PAID sau khi webhook cập nhật
+      subtotal: Number(order.subtotal),
+      discount: Number(order.discount),
+      shippingFee: Number(order.shippingFee),
       isPaid: order.paymentStatus === "PAID",
+      items: serializedItems,
     });
   } catch (error) {
     console.error("Error checking order status:", error);

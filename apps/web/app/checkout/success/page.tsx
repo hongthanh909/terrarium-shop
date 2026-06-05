@@ -2,10 +2,11 @@
 
 import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import {
   Check, Clock, AlertTriangle, Copy, Package,
-  ArrowRight, Truck, CreditCard, Leaf, Heart,
+  ArrowRight, Truck, CreditCard, Leaf, Heart, Timer,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -18,12 +19,21 @@ const TOTAL_SECONDS = 30 * 60; // 30 phút
 
 type PayStatus = "PENDING" | "PAID" | "EXPIRED";
 
+interface OrderItem {
+  id: string;
+  productName: string;
+  productImage: string;
+  quantity: number;
+  price: number;
+  variants: string | null;
+}
+
 // ────────────────────────────────────────────────────────────────────────────
 export default function CheckoutSuccessPage() {
   const searchParams = useSearchParams();
   const orderId     = searchParams.get("orderId")     || "";
   const orderNumber = searchParams.get("orderNumber") || "";
-  const method      = searchParams.get("method")      || "COD"; // COD | BANK_TRANSFER
+  const method      = searchParams.get("method")      || "COD";
 
   const isBanking = method === "BANK_TRANSFER";
 
@@ -34,8 +44,11 @@ export default function CheckoutSuccessPage() {
   const [payStatus, setPayStatus]     = useState<PayStatus>(isBanking ? "PENDING" : "PAID");
   const [secondsLeft, setSecondsLeft] = useState<number | null>(null);
   const [copied, setCopied]           = useState<string | null>(null);
-  // total is ALWAYS fetched from server, never from URL
   const [serverTotal, setServerTotal] = useState<number | null>(null);
+  const [subtotal, setSubtotal]       = useState<number>(0);
+  const [discount, setDiscount]       = useState<number>(0);
+  const [shippingFee, setShippingFee] = useState<number>(0);
+  const [orderItems, setOrderItems]   = useState<OrderItem[]>([]);
   const [loadingOrder, setLoadingOrder] = useState(true);
 
   const copyToClipboard = (text: string, key: string) => {
@@ -57,10 +70,11 @@ export default function CheckoutSuccessPage() {
       const res  = await fetch(`/api/orders/${orderId}/status`);
       const data = await res.json();
 
-      // Always use server total
-      if (data.total != null) {
-        setServerTotal(data.total);
-      }
+      if (data.total != null) setServerTotal(data.total);
+      if (data.subtotal != null) setSubtotal(data.subtotal);
+      if (data.discount != null) setDiscount(data.discount);
+      if (data.shippingFee != null) setShippingFee(data.shippingFee);
+      if (data.items) setOrderItems(data.items);
       setLoadingOrder(false);
 
       if (data.paymentStatus === "PAID") {
@@ -80,11 +94,10 @@ export default function CheckoutSuccessPage() {
     }
   }, [orderId]);
 
-  // Initial fetch + polling for banking
   useEffect(() => {
-    checkStatus(); // Always fetch once to get total from server
+    checkStatus();
     if (!isBanking || payStatus !== "PENDING") return;
-    const iv = setInterval(checkStatus, 8000); // poll mỗi 8 giây
+    const iv = setInterval(checkStatus, 8000);
     return () => clearInterval(iv);
   }, [isBanking, payStatus, checkStatus]);
 
@@ -103,11 +116,17 @@ export default function CheckoutSuccessPage() {
 
   // ── UI Helpers ─────────────────────────────────────────────────────────────
   const bankRows = [
-    { label: "Ngân hàng",    value: BANK_NAME,        key: "bank" },
-    { label: "Số tài khoản", value: BANK_ACCOUNT,     key: "acc"  },
-    { label: "Chủ tài khoản",value: BANK_OWNER,       key: "own"  },
-    { label: "Nội dung CK",  value: transferContent,  key: "msg"  },
+    { label: "Ngân hàng",     value: BANK_NAME,        key: "bank" },
+    { label: "Số tài khoản",  value: BANK_ACCOUNT,     key: "acc"  },
+    { label: "Chủ tài khoản", value: BANK_OWNER,       key: "own"  },
+    { label: "Nội dung CK",   value: transferContent,  key: "msg"  },
   ];
+
+  // Parse variants string
+  const parseVariants = (v: string | null): Record<string, string> => {
+    if (!v) return {};
+    try { return JSON.parse(v); } catch { return {}; }
+  };
 
   // Loading state
   if (loadingOrder) {
@@ -128,20 +147,13 @@ export default function CheckoutSuccessPage() {
     return (
       <main className="min-h-screen bg-[#f4f8f0] flex items-center justify-center px-4 py-12">
         <div className="w-full max-w-lg">
-
-          {/* Hero Card */}
           <div className="bg-white rounded-3xl shadow-xl overflow-hidden">
-
-            {/* Dải màu xanh trên cùng */}
             <div className="h-2 bg-gradient-to-r from-[#425733] via-[#6aad4a] to-[#425733]" />
-
             <div className="px-8 py-10 text-center">
-              {/* Icon thành công */}
               <div className="relative inline-block mb-6">
                 <div className="w-24 h-24 rounded-full bg-[#e8f5e1] flex items-center justify-center mx-auto shadow-inner">
                   <Check className="w-12 h-12 text-[#425733] stroke-[2.5]" />
                 </div>
-                {/* hào quang xanh */}
                 <div className="absolute inset-0 rounded-full animate-ping bg-[#6aad4a] opacity-20 pointer-events-none" />
               </div>
 
@@ -166,19 +178,31 @@ export default function CheckoutSuccessPage() {
                 <p className="font-mono text-xl font-bold text-[#2d4a1e] tracking-wider">{orderNumber}</p>
               </div>
 
+              {/* Order Items */}
+              {orderItems.length > 0 && (
+                <div className="mb-6 space-y-2">
+                  {orderItems.map((item) => (
+                    <div key={item.id} className="flex items-center gap-3 bg-[#f6faf4] border border-[#daebd0] rounded-xl p-3">
+                      <div className="relative w-12 h-12 rounded-lg overflow-hidden bg-white border border-gray-200 shrink-0">
+                        <Image src={item.productImage} alt={item.productName} fill sizes="48px" className="object-cover" />
+                      </div>
+                      <div className="flex-1 text-left min-w-0">
+                        <p className="text-xs font-bold text-[#2d4a1e] truncate">{item.productName}</p>
+                        <p className="text-[10px] text-gray-400">SL: {item.quantity} × {item.price.toLocaleString("vi-VN")}đ</p>
+                      </div>
+                      <p className="text-sm font-bold text-[#425733] shrink-0">{(item.price * item.quantity).toLocaleString("vi-VN")}đ</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+
               {/* Thông tin trạng thái */}
               <div className="grid grid-cols-2 gap-3 mb-8">
                 <div className="flex items-center gap-3 bg-[#f6faf4] border border-[#daebd0] rounded-xl p-3 text-left">
-                  <span className="text-2xl shrink-0">
-                    {isBanking ? "💳" : "🚚"}
-                  </span>
+                  <span className="text-2xl shrink-0">{isBanking ? "💳" : "🚚"}</span>
                   <div>
-                    <p className="text-xs font-bold text-[#2d4a1e]">
-                      {isBanking ? "Đã thanh toán" : "Thanh toán COD"}
-                    </p>
-                    <p className="text-[10px] text-[#5a7a48]">
-                      {isBanking ? "Qua chuyển khoản" : "Khi nhận hàng"}
-                    </p>
+                    <p className="text-xs font-bold text-[#2d4a1e]">{isBanking ? "Đã thanh toán" : "Thanh toán COD"}</p>
+                    <p className="text-[10px] text-[#5a7a48]">{isBanking ? "Qua chuyển khoản" : "Khi nhận hàng"}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3 bg-[#f6faf4] border border-[#daebd0] rounded-xl p-3 text-left">
@@ -190,14 +214,12 @@ export default function CheckoutSuccessPage() {
                 </div>
               </div>
 
-              {/* Lời nhắn */}
               <div className="flex items-center justify-center gap-2 text-[#6aad4a] text-sm mb-8">
                 <Heart className="w-4 h-4 fill-current" />
                 <span>Cảm ơn bạn đã lựa chọn sản phẩm xanh của chúng tôi!</span>
                 <Heart className="w-4 h-4 fill-current" />
               </div>
 
-              {/* Nút hành động */}
               <div className="space-y-3">
                 <Button className="w-full bg-[#425733] hover:bg-[#364a29] h-12 text-base font-semibold rounded-xl" asChild>
                   <Link href="/orders" className="flex items-center justify-center gap-2">
@@ -214,7 +236,6 @@ export default function CheckoutSuccessPage() {
               </div>
             </div>
 
-            {/* Chân */}
             <div className="bg-[#f0f7ea] border-t border-[#daebd0] px-8 py-4 text-center">
               <p className="text-xs text-[#5a7a48]">
                 📧 Xác nhận đơn hàng sẽ được gửi qua email &nbsp;•&nbsp;
@@ -256,122 +277,116 @@ export default function CheckoutSuccessPage() {
   }
 
   // ============================================================
-  // ③ Banking — PENDING (đang chờ chuyển khoản)
+  // ③ Banking — PENDING (đang chờ chuyển khoản) — REDESIGNED
   // ============================================================
   return (
-    <main className="min-h-screen bg-[#f4f8f0] py-8 px-4">
-      <div className="max-w-5xl mx-auto">
+    <main className="min-h-screen bg-[#f4f8f0] py-6 px-4">
+      <div className="max-w-6xl mx-auto">
 
-        {/* Header */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-2 bg-[#425733] text-white text-sm px-5 py-2 rounded-full font-semibold mb-4 shadow">
-            <Clock className="w-4 h-4 animate-pulse" />
-            Đang chờ thanh toán chuyển khoản
+        {/* ─── Top bar: Order info + Compact Countdown ─────────── */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+          <div>
+            <div className="inline-flex items-center gap-2 bg-[#425733] text-white text-xs px-4 py-1.5 rounded-full font-semibold mb-2 shadow">
+              <Clock className="w-3.5 h-3.5 animate-pulse" />
+              Đang chờ thanh toán chuyển khoản
+            </div>
+            <h1 className="text-2xl font-bold text-[#2d4a1e]">Hoàn Tất Thanh Toán</h1>
+            <p className="text-gray-400 text-xs mt-0.5">
+              Mã đơn: <span className="font-mono font-bold text-[#425733]">{orderNumber}</span>
+            </p>
           </div>
-          <h1 className="text-3xl font-bold text-[#2d4a1e]">Hoàn Tất Thanh Toán</h1>
-          <p className="text-gray-500 text-sm mt-1">
-            Quét mã QR hoặc chuyển khoản thủ công &nbsp;•&nbsp;
-            Mã đơn: <span className="font-mono font-bold text-[#425733]">{orderNumber}</span>
-          </p>
-        </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-          {/* ── Cột trái: QR + thông tin CK ─────────────────── */}
-          <div className="lg:col-span-2 space-y-5">
-
-            {/* Countdown timer */}
-            <div className={`rounded-2xl p-5 border ${isUrgent ? "bg-red-50 border-red-200" : "bg-white border-[#daebd0]"} shadow-sm`}>
-              <div className="flex items-center justify-between mb-3">
-                <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
-                  Thời gian còn lại để thanh toán
-                </p>
-                <p className="text-xs text-gray-400">Đơn tự huỷ khi hết giờ</p>
-              </div>
-              <div className={`text-5xl font-mono font-bold tabular-nums text-center mb-3 ${isUrgent ? "text-red-600" : "text-[#425733]"}`}>
+          {/* Compact Countdown Timer — top right corner */}
+          <div className={`flex items-center gap-3 px-5 py-3 rounded-2xl border shadow-sm shrink-0 ${
+            isUrgent ? "bg-red-50 border-red-200" : "bg-white border-[#daebd0]"
+          }`}>
+            <Timer className={`w-5 h-5 ${isUrgent ? "text-red-500 animate-pulse" : "text-[#425733]"}`} />
+            <div>
+              <p className="text-[10px] text-gray-400 uppercase font-semibold tracking-wider leading-none mb-0.5">Còn lại</p>
+              <p className={`text-2xl font-mono font-bold tabular-nums leading-none ${isUrgent ? "text-red-600" : "text-[#425733]"}`}>
                 {String(minutes).padStart(2, "0")}:{String(secs).padStart(2, "0")}
-              </div>
-              <div className="w-full bg-gray-100 rounded-full h-2">
-                <div
-                  className={`h-2 rounded-full transition-all duration-1000 ${isUrgent ? "bg-red-400" : "bg-[#6aad4a]"}`}
-                  style={{ width: `${progress}%` }}
-                />
-              </div>
-              <p className="text-xs text-center text-gray-400 mt-2">
-                Trang sẽ <strong>tự động cập nhật</strong> khi nhận được tiền — không cần tải lại
               </p>
             </div>
+            <div className="w-16 h-2 bg-gray-100 rounded-full overflow-hidden">
+              <div
+                className={`h-full rounded-full transition-all duration-1000 ${isUrgent ? "bg-red-400" : "bg-[#6aad4a]"}`}
+                style={{ width: `${progress}%` }}
+              />
+            </div>
+          </div>
+        </div>
 
-            {/* QR + bank info side by side */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+
+          {/* ── Cột trái: QR + thông tin CK (span 5) ──────────── */}
+          <div className="lg:col-span-5 space-y-4">
+
+            {/* QR + bank info card */}
             <div className="bg-white rounded-2xl border border-[#daebd0] shadow-sm overflow-hidden">
-              <div className="bg-[#f4f8f0] px-6 py-3 border-b border-[#daebd0]">
+              <div className="bg-[#f4f8f0] px-5 py-2.5 border-b border-[#daebd0]">
                 <p className="text-sm font-semibold text-[#2d4a1e] flex items-center gap-2">
                   <CreditCard className="w-4 h-4" />
-                  Thông tin chuyển khoản KienLongBank — SePay
+                  Thông tin chuyển khoản
                 </p>
               </div>
-              <div className="p-6 flex flex-col md:flex-row gap-8 items-center">
+              <div className="p-5 flex flex-col items-center">
 
-                {/* QR */}
-                <div className="shrink-0 flex flex-col items-center gap-2 w-full md:w-auto">
-                  <div className="p-4 bg-white rounded-2xl border border-gray-200 shadow-md flex items-center justify-center">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img 
-                      src={qrUrl} 
-                      alt="QR chuyển khoản" 
-                      className="w-72 h-auto object-contain rounded-lg" 
-                    />
-                  </div>
-                  <p className="text-xs text-gray-400 font-medium">Quét bằng app ngân hàng bất kỳ</p>
+                {/* QR Code */}
+                <div className="p-3 bg-white rounded-2xl border border-gray-200 shadow-md mb-3">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={qrUrl}
+                    alt="QR chuyển khoản"
+                    className="w-56 h-auto object-contain rounded-lg"
+                  />
+                </div>
+                <p className="text-[10px] text-gray-400 font-medium mb-4">Quét bằng app ngân hàng bất kỳ</p>
+
+                {/* Số tiền cần chuyển */}
+                <div className="w-full bg-[#f0f7ea] rounded-xl p-3 text-center mb-4 border border-[#c8d5be]">
+                  <p className="text-[10px] text-[#5a7a48] mb-0.5">Số tiền cần chuyển</p>
+                  <p className="text-2xl font-bold text-[#2d4a1e]">{safeTotal.toLocaleString("vi-VN")}đ</p>
                 </div>
 
-                {/* Bank info */}
-                <div className="flex-1 w-full">
-                  {/* Số tiền */}
-                  <div className="bg-[#f0f7ea] rounded-xl p-4 text-center mb-4 border border-[#c8d5be]">
-                    <p className="text-xs text-[#5a7a48] mb-1">Số tiền cần chuyển</p>
-                    <p className="text-3xl font-bold text-[#2d4a1e]">{safeTotal.toLocaleString("vi-VN")}đ</p>
-                  </div>
-
-                  {/* Fields */}
-                  <div className="space-y-2">
-                    {bankRows.map(({ label, value, key }) => (
-                      <div
-                        key={key}
-                        className={`flex justify-between items-center px-4 py-3 rounded-xl border transition
-                          ${key === "msg"
-                            ? "bg-amber-50 border-amber-200"
-                            : "bg-gray-50 border-gray-100"}`}
-                      >
-                        <span className="text-xs text-gray-500 shrink-0 mr-2">{label}</span>
-                        <div className="flex items-center gap-2 min-w-0">
-                          <span className={`font-semibold truncate ${key === "msg" ? "text-[#2d8a4e] font-mono text-base" : "text-gray-800 text-sm"}`}>
-                            {value}
-                          </span>
-                          <button
-                            onClick={() => copyToClipboard(value, key)}
-                            className="shrink-0 p-1.5 rounded-lg hover:bg-gray-200 transition"
-                            title="Sao chép"
-                          >
-                            {copied === key
-                              ? <Check className="w-4 h-4 text-green-600" />
-                              : <Copy className="w-4 h-4 text-gray-400" />
-                            }
-                          </button>
-                        </div>
+                {/* Bank Fields — FULL info, no truncation */}
+                <div className="w-full space-y-1.5">
+                  {bankRows.map(({ label, value, key }) => (
+                    <div
+                      key={key}
+                      className={`flex justify-between items-center px-3.5 py-2.5 rounded-xl border transition text-sm ${
+                        key === "msg"
+                          ? "bg-amber-50 border-amber-200"
+                          : "bg-gray-50 border-gray-100"
+                      }`}
+                    >
+                      <span className="text-xs text-gray-500 shrink-0 mr-2">{label}</span>
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        <span className={`font-semibold ${key === "msg" ? "text-[#2d8a4e] font-mono text-sm" : "text-gray-800 text-xs"}`}>
+                          {value}
+                        </span>
+                        <button
+                          onClick={() => copyToClipboard(value, key)}
+                          className="shrink-0 p-1 rounded-lg hover:bg-gray-200 transition"
+                          title="Sao chép"
+                        >
+                          {copied === key
+                            ? <Check className="w-3.5 h-3.5 text-green-600" />
+                            : <Copy className="w-3.5 h-3.5 text-gray-400" />
+                          }
+                        </button>
                       </div>
-                    ))}
-                  </div>
+                    </div>
+                  ))}
                 </div>
               </div>
 
               {/* Warning */}
-              <div className="mx-6 mb-5 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 flex gap-2 items-start text-xs text-amber-800">
+              <div className="mx-5 mb-4 bg-amber-50 border border-amber-200 rounded-xl px-3.5 py-2.5 flex gap-2 items-start text-xs text-amber-800">
                 <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5 text-amber-500" />
                 <p>
-                  Vui lòng ghi <strong>đúng nội dung chuyển khoản</strong>{" "}
+                  Vui lòng ghi <strong>đúng nội dung CK</strong>{" "}
                   <span className="font-mono font-bold text-[#2d8a4e]">{transferContent}</span>{" "}
-                  để hệ thống tự động xác nhận đơn hàng của bạn.
+                  để hệ thống tự động xác nhận.
                 </p>
               </div>
             </div>
@@ -379,22 +394,90 @@ export default function CheckoutSuccessPage() {
             {/* Nút kiểm tra thủ công */}
             <button
               onClick={checkStatus}
-              className="w-full py-3 rounded-xl border border-[#425733] text-[#425733] font-medium text-sm hover:bg-[#f0f7ea] transition"
+              className="w-full py-2.5 rounded-xl border border-[#425733] text-[#425733] font-medium text-sm hover:bg-[#f0f7ea] transition"
             >
               Kiểm tra trạng thái ngay
             </button>
+            <p className="text-center text-[10px] text-gray-400">
+              Trang tự <strong>cập nhật</strong> khi nhận được tiền — không cần tải lại
+            </p>
           </div>
 
-          {/* ── Cột phải: Chi tiết đơn hàng ─────────────────── */}
-          <div className="lg:col-span-1">
-            <div className="bg-white rounded-2xl border border-[#daebd0] shadow-sm sticky top-6 overflow-hidden">
-              <div className="bg-[#f4f8f0] px-5 py-3 border-b border-[#daebd0]">
+          {/* ── Cột phải: Order items + Summary (span 7) ──────── */}
+          <div className="lg:col-span-7 space-y-4">
+
+            {/* Order Items with thumbnails and sale badges */}
+            <div className="bg-white rounded-2xl border border-[#daebd0] shadow-sm overflow-hidden">
+              <div className="bg-[#f4f8f0] px-5 py-2.5 border-b border-[#daebd0]">
+                <p className="text-sm font-semibold text-[#2d4a1e] flex items-center gap-2">
+                  <Package className="w-4 h-4" />
+                  Sản phẩm đã đặt ({orderItems.length} sản phẩm)
+                </p>
+              </div>
+              <div className="p-4 space-y-3">
+                {orderItems.length === 0 ? (
+                  <div className="text-center py-8 text-gray-400 text-sm">
+                    Đang tải thông tin sản phẩm...
+                  </div>
+                ) : (
+                  orderItems.map((item) => {
+                    const variants = parseVariants(item.variants);
+                    return (
+                      <div key={item.id} className="flex gap-4 p-3 rounded-xl bg-[#fafcf8] border border-[#e8f0e1] hover:border-[#c8d5be] transition">
+                        {/* Product Thumbnail */}
+                        <div className="relative w-20 h-20 rounded-xl overflow-hidden bg-white border border-gray-200 shrink-0 shadow-sm">
+                          <Image
+                            src={item.productImage}
+                            alt={item.productName}
+                            fill
+                            sizes="80px"
+                            className="object-cover"
+                          />
+                        </div>
+
+                        {/* Product Info */}
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-bold text-sm text-[#2d4a1e] truncate mb-1">{item.productName}</h3>
+                          {/* Variants */}
+                          {Object.keys(variants).length > 0 && (
+                            <div className="flex flex-wrap gap-1 mb-1.5">
+                              {Object.entries(variants).map(([k, v]) => (
+                                <span key={k} className="inline-flex items-center px-2 py-0.5 rounded-md bg-[#e3ebdd] text-[10px] font-medium text-[#425733]">
+                                  {k}: {v}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                          <p className="text-xs text-gray-400">
+                            Số lượng: <span className="font-semibold text-gray-600">{item.quantity}</span>
+                          </p>
+                        </div>
+
+                        {/* Price */}
+                        <div className="text-right shrink-0">
+                          <p className="text-base font-bold text-[#425733]">
+                            {(item.price * item.quantity).toLocaleString("vi-VN")}đ
+                          </p>
+                          {item.quantity > 1 && (
+                            <p className="text-[10px] text-gray-400">{item.price.toLocaleString("vi-VN")}đ/sp</p>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            </div>
+
+            {/* Order Summary Card */}
+            <div className="bg-white rounded-2xl border border-[#daebd0] shadow-sm overflow-hidden">
+              <div className="bg-[#f4f8f0] px-5 py-2.5 border-b border-[#daebd0]">
                 <p className="text-sm font-semibold text-[#2d4a1e] flex items-center gap-2">
                   <Truck className="w-4 h-4" />
                   Chi tiết đơn hàng
                 </p>
               </div>
-              <div className="p-5 space-y-3">
+              <div className="p-5 space-y-2.5">
                 <div className="flex justify-between items-center">
                   <span className="text-xs text-gray-500">Mã đơn</span>
                   <span className="font-mono text-sm font-bold text-[#425733]">{orderNumber}</span>
@@ -412,7 +495,28 @@ export default function CheckoutSuccessPage() {
 
                 <hr className="border-[#e8f0e1]" />
 
-                <div className="flex justify-between font-bold text-base">
+                {/* Pricing breakdown */}
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-gray-500">Tạm tính</span>
+                  <span className="text-gray-700">{subtotal.toLocaleString("vi-VN")}đ</span>
+                </div>
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-gray-500">Phí vận chuyển</span>
+                  <span className="text-gray-700">{shippingFee.toLocaleString("vi-VN")}đ</span>
+                </div>
+                {discount > 0 && (
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="flex items-center gap-1.5 text-red-600">
+                      <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-red-500 text-white text-[10px] font-bold">SALE</span>
+                      Giảm giá
+                    </span>
+                    <span className="text-red-600 font-semibold">-{discount.toLocaleString("vi-VN")}đ</span>
+                  </div>
+                )}
+
+                <hr className="border-[#e8f0e1]" />
+
+                <div className="flex justify-between font-bold text-lg pt-1">
                   <span>Tổng tiền</span>
                   <span className="text-[#425733]">{safeTotal.toLocaleString("vi-VN")}đ</span>
                 </div>

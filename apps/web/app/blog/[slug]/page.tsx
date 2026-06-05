@@ -7,20 +7,11 @@ import { prisma } from "@/lib/prisma";
 import { unstable_cache } from "next/cache";
 import BlogInteraction from "./BlogInteraction";
 
-// ISR: cache bài viết 1 giờ (nội dung blog ít thay đổi)
-export const dynamic = "force-dynamic";
+// ISR: cache bài viết 1 giờ, revalidate khi có truy cập mới
+export const revalidate = 3600;
 
 interface Props {
   params: { slug: string };
-}
-
-// ✅ Prerender tất cả bài blog tại build time
-export async function generateStaticParams() {
-  const posts = await prisma.blogPost.findMany({
-    where: { published: true },
-    select: { slug: true },
-  });
-  return posts.map(p => ({ slug: p.slug }));
 }
 
 function getCachedPost(slug: string) {
