@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useSession } from "next-auth/react";
-import { Package, Compass, Sparkles, Check, Sprout, RefreshCw, Sun, Ruler, Gift, ShoppingBasket } from "lucide-react";
+import { Package, Compass, Sparkles, Check, Sprout, RefreshCw, Sun, Ruler, Gift, ShoppingBasket, ChevronLeft, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 import { useCartStore } from "@/lib/store/cartStore";
 import { Button } from "@/components/ui/button";
@@ -28,26 +28,54 @@ interface Product {
   userVoted?: boolean;
 }
 
+interface FeaturedItem {
+  product: Product;
+  reason?: string | null;
+}
+
 interface ExploreProps {
   featured: Product[];
   pinned: Product[];
   topVoted: Product[];
   newArrivals: Product[];
-  weeklyFeatured: { product: Product; reason?: string | null } | null;
+  weeklyFeaturedItems: FeaturedItem[];
 }
 
-export function ExploreClient({ featured, pinned, topVoted, newArrivals, weeklyFeatured }: ExploreProps) {
+export function ExploreClient({ featured, pinned, topVoted, newArrivals, weeklyFeaturedItems }: ExploreProps) {
   const { addItem } = useCartStore();
   const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const [activeFeaturedIndex, setActiveFeaturedIndex] = useState(0);
 
-  // Auto‑rotate image every 10 s (≈10 000 ms)
+  // Current featured item
+  const currentFeatured = weeklyFeaturedItems.length > 0 ? weeklyFeaturedItems[activeFeaturedIndex] : null;
+
+  // Auto-rotate featured product every 8s
   useEffect(() => {
-    if (!weeklyFeatured?.product?.images?.length) return;
+    if (weeklyFeaturedItems.length <= 1) return;
     const interval = setInterval(() => {
-      setActiveImageIndex((idx) => (idx + 1) % weeklyFeatured.product.images.length);
+      setActiveFeaturedIndex((idx) => (idx + 1) % weeklyFeaturedItems.length);
+      setActiveImageIndex(0); // Reset image index on product change
+    }, 8000);
+    return () => clearInterval(interval);
+  }, [weeklyFeaturedItems.length]);
+
+  // Auto-rotate images of current featured product every 10s
+  useEffect(() => {
+    if (!currentFeatured?.product?.images?.length) return;
+    const interval = setInterval(() => {
+      setActiveImageIndex((idx) => (idx + 1) % currentFeatured.product.images.length);
     }, 10000);
     return () => clearInterval(interval);
-  }, [weeklyFeatured?.product?.images]);
+  }, [currentFeatured?.product?.images, activeFeaturedIndex]);
+
+  const goToPrevFeatured = () => {
+    setActiveFeaturedIndex((idx) => (idx === 0 ? weeklyFeaturedItems.length - 1 : idx - 1));
+    setActiveImageIndex(0);
+  };
+  const goToNextFeatured = () => {
+    setActiveFeaturedIndex((idx) => (idx + 1) % weeklyFeaturedItems.length);
+    setActiveImageIndex(0);
+  };
 
   const Section = ({
     title,
@@ -128,10 +156,10 @@ export function ExploreClient({ featured, pinned, topVoted, newArrivals, weeklyF
             </motion.div>
           </div>
 
-          {/* Weekly Featured Highlight */}
-          {weeklyFeatured && (
+          {/* Weekly Featured Highlight — Carousel */}
+          {currentFeatured && (
             <motion.section
-              className="mb-16"
+              className="mb-16 relative"
               initial={{ opacity: 0, scale: 0.98 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.2, duration: 0.5 }}
@@ -140,21 +168,41 @@ export function ExploreClient({ featured, pinned, topVoted, newArrivals, weeklyF
                 <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -mr-32 -mt-32 blur-3xl" />
                 <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full -ml-24 -mb-24 blur-2xl" />
                 
+                {/* Prev / Next arrows for multiple featured items */}
+                {weeklyFeaturedItems.length > 1 && (
+                  <>
+                    <button
+                      onClick={goToPrevFeatured}
+                      className="absolute left-3 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur border border-white/20 flex items-center justify-center text-white transition-all hover:scale-110"
+                      aria-label="Sản phẩm trước"
+                    >
+                      <ChevronLeft className="w-5 h-5" />
+                    </button>
+                    <button
+                      onClick={goToNextFeatured}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur border border-white/20 flex items-center justify-center text-white transition-all hover:scale-110"
+                      aria-label="Sản phẩm tiếp"
+                    >
+                      <ChevronRight className="w-5 h-5" />
+                    </button>
+                  </>
+                )}
+
                 <div className="relative z-10 max-w-5xl mx-auto">
                   {/* Category / Reason Badge */}
                   <div className="inline-flex items-center gap-1.5 bg-[#5b6e51] px-4 py-1.5 rounded-full text-xs font-semibold uppercase tracking-wider mb-6 text-white/90 shadow-sm border border-white/10">
-                    <span>🔧 {weeklyFeatured.reason || "Featured của tuần"}</span>
+                    <span>🔧 {currentFeatured.reason || "Featured của tuần"}</span>
                   </div>
 
                   <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
                     {/* Left Column: Product Info & Actions */}
                     <div className="lg:col-span-7 text-left space-y-5">
-                      <h2 className="text-3xl md:text-5xl font-extrabold tracking-tight leading-tight">{weeklyFeatured.product.name}</h2>
+                      <h2 className="text-3xl md:text-5xl font-extrabold tracking-tight leading-tight">{currentFeatured.product.name}</h2>
                       
                       {(() => {
-                        const base = Number(weeklyFeatured.product.basePrice.toString());
-                        const sale = weeklyFeatured.product.salePrice ? Number(weeklyFeatured.product.salePrice.toString()) : null;
-                        const isOnSale = sale != null && sale < base && (weeklyFeatured.product.saleEndDate == null || new Date(weeklyFeatured.product.saleEndDate) > new Date());
+                        const base = Number(currentFeatured.product.basePrice.toString());
+                        const sale = currentFeatured.product.salePrice ? Number(currentFeatured.product.salePrice.toString()) : null;
+                        const isOnSale = sale != null && sale < base && (currentFeatured.product.saleEndDate == null || new Date(currentFeatured.product.saleEndDate) > new Date());
                         const discountPct = isOnSale ? Math.round(((base - sale!) / base) * 100) : 0;
                         const displayPrice = isOnSale ? sale! : base;
                         return (
@@ -177,7 +225,7 @@ export function ExploreClient({ featured, pinned, topVoted, newArrivals, weeklyF
                       })()}
 
                       <p className="text-white/80 text-sm md:text-base leading-relaxed max-w-xl">
-                        Terrarium {weeklyFeatured.product.name.toLowerCase()} mô phỏng một khu rừng tự nhiên thu nhỏ với hệ thực vật phong phú, rêu xanh và bố cục hài hòa. Được chế tác thủ công tinh xảo, mỗi sản phẩm mang vẻ đẹp nghệ thuật độc nhất vô nhị giúp thư giãn và trang trí sang trọng cho không gian của bạn.
+                        Terrarium {currentFeatured.product.name.toLowerCase()} mô phỏng một khu rừng tự nhiên thu nhỏ với hệ thực vật phong phú, rêu xanh và bố cục hài hòa. Được chế tác thủ công tinh xảo, mỗi sản phẩm mang vẻ đẹp nghệ thuật độc nhất vô nhị giúp thư giãn và trang trí sang trọng cho không gian của bạn.
                       </p>
 
                       {/* 4 Feature Badges Row */}
@@ -198,22 +246,22 @@ export function ExploreClient({ featured, pinned, topVoted, newArrivals, weeklyF
                       {/* Action Buttons */}
                       <div className="flex flex-wrap gap-3.5 pt-3">
                         <Button asChild size="lg" className="bg-white text-[#48593e] hover:bg-gray-100 font-bold px-8 rounded-xl shadow-md transition-all hover:scale-[1.02] active:scale-[0.98]">
-                          <Link href={`/products/${weeklyFeatured.product.slug}`}>Xem chi tiết &rarr;</Link>
+                          <Link href={`/products/${currentFeatured.product.slug}`}>Xem chi tiết &rarr;</Link>
                         </Button>
                         <button
                           onClick={() => {
-                            const base = parseFloat(weeklyFeatured.product.basePrice.toString());
-                            const sale = weeklyFeatured.product.salePrice ? parseFloat(weeklyFeatured.product.salePrice.toString()) : null;
+                            const base = parseFloat(currentFeatured.product.basePrice.toString());
+                            const sale = currentFeatured.product.salePrice ? parseFloat(currentFeatured.product.salePrice.toString()) : null;
                             const price = sale != null && sale < base ? sale : base;
                             addItem({
-                              productId: weeklyFeatured.product.id,
-                              productName: weeklyFeatured.product.name,
-                              productImage: weeklyFeatured.product.images[0] || "",
+                              productId: currentFeatured.product.id,
+                              productName: currentFeatured.product.name,
+                              productImage: currentFeatured.product.images[0] || "",
                               price,
                               quantity: 1,
                               variants: {}
                             });
-                            toast.success(`Đã thêm "${weeklyFeatured.product.name}" vào giỏ hàng 🛒`);
+                            toast.success(`Đã thêm "${currentFeatured.product.name}" vào giỏ hàng 🛒`);
                           }}
                           className="flex items-center gap-2 bg-[#55694b]/20 border-2 border-white/30 hover:border-white text-white hover:bg-white/10 px-6 py-2.5 rounded-xl text-sm font-semibold transition-all hover:scale-[1.02] active:scale-[0.98] backdrop-blur-sm"
                         >
@@ -223,7 +271,7 @@ export function ExploreClient({ featured, pinned, topVoted, newArrivals, weeklyF
                       </div>
                     </div>
 
-                    {/* Right Column: Visual Showcase (Vertical Stack Thumbnails on Right) */}
+                    {/* Right Column: Visual Showcase */}
                     <div className="lg:col-span-5 flex flex-col items-center justify-center gap-4">
                       <div className="flex md:flex-row flex-col items-center justify-center gap-4 w-full">
                         {/* Main Image View */}
@@ -234,10 +282,10 @@ export function ExploreClient({ featured, pinned, topVoted, newArrivals, weeklyF
                             <span>Cây thật 100%</span>
                           </div>
                           
-                          {weeklyFeatured.product.images.length > 0 ? (
+                          {currentFeatured.product.images.length > 0 ? (
                             <Image
-                              src={weeklyFeatured.product.images[activeImageIndex] || weeklyFeatured.product.images[0]}
-                              alt={weeklyFeatured.product.name}
+                              src={currentFeatured.product.images[activeImageIndex] || currentFeatured.product.images[0]}
+                              alt={currentFeatured.product.name}
                               fill
                               sizes="340px"
                               className="object-cover rounded-2xl transition-transform duration-500 group-hover:scale-105"
@@ -250,10 +298,10 @@ export function ExploreClient({ featured, pinned, topVoted, newArrivals, weeklyF
                           )}
                         </div>
 
-                        {/* Vertical thumbnails stack (on the right of the main image on desktop, row below on mobile) */}
-                        {weeklyFeatured.product.images.length > 1 && (
+                        {/* Vertical thumbnails stack */}
+                        {currentFeatured.product.images.length > 1 && (
                           <div className="flex md:flex-col flex-row gap-2 max-w-full overflow-x-auto py-1 scrollbar-none justify-center">
-                            {weeklyFeatured.product.images.slice(0, 3).map((img, idx) => (
+                            {currentFeatured.product.images.slice(0, 3).map((img, idx) => (
                               <button
                                 key={idx}
                                 onClick={() => setActiveImageIndex(idx)}
@@ -276,19 +324,19 @@ export function ExploreClient({ featured, pinned, topVoted, newArrivals, weeklyF
                         )}
                       </div>
 
-                      {/* Dot indicators below main image */}
-                      {weeklyFeatured.product.images.length > 1 && (
+                      {/* Dot indicators for featured products */}
+                      {weeklyFeaturedItems.length > 1 && (
                         <div className="flex gap-1.5 mt-2">
-                          {weeklyFeatured.product.images.slice(0, 4).map((_, idx) => (
+                          {weeklyFeaturedItems.map((_, idx) => (
                             <button
                               key={idx}
-                              onClick={() => setActiveImageIndex(idx)}
+                              onClick={() => { setActiveFeaturedIndex(idx); setActiveImageIndex(0); }}
                               className={`h-2 rounded-full transition-all duration-300 ${
-                                idx === activeImageIndex
+                                idx === activeFeaturedIndex
                                   ? "bg-white w-5"
                                   : "bg-white/40 w-2 hover:bg-white/60"
                               }`}
-                              aria-label={`Slide ${idx + 1}`}
+                              aria-label={`Sản phẩm ${idx + 1}`}
                             />
                           ))}
                         </div>
@@ -296,9 +344,8 @@ export function ExploreClient({ featured, pinned, topVoted, newArrivals, weeklyF
                     </div>
                   </div>
 
-                  {/* Specifications, why choose, and gift row: 3 columns layout */}
+                  {/* Specifications, why choose, and gift row */}
                   <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 pt-8 border-t border-white/10 mt-8">
-                    {/* Column 1: Product Specifications (Span 4) */}
                     <div className="lg:col-span-4 bg-[#3e5035]/50 border border-[#506646] p-6 rounded-2xl space-y-4 shadow-sm">
                       <h3 className="text-base font-bold text-green-200 flex items-center gap-2">
                         📐 Thông số sản phẩm
@@ -323,11 +370,10 @@ export function ExploreClient({ featured, pinned, topVoted, newArrivals, weeklyF
                       </div>
                     </div>
 
-                    {/* Column 2: Why Choose checklist (Span 5) */}
                     <div className="lg:col-span-5 bg-[#3e5035]/50 border border-[#506646] p-6 rounded-2xl flex flex-col justify-between shadow-sm">
                       <div className="space-y-4">
                         <h3 className="text-base font-bold text-green-200">
-                          💡 Vì sao bạn nên chọn {weeklyFeatured.product.name}?
+                          💡 Vì sao bạn nên chọn {currentFeatured.product.name}?
                         </h3>
                         <ul className="space-y-2 text-xs md:text-sm text-white/90">
                           {[
@@ -345,7 +391,6 @@ export function ExploreClient({ featured, pinned, topVoted, newArrivals, weeklyF
                       </div>
                     </div>
 
-                    {/* Column 3: Gift Card (Span 3) */}
                     <div className="lg:col-span-3 bg-[#3e5035]/50 border border-[#506646] p-6 rounded-2xl flex flex-col justify-center items-center text-center shadow-sm">
                       <div className="w-14 h-14 rounded-full bg-[#2d3a27] border border-[#3e5035] flex items-center justify-center mb-3.5 shadow-md">
                         <Gift className="w-6 h-6 text-red-300" />

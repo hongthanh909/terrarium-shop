@@ -15,11 +15,7 @@ export default async function ExplorePage() {
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-    const weekStart = new Date(now);
-    weekStart.setDate(now.getDate() - now.getDay() + 1);
-    weekStart.setHours(0, 0, 0, 0);
-
-    let [featured, pinned, topVoted, newArrivals, weeklyFeaturedData] = await Promise.all([
+    let [featured, pinned, topVoted, newArrivals, weeklyFeaturedList] = await Promise.all([
       prisma.product.findMany({
         where: { status: "ACTIVE", featured: true },
         include: { category: true, _count: { select: { votes: true } } },
@@ -47,10 +43,13 @@ export default async function ExplorePage() {
         orderBy: { createdAt: "desc" },
         take: 8,
       }),
-      prisma.weeklyFeatured.findFirst({
-        where: { weekStart, isActive: true },
+      // Fetch ALL active featured products (not just one)
+      prisma.weeklyFeatured.findMany({
+        where: { isActive: true },
         include: { product: { include: { category: true } } },
-      }).catch(() => null),
+        orderBy: { weekStart: "desc" },
+        take: 10,
+      }).catch(() => [] as any[]),
     ]);
 
     // Fallback if no new products in the last 30 days
@@ -63,12 +62,11 @@ export default async function ExplorePage() {
       });
     }
 
-    const weeklyFeatured = weeklyFeaturedData
-      ? {
-          product: serializeProduct(weeklyFeaturedData.product),
-          reason: weeklyFeaturedData.reason,
-        }
-      : null;
+    // Serialize all weekly featured items
+    const weeklyFeaturedItems = (weeklyFeaturedList || []).map((wf: any) => ({
+      product: serializeProduct(wf.product),
+      reason: wf.reason,
+    }));
 
     return (
       <ExploreClient
@@ -76,7 +74,7 @@ export default async function ExplorePage() {
         pinned={pinned.map(serializeProduct)}
         topVoted={topVoted.map(serializeProduct)}
         newArrivals={newArrivals.map(serializeProduct)}
-        weeklyFeatured={weeklyFeatured}
+        weeklyFeaturedItems={weeklyFeaturedItems}
       />
     );
   } catch (error) {
@@ -87,7 +85,7 @@ export default async function ExplorePage() {
         pinned={[]}
         topVoted={[]}
         newArrivals={[]}
-        weeklyFeatured={null}
+        weeklyFeaturedItems={[]}
       />
     );
   }
