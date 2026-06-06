@@ -150,7 +150,7 @@ export default async function Footer() {
               ) : (
                 <li className="flex items-center gap-2">
                   <Phone className="w-4 h-4 text-[#425733]" />
-                  <a href="tel:0706668296" className="hover:text-[#425733] transition-colors">0706.668.296</a>
+                  <a href="tel:0706668296" className="hover:text-[#425733] transition-colors">0706 668 296</a>
                 </li>
               )}
               {addresses.length > 0 ? (
@@ -163,7 +163,7 @@ export default async function Footer() {
               ) : (
                 <li className="flex items-start gap-2">
                   <MapPin className="w-4 h-4 text-[#425733] mt-0.5" />
-                <span>32/16 Đường Tam Đa, Phường Long Trường, TP.HCM</span>
+                <span>32/16 Tam Đa, Phường Long Trường, TP. Hồ Chí Minh</span>
                 </li>
               )}
               {workingHours.length > 0 ? (
@@ -176,7 +176,7 @@ export default async function Footer() {
               ) : (
                 <li className="flex items-center gap-2">
                   <Clock className="w-4 h-4 text-[#425733]" />
-                  <span>Thứ 2 - Thứ 7 (9h00 - 17h00)</span>
+                  <span>Thứ 2 - Chủ nhật: 9:00 - 21:00</span>
                 </li>
               )}
             </ul>

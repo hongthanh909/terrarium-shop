@@ -458,8 +458,8 @@ export default function Home() {
             .wi-timeline-wrapper {
               display: flex;
               width: 100%;
-              height: 22rem;
-              gap: 1.25rem;
+              height: 16rem;
+              gap: 1rem;
               justify-content: center;
               padding: 0.5rem 0;
               overflow: hidden;
@@ -467,8 +467,8 @@ export default function Home() {
 
             .wi-card {
               position: relative;
-              flex: 0 0 14rem;
-              width: 14rem;
+              flex: 0 0 12rem;
+              width: 12rem;
               background: #ffffff;
               border: 1px solid #daebd0;
               border-radius: 1.25rem;
@@ -477,8 +477,8 @@ export default function Home() {
               transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
               display: flex;
               flex-direction: column;
-              justify-content: flex-end;
-              padding: 1.5rem;
+              justify-content: space-between;
+              padding: 1.25rem;
               box-shadow: 0 8px 24px rgba(66, 87, 51, 0.04);
             }
 
@@ -496,63 +496,122 @@ export default function Home() {
             }
 
             .wi-timeline-wrapper:hover .wi-card.active:not(:hover) {
-              flex: 0 0 14rem;
+              flex: 0 0 12rem;
               background: #ffffff;
               border-color: #daebd0;
               box-shadow: 0 8px 24px rgba(66, 87, 51, 0.04);
             }
 
-            .wi-content {
+            /* Header row: icon + number + title inline */
+            .wi-header {
+              display: flex;
+              align-items: center;
+              gap: 0.5rem;
               transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-              text-align: left;
-              transform: translateY(0);
             }
 
-            /* On hover/active, push content up to make room for description */
-            .wi-card.active .wi-content,
-            .wi-card:hover .wi-content {
-              transform: translateY(-0.5rem);
+            .wi-icon-wrapper {
+              width: 2.2rem;
+              height: 2.2rem;
+              min-width: 2.2rem;
+              border-radius: 0.6rem;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+              background: #e3ebdd;
+              color: #425733;
             }
 
-            .wi-timeline-wrapper:hover .wi-card.active:not(:hover) .wi-content {
-              transform: translateY(0);
+            .wi-card.active .wi-icon-wrapper,
+            .wi-card:hover .wi-icon-wrapper {
+              background: #ffffff !important;
+              color: #425733 !important;
             }
 
-            .wi-content h3 {
+            .wi-timeline-wrapper:hover .wi-card.active:not(:hover) .wi-icon-wrapper {
+              background: #e3ebdd !important;
+            }
+
+            .wi-number {
+              font-size: 1.1rem;
+              font-weight: 800;
+              color: #425733;
+              font-family: ui-monospace, monospace;
+              min-width: 1.6rem;
+              transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+            }
+
+            .wi-header h3 {
               color: #425733;
               margin: 0;
-              font-size: 1.05rem;
+              font-size: 0.95rem;
               font-weight: 700;
               transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-              padding-bottom: 0;
-            }
-            
-            .wi-card.active .wi-content h3,
-            .wi-card:hover .wi-content h3 {
-              color: #1e2e16;
-              padding-bottom: 0.75rem;
-            }
-            
-            .wi-timeline-wrapper:hover .wi-card.active:not(:hover) .wi-content h3 {
-              color: #425733;
-              padding-bottom: 0;
+              white-space: nowrap;
+              overflow: hidden;
+              text-overflow: ellipsis;
+              max-width: 0;
+              opacity: 0;
             }
 
-            /* White divider line — hidden by default, visible on hover */
+            .wi-card.active .wi-header h3,
+            .wi-card:hover .wi-header h3 {
+              color: #1e2e16;
+              max-width: 25rem;
+              opacity: 1;
+            }
+
+            .wi-timeline-wrapper:hover .wi-card.active:not(:hover) .wi-header h3 {
+              color: #425733;
+              max-width: 0;
+              opacity: 0;
+            }
+
+            /* Body: divider + description */
+            .wi-body {
+              flex: 1;
+              display: flex;
+              flex-direction: column;
+              justify-content: flex-end;
+              transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+            }
+
+            /* Inactive: show title at bottom */
+            .wi-body-title {
+              font-size: 0.9rem;
+              font-weight: 700;
+              color: #425733;
+              transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+              line-height: 1.3;
+            }
+
+            .wi-card.active .wi-body-title,
+            .wi-card:hover .wi-body-title {
+              opacity: 0;
+              max-height: 0;
+              overflow: hidden;
+            }
+
+            .wi-timeline-wrapper:hover .wi-card.active:not(:hover) .wi-body-title {
+              opacity: 1;
+              max-height: 3rem;
+            }
+
+            /* Divider line */
             .wi-divider {
               height: 1px;
-              background: rgba(255, 255, 255, 0.8);
+              background: rgba(255, 255, 255, 0.85);
               width: 0;
               opacity: 0;
               transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-              margin: 0;
+              margin: 0.5rem 0 0 0;
             }
 
             .wi-card.active .wi-divider,
             .wi-card:hover .wi-divider {
               width: 100%;
               opacity: 1;
-              margin: 0;
             }
 
             .wi-timeline-wrapper:hover .wi-card.active:not(:hover) .wi-divider {
@@ -560,11 +619,11 @@ export default function Home() {
               opacity: 0;
             }
 
-            /* Description hidden by default, shown on hover/active */
-            .wi-content p {
+            /* Description */
+            .wi-desc {
               color: #4b5563;
-              font-size: 0.85rem;
-              line-height: 1.6;
+              font-size: 0.8rem;
+              line-height: 1.55;
               margin: 0;
               text-align: justify;
               max-height: 0;
@@ -574,73 +633,18 @@ export default function Home() {
               padding-top: 0;
             }
             
-            .wi-card.active .wi-content p,
-            .wi-card:hover .wi-content p {
-              max-height: 12rem;
+            .wi-card.active .wi-desc,
+            .wi-card:hover .wi-desc {
+              max-height: 10rem;
               opacity: 1;
               color: #374151;
-              padding-top: 0.75rem;
+              padding-top: 0.6rem;
             }
 
-            .wi-timeline-wrapper:hover .wi-card.active:not(:hover) .wi-content p {
+            .wi-timeline-wrapper:hover .wi-card.active:not(:hover) .wi-desc {
               max-height: 0;
               opacity: 0;
               padding-top: 0;
-            }
-
-            .wi-year {
-              position: absolute;
-              top: 1.5rem;
-              left: 1.5rem;
-              font-size: 1.8rem;
-              font-weight: 800;
-              color: #425733;
-              transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-              z-index: 10;
-              display: flex;
-              align-items: center;
-              gap: 0.5rem;
-            }
-            
-            .wi-icon-wrapper {
-              width: 2.8rem;
-              height: 2.8rem;
-              border-radius: 0.75rem;
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-              background: #e3ebdd;
-              color: #425733;
-            }
-
-            .wi-card.active .wi-year,
-            .wi-card:hover .wi-year {
-              color: rgba(66, 87, 51, 0.12);
-              font-size: 3.5rem;
-              top: 0.75rem;
-              left: auto;
-              right: 1.5rem;
-            }
-            
-            .wi-card.active .wi-icon-wrapper,
-            .wi-card:hover .wi-icon-wrapper {
-              background: #ffffff !important;
-              color: #425733 !important;
-              transform: scale(1.05);
-            }
-            
-            .wi-timeline-wrapper:hover .wi-card.active:not(:hover) .wi-year {
-              color: #425733;
-              font-size: 1.8rem;
-              top: 1.5rem;
-              left: 1.5rem;
-              right: auto;
-            }
-            
-            .wi-timeline-wrapper:hover .wi-card.active:not(:hover) .wi-icon-wrapper {
-              background: #e3ebdd !important;
-              transform: scale(1);
             }
 
             @media (max-width: 768px) {
@@ -649,28 +653,32 @@ export default function Home() {
                 height: auto;
                 overflow: visible;
                 padding: 1rem 0;
-                gap: 1.25rem;
+                gap: 1rem;
               }
 
               .wi-card {
                 width: 100% !important;
                 flex: none !important;
-                min-height: 10rem;
+                min-height: 8rem;
                 background: #e3ebdd !important;
                 border-color: #c8d5be !important;
                 box-shadow: 0 8px 24px rgba(66, 87, 51, 0.08) !important;
-                margin-left: 0;
-                margin-right: 0;
               }
 
-              .wi-content {
-                transform: translateY(-0.5rem) !important;
-              }
-
-              .wi-content h3 {
+              .wi-header h3 {
+                max-width: 25rem !important;
+                opacity: 1 !important;
                 color: #1e2e16 !important;
-                font-size: 1.3rem !important;
-                padding-bottom: 0.75rem !important;
+              }
+
+              .wi-body-title {
+                opacity: 0 !important;
+                max-height: 0 !important;
+              }
+
+              .wi-icon-wrapper {
+                background: #ffffff !important;
+                color: #425733 !important;
               }
 
               .wi-divider {
@@ -678,23 +686,10 @@ export default function Home() {
                 opacity: 1 !important;
               }
 
-              .wi-content p {
-                max-height: 12rem !important;
+              .wi-desc {
+                max-height: 10rem !important;
                 opacity: 1 !important;
-                padding-top: 0.75rem !important;
-              }
-
-              .wi-year {
-                color: rgba(66, 87, 51, 0.12) !important;
-                font-size: 3rem !important;
-                top: 1rem;
-                right: 1.5rem;
-                left: auto;
-              }
-              
-              .wi-icon-wrapper {
-                background: #ffffff !important;
-                color: #425733 !important;
+                padding-top: 0.6rem !important;
               }
 
               .wi-timeline-wrapper:hover .wi-card.active:not(:hover) {
@@ -709,26 +704,26 @@ export default function Home() {
             {[
               {
                 id: "01",
-                icon: <Sparkles className="w-6 h-6" />,
+                icon: <Sparkles className="w-5 h-5" />,
                 title: "Tác Phẩm Độc Bản & Cá Nhân Hóa",
                 desc: "Tiệm Rêu biến mọi ý tưởng của bạn thành hiện thực. Mỗi chiếc bể kín không chỉ là một hệ sinh thái thu nhỏ, mà còn là một thế giới thiên nhiên mang đậm dấu ấn và câu chuyện riêng của chính bạn.",
                 isActive: true,
               },
               {
                 id: "02",
-                icon: <Bot className="w-6 h-6" />,
+                icon: <Bot className="w-5 h-5" />,
                 title: "Bảo Hành Thực Vật & Trợ Lý Rêu 24/7",
                 desc: "Rêu sẽ cam kết đồng hành dài lâu cùng mảng xanh của bạn. Tự tin chăm sóc bể rêu dễ dàng với chính sách bảo hành toàn diện và hệ thống trợ lý AI thông minh luôn túc trực 24/7 để hướng dẫn, giải đáp mọi thắc mắc.",
               },
               {
                 id: "03",
-                icon: <Truck className="w-6 h-6" />,
+                icon: <Truck className="w-5 h-5" />,
                 title: "Vận Chuyển An Toàn",
                 desc: "An tâm tuyệt đối với quy trình đóng gói chống sốc chuyên dụng giúp tác phẩm đến tay nguyên vẹn.",
               },
               {
                 id: "04",
-                icon: <Gift className="w-6 h-6" />,
+                icon: <Gift className="w-5 h-5" />,
                 title: "Quà Tặng Tinh Tế",
                 desc: "Tiệm Rêu còn hỗ trợ chuẩn bị bao bì cao cấp, thay bạn trao gửi những thông điệp thiên nhiên ý nghĩa đến người trân quý.",
               },
@@ -737,19 +732,20 @@ export default function Home() {
                 key={item.id} 
                 className={`wi-card ${item.isActive ? "active" : ""}`}
               >
-                {/* Index / Icon */}
-                <div className="wi-year">
+                {/* Header: Icon + Number + Title (inline) */}
+                <div className="wi-header">
                   <div className="wi-icon-wrapper">
                     {item.icon}
                   </div>
-                  <span className="font-mono">{item.id}</span>
+                  <span className="wi-number">{item.id}</span>
+                  <h3>{item.title}</h3>
                 </div>
                 
-                {/* Content */}
-                <div className="wi-content">
-                  <h3>{item.title}</h3>
+                {/* Body: title (inactive) + divider + description */}
+                <div className="wi-body">
+                  <div className="wi-body-title">{item.title}</div>
                   <div className="wi-divider" />
-                  <p className="text-gray-600">{item.desc}</p>
+                  <p className="wi-desc">{item.desc}</p>
                 </div>
               </div>
             ))}
