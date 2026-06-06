@@ -429,14 +429,23 @@ export default function ChatWidget() {
                   <Sparkles size={10} /> AI
                 </span>
               )}
+              {isAIAvailable === false && (
+                <span style={{
+                  background: "rgba(251,191,36,0.25)",
+                  borderRadius: 99, padding: "2px 8px",
+                  fontSize: 10, color: "#fde68a",
+                }}>Cơ bản</span>
+              )}
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 5, marginTop: 2 }}>
               <span style={{
                 width: 7, height: 7, borderRadius: "50%",
-                background: "#4ade80",
-                boxShadow: "0 0 0 2px rgba(74,222,128,0.3)",
+                background: isAIAvailable === true ? "#4ade80" : isAIAvailable === false ? "#fbbf24" : "#a3c49a",
+                boxShadow: isAIAvailable === true ? "0 0 0 2px rgba(74,222,128,0.3)" : "none",
               }} />
-              <span style={{ color: "rgba(255,255,255,0.75)", fontSize: 11 }}>Đang hoạt động</span>
+              <span style={{ color: "rgba(255,255,255,0.75)", fontSize: 11 }}>
+                {isAIAvailable === true ? "AI đang hoạt động ✨" : isAIAvailable === false ? "Chế độ cơ bản" : "Đang hoạt động"}
+              </span>
             </div>
           </div>
 
