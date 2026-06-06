@@ -354,7 +354,7 @@ export function ProductDetailClient({
 
   const handleAddToCart = () => {
     if (!product) return;
-    if (!session) { showToast.error("Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng"); router.push(`/login?callbackUrl=/products/${product.slug}`); return; }
+    if (!session) { showToast.warning("Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng"); router.push(`/login?callbackUrl=/products/${product.slug}`); return; }
     const { price } = getPriceWithVariants();
     addItem({ productId: product.id, productName: product.name, productImage: product.images[0] || "", price, quantity, variants: selectedVariants });
     setCartOpen(true);

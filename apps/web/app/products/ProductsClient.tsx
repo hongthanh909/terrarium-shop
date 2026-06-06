@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -52,7 +52,7 @@ export function ProductsClient({
   const handleAddToCart = (product: Product) => {
     // Yêu cầu đăng nhập trước khi thêm vào giỏ hàng
     if (!session) {
-      showToast.error("Đăng nhập để thêm sản phẩm vào giỏ hàng!");
+      showToast.warning("Đăng nhập để thêm sản phẩm vào giỏ hàng!");
       router.push(`/login?callbackUrl=/products`);
       return;
     }
