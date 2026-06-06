@@ -1,11 +1,11 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import {
-  ArrowLeft, X, Save, Upload, Image as ImageIcon, Star, Plus,
+  ArrowLeft, X, Save, Upload, Image as ImageIcon, Star, Plus, Loader2,
 } from "lucide-react";
 import { showToast } from "@/components/ui/custom-toast";
 import { FormField } from "@/components/admin/ui/FormField";
@@ -25,13 +25,27 @@ const formatVND = (value: string | number) => {
   return new Intl.NumberFormat("vi-VN").format(parseInt(clean));
 };
 
-export default function CreateProductPage() {
+// Convert UTC date to VN datetime-local input value
+const toVNDatetimeLocal = (dateStr: string | null | undefined): string => {
+  if (!dateStr) return "";
+  const d = new Date(dateStr);
+  // Add 7 hours for VN timezone
+  const vnDate = new Date(d.getTime() + 7 * 60 * 60 * 1000);
+  const pad = (n: number) => n.toString().padStart(2, "0");
+  return `${vnDate.getFullYear()}-${pad(vnDate.getMonth() + 1)}-${pad(vnDate.getDate())}T${pad(vnDate.getHours())}:${pad(vnDate.getMinutes())}`;
+};
+
+export default function EditProductPage() {
   const router = useRouter();
+  const params = useParams();
+  const productId = params.id as string;
+
   const mainImageInputRef = useRef<HTMLInputElement>(null);
   const subImageInputRef = useRef<HTMLInputElement>(null);
 
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(false);
+  const [fetching, setFetching] = useState(true);
   const [uploadingMain, setUploadingMain] = useState(false);
   const [uploadingSub, setUploadingSub] = useState(false);
 
@@ -44,8 +58,8 @@ export default function CreateProductPage() {
     slug: "",
     name: "",
     basePrice: "",
-    salePrice: "",       // Giá khuyến mãi (để trống nếu không có)
-    saleEndDate: "",     // Thời hạn flash sale (giờ VN)
+    salePrice: "",
+    saleEndDate: "",
     type: "PRODUCT",
     categoryId: "",
     status: "DRAFT",
@@ -62,12 +76,62 @@ export default function CreateProductPage() {
     videoUrl: "",
   });
 
+  // Fetch categories
   useEffect(() => {
     fetch("/api/categories?nocache=true")
       .then((r) => r.json())
       .then((data) => setCategories(Array.isArray(data) ? data : (data.categories ?? [])))
       .catch(() => {});
   }, []);
+
+  // Fetch existing product data
+  useEffect(() => {
+    if (!productId) return;
+    setFetching(true);
+    fetch(`/api/products/${productId}`)
+      .then((r) => {
+        if (!r.ok) throw new Error("Not found");
+        return r.json();
+      })
+      .then((product) => {
+        // Pre-fill form
+        setFormData({
+          slug: product.slug || "",
+          name: product.name || "",
+          basePrice: formatVND(product.basePrice?.toString() || "0"),
+          salePrice: product.salePrice ? formatVND(product.salePrice.toString()) : "",
+          saleEndDate: toVNDatetimeLocal(product.saleEndDate),
+          type: product.type || "PRODUCT",
+          categoryId: product.categoryId || "",
+          status: product.status || "DRAFT",
+          inventory: product.inventory ?? 0,
+          isFeatured: product.featured ?? false,
+        });
+
+        // Pre-fill images
+        if (product.images && product.images.length > 0) {
+          setMainImage(product.images[0]);
+          setSubImages(product.images.slice(1));
+        }
+
+        // Pre-fill care guide
+        if (product.careGuide) {
+          setCareGuide({
+            watering: product.careGuide.watering || "",
+            sunlight: product.careGuide.sunlight || "",
+            temperature: product.careGuide.temperature || "",
+            humidity: product.careGuide.humidity || "",
+            commonIssues: product.careGuide.commonIssues || "",
+            videoUrl: product.careGuide.videoUrl || "",
+          });
+        }
+      })
+      .catch(() => {
+        showToast.error("Không tìm thấy sản phẩm");
+        router.push("/tiem-nho-nth24/products");
+      })
+      .finally(() => setFetching(false));
+  }, [productId, router]);
 
   // Auto-slug from name
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -137,9 +201,7 @@ export default function CreateProductPage() {
       const productData: Record<string, unknown> = {
         ...formData,
         basePrice: cleanPrice(formData.basePrice),
-        // Sale price: chỉ gửi nếu có giá
         salePrice: formData.salePrice ? cleanPrice(formData.salePrice) : null,
-        // Sale end date: datetime-local đã là giờ VN, append +07:00 để parse đúng
         saleEndDate: formData.saleEndDate
           ? new Date(formData.saleEndDate + ":00+07:00").toISOString()
           : null,
@@ -154,17 +216,18 @@ export default function CreateProductPage() {
           videoUrl: careGuide.videoUrl || null,
         },
       };
-      const res = await fetch("/api/products", {
-        method: "POST",
+
+      const res = await fetch(`/api/products/${productId}`, {
+        method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(productData),
       });
       if (res.ok) {
-        showToast.success("Tạo sản phẩm thành công!");
+        showToast.success("Cập nhật sản phẩm thành công!");
         router.push("/tiem-nho-nth24/products");
       } else {
         const err = await res.json();
-        showToast.error(err.error || "Lỗi khi tạo sản phẩm");
+        showToast.error(err.error || "Lỗi khi cập nhật sản phẩm");
       }
     } catch {
       showToast.error("Lỗi kết nối");
@@ -173,13 +236,24 @@ export default function CreateProductPage() {
     }
   };
 
+  // Loading skeleton
+  if (fetching) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] gap-3">
+        <Loader2 className="w-8 h-8 animate-spin text-[#425733]" />
+        <p className="text-sm text-gray-500">Đang tải thông tin sản phẩm...</p>
+      </div>
+    );
+  }
+
   return (
     <div>
       <div className="mb-6">
         <Link href="/tiem-nho-nth24/products" className="inline-flex items-center text-[#425733] hover:text-[#364a29] mb-4 gap-1 text-sm">
           <ArrowLeft className="w-4 h-4" /> Quay lại danh sách
         </Link>
-        <h2 className="text-2xl font-bold text-gray-800">Thêm Sản Phẩm Mới</h2>
+        <h2 className="text-2xl font-bold text-gray-800">Chỉnh Sửa Sản Phẩm</h2>
+        <p className="text-sm text-gray-400 mt-1">Cập nhật thông tin sản phẩm hiện tại</p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -407,7 +481,7 @@ export default function CreateProductPage() {
             <FormField label="Nhiệt độ" type="text" value={careGuide.temperature} onChange={(e) => setCareGuide({ ...careGuide, temperature: e.target.value })} placeholder="VD: 18–25°C" />
             <FormField label="Độ ẩm" type="text" value={careGuide.humidity} onChange={(e) => setCareGuide({ ...careGuide, humidity: e.target.value })} placeholder="VD: 60–80%" />
             <div className="md:col-span-2">
-              <FormField label="Vấn đề thường gặp & cách xử lý" multiline rows={3} value={careGuide.commonIssues} onChange={(e) => setCareGuide({ ...careGuide, commonIssues: e.target.value })} placeholder="VD: Lá vàng → giảm tưới; Mốc trắng → tăng thông thoáng" />
+              <FormField label="Vấn đề thường gặp &amp; cách xử lý" multiline rows={3} value={careGuide.commonIssues} onChange={(e) => setCareGuide({ ...careGuide, commonIssues: e.target.value })} placeholder="VD: Lá vàng → giảm tưới; Mốc trắng → tăng thông thoáng" />
             </div>
             <div className="md:col-span-2">
               <FormField label="Video hướng dẫn (URL)" type="url" value={careGuide.videoUrl} onChange={(e) => setCareGuide({ ...careGuide, videoUrl: e.target.value })} placeholder="https://youtube.com/..." />
@@ -426,7 +500,7 @@ export default function CreateProductPage() {
             className="flex items-center gap-2 bg-[#425733] text-white px-6 py-2.5 rounded-full font-semibold text-sm shadow hover:-translate-y-0.5 hover:bg-[#364a29] hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all"
           >
             <Save className="w-4 h-4" />
-            {loading ? "Đang tạo..." : "Tạo sản phẩm"}
+            {loading ? "Đang lưu..." : "Lưu thay đổi"}
           </button>
         </div>
       </form>
