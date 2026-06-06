@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { CountdownTimer } from "@/components/ui/CountdownTimer";
@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import {
   ArrowLeft, ShoppingBag, Minus, Plus, Star,
   Droplets, Sun, Thermometer, Wind, AlertTriangle, Play,
-  Package, Sprout, Heart
+  Package, Sprout, Heart, Tag, ChevronRight, Copy, Check as CheckIcon, Zap, Lightbulb, Wrench
 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { showToast } from "@/components/ui/custom-toast";
@@ -18,11 +18,49 @@ import { Badge } from "@/components/ui/badge";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import Image from "next/image";
 
-// ── Lamp variant constants (applies to ALL products) ──────────────────────
+// ── Package variant constants ───────────────────────────────────────────────
 const LAMP_VARIANT_TYPE = "Đèn";
 const LAMP_COMBO_OPTION = "Combo bể + đèn";
 const LAMP_NONE_OPTION = "Không kèm đèn";
 const LAMP_PRICE_ADJUSTMENT = 150000;
+
+// 3-tier package selection for Bể products
+const PACKAGES = [
+  {
+    key: "basic",
+    label: "Gói cơ bản",
+    sub: "Không kèm đèn",
+    priceAdj: 0,
+    icon: "🪴",
+  },
+  {
+    key: "standard",
+    label: "Gói tiêu chuẩn",
+    sub: "Đèn + đế",
+    priceAdj: 150000,
+    icon: "💡",
+  },
+  {
+    key: "advanced",
+    label: "Gói nâng cao",
+    sub: "Đèn + đế + dụng cụ",
+    priceAdj: 180000,
+    icon: "🔧",
+  },
+];
+
+type VoucherData = {
+  id: string;
+  code: string;
+  type: "PERCENTAGE" | "FIXED_AMOUNT";
+  value: number;
+  minOrderAmount: number | null;
+  maxDiscountAmount: number | null;
+  expiresAt: string;
+  description?: string;
+  usageLimit: number | null;
+  usageCount: number;
+};
 
 type TabType = "details" | "care" | "reviews";
 
@@ -43,7 +81,9 @@ export function ProductDetailClient({
                        initialProduct?.category?.slug?.toLowerCase().includes("be") ||
                        initialProduct?.name?.toLowerCase().includes("bể");
 
-  // Default: "Không kèm đèn" pre-selected for Bể products
+  // 3-tier package selection (replaces old 2-button lamp selector)
+  const [selectedPackage, setSelectedPackage] = useState<string>("basic");
+
   const [selectedVariants, setSelectedVariants] = useState<Record<string, string>>(() => {
     if (isBểProduct) {
       return { [LAMP_VARIANT_TYPE]: LAMP_NONE_OPTION } as Record<string, string>;
@@ -51,6 +91,79 @@ export function ProductDetailClient({
     return {} as Record<string, string>;
   });
   const [quantity, setQuantity] = useState(1);
+
+  // ── Voucher section ──────────────────────────────────────────────────────
+  const [publicVouchers, setPublicVouchers] = useState<VoucherData[]>([]);
+  const [voucherInput, setVoucherInput] = useState("");
+  const [appliedVoucher, setAppliedVoucher] = useState<VoucherData | null>(null);
+  const [voucherLoading, setVoucherLoading] = useState(false);
+  const [copiedCode, setCopiedCode] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetch("/api/discount-campaigns?status=ACTIVE&limit=10")
+      .then(r => r.json())
+      .then(data => {
+        const list = Array.isArray(data) ? data : (data.campaigns || []);
+        setPublicVouchers(list.filter((v: any) =>
+          v.status === "ACTIVE" &&
+          new Date(v.expiresAt) > new Date() &&
+          (v.usageLimit === null || v.usageCount < v.usageLimit)
+        ));
+      })
+      .catch(() => {});
+  }, []);
+
+  const handleApplyVoucher = async (code?: string) => {
+    const useCode = (code || voucherInput).trim().toUpperCase();
+    if (!useCode) return;
+    setVoucherLoading(true);
+    try {
+      const res = await fetch("/api/validate-voucher", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: useCode, orderAmount: finalPrice * quantity }),
+      });
+      const data = await res.json();
+      if (res.ok && data.valid) {
+        setAppliedVoucher(data.campaign);
+        setVoucherInput(useCode);
+        showToast.success(`Áp dụng voucher "${useCode}" thành công!`);
+      } else {
+        showToast.error(data.error || "Mã voucher không hợp lệ");
+      }
+    } catch {
+      showToast.error("Lỗi khi kiểm tra voucher");
+    } finally {
+      setVoucherLoading(false);
+    }
+  };
+
+  const copyCode = (code: string) => {
+    navigator.clipboard.writeText(code).catch(() => {});
+    setCopiedCode(code);
+    setTimeout(() => setCopiedCode(null), 2000);
+    showToast.success(`Đã sao chép mã "${code}"`);
+  };
+
+  // Best voucher = voucher gives highest discount for current price
+  const getBestVoucher = (price: number): VoucherData | null => {
+    if (!publicVouchers.length) return null;
+    let best: VoucherData | null = null;
+    let bestDiscount = 0;
+    for (const v of publicVouchers) {
+      if (v.minOrderAmount && price < Number(v.minOrderAmount)) continue;
+      let discount = 0;
+      if (v.type === "PERCENTAGE") {
+        discount = (price * Number(v.value)) / 100;
+        if (v.maxDiscountAmount) discount = Math.min(discount, Number(v.maxDiscountAmount));
+      } else {
+        discount = Number(v.value);
+      }
+      if (discount > bestDiscount) { bestDiscount = discount; best = v; }
+    }
+    return best;
+  };
+
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [cartOpen, setCartOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<TabType>("details");
@@ -189,8 +302,12 @@ export function ProductDetailClient({
     if (isSaleValid) { currentBase = parseFloat(product.salePrice.toString()); isSale = true; }
     let price = currentBase;
 
-    // Lamp variant: +150k for combo (added to final price only, NOT to base for discount calc)
-    if (selectedVariants[LAMP_VARIANT_TYPE] === LAMP_COMBO_OPTION) {
+    // Package adjustment for Bể products (replaces old lamp toggle)
+    if (isBểProduct) {
+      const pkg = PACKAGES.find(p => p.key === selectedPackage);
+      if (pkg) price += pkg.priceAdj;
+    } else if (selectedVariants[LAMP_VARIANT_TYPE] === LAMP_COMBO_OPTION) {
+      // Fallback: keep old logic for non-Bể with lamp variant
       price += LAMP_PRICE_ADJUSTMENT;
     }
 
@@ -513,25 +630,34 @@ export function ProductDetailClient({
               {isSale && <span className="bg-red-100 text-red-600 text-xs font-bold px-2.5 py-1 rounded-full">-{discountPercent}% Ưu đãi giới hạn</span>}
             </div>
 
-            {/* ── Lamp variant (only shown for Bể products) ── */}
+            {/* ── 3-tier Package selector (only for Bể products) ── */}
             {isBểProduct && (
-              <div className="mb-4">
-                <div className="flex flex-wrap gap-2">
-                  {[LAMP_COMBO_OPTION, LAMP_NONE_OPTION].map((opt) => {
-                    const isSelected = selectedVariants[LAMP_VARIANT_TYPE] === opt;
-                    const isCombo = opt === LAMP_COMBO_OPTION;
+              <div className="mb-5">
+                <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Chọn phiên bản</p>
+                <div className="grid grid-cols-3 gap-2">
+                  {PACKAGES.map((pkg) => {
+                    const isSelected = selectedPackage === pkg.key;
                     return (
                       <button
-                        key={opt}
+                        key={pkg.key}
                         type="button"
-                        onClick={() => setSelectedVariants((prev) => ({ ...prev, [LAMP_VARIANT_TYPE]: opt }))}
-                        className={`px-4 py-2.5 rounded-xl font-semibold text-sm transition-all duration-200 border-2 ${
+                        onClick={() => setSelectedPackage(pkg.key)}
+                        className={`flex flex-col items-center gap-1 px-2 py-3 rounded-xl font-semibold text-xs transition-all duration-200 border-2 ${
                           isSelected
                             ? "border-[#425733] bg-[#425733] text-white shadow-md"
-                            : "border-gray-200 bg-white text-gray-700 hover:border-[#425733]/60 hover:bg-[#f8faf6]"
+                            : "border-gray-200 bg-white text-gray-600 hover:border-[#425733]/60 hover:bg-[#f8faf6]"
                         }`}
                       >
-                        {opt}
+                        <span className="text-lg leading-none">{pkg.icon}</span>
+                        <span className="font-bold leading-tight text-center">{pkg.label}</span>
+                        <span className={`text-[10px] leading-tight text-center ${
+                          isSelected ? "text-white/80" : "text-gray-400"
+                        }`}>{pkg.sub}</span>
+                        {pkg.priceAdj > 0 && (
+                          <span className={`text-[10px] font-bold mt-0.5 ${
+                            isSelected ? "text-white/90" : "text-[#425733]"
+                          }`}>+{(pkg.priceAdj / 1000).toFixed(0)}k</span>
+                        )}
                       </button>
                     );
                   })}
@@ -588,7 +714,7 @@ export function ProductDetailClient({
             </div>
 
             {/* Trust badges 2×2 */}
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 gap-2 mb-5">
               {[
                 { icon: "✅", title: "Chất lượng tuyển chọn", sub: "Cây khỏe mạnh, dễ chăm sóc" },
                 { icon: "📦", title: "Đóng gói an toàn", sub: "Đảm bảo nguyên vẹn khi vận chuyển" },
@@ -603,6 +729,143 @@ export function ProductDetailClient({
                   </div>
                 </div>
               ))}
+            </div>
+
+            {/* ── Voucher Section ───────────────────────────────────────── */}
+            <div className="border border-[#daebd0] rounded-2xl overflow-hidden bg-white">
+              {/* Header */}
+              <div className="flex items-center gap-2 px-4 py-3 bg-[#f6faf4] border-b border-[#daebd0]">
+                <Tag className="w-4 h-4 text-[#425733] flex-shrink-0" />
+                <span className="text-sm font-bold text-[#2d4a1e]">Ưu đãi & Voucher</span>
+                {(() => {
+                  const best = getBestVoucher(finalPrice);
+                  if (!best) return null;
+                  return (
+                    <span className="ml-auto text-[11px] bg-orange-100 text-orange-700 font-semibold px-2 py-0.5 rounded-full animate-pulse">
+                      Tiết kiệm thêm với {best.code}!
+                    </span>
+                  );
+                })()}
+              </div>
+
+              {/* Manual input */}
+              <div className="px-4 py-3 flex gap-2">
+                <input
+                  type="text"
+                  value={voucherInput}
+                  onChange={e => setVoucherInput(e.target.value.toUpperCase())}
+                  onKeyDown={e => e.key === "Enter" && handleApplyVoucher()}
+                  placeholder="Nhập mã voucher..."
+                  className="flex-1 px-3 py-2 text-sm border border-gray-200 rounded-xl outline-none focus:border-[#425733] focus:ring-1 focus:ring-[#425733]/20 transition-all"
+                />
+                <button
+                  onClick={() => handleApplyVoucher()}
+                  disabled={voucherLoading || !voucherInput.trim()}
+                  className="px-4 py-2 text-sm font-bold bg-[#425733] text-white rounded-xl hover:bg-[#364a29] disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                >
+                  {voucherLoading ? "..." : "Áp dụng"}
+                </button>
+              </div>
+
+              {/* Applied voucher */}
+              {appliedVoucher && (
+                <div className="mx-4 mb-3 px-3 py-2 bg-green-50 border border-green-200 rounded-xl flex items-center gap-2">
+                  <CheckIcon className="w-4 h-4 text-green-600 flex-shrink-0" />
+                  <span className="text-xs font-semibold text-green-700 flex-1">
+                    Đã áp dụng <strong>{appliedVoucher.code}</strong>
+                    {appliedVoucher.type === "PERCENTAGE"
+                      ? ` — Giảm ${appliedVoucher.value}%`
+                      : ` — Giảm ${Number(appliedVoucher.value).toLocaleString("vi-VN")}₫`}
+                  </span>
+                  <button onClick={() => { setAppliedVoucher(null); setVoucherInput(""); }} className="text-gray-400 hover:text-gray-600 text-xs">
+                    Bỏ
+                  </button>
+                </div>
+              )}
+
+              {/* Hint */}
+              <p className="px-4 pb-2 text-[11px] text-gray-400">Bạn có thể chọn 1 voucher cho đơn hàng này</p>
+
+              {/* Available voucher cards — horizontal scroll */}
+              {publicVouchers.length > 0 && (
+                <div className="px-4 pb-4">
+                  <div className="flex gap-2.5 overflow-x-auto pb-1 scrollbar-thin">
+                    {publicVouchers.map((v) => {
+                      const best = getBestVoucher(finalPrice);
+                      const isBest = best?.id === v.id;
+                      const isApplied = appliedVoucher?.id === v.id;
+                      const meetsMin = !v.minOrderAmount || finalPrice >= Number(v.minOrderAmount);
+                      const expDate = new Date(v.expiresAt).toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric" });
+                      return (
+                        <div
+                          key={v.id}
+                          className={`flex-shrink-0 w-[160px] border-2 rounded-xl overflow-hidden transition-all ${
+                            isApplied
+                              ? "border-[#425733] bg-[#f6faf4]"
+                              : isBest
+                              ? "border-orange-400 bg-orange-50"
+                              : "border-gray-200 bg-white"
+                          }`}
+                        >
+                          {/* Top stripe */}
+                          <div className={`px-3 py-2 ${
+                            isApplied ? "bg-[#425733]" : isBest ? "bg-orange-400" : "bg-gray-100"
+                          }`}>
+                            <div className="flex items-center justify-between gap-1">
+                              <span className={`text-xs font-extrabold tracking-wider ${
+                                isApplied || isBest ? "text-white" : "text-gray-700"
+                              }`}>
+                                {v.type === "PERCENTAGE" ? `GIẢM ${v.value}%` : `GIẢM ${(Number(v.value) / 1000).toFixed(0)}K`}
+                              </span>
+                              {isBest && !isApplied && (
+                                <span className="text-[9px] bg-white text-orange-600 font-bold px-1.5 py-0.5 rounded-full">Tốt nhất</span>
+                              )}
+                            </div>
+                            <p className={`text-[10px] mt-0.5 font-mono font-bold ${
+                              isApplied || isBest ? "text-white/90" : "text-gray-500"
+                            }`}>Ms. {v.code}</p>
+                          </div>
+                          {/* Bottom info */}
+                          <div className="px-3 py-2">
+                            {v.minOrderAmount && (
+                              <p className="text-[10px] text-gray-500">
+                                Đơn từ {(Number(v.minOrderAmount) / 1000).toFixed(0)}k₫
+                              </p>
+                            )}
+                            <p className="text-[10px] text-gray-400">HSD: {expDate}</p>
+                            <div className="flex gap-1 mt-2">
+                              <button
+                                onClick={() => copyCode(v.code)}
+                                className="flex-1 text-[11px] font-semibold border border-gray-200 rounded-lg py-1 hover:bg-gray-50 transition-colors flex items-center justify-center gap-1"
+                              >
+                                {copiedCode === v.code ? <CheckIcon className="w-3 h-3 text-green-500" /> : <Copy className="w-3 h-3" />}
+                                Sao chép
+                              </button>
+                              <button
+                                onClick={() => { if (meetsMin) { handleApplyVoucher(v.code); } else { showToast.warning(`Đơn hàng tối thiểu ${Number(v.minOrderAmount).toLocaleString("vi-VN")}₫`); } }}
+                                className={`flex-1 text-[11px] font-bold rounded-lg py-1 transition-colors ${
+                                  isApplied
+                                    ? "bg-[#425733] text-white"
+                                    : meetsMin
+                                    ? "bg-[#425733] text-white hover:bg-[#364a29]"
+                                    : "bg-gray-100 text-gray-400 cursor-not-allowed"
+                                }`}
+                              >
+                                {isApplied ? "✓ Dùng" : "Dùng"}
+                              </button>
+                            </div>
+                            {!meetsMin && (
+                              <p className="text-[9px] text-red-400 mt-1 text-center">
+                                Chưa đủ điều kiện
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
