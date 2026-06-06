@@ -17,10 +17,19 @@ export async function PATCH(
 
     const orderId = params.id;
 
-    // Lấy đơn hàng và kiểm tra quyền sở hữu
+    // Lấy đơn hàng + thông tin voucher đã dùng
     const order = await prisma.order.findUnique({
       where: { id: orderId },
-      select: { id: true, status: true, customerId: true },
+      select: {
+        id: true,
+        status: true,
+        customerId: true,
+        discounts: {
+          select: {
+            campaignId: true,
+          },
+        },
+      },
     });
 
     if (!order) {
@@ -40,7 +49,7 @@ export async function PATCH(
       );
     }
 
-    // Cập nhật trạng thái sang CANCELLED và ghi log
+    // Cập nhật trạng thái sang CANCELLED, hoàn voucher (nếu có) — trong 1 transaction
     const updated = await prisma.$transaction(async (tx) => {
       const updatedOrder = await tx.order.update({
         where: { id: orderId },
@@ -55,6 +64,17 @@ export async function PATCH(
         },
       });
 
+      // ✅ Hoàn lại lượt dùng voucher — chỉ decrement nếu > 0 (tránh âm)
+      for (const discount of order.discounts) {
+        await tx.discountCampaign.updateMany({
+          where: {
+            id: discount.campaignId,
+            usageCount: { gt: 0 }, // Guard: không để âm
+          },
+          data: { usageCount: { decrement: 1 } },
+        });
+      }
+
       return updatedOrder;
     });
 
@@ -64,3 +84,4 @@ export async function PATCH(
     return NextResponse.json({ error: "Lỗi server" }, { status: 500 });
   }
 }
+
