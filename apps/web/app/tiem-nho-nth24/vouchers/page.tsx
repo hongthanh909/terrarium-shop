@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -56,6 +56,22 @@ interface DiscountCampaign {
   status: string;
   applicableTo: string;
   description: string | null;
+  applicables?: { id: string; targetType: string; targetId: string }[];
+}
+
+interface CategoryItem {
+  id: string;
+  name: string;
+  slug: string;
+}
+
+interface ProductItem {
+  id: string;
+  name: string;
+  slug: string;
+  images: string[];
+  basePrice: string;
+  category: { name: string };
 }
 
 const TYPE_LABELS: Record<string, string> = {
@@ -101,9 +117,27 @@ const DEFAULT_FORM = {
 
 export default function AdminVouchersPage() {
   const queryClient = useQueryClient();
-  const vnClock = useVNClock(); // Real-time VN clock
+  const vnClock = useVNClock();
   const [submitting, setSubmitting] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  // ─ Data for applicable targeting ───────────────────────────────────
+  const [allCategories, setAllCategories] = useState<CategoryItem[]>([]);
+  const [allProducts, setAllProducts] = useState<ProductItem[]>([]);
+  const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>([]);
+  const [selectedProductIds, setSelectedProductIds] = useState<string[]>([]);
+  const [productSearch, setProductSearch] = useState("");
+
+  // Fetch categories & products on mount
+  useEffect(() => {
+    fetch("/api/categories").then(r => r.json()).then(data => {
+      setAllCategories(Array.isArray(data) ? data : []);
+    }).catch(() => {});
+    fetch("/api/products?limit=200").then(r => r.json()).then(data => {
+      const list = Array.isArray(data) ? data : (data.products || []);
+      setAllProducts(list);
+    }).catch(() => {});
+  }, []);
 
   const { data: campaigns = [], isLoading: loading } = useQuery({
     queryKey: ["admin-vouchers"],
@@ -128,7 +162,6 @@ export default function AdminVouchersPage() {
         value: campaign.value.toString(),
         minOrderAmount: campaign.minOrderAmount?.toString() || "",
         maxDiscountAmount: campaign.maxDiscountAmount?.toString() || "",
-        // ✅ Convert UTC → Giờ Việt Nam khi load
         startsAt: toVNLocalInput(campaign.startsAt),
         expiresAt: toVNLocalInput(campaign.expiresAt),
         usageLimit: campaign.usageLimit?.toString() || "",
@@ -136,12 +169,19 @@ export default function AdminVouchersPage() {
         applicableTo: campaign.applicableTo,
         description: campaign.description || "",
       });
+      // Restore selected applicables
+      const catIds = (campaign.applicables || []).filter(a => a.targetType === "CATEGORY").map(a => a.targetId);
+      const prodIds = (campaign.applicables || []).filter(a => a.targetType === "PRODUCT").map(a => a.targetId);
+      setSelectedCategoryIds(catIds);
+      setSelectedProductIds(prodIds);
     } else {
       setEditingCampaign(null);
-      // Default: thời điểm hiện tại VN
       const nowVN = toVNLocalInput(new Date());
       setFormData({ ...DEFAULT_FORM, startsAt: nowVN });
+      setSelectedCategoryIds([]);
+      setSelectedProductIds([]);
     }
+    setProductSearch("");
     setShowModal(true);
   };
 
@@ -164,9 +204,10 @@ export default function AdminVouchersPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...formData,
-          // ✅ Convert Giờ VN → UTC trước khi lưu DB
           startsAt: fromVNLocalInput(formData.startsAt),
           expiresAt: fromVNLocalInput(formData.expiresAt),
+          applicableCategories: formData.applicableTo === "CATEGORIES" ? selectedCategoryIds : [],
+          applicableProducts: formData.applicableTo === "PRODUCTS" ? selectedProductIds : [],
         }),
       });
 
@@ -463,7 +504,12 @@ export default function AdminVouchersPage() {
                 <label className="block text-sm font-semibold text-gray-700 mb-1.5">Áp Dụng Cho</label>
                 <select
                   value={formData.applicableTo}
-                  onChange={(e) => setFormData({ ...formData, applicableTo: e.target.value })}
+                  onChange={(e) => {
+                    setFormData({ ...formData, applicableTo: e.target.value });
+                    setSelectedCategoryIds([]);
+                    setSelectedProductIds([]);
+                    setProductSearch("");
+                  }}
                   className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#425733]/50"
                 >
                   <option value="ALL">Tất Cả Sản Phẩm</option>
@@ -472,6 +518,95 @@ export default function AdminVouchersPage() {
                   <option value="COMBOS">Combo Cụ Thể</option>
                 </select>
               </div>
+
+              {/* Category selector */}
+              {formData.applicableTo === "CATEGORIES" && (
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">Chọn Danh Mục</label>
+                  <div className="flex flex-wrap gap-2">
+                    {allCategories.map(cat => {
+                      const isSelected = selectedCategoryIds.includes(cat.id);
+                      return (
+                        <button
+                          key={cat.id}
+                          type="button"
+                          onClick={() => {
+                            setSelectedCategoryIds(prev =>
+                              isSelected ? prev.filter(id => id !== cat.id) : [...prev, cat.id]
+                            );
+                          }}
+                          className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all border ${
+                            isSelected
+                              ? "bg-[#425733] text-white border-[#425733]"
+                              : "bg-white text-gray-600 border-gray-200 hover:border-[#425733]/50"
+                          }`}
+                        >
+                          {isSelected && <span className="mr-1">✓</span>}
+                          {cat.name}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  {selectedCategoryIds.length > 0 && (
+                    <p className="text-xs text-[#425733] mt-1.5 font-medium">Đã chọn {selectedCategoryIds.length} danh mục</p>
+                  )}
+                </div>
+              )}
+
+              {/* Product selector */}
+              {formData.applicableTo === "PRODUCTS" && (
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">Chọn Sản Phẩm</label>
+                  <input
+                    type="text"
+                    value={productSearch}
+                    onChange={e => setProductSearch(e.target.value)}
+                    placeholder="Tìm sản phẩm..."
+                    className="w-full px-4 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#425733]/50 mb-2"
+                  />
+                  <div className="max-h-[200px] overflow-y-auto space-y-1.5 border border-gray-100 rounded-xl p-2">
+                    {allProducts
+                      .filter(p => !productSearch || p.name.toLowerCase().includes(productSearch.toLowerCase()))
+                      .map(p => {
+                        const isSelected = selectedProductIds.includes(p.id);
+                        return (
+                          <label
+                            key={p.id}
+                            className={`flex items-center gap-3 p-2 rounded-lg cursor-pointer transition-all ${
+                              isSelected ? "bg-[#f6faf4] border border-[#425733]/30" : "hover:bg-gray-50 border border-transparent"
+                            }`}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={isSelected}
+                              onChange={() => {
+                                setSelectedProductIds(prev =>
+                                  isSelected ? prev.filter(id => id !== p.id) : [...prev, p.id]
+                                );
+                              }}
+                              className="w-4 h-4 rounded border-gray-300 text-[#425733] accent-[#425733] flex-shrink-0"
+                            />
+                            {/* Thumbnail */}
+                            <div className="w-10 h-10 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
+                              {p.images?.[0] ? (
+                                <img src={p.images[0]} alt={p.name} className="w-full h-full object-cover" />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs">—</div>
+                              )}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium text-gray-800 truncate">{p.name}</p>
+                              <p className="text-[10px] text-gray-400">{p.category?.name} • {Number(p.basePrice).toLocaleString("vi-VN")}₫</p>
+                            </div>
+                          </label>
+                        );
+                      })}
+                  </div>
+                  {selectedProductIds.length > 0 && (
+                    <p className="text-xs text-[#425733] mt-1.5 font-medium">Đã chọn {selectedProductIds.length} sản phẩm</p>
+                  )}
+                </div>
+              )}
 
               {/* Mô Tả */}
               <div>

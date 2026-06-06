@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
+import { ProductCard } from "@/components/ui/product-card";
 import Image from "next/image";
 
 // ── Package variant constants ───────────────────────────────────────────────
@@ -623,11 +624,41 @@ export function ProductDetailClient({
               mang lại không gian xanh mát, thư giãn. Phù hợp trang trí bàn làm việc hoặc làm quà tặng ý nghĩa.
             </p>
 
-            {/* Price */}
+            {/* Price — shows voucher discount inline */}
             <div className="flex flex-wrap items-baseline gap-2 mb-5">
-              {isSale && <span className="text-base text-gray-400 font-medium line-through">{originalPrice.toLocaleString("vi-VN")}₫</span>}
-              <span className="text-3xl sm:text-4xl font-extrabold text-[#425733]">{finalPrice.toLocaleString("vi-VN")}₫</span>
-              {isSale && <span className="bg-red-100 text-red-600 text-xs font-bold px-2.5 py-1 rounded-full">-{discountPercent}% Ưu đãi giới hạn</span>}
+              {/* Strike-through: show original or pre-voucher price */}
+              {(isSale || appliedVoucher) && (
+                <span className="text-base text-gray-400 font-medium line-through">
+                  {(isSale ? originalPrice : finalPrice).toLocaleString("vi-VN")}₫
+                </span>
+              )}
+              {/* Main price — with voucher deducted if applied */}
+              <span className={`text-3xl sm:text-4xl font-extrabold ${
+                appliedVoucher ? "text-green-600" : "text-[#425733]"
+              }`}>
+                {(() => {
+                  let displayPrice = finalPrice;
+                  if (appliedVoucher) {
+                    let disc = 0;
+                    if (appliedVoucher.type === "PERCENTAGE") {
+                      disc = (finalPrice * Number(appliedVoucher.value)) / 100;
+                      if (appliedVoucher.maxDiscountAmount) disc = Math.min(disc, Number(appliedVoucher.maxDiscountAmount));
+                    } else {
+                      disc = Number(appliedVoucher.value);
+                    }
+                    displayPrice = Math.max(0, finalPrice - disc);
+                  }
+                  return displayPrice.toLocaleString("vi-VN");
+                })()}₫
+              </span>
+              {isSale && !appliedVoucher && (
+                <span className="bg-red-100 text-red-600 text-xs font-bold px-2.5 py-1 rounded-full">-{discountPercent}% Ưu đãi giới hạn</span>
+              )}
+              {appliedVoucher && (
+                <span className="bg-green-100 text-green-700 text-xs font-bold px-2.5 py-1 rounded-full animate-pulse">
+                  Đã giảm {appliedVoucher.type === "PERCENTAGE" ? `${appliedVoucher.value}%` : `${Number(appliedVoucher.value).toLocaleString("vi-VN")}₫`}
+                </span>
+              )}
             </div>
 
             {/* ── 3-tier Package selector (only for Bể products) ── */}
@@ -687,7 +718,7 @@ export function ProductDetailClient({
               </div>
             )}
 
-            {/* ── Voucher Section ───────────────────────────────────────── */}
+            {/* ── Voucher Section — radio-selectable ──────────────────── */}
             <div className="border border-[#daebd0] rounded-2xl overflow-hidden bg-white mb-4">
               {/* Header */}
               <div className="flex items-center gap-2 px-4 py-3 bg-[#f6faf4] border-b border-[#daebd0]">
@@ -723,7 +754,7 @@ export function ProductDetailClient({
                 </button>
               </div>
 
-              {/* Applied voucher */}
+              {/* Applied voucher confirmation */}
               {appliedVoucher && (
                 <div className="mx-4 mb-3 px-3 py-2 bg-green-50 border border-green-200 rounded-xl flex items-center gap-2">
                   <CheckIcon className="w-4 h-4 text-green-600 flex-shrink-0" />
@@ -733,93 +764,109 @@ export function ProductDetailClient({
                       ? ` — Giảm ${appliedVoucher.value}%`
                       : ` — Giảm ${Number(appliedVoucher.value).toLocaleString("vi-VN")}₫`}
                   </span>
-                  <button onClick={() => { setAppliedVoucher(null); setVoucherInput(""); }} className="text-gray-400 hover:text-gray-600 text-xs">
-                    Bỏ
+                  <button onClick={() => { setAppliedVoucher(null); setVoucherInput(""); }} className="text-gray-400 hover:text-gray-600 text-xs font-medium">
+                    Bỏ chọn
                   </button>
                 </div>
               )}
 
-              {/* Hint */}
-              <p className="px-4 pb-2 text-[11px] text-gray-400">Bạn có thể chọn 1 voucher cho đơn hàng này</p>
-
-              {/* Available voucher cards — horizontal scroll */}
+              {/* Available vouchers — radio-selectable list */}
               {publicVouchers.length > 0 && (
-                <div className="px-4 pb-4">
-                  <div className="flex gap-2.5 overflow-x-auto pb-1 scrollbar-thin">
-                    {publicVouchers.map((v) => {
-                      const best = getBestVoucher(finalPrice);
-                      const isBest = best?.id === v.id;
-                      const isApplied = appliedVoucher?.id === v.id;
-                      const meetsMin = !v.minOrderAmount || finalPrice >= Number(v.minOrderAmount);
-                      const expDate = new Date(v.expiresAt).toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric" });
-                      return (
-                        <div
-                          key={v.id}
-                          className={`flex-shrink-0 w-[160px] border-2 rounded-xl overflow-hidden transition-all ${
-                            isApplied
-                              ? "border-[#425733] bg-[#f6faf4]"
-                              : isBest
-                              ? "border-orange-400 bg-orange-50"
-                              : "border-gray-200 bg-white"
-                          }`}
-                        >
-                          {/* Top stripe */}
-                          <div className={`px-3 py-2 ${
-                            isApplied ? "bg-[#425733]" : isBest ? "bg-orange-400" : "bg-gray-100"
-                          }`}>
-                            <div className="flex items-center justify-between gap-1">
-                              <span className={`text-xs font-extrabold tracking-wider ${
-                                isApplied || isBest ? "text-white" : "text-gray-700"
-                              }`}>
-                                {v.type === "PERCENTAGE" ? `GIẢM ${v.value}%` : `GIẢM ${(Number(v.value) / 1000).toFixed(0)}K`}
-                              </span>
-                              {isBest && !isApplied && (
-                                <span className="text-[9px] bg-white text-orange-600 font-bold px-1.5 py-0.5 rounded-full">Tốt nhất</span>
-                              )}
-                            </div>
-                            <p className={`text-[10px] mt-0.5 font-mono font-bold ${
-                              isApplied || isBest ? "text-white/90" : "text-gray-500"
-                            }`}>Ms. {v.code}</p>
+                <div className="px-4 pb-4 space-y-2">
+                  <p className="text-[11px] text-gray-400 mb-1">Chọn 1 voucher cho đơn hàng này:</p>
+                  {publicVouchers.map((v) => {
+                    const best = getBestVoucher(finalPrice);
+                    const isBest = best?.id === v.id;
+                    const isApplied = appliedVoucher?.id === v.id;
+                    const meetsMin = !v.minOrderAmount || finalPrice >= Number(v.minOrderAmount);
+                    const expDate = new Date(v.expiresAt).toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric" });
+                    // Calculate actual discount for this voucher
+                    let discountAmt = 0;
+                    if (v.type === "PERCENTAGE") {
+                      discountAmt = (finalPrice * Number(v.value)) / 100;
+                      if (v.maxDiscountAmount) discountAmt = Math.min(discountAmt, Number(v.maxDiscountAmount));
+                    } else {
+                      discountAmt = Number(v.value);
+                    }
+                    return (
+                      <label
+                        key={v.id}
+                        className={`flex items-center gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all ${
+                          isApplied
+                            ? "border-[#425733] bg-[#f6faf4] shadow-sm"
+                            : isBest
+                            ? "border-orange-300 bg-orange-50/50 hover:border-orange-400"
+                            : meetsMin
+                            ? "border-gray-200 bg-white hover:border-[#425733]/40 hover:bg-[#f8faf6]"
+                            : "border-gray-100 bg-gray-50 opacity-60 cursor-not-allowed"
+                        }`}
+                        onClick={(e) => {
+                          if (!meetsMin) {
+                            e.preventDefault();
+                            showToast.warning(`Đơn hàng tối thiểu ${Number(v.minOrderAmount).toLocaleString("vi-VN")}₫`);
+                          }
+                        }}
+                      >
+                        {/* Radio circle */}
+                        <input
+                          type="radio"
+                          name="voucher-select"
+                          checked={isApplied}
+                          onChange={() => {
+                            if (meetsMin) {
+                              if (isApplied) {
+                                setAppliedVoucher(null);
+                                setVoucherInput("");
+                              } else {
+                                handleApplyVoucher(v.code);
+                              }
+                            }
+                          }}
+                          disabled={!meetsMin}
+                          className="w-4 h-4 text-[#425733] border-gray-300 focus:ring-[#425733] flex-shrink-0 accent-[#425733]"
+                        />
+
+                        {/* Voucher info */}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <span className={`text-sm font-bold ${
+                              isApplied ? "text-[#425733]" : "text-gray-800"
+                            }`}>
+                              {v.type === "PERCENTAGE" ? `Giảm ${v.value}%` : `Giảm ${(Number(v.value) / 1000).toFixed(0)}K`}
+                            </span>
+                            <span className="text-[10px] font-mono text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded">{v.code}</span>
+                            {isBest && !isApplied && (
+                              <span className="text-[9px] bg-orange-400 text-white font-bold px-1.5 py-0.5 rounded-full">Tốt nhất</span>
+                            )}
                           </div>
-                          {/* Bottom info */}
-                          <div className="px-3 py-2">
+                          <div className="flex items-center gap-3 mt-0.5">
                             {v.minOrderAmount && (
-                              <p className="text-[10px] text-gray-500">
-                                Đơn từ {(Number(v.minOrderAmount) / 1000).toFixed(0)}k₫
-                              </p>
+                              <span className="text-[10px] text-gray-400">Đơn từ {(Number(v.minOrderAmount) / 1000).toFixed(0)}k₫</span>
                             )}
-                            <p className="text-[10px] text-gray-400">HSD: {expDate}</p>
-                            <div className="flex gap-1 mt-2">
-                              <button
-                                onClick={() => copyCode(v.code)}
-                                className="flex-1 text-[11px] font-semibold border border-gray-200 rounded-lg py-1 hover:bg-gray-50 transition-colors flex items-center justify-center gap-1"
-                              >
-                                {copiedCode === v.code ? <CheckIcon className="w-3 h-3 text-green-500" /> : <Copy className="w-3 h-3" />}
-                                Sao chép
-                              </button>
-                              <button
-                                onClick={() => { if (meetsMin) { handleApplyVoucher(v.code); } else { showToast.warning(`Đơn hàng tối thiểu ${Number(v.minOrderAmount).toLocaleString("vi-VN")}₫`); } }}
-                                className={`flex-1 text-[11px] font-bold rounded-lg py-1 transition-colors ${
-                                  isApplied
-                                    ? "bg-[#425733] text-white"
-                                    : meetsMin
-                                    ? "bg-[#425733] text-white hover:bg-[#364a29]"
-                                    : "bg-gray-100 text-gray-400 cursor-not-allowed"
-                                }`}
-                              >
-                                {isApplied ? "✓ Dùng" : "Dùng"}
-                              </button>
-                            </div>
-                            {!meetsMin && (
-                              <p className="text-[9px] text-red-400 mt-1 text-center">
-                                Chưa đủ điều kiện
-                              </p>
-                            )}
+                            <span className="text-[10px] text-gray-400">HSD: {expDate}</span>
                           </div>
                         </div>
-                      );
-                    })}
-                  </div>
+
+                        {/* Discount amount preview */}
+                        <div className="flex flex-col items-end flex-shrink-0">
+                          {meetsMin ? (
+                            <span className={`text-sm font-bold ${
+                              isApplied ? "text-green-600" : "text-[#425733]"
+                            }`}>-{discountAmt.toLocaleString("vi-VN")}₫</span>
+                          ) : (
+                            <span className="text-[10px] text-red-400">Chưa đủ ĐK</span>
+                          )}
+                          <button
+                            onClick={(e) => { e.preventDefault(); e.stopPropagation(); copyCode(v.code); }}
+                            className="text-[10px] text-gray-400 hover:text-[#425733] flex items-center gap-0.5 mt-0.5"
+                          >
+                            {copiedCode === v.code ? <CheckIcon className="w-3 h-3 text-green-500" /> : <Copy className="w-3 h-3" />}
+                            Sao chép
+                          </button>
+                        </div>
+                      </label>
+                    );
+                  })}
                 </div>
               )}
             </div>
@@ -985,30 +1032,24 @@ export function ProductDetailClient({
           )}
         </div>
 
-        {/* Related Products */}
+        {/* Related Products — using unified ProductCard */}
         {relatedProducts.length > 0 && (
           <div className="mt-16">
             <h2 className="text-3xl font-bold text-center mb-8">Sản phẩm liên quan</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {relatedProducts.map((rel: any) => (
-                <Link key={rel.id} href={`/products/${rel.slug}`}>
-                  <Card className="overflow-hidden hover:shadow-lg transition-shadow group h-full">
-                    <CardContent className="p-0">
-                      <div className="aspect-square bg-muted flex items-center justify-center relative">
-                        {rel.images.length > 0 ? (
-                          <Image src={rel.images[0]} alt={rel.name} fill sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw" className="object-cover" />
-                        ) : (
-                          <span className="text-muted-foreground">Chưa có ảnh</span>
-                        )}
-                      </div>
-                      <div className="p-4">
-                        <Badge variant="secondary" className="mb-2">{rel.category.name}</Badge>
-                        <h3 className="font-semibold mb-2 line-clamp-2 group-hover:text-primary transition-colors">{rel.name}</h3>
-                        <p className="text-lg font-bold text-primary">{Number(rel.basePrice.toString()).toLocaleString("vi-VN")}₫</p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </Link>
+                <ProductCard
+                  key={rel.id}
+                  id={rel.id}
+                  slug={rel.slug}
+                  name={rel.name}
+                  basePrice={Number(rel.basePrice.toString())}
+                  salePrice={rel.salePrice ? Number(rel.salePrice.toString()) : null}
+                  saleEndDate={rel.saleEndDate ?? null}
+                  images={rel.images}
+                  category={rel.category}
+                  reviewCount={rel._count?.reviews ?? 0}
+                />
               ))}
             </div>
           </div>
