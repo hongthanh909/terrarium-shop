@@ -496,7 +496,7 @@ export default function AdminVouchersPage() {
               </div>
 
               {/* Đơn Hàng Tối Thiểu & Giảm Tối Đa */}
-              <div className="grid grid-cols-2 gap-4">
+              <div className={`grid ${formData.type === "FREE_SHIPPING" ? "grid-cols-1" : "grid-cols-2"} gap-4`}>
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-1.5">Đơn Hàng Tối Thiểu (₫)</label>
                   <input
@@ -508,17 +508,19 @@ export default function AdminVouchersPage() {
                     placeholder="500000"
                   />
                 </div>
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">Giảm Tối Đa (₫)</label>
-                  <input
-                    type="number"
-                    value={formData.maxDiscountAmount}
-                    onChange={(e) => setFormData({ ...formData, maxDiscountAmount: e.target.value })}
-                    min="0"
-                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#425733]/50"
-                    placeholder="100000"
-                  />
-                </div>
+                {formData.type !== "FREE_SHIPPING" && (
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-1.5">Giảm Tối Đa (₫)</label>
+                    <input
+                      type="number"
+                      value={formData.maxDiscountAmount}
+                      onChange={(e) => setFormData({ ...formData, maxDiscountAmount: e.target.value })}
+                      min="0"
+                      className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#425733]/50"
+                      placeholder="100000"
+                    />
+                  </div>
+                )}
               </div>
 
               {/* Giới Hạn & Trạng Thái */}

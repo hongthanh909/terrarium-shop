@@ -2,7 +2,7 @@ import { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import { Suspense } from "react";
-import { Sprout, Truck, ArrowRight, Shield, FileText, Calendar } from "lucide-react";
+import { Sprout, Truck, ArrowRight, Shield, FileText, Calendar, Gift, Sparkles, Bot } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -453,13 +453,13 @@ export default function Home() {
             </div>
           </ScrollReveal>
 
-          {/* Premium customized accordion styles from user code sample — Light Green theme & Square-ish cards */}
+          {/* Premium customized accordion styles — Light Green theme & Square-ish cards */}
           <style dangerouslySetInnerHTML={{ __html: `
             .wi-timeline-wrapper {
               display: flex;
               width: 100%;
-              height: 18rem; /* Balanced, square-ish 18rem height */
-              gap: 1.5rem; /* Clean layout spacing */
+              height: 20rem;
+              gap: 1.25rem;
               justify-content: center;
               padding: 0.5rem 0;
               overflow: hidden;
@@ -467,10 +467,10 @@ export default function Home() {
 
             .wi-card {
               position: relative;
-              flex: 0 0 18rem; /* Perfectly square (18rem x 18rem) when inactive! */
-              width: 18rem;
+              flex: 0 0 14rem;
+              width: 14rem;
               background: #ffffff;
-              border: 1px solid #daebd0; /* Soft light green border */
+              border: 1px solid #daebd0;
               border-radius: 1.25rem;
               overflow: hidden;
               cursor: pointer;
@@ -482,10 +482,9 @@ export default function Home() {
               box-shadow: 0 8px 24px rgba(66, 87, 51, 0.04);
             }
 
-            /* Active card expands to take remaining space (making it a nice rectangle!) */
             .wi-card.active {
               flex: 1 1 auto;
-              background: #e3ebdd; /* Soft light green theme */
+              background: #e3ebdd;
               border-color: #c8d5be;
             }
 
@@ -496,9 +495,8 @@ export default function Home() {
               box-shadow: 0 15px 35px rgba(66, 87, 51, 0.1) !important;
             }
 
-            /* When hovering the wrapper, the active card that is NOT hovered shrinks back to a square */
             .wi-timeline-wrapper:hover .wi-card.active:not(:hover) {
-              flex: 0 0 18rem;
+              flex: 0 0 14rem;
               background: #ffffff;
               border-color: #daebd0;
               box-shadow: 0 8px 24px rgba(66, 87, 51, 0.04);
@@ -510,42 +508,48 @@ export default function Home() {
             }
 
             .wi-content h3 {
-              color: #425733; /* Forest green title */
+              color: #425733;
               margin: 0;
-              font-size: 1.15rem;
+              font-size: 1.05rem;
               font-weight: 700;
               transition: color 0.4s;
             }
             
             .wi-card.active .wi-content h3,
             .wi-card:hover .wi-content h3 {
-              color: #1e2e16; /* Darker forest green */
+              color: #1e2e16;
             }
             
             .wi-timeline-wrapper:hover .wi-card.active:not(:hover) .wi-content h3 {
               color: #425733;
             }
 
+            /* Description hidden by default, shown on hover/active */
             .wi-content p {
-              color: #4b5563; /* Gray description */
+              color: #4b5563;
               font-size: 0.85rem;
-              line-height: 1.5;
+              line-height: 1.6;
               margin: 0;
               text-align: justify;
-              opacity: 0.8; /* Always visible but slightly soft for inactive cards */
+              max-height: 0;
+              opacity: 0;
+              overflow: hidden;
               transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-              margin-top: 0.5rem;
+              margin-top: 0;
             }
             
             .wi-card.active .wi-content p,
             .wi-card:hover .wi-content p {
+              max-height: 12rem;
               opacity: 1;
               color: #374151;
+              margin-top: 0.5rem;
             }
 
             .wi-timeline-wrapper:hover .wi-card.active:not(:hover) .wi-content p {
-              opacity: 0.8;
-              color: #4b5563;
+              max-height: 0;
+              opacity: 0;
+              margin-top: 0;
             }
 
             .wi-year {
@@ -576,7 +580,7 @@ export default function Home() {
 
             .wi-card.active .wi-year,
             .wi-card:hover .wi-year {
-              color: rgba(66, 87, 51, 0.12); /* Subtle green number in background */
+              color: rgba(66, 87, 51, 0.12);
               font-size: 3.5rem;
               top: 0.75rem;
               left: auto;
@@ -624,6 +628,7 @@ export default function Home() {
               }
 
               .wi-content p {
+                max-height: 12rem !important;
                 opacity: 1 !important;
                 margin-top: 0.5rem;
               }
@@ -658,28 +663,28 @@ export default function Home() {
             {[
               {
                 id: "01",
-                icon: <Sprout className="w-6 h-6" />,
-                title: "Thân Thiện Môi Trường",
-                desc: "Vật liệu được tìm nguồn bền vững và cây trồng được chọn lọc từ vườn ươm địa phương.",
-                bg: "bg-[#e3ebdd]",
-                color: "text-[#425733]",
-                isActive: true, // First active by default
+                icon: <Sparkles className="w-6 h-6" />,
+                title: "Tác Phẩm Độc Bản & Cá Nhân Hóa",
+                desc: "Tiệm Rêu biến mọi ý tưởng của bạn thành hiện thực. Mỗi chiếc bể kín không chỉ là một hệ sinh thái thu nhỏ, mà còn là một thế giới thiên nhiên mang đậm dấu ấn và câu chuyện riêng của chính bạn.",
+                isActive: true,
               },
               {
                 id: "02",
-                icon: <Truck className="w-6 h-6" />,
-                title: "Vận Chuyển An Toàn",
-                desc: "Đảm bảo giao hàng tận nơi với lớp chống sốc đặc biệt, cây xanh luôn tươi tốt.",
-                bg: "bg-[hsl(210,50%,94%)]",
-                color: "text-[hsl(210,50%,50%)]",
+                icon: <Bot className="w-6 h-6" />,
+                title: "Bảo Hành Thực Vật & Trợ Lý Rêu 24/7",
+                desc: "Rêu sẽ cam kết đồng hành dài lâu cùng mảng xanh của bạn. Tự tin chăm sóc bể rêu dễ dàng với chính sách bảo hành toàn diện và hệ thống trợ lý AI thông minh luôn túc trực 24/7 để hướng dẫn, giải đáp mọi thắc mắc.",
               },
               {
                 id: "03",
-                icon: <Shield className="w-6 h-6" />,
-                title: "Bảo Hành Cây Sống",
-                desc: "Hỗ trợ thay cây miễn phí trong 30 ngày nếu terrarium của bạn không phát triển.",
-                bg: "bg-[hsl(260,40%,94%)]",
-                color: "text-[hsl(260,40%,55%)]",
+                icon: <Truck className="w-6 h-6" />,
+                title: "Vận Chuyển An Toàn",
+                desc: "An tâm tuyệt đối với quy trình đóng gói chống sốc chuyên dụng giúp tác phẩm đến tay nguyên vẹn.",
+              },
+              {
+                id: "04",
+                icon: <Gift className="w-6 h-6" />,
+                title: "Quà Tặng Tinh Tế",
+                desc: "Tiệm Rêu còn hỗ trợ chuẩn bị bao bì cao cấp, thay bạn trao gửi những thông điệp thiên nhiên ý nghĩa đến người trân quý.",
               },
             ].map((item) => (
               <div 
@@ -688,7 +693,7 @@ export default function Home() {
               >
                 {/* Index / Icon */}
                 <div className="wi-year">
-                  <div className={`wi-icon-wrapper ${item.bg} ${item.color}`}>
+                  <div className="wi-icon-wrapper">
                     {item.icon}
                   </div>
                   <span className="font-mono">{item.id}</span>
