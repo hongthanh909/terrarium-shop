@@ -11,22 +11,38 @@ jobs:
   deploy:
     name: Deploy to VPS (14.225.210.118)
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
 
     steps:
       # ── 1. Checkout code ──────────────────────────────────────────────────
       - name: 📥 Checkout repository
         uses: actions/checkout@v4
 
-      # ── 2. SSH vào VPS và deploy ──────────────────────────────────────────
+      # ── 2. Kiểm tra VPS có reachable không ────────────────────────────────
+      - name: 🔍 Check VPS connectivity
+        run: |
+          echo "Checking if VPS is reachable on port ${{ secrets.VPS_PORT }}..."
+          for i in 1 2 3 4 5; do
+            if nc -z -w5 ${{ secrets.VPS_HOST }} ${{ secrets.VPS_PORT }} 2>/dev/null; then
+              echo "✅ VPS is reachable!"
+              exit 0
+            fi
+            echo "⏳ Attempt $i/5 failed, retrying in 15s..."
+            sleep 15
+          done
+          echo "❌ VPS is not reachable after 5 attempts"
+          exit 1
+
+      # ── 3. SSH vào VPS và deploy ──────────────────────────────────────────
       - name: 🔐 Deploy via SSH
-        uses: appleboy/ssh-action@v1.0.3
+        uses: appleboy/ssh-action@v1.2.0
         with:
-          host: ${{ secrets.VPS_HOST }}          # 14.225.210.118
-          username: ${{ secrets.VPS_USER }}       # deploy
-          key: ${{ secrets.VPS_SSH_KEY }}         # Private key từ /home/deploy/.ssh/github_deploy_key
-          port: ${{ secrets.VPS_PORT || 22 }}
-          command_timeout: 18m
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT }}
+          command_timeout: 20m
+          timeout: 60s
           script: |
             set -e
             echo "🕐 $(date) — Bắt đầu deploy..."
@@ -71,7 +87,7 @@ jobs:
 
             echo "✅ Deploy hoàn tất lúc $(date)!"
 
-      # ── 3. Thông báo kết quả ──────────────────────────────────────────────
+      # ── 4. Thông báo kết quả ──────────────────────────────────────────────
       - name: ✅ Deploy Success
         if: success()
         run: |
