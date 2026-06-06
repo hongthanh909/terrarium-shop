@@ -12,8 +12,26 @@ export default function GlobalError({
   reset: () => void;
 }) {
   useEffect(() => {
-    // Log để debug trong development
     console.error("[GlobalError]", error);
+
+    // Auto-reload once for ChunkLoadError (stale JS after deploy)
+    const isChunkError =
+      error.message?.includes("ChunkLoadError") ||
+      error.message?.includes("Loading chunk") ||
+      error.message?.includes("Failed to fetch dynamically imported module") ||
+      error.name === "ChunkLoadError";
+
+    if (isChunkError) {
+      const reloadKey = `chunk_reload_${window.location.pathname}`;
+      const alreadyReloaded = sessionStorage.getItem(reloadKey);
+      if (!alreadyReloaded) {
+        sessionStorage.setItem(reloadKey, "1");
+        window.location.reload();
+        return;
+      }
+      // Clear after 30s so future navigations can retry
+      setTimeout(() => sessionStorage.removeItem(reloadKey), 30000);
+    }
   }, [error]);
 
   return (
@@ -30,7 +48,7 @@ export default function GlobalError({
         </p>
         <div className="flex gap-3 justify-center">
           <button
-            onClick={reset}
+            onClick={() => window.location.reload()}
             className="flex items-center gap-2 bg-[#425733] text-white px-5 py-2.5 rounded-full font-semibold hover:bg-[#364a29] transition-colors"
           >
             <RefreshCw className="w-4 h-4" />
@@ -59,3 +77,4 @@ export default function GlobalError({
     </div>
   );
 }
+

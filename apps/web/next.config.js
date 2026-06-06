@@ -13,6 +13,11 @@ module.exports = {
   // (tạo .next/standalone có thể chạy node server.js trực tiếp)
   output: 'standalone',
 
+  // Generate unique build ID to prevent stale chunk errors after redeploy
+  generateBuildId: async () => {
+    return `build-${Date.now()}`;
+  },
+
   // Tối ưu package imports (tree-shaking tốt hơn)
   experimental: {
     optimizePackageImports: [
@@ -87,7 +92,7 @@ module.exports = {
     ],
   },
 
-  // Headers bảo mật
+  // Headers bảo mật + caching
   async headers() {
     return [
       {
@@ -99,12 +104,40 @@ module.exports = {
         ],
       },
       {
-        // Cache static assets lâu hơn
-        source: '/(_next/static|favicon.ico)(.*)',
+        // CSS, fonts, media — truly immutable (filename has hash)
+        source: '/_next/static/css/(.*)',
         headers: [
           { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
+        ],
+      },
+      {
+        source: '/_next/static/media/(.*)',
+        headers: [
+          { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
+        ],
+      },
+      {
+        // JS chunks — cache with revalidation to prevent stale chunks after deploy
+        source: '/_next/static/chunks/(.*)',
+        headers: [
+          { key: 'Cache-Control', value: 'public, max-age=86400, stale-while-revalidate=604800' },
+        ],
+      },
+      {
+        // Build manifest and other _next/static root files
+        source: '/_next/static/(.*)',
+        headers: [
+          { key: 'Cache-Control', value: 'public, max-age=86400, stale-while-revalidate=604800' },
+        ],
+      },
+      {
+        // Favicon etc
+        source: '/favicon.ico',
+        headers: [
+          { key: 'Cache-Control', value: 'public, max-age=86400' },
         ],
       },
     ];
   },
 };
+
