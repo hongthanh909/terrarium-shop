@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect, useRef, useMemo, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Save, Eye, EyeOff, Upload, X, Image as ImageIcon, Clock } from "lucide-react";
+import { ArrowLeft, Save, Eye, EyeOff, Upload, X, Image as ImageIcon, Clock, ImagePlus } from "lucide-react";
 import Link from "next/link";
 import { showToast } from "@/components/ui/custom-toast";
 import dynamic from "next/dynamic";
@@ -20,6 +20,26 @@ interface BlogCategory {
   name: string;
 }
 
+const QUILL_MODULES_BASIC = {
+  toolbar: [
+    ["bold", "italic", "underline", "strike"],
+    [{ list: "ordered" }, { list: "bullet" }],
+    ["link"],
+    ["clean"],
+  ],
+};
+
+const QUILL_MODULES_FULL = {
+  toolbar: [
+    [{ header: [1, 2, 3, false] }],
+    ["bold", "italic", "underline", "strike", "blockquote"],
+    [{ list: "ordered" }, { list: "bullet" }],
+    [{ align: [] }],
+    ["link"],
+    ["clean"],
+  ],
+};
+
 export default function CreateBlogPostPage() {
   const router = useRouter();
   const [saving, setSaving] = useState(false);
@@ -28,12 +48,13 @@ export default function CreateBlogPostPage() {
   
   const [uploadingThumbnail, setUploadingThumbnail] = useState(false);
   const [uploadingGallery, setUploadingGallery] = useState(false);
+  const [uploadingSection, setUploadingSection] = useState<string | null>(null);
 
   const thumbnailInputRef = useRef<HTMLInputElement>(null);
   const galleryInputRef = useRef<HTMLInputElement>(null);
-  const introQuillRef = useRef<any>(null);
-  const bodyQuillRef = useRef<any>(null);
-  const conclusionQuillRef = useRef<any>(null);
+  const introImageRef = useRef<HTMLInputElement>(null);
+  const bodyImageRef = useRef<HTMLInputElement>(null);
+  const conclusionImageRef = useRef<HTMLInputElement>(null);
 
   const [formData, setFormData] = useState({
     title: "",
@@ -62,7 +83,6 @@ export default function CreateBlogPostPage() {
       .catch(() => {});
   }, []);
 
-  // Tự động tạo slug từ tiêu đề
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const title = e.target.value;
     const slug = title
@@ -89,82 +109,32 @@ export default function CreateBlogPostPage() {
     return data.url;
   };
 
-  // Custom image handler cho Quill — chèn ảnh inline
-  const createImageHandler = useCallback((quillRef: React.RefObject<any>) => {
-    return () => {
-      const input = document.createElement("input");
-      input.setAttribute("type", "file");
-      input.setAttribute("accept", "image/*");
-      input.click();
+  // Chèn ảnh vào section cụ thể (intro / body / conclusion)
+  const handleSectionImageUpload = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+    section: "intro" | "body" | "conclusion"
+  ) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
 
-      input.onchange = async () => {
-        const file = input.files?.[0];
-        if (!file) return;
-
-        showToast.info("Đang tải ảnh lên...");
-        const url = await uploadImage(file);
-        if (url) {
-          const quill = quillRef.current?.getEditor?.();
-          if (quill) {
-            const range = quill.getSelection(true);
-            quill.insertEmbed(range.index, "image", url);
-            quill.setSelection(range.index + 1);
-          }
-          showToast.success("Đã chèn ảnh vào bài viết!");
-        }
-      };
-    };
-  }, []);
-
-  // Quill modules với image handler
-  const introModules = useMemo(() => ({
-    toolbar: {
-      container: [
-        ["bold", "italic", "underline", "strike"],
-        [{ list: "ordered" }, { list: "bullet" }],
-        ["link", "image"],
-        ["clean"],
-      ],
-      handlers: {
-        image: createImageHandler(introQuillRef),
-      },
-    },
-  }), [createImageHandler]);
-
-  const bodyModules = useMemo(() => ({
-    toolbar: {
-      container: [
-        [{ header: [1, 2, 3, false] }],
-        ["bold", "italic", "underline", "strike", "blockquote"],
-        [{ list: "ordered" }, { list: "bullet" }],
-        [{ align: [] }],
-        ["link", "image"],
-        ["clean"],
-      ],
-      handlers: {
-        image: createImageHandler(bodyQuillRef),
-      },
-    },
-  }), [createImageHandler]);
-
-  const conclusionModules = useMemo(() => ({
-    toolbar: {
-      container: [
-        ["bold", "italic", "underline", "strike"],
-        [{ list: "ordered" }, { list: "bullet" }],
-        ["link", "image"],
-        ["clean"],
-      ],
-      handlers: {
-        image: createImageHandler(conclusionQuillRef),
-      },
-    },
-  }), [createImageHandler]);
+    setUploadingSection(section);
+    const url = await uploadImage(file);
+    if (url) {
+      const imgTag = `<p><img src="${url}" style="max-width:100%;height:auto;border-radius:12px;margin:8px 0;" /></p>`;
+      setFormData((prev) => ({
+        ...prev,
+        [section]: prev[section] + imgTag,
+      }));
+      showToast.success("Đã chèn ảnh vào bài viết!");
+    }
+    setUploadingSection(null);
+    // Reset input to allow re-upload of same file
+    e.target.value = "";
+  };
 
   const handleThumbnailUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
     setUploadingThumbnail(true);
     const url = await uploadImage(file);
     if (url) {
@@ -177,15 +147,12 @@ export default function CreateBlogPostPage() {
   const handleGalleryUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     if (files.length === 0) return;
-
     setUploadingGallery(true);
     const uploadedUrls: string[] = [];
-
     for (const file of files) {
       const url = await uploadImage(file);
       if (url) uploadedUrls.push(url);
     }
-
     if (uploadedUrls.length > 0) {
       setFormData((prev) => ({
         ...prev,
@@ -196,83 +163,54 @@ export default function CreateBlogPostPage() {
     setUploadingGallery(false);
   };
 
-  const removeThumbnail = () => {
-    setFormData((prev) => ({ ...prev, thumbnail: "" }));
-  };
+  const removeThumbnail = () => setFormData((prev) => ({ ...prev, thumbnail: "" }));
 
-  const removeGalleryImage = (indexToRemove: number) => {
+  const removeGalleryImage = (idx: number) => {
     setFormData((prev) => ({
       ...prev,
-      images: prev.images.filter((_, idx) => idx !== indexToRemove),
+      images: prev.images.filter((_, i) => i !== idx),
     }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (!formData.title.trim()) {
-      showToast.error("Vui lòng nhập tiêu đề bài viết");
-      return;
-    }
-    if (!formData.slug.trim()) {
-      showToast.error("Vui lòng nhập đường dẫn (slug)");
-      return;
-    }
+    if (!formData.title.trim()) { showToast.error("Vui lòng nhập tiêu đề"); return; }
+    if (!formData.slug.trim()) { showToast.error("Vui lòng nhập đường dẫn (slug)"); return; }
     if (!formData.intro.trim() && !formData.body.trim() && !formData.conclusion.trim()) {
-      showToast.error("Nội dung bài viết không được để trống");
-      return;
+      showToast.error("Nội dung bài viết không được để trống"); return;
     }
-
     setSaving(true);
-
     try {
       const response = await fetch("/api/admin/blog/posts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       });
-
       const result = await response.json();
-
       if (response.ok) {
-        showToast.success(
-          formData.published
-            ? "Bài viết đã được xuất bản thành công!"
-            : "Đã lưu bài viết dưới dạng bản nháp!"
-        );
+        showToast.success(formData.published ? "Bài viết đã được xuất bản!" : "Đã lưu bản nháp!");
         router.push("/tiem-nho-nth24/blog");
       } else {
         showToast.error(result.error || "Lỗi khi tạo bài viết");
       }
-    } catch (error) {
-      console.error("Error:", error);
+    } catch {
       showToast.error("Lỗi kết nối. Vui lòng thử lại.");
     } finally {
       setSaving(false);
     }
   };
 
-  const formatTime = (date: Date) => {
-    return date.toLocaleString("vi-VN", {
-      weekday: "long",
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit",
+  const formatTime = (date: Date) =>
+    date.toLocaleString("vi-VN", {
+      weekday: "long", year: "numeric", month: "2-digit", day: "2-digit",
+      hour: "2-digit", minute: "2-digit", second: "2-digit",
     });
-  };
 
   return (
     <div className="max-w-4xl mx-auto">
       <div className="mb-6">
-        <Link
-          href="/tiem-nho-nth24/blog"
-          className="inline-flex items-center text-[#425733] hover:text-[#364a29] mb-4 gap-1 text-sm font-semibold transition-colors"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Quay lại Blog
+        <Link href="/tiem-nho-nth24/blog" className="inline-flex items-center text-[#425733] hover:text-[#364a29] mb-4 gap-1 text-sm font-semibold transition-colors">
+          <ArrowLeft className="w-4 h-4" /> Quay lại Blog
         </Link>
         <div className="flex items-center justify-between">
           <div>
@@ -293,14 +231,9 @@ export default function CreateBlogPostPage() {
             <label className="block text-sm font-semibold text-gray-700 mb-1">
               Tiêu đề bài viết <span className="text-red-500">*</span>
             </label>
-            <input
-              type="text"
-              value={formData.title}
-              onChange={handleTitleChange}
-              required
+            <input type="text" value={formData.title} onChange={handleTitleChange} required
               className="w-full px-4 py-2 border rounded-xl focus:ring-1 focus:ring-[#425733] focus:border-[#425733] focus:outline-none transition-all"
-              placeholder="Nhập tiêu đề bài viết..."
-            />
+              placeholder="Nhập tiêu đề bài viết..." />
           </div>
 
           {/* Slug & Category */}
@@ -309,31 +242,20 @@ export default function CreateBlogPostPage() {
               <label className="block text-sm font-semibold text-gray-700 mb-1">
                 Đường dẫn (slug) <span className="text-red-500">*</span>
               </label>
-              <input
-                type="text"
-                value={formData.slug}
-                onChange={(e) => setFormData((prev) => ({ ...prev, slug: e.target.value }))}
-                required
+              <input type="text" value={formData.slug}
+                onChange={(e) => setFormData((prev) => ({ ...prev, slug: e.target.value }))} required
                 className="w-full px-4 py-2 border rounded-xl focus:ring-1 focus:ring-[#425733] focus:border-[#425733] focus:outline-none font-mono text-sm transition-all"
-                placeholder="tieu-de-bai-viet"
-              />
-              <p className="text-xs text-gray-400 mt-1">
-                Tự động tạo từ tiêu đề: /blog/{formData.slug || "..."}
-              </p>
+                placeholder="tieu-de-bai-viet" />
+              <p className="text-xs text-gray-400 mt-1">Tự động tạo: /blog/{formData.slug || "..."}</p>
             </div>
-
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-1">Danh mục</label>
-              <select
-                value={formData.categoryId}
+              <select value={formData.categoryId}
                 onChange={(e) => setFormData((prev) => ({ ...prev, categoryId: e.target.value }))}
-                className="w-full px-4 py-2 border rounded-xl focus:ring-1 focus:ring-[#425733] focus:border-[#425733] focus:outline-none bg-white transition-all"
-              >
+                className="w-full px-4 py-2 border rounded-xl focus:ring-1 focus:ring-[#425733] focus:border-[#425733] focus:outline-none bg-white transition-all">
                 <option value="">-- Chọn danh mục --</option>
                 {categories.map((cat) => (
-                  <option key={cat.id} value={cat.id}>
-                    {cat.name}
-                  </option>
+                  <option key={cat.id} value={cat.id}>{cat.name}</option>
                 ))}
               </select>
             </div>
@@ -341,28 +263,20 @@ export default function CreateBlogPostPage() {
 
           {/* Hình ảnh đại diện & Thư viện */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2">
-            {/* Ảnh đại diện (Thumbnail) */}
             <div className="md:col-span-1">
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Ảnh đại diện (Thumbnail)</label>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">Ảnh đại diện</label>
               <div className="relative border border-dashed rounded-2xl h-40 flex flex-col items-center justify-center bg-gray-50 overflow-hidden group">
                 {formData.thumbnail ? (
                   <>
                     <img src={formData.thumbnail} alt="Thumbnail" className="w-full h-full object-cover" />
-                    <button
-                      type="button"
-                      onClick={removeThumbnail}
-                      className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 shadow-md hover:bg-red-600 transition-colors opacity-90 hover:scale-105"
-                    >
+                    <button type="button" onClick={removeThumbnail}
+                      className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 shadow-md hover:bg-red-600 transition-colors">
                       <X className="w-4 h-4" />
                     </button>
                   </>
                 ) : (
-                  <button
-                    type="button"
-                    onClick={() => thumbnailInputRef.current?.click()}
-                    disabled={uploadingThumbnail}
-                    className="w-full h-full flex flex-col items-center justify-center gap-2 hover:bg-gray-100/50 transition-colors disabled:opacity-50"
-                  >
+                  <button type="button" onClick={() => thumbnailInputRef.current?.click()} disabled={uploadingThumbnail}
+                    className="w-full h-full flex flex-col items-center justify-center gap-2 hover:bg-gray-100/50 transition-colors disabled:opacity-50">
                     <Upload className="w-6 h-6 text-gray-400" />
                     <span className="text-xs text-gray-500 font-medium">
                       {uploadingThumbnail ? "Đang tải..." : "Tải ảnh đại diện"}
@@ -371,115 +285,104 @@ export default function CreateBlogPostPage() {
                 )}
               </div>
             </div>
-
-            {/* Thư viện ảnh (Gallery) */}
             <div className="md:col-span-2">
               <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Thư viện ảnh bài viết ({formData.images.length})
+                Thư viện ảnh phụ ({formData.images.length})
               </label>
               <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
                 {formData.images.map((img, idx) => (
                   <div key={idx} className="relative border rounded-xl h-24 overflow-hidden bg-gray-100 group shadow-sm">
                     <img src={img} alt={`Gallery ${idx}`} className="w-full h-full object-cover" />
-                    <button
-                      type="button"
-                      onClick={() => removeGalleryImage(idx)}
-                      className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-0.5 shadow hover:bg-red-600 transition-colors opacity-0 group-hover:opacity-100"
-                    >
+                    <button type="button" onClick={() => removeGalleryImage(idx)}
+                      className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-0.5 shadow hover:bg-red-600 transition-colors opacity-0 group-hover:opacity-100">
                       <X className="w-3.5 h-3.5" />
                     </button>
                   </div>
                 ))}
-                
                 {formData.images.length < 10 && (
-                  <button
-                    type="button"
-                    onClick={() => galleryInputRef.current?.click()}
-                    disabled={uploadingGallery}
-                    className="border border-dashed rounded-xl h-24 flex flex-col items-center justify-center gap-1.5 bg-gray-50 hover:bg-gray-100/50 transition-colors disabled:opacity-50 text-gray-400 hover:text-gray-600"
-                  >
-                    <Plus className="w-5 h-5" />
-                    <span className="text-[10px] font-semibold">Tải nhiều ảnh</span>
+                  <button type="button" onClick={() => galleryInputRef.current?.click()} disabled={uploadingGallery}
+                    className="border border-dashed rounded-xl h-24 flex flex-col items-center justify-center gap-1.5 bg-gray-50 hover:bg-gray-100/50 transition-colors disabled:opacity-50 text-gray-400 hover:text-gray-600">
+                    <PlusIcon className="w-5 h-5" />
+                    <span className="text-[10px] font-semibold">{uploadingGallery ? "Đang tải..." : "Tải ảnh phụ"}</span>
                   </button>
                 )}
               </div>
             </div>
           </div>
 
-          {/* Hidden inputs for uploading */}
-          <input
-            ref={thumbnailInputRef}
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={handleThumbnailUpload}
-          />
-          <input
-            ref={galleryInputRef}
-            type="file"
-            accept="image/*"
-            multiple
-            className="hidden"
-            onChange={handleGalleryUpload}
-          />
+          {/* Hidden file inputs */}
+          <input ref={thumbnailInputRef} type="file" accept="image/*" className="hidden" onChange={handleThumbnailUpload} />
+          <input ref={galleryInputRef} type="file" accept="image/*" multiple className="hidden" onChange={handleGalleryUpload} />
+          <input ref={introImageRef} type="file" accept="image/*" className="hidden"
+            onChange={(e) => handleSectionImageUpload(e, "intro")} />
+          <input ref={bodyImageRef} type="file" accept="image/*" className="hidden"
+            onChange={(e) => handleSectionImageUpload(e, "body")} />
+          <input ref={conclusionImageRef} type="file" accept="image/*" className="hidden"
+            onChange={(e) => handleSectionImageUpload(e, "conclusion")} />
 
           <hr className="border-gray-100" />
 
-          {/* Rich Text Editors with inline image support */}
+          {/* Editors */}
           <div className="space-y-6">
-            {/* Tip */}
+            {/* Mẹo */}
             <div className="flex items-start gap-2 p-3 bg-blue-50 border border-blue-100 rounded-xl">
               <ImageIcon className="w-4 h-4 text-blue-500 mt-0.5 shrink-0" />
               <p className="text-xs text-blue-700">
-                <strong>Mẹo:</strong> Bấm nút <span className="inline-flex items-center px-1.5 py-0.5 bg-white border rounded text-[10px] font-mono">🖼 Ảnh</span> trên thanh công cụ để chèn ảnh trực tiếp vào vị trí con trỏ trong bài viết.
+                <strong>Mẹo:</strong> Bấm nút <strong>📷 Chèn ảnh</strong> bên cạnh tiêu đề mỗi mục để chèn ảnh vào đúng vị trí mong muốn.
               </p>
             </div>
 
+            {/* 1. Mở bài */}
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">
-                1. Mở bài (Introduction)
-              </label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="text-sm font-semibold text-gray-700">1. Mở bài (Introduction)</label>
+                <button type="button" onClick={() => introImageRef.current?.click()}
+                  disabled={uploadingSection === "intro"}
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-[#425733] bg-[#f0f5ec] hover:bg-[#e3ebdd] rounded-lg border border-[#daebd0] transition-colors disabled:opacity-50">
+                  <ImagePlus className="w-3.5 h-3.5" />
+                  {uploadingSection === "intro" ? "Đang tải..." : "📷 Chèn ảnh"}
+                </button>
+              </div>
               <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-                <ReactQuill
-                  ref={introQuillRef}
-                  theme="snow"
-                  value={formData.intro}
+                <ReactQuill theme="snow" value={formData.intro}
                   onChange={(intro: string) => setFormData((prev) => ({ ...prev, intro }))}
-                  className="h-44 mb-12"
-                  modules={introModules}
-                />
+                  className="h-44 mb-12" modules={QUILL_MODULES_BASIC} />
               </div>
             </div>
 
+            {/* 2. Thân bài */}
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">
-                2. Thân bài (Body Content)
-              </label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="text-sm font-semibold text-gray-700">2. Thân bài (Body Content)</label>
+                <button type="button" onClick={() => bodyImageRef.current?.click()}
+                  disabled={uploadingSection === "body"}
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-[#425733] bg-[#f0f5ec] hover:bg-[#e3ebdd] rounded-lg border border-[#daebd0] transition-colors disabled:opacity-50">
+                  <ImagePlus className="w-3.5 h-3.5" />
+                  {uploadingSection === "body" ? "Đang tải..." : "📷 Chèn ảnh"}
+                </button>
+              </div>
               <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-                <ReactQuill
-                  ref={bodyQuillRef}
-                  theme="snow"
-                  value={formData.body}
+                <ReactQuill theme="snow" value={formData.body}
                   onChange={(body: string) => setFormData((prev) => ({ ...prev, body }))}
-                  className="h-64 mb-12"
-                  modules={bodyModules}
-                />
+                  className="h-64 mb-12" modules={QUILL_MODULES_FULL} />
               </div>
             </div>
 
+            {/* 3. Kết bài */}
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">
-                3. Kết bài (Conclusion)
-              </label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="text-sm font-semibold text-gray-700">3. Kết bài (Conclusion)</label>
+                <button type="button" onClick={() => conclusionImageRef.current?.click()}
+                  disabled={uploadingSection === "conclusion"}
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-[#425733] bg-[#f0f5ec] hover:bg-[#e3ebdd] rounded-lg border border-[#daebd0] transition-colors disabled:opacity-50">
+                  <ImagePlus className="w-3.5 h-3.5" />
+                  {uploadingSection === "conclusion" ? "Đang tải..." : "📷 Chèn ảnh"}
+                </button>
+              </div>
               <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-                <ReactQuill
-                  ref={conclusionQuillRef}
-                  theme="snow"
-                  value={formData.conclusion}
+                <ReactQuill theme="snow" value={formData.conclusion}
                   onChange={(conclusion: string) => setFormData((prev) => ({ ...prev, conclusion }))}
-                  className="h-44 mb-12"
-                  modules={conclusionModules}
-                />
+                  className="h-44 mb-12" modules={QUILL_MODULES_BASIC} />
               </div>
             </div>
           </div>
@@ -487,17 +390,11 @@ export default function CreateBlogPostPage() {
           {/* Trạng thái xuất bản */}
           <div
             className={`flex items-center gap-3 p-4 rounded-2xl border cursor-pointer transition-colors ${
-              formData.published
-                ? "border-[#425733]/40 bg-[#f8faf6]"
-                : "border-gray-200 bg-gray-50/50"
+              formData.published ? "border-[#425733]/40 bg-[#f8faf6]" : "border-gray-200 bg-gray-50/50"
             }`}
             onClick={() => setFormData((prev) => ({ ...prev, published: !prev.published }))}
           >
-            {formData.published ? (
-              <Eye className="w-5 h-5 text-[#425733]" />
-            ) : (
-              <EyeOff className="w-5 h-5 text-gray-400" />
-            )}
+            {formData.published ? <Eye className="w-5 h-5 text-[#425733]" /> : <EyeOff className="w-5 h-5 text-gray-400" />}
             <div className="flex-1">
               <p className="font-semibold text-sm text-gray-800">
                 {formData.published ? "Xuất bản ngay" : "Lưu bản nháp"}
@@ -505,59 +402,44 @@ export default function CreateBlogPostPage() {
               <p className="text-xs text-gray-400 mt-0.5">
                 {formData.published
                   ? `Bài viết sẽ được xuất bản lúc: ${formatTime(currentTime)}`
-                  : "Bài viết sẽ được lưu nhưng chưa hiển thị với khách hàng"}
+                  : "Bài viết sẽ được lưu nhưng chưa hiển thị"}
               </p>
             </div>
-            <input
-              type="checkbox"
-              checked={formData.published}
+            <input type="checkbox" checked={formData.published}
               onChange={(e) => setFormData((prev) => ({ ...prev, published: e.target.checked }))}
-              className="ml-auto w-4.5 h-4.5 accent-[#425733]"
-              onClick={(e) => e.stopPropagation()}
-            />
+              className="ml-auto w-4.5 h-4.5 accent-[#425733]" onClick={(e) => e.stopPropagation()} />
           </div>
         </div>
 
         {/* Actions */}
         <div className="flex justify-end gap-3 pt-2">
-          <Link
-            href="/tiem-nho-nth24/blog"
-            className="px-6 py-2.5 border border-gray-300 rounded-full text-gray-700 hover:bg-gray-50 text-sm font-semibold transition-colors"
-          >
+          <Link href="/tiem-nho-nth24/blog"
+            className="px-6 py-2.5 border border-gray-300 rounded-full text-gray-700 hover:bg-gray-50 text-sm font-semibold transition-colors">
             Hủy
           </Link>
-          <button
-            type="submit"
-            disabled={saving}
-            className="flex items-center gap-2 bg-[#425733] text-white px-6 py-2.5 rounded-full font-semibold shadow hover:bg-[#364a29] transition-all disabled:bg-gray-400 disabled:cursor-not-allowed text-sm"
-          >
+          <button type="submit" disabled={saving}
+            className="flex items-center gap-2 bg-[#425733] text-white px-6 py-2.5 rounded-full font-semibold shadow hover:bg-[#364a29] transition-all disabled:bg-gray-400 disabled:cursor-not-allowed text-sm">
             <Save className="w-4 h-4" />
             {saving ? "Đang lưu..." : formData.published ? "Xuất Bản Bài Viết" : "Lưu Bản Nháp"}
           </button>
         </div>
       </form>
 
-      {/* Custom styles for Quill images */}
+      {/* Custom Quill image styles */}
       <style dangerouslySetInnerHTML={{ __html: `
         .ql-editor img {
           max-width: 100%;
           height: auto;
-          border-radius: 0.75rem;
-          margin: 1rem 0;
+          border-radius: 12px;
+          margin: 8px 0;
           box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-        }
-        .ql-snow .ql-toolbar button.ql-image {
-          color: #425733;
-        }
-        .ql-snow .ql-toolbar button.ql-image:hover {
-          color: #364a29;
         }
       `}} />
     </div>
   );
 }
 
-function Plus(props: React.SVGProps<SVGSVGElement>) {
+function PlusIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" {...props}>
       <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
