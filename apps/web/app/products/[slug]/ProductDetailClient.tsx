@@ -53,7 +53,7 @@ const PACKAGES = [
 type VoucherData = {
   id: string;
   code: string;
-  type: "PERCENTAGE" | "FIXED_AMOUNT";
+  type: "PERCENTAGE" | "FIXED_AMOUNT" | "FIXED" | "FREE_SHIPPING";
   value: number;
   minOrderAmount: number | null;
   maxDiscountAmount: number | null;
@@ -61,6 +61,8 @@ type VoucherData = {
   description?: string;
   usageLimit: number | null;
   usageCount: number;
+  applicableTo?: string;
+  applicables?: { targetType: string; targetId: string }[];
 };
 
 type TabType = "details" | "care" | "reviews";
@@ -101,18 +103,45 @@ export function ProductDetailClient({
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch("/api/discount-campaigns?status=ACTIVE&limit=10")
+    if (!product) return;
+    fetch("/api/discount-campaigns?status=ACTIVE&limit=50")
       .then(r => r.json())
       .then(data => {
         const list = Array.isArray(data) ? data : (data.campaigns || []);
-        setPublicVouchers(list.filter((v: any) =>
-          v.status === "ACTIVE" &&
-          new Date(v.expiresAt) > new Date() &&
-          (v.usageLimit === null || v.usageCount < v.usageLimit)
-        ));
+        const productId = product.id;
+        const categoryId = product.category?.id || product.categoryId;
+
+        const filtered = list.filter((v: any) => {
+          // Basic active checks
+          if (v.status !== "ACTIVE") return false;
+          if (new Date(v.expiresAt) <= new Date()) return false;
+          if (v.usageLimit !== null && v.usageCount >= v.usageLimit) return false;
+
+          // Filter by applicableTo
+          if (v.applicableTo === "ALL") return true;
+
+          if (v.applicableTo === "PRODUCTS" && v.applicables?.length > 0) {
+            const targetProductIds = v.applicables
+              .filter((a: any) => a.targetType === "PRODUCT")
+              .map((a: any) => a.targetId);
+            return targetProductIds.includes(productId);
+          }
+
+          if (v.applicableTo === "CATEGORIES" && v.applicables?.length > 0) {
+            const targetCategoryIds = v.applicables
+              .filter((a: any) => a.targetType === "CATEGORY")
+              .map((a: any) => a.targetId);
+            return targetCategoryIds.includes(categoryId);
+          }
+
+          // COMBOS or unknown — hide for now
+          return false;
+        });
+
+        setPublicVouchers(filtered);
       })
       .catch(() => {});
-  }, []);
+  }, [product]);
 
   const handleApplyVoucher = async (code?: string) => {
     const useCode = (code || voucherInput).trim().toUpperCase();
@@ -627,18 +656,18 @@ export function ProductDetailClient({
             {/* Price — shows voucher discount inline */}
             <div className="flex flex-wrap items-baseline gap-2 mb-5">
               {/* Strike-through: show original or pre-voucher price */}
-              {(isSale || appliedVoucher) && (
+              {(isSale || (appliedVoucher && appliedVoucher.type !== "FREE_SHIPPING")) && (
                 <span className="text-base text-gray-400 font-medium line-through">
                   {(isSale ? originalPrice : finalPrice).toLocaleString("vi-VN")}₫
                 </span>
               )}
-              {/* Main price — with voucher deducted if applied */}
+              {/* Main price — with voucher deducted if applied (not for FREE_SHIPPING) */}
               <span className={`text-3xl sm:text-4xl font-extrabold ${
-                appliedVoucher ? "text-green-600" : "text-[#425733]"
+                appliedVoucher && appliedVoucher.type !== "FREE_SHIPPING" ? "text-green-600" : "text-[#425733]"
               }`}>
                 {(() => {
                   let displayPrice = finalPrice;
-                  if (appliedVoucher) {
+                  if (appliedVoucher && appliedVoucher.type !== "FREE_SHIPPING") {
                     let disc = 0;
                     if (appliedVoucher.type === "PERCENTAGE") {
                       disc = (finalPrice * Number(appliedVoucher.value)) / 100;
@@ -654,7 +683,12 @@ export function ProductDetailClient({
               {isSale && !appliedVoucher && (
                 <span className="bg-red-100 text-red-600 text-xs font-bold px-2.5 py-1 rounded-full">-{discountPercent}% Ưu đãi giới hạn</span>
               )}
-              {appliedVoucher && (
+              {appliedVoucher && appliedVoucher.type === "FREE_SHIPPING" && (
+                <span className="bg-blue-100 text-blue-700 text-xs font-bold px-2.5 py-1 rounded-full animate-pulse">
+                  🚚 Miễn phí vận chuyển {Number(appliedVoucher.value) === 50000 ? "nhanh" : "tiêu chuẩn"}
+                </span>
+              )}
+              {appliedVoucher && appliedVoucher.type !== "FREE_SHIPPING" && (
                 <span className="bg-green-100 text-green-700 text-xs font-bold px-2.5 py-1 rounded-full animate-pulse">
                   Đã giảm {appliedVoucher.type === "PERCENTAGE" ? `${appliedVoucher.value}%` : `${Number(appliedVoucher.value).toLocaleString("vi-VN")}₫`}
                 </span>
@@ -778,11 +812,14 @@ export function ProductDetailClient({
                     const best = getBestVoucher(finalPrice);
                     const isBest = best?.id === v.id;
                     const isApplied = appliedVoucher?.id === v.id;
+                    const isFreeShip = v.type === "FREE_SHIPPING";
                     const meetsMin = !v.minOrderAmount || finalPrice >= Number(v.minOrderAmount);
                     const expDate = new Date(v.expiresAt).toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric" });
                     // Calculate actual discount for this voucher
                     let discountAmt = 0;
-                    if (v.type === "PERCENTAGE") {
+                    if (isFreeShip) {
+                      discountAmt = Number(v.value); // value = shipping fee (30000 or 50000)
+                    } else if (v.type === "PERCENTAGE") {
                       discountAmt = (finalPrice * Number(v.value)) / 100;
                       if (v.maxDiscountAmount) discountAmt = Math.min(discountAmt, Number(v.maxDiscountAmount));
                     } else {
@@ -832,7 +869,11 @@ export function ProductDetailClient({
                             <span className={`text-sm font-bold ${
                               isApplied ? "text-[#425733]" : "text-gray-800"
                             }`}>
-                              {v.type === "PERCENTAGE" ? `Giảm ${v.value}%` : `Giảm ${(Number(v.value) / 1000).toFixed(0)}K`}
+                              {isFreeShip
+                                ? `Miễn phí ship ${Number(v.value) === 50000 ? "nhanh" : "tiêu chuẩn"}`
+                                : v.type === "PERCENTAGE"
+                                ? `Giảm ${v.value}%`
+                                : `Giảm ${(Number(v.value) / 1000).toFixed(0)}K`}
                             </span>
                             <span className="text-[10px] font-mono text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded">{v.code}</span>
                             {isBest && !isApplied && (
@@ -852,7 +893,9 @@ export function ProductDetailClient({
                           {meetsMin ? (
                             <span className={`text-sm font-bold ${
                               isApplied ? "text-green-600" : "text-[#425733]"
-                            }`}>-{discountAmt.toLocaleString("vi-VN")}₫</span>
+                            }`}>
+                              {isFreeShip ? "Miễn phí" : `-${discountAmt.toLocaleString("vi-VN")}₫`}
+                            </span>
                           ) : (
                             <span className="text-[10px] text-red-400">Chưa đủ ĐK</span>
                           )}

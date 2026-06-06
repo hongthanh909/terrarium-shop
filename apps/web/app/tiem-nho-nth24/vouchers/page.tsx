@@ -392,7 +392,15 @@ export default function AdminVouchersPage() {
                   <label className="block text-sm font-semibold text-gray-700 mb-1.5">Loại *</label>
                   <select
                     value={formData.type}
-                    onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                    onChange={(e) => {
+                      const newType = e.target.value;
+                      setFormData({
+                        ...formData,
+                        type: newType,
+                        // Auto-set value for FREE_SHIPPING
+                        value: newType === "FREE_SHIPPING" ? "30000" : formData.value === "30000" || formData.value === "50000" ? "" : formData.value,
+                      });
+                    }}
                     className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#425733]/50"
                   >
                     <option value="PERCENTAGE">Phần Trăm (%)</option>
@@ -401,17 +409,57 @@ export default function AdminVouchersPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">Giá Trị *</label>
-                  <input
-                    type="number"
-                    value={formData.value}
-                    onChange={(e) => setFormData({ ...formData, value: e.target.value })}
-                    required
-                    min="0"
-                    step="0.01"
-                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#425733]/50 focus:ring-1 focus:ring-[#425733]/30"
-                    placeholder={formData.type === "PERCENTAGE" ? "10" : "50000"}
-                  />
+                  {formData.type === "FREE_SHIPPING" ? (
+                    <>
+                      <label className="block text-sm font-semibold text-gray-700 mb-1.5">Áp dụng cho loại ship *</label>
+                      <div className="space-y-2">
+                        <label className={`flex items-center gap-3 p-2.5 rounded-xl border-2 cursor-pointer transition-all ${
+                          formData.value === "30000" ? "border-[#425733] bg-[#f6faf4]" : "border-gray-200 hover:border-[#425733]/40"
+                        }`}>
+                          <input
+                            type="radio"
+                            name="shippingType"
+                            checked={formData.value === "30000"}
+                            onChange={() => setFormData({ ...formData, value: "30000" })}
+                            className="w-4 h-4 accent-[#425733]"
+                          />
+                          <div className="flex-1">
+                            <p className="text-sm font-semibold text-gray-800">Giao Hàng Tiêu Chuẩn</p>
+                            <p className="text-[10px] text-gray-400">3-5 ngày làm việc • 30.000₫</p>
+                          </div>
+                        </label>
+                        <label className={`flex items-center gap-3 p-2.5 rounded-xl border-2 cursor-pointer transition-all ${
+                          formData.value === "50000" ? "border-[#425733] bg-[#f6faf4]" : "border-gray-200 hover:border-[#425733]/40"
+                        }`}>
+                          <input
+                            type="radio"
+                            name="shippingType"
+                            checked={formData.value === "50000"}
+                            onChange={() => setFormData({ ...formData, value: "50000" })}
+                            className="w-4 h-4 accent-[#425733]"
+                          />
+                          <div className="flex-1">
+                            <p className="text-sm font-semibold text-gray-800">Giao Hàng Nhanh</p>
+                            <p className="text-[10px] text-gray-400">1-2 ngày làm việc • 50.000₫</p>
+                          </div>
+                        </label>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <label className="block text-sm font-semibold text-gray-700 mb-1.5">Giá Trị *</label>
+                      <input
+                        type="number"
+                        value={formData.value}
+                        onChange={(e) => setFormData({ ...formData, value: e.target.value })}
+                        required
+                        min="0"
+                        step="0.01"
+                        className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#425733]/50 focus:ring-1 focus:ring-[#425733]/30"
+                        placeholder={formData.type === "PERCENTAGE" ? "10" : "50000"}
+                      />
+                    </>
+                  )}
                 </div>
               </div>
 
