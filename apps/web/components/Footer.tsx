@@ -3,29 +3,27 @@ import { Leaf, Mail, Phone, MapPin, Clock, Facebook, Instagram, Twitter, Message
 import { Button } from "@/components/ui/button";
 import { prisma } from "@/lib/prisma";
 
-const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
-  Mail,
-  Phone,
-  MapPin,
-  Clock,
-  Facebook,
-  Instagram,
-  Twitter,
-};
+// Custom TikTok icon (lucide doesn't have one)
+const TikTokIcon = ({ className }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+    <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1v-3.5a6.37 6.37 0 0 0-.79-.05A6.34 6.34 0 0 0 3.15 15a6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.34-6.34V8.88a8.28 8.28 0 0 0 4.76 1.5V6.93a4.84 4.84 0 0 1-1-.24z"/>
+  </svg>
+);
+
+const FALLBACK_SOCIALS = [
+  { label: "Instagram", value: "https://www.instagram.com/tiemreudecor/", Icon: Instagram },
+  { label: "TikTok", value: "https://www.tiktok.com/@tiemreudecor", Icon: TikTokIcon },
+  { label: "Facebook", value: "https://www.facebook.com/tiemreudecor", Icon: Facebook },
+];
 
 // Helper function để lấy icon phù hợp
-const getIconForLabel = (label: string): React.ComponentType<{ className?: string }> => {
+const getIconForSocial = (label: string) => {
   const lowerLabel = label.toLowerCase();
-
-  // Social media icons
   if (lowerLabel.includes('facebook')) return Facebook;
   if (lowerLabel.includes('instagram')) return Instagram;
-  if (lowerLabel.includes('tiktok')) return Twitter; // Dùng Twitter tạm, hoặc tạo TikTok icon
+  if (lowerLabel.includes('tiktok')) return TikTokIcon;
   if (lowerLabel.includes('twitter') || lowerLabel.includes('x')) return Twitter;
-
-  // Contact type icons - lấy từ type field thay vì label
-  // Sẽ xử lý riêng cho contact items bên dưới
-  return MessageCircle; // Default fallback
+  return MessageCircle;
 };
 
 export default async function Footer() {
@@ -40,6 +38,15 @@ export default async function Footer() {
   const addresses = contactList.filter((c: any) => c.type === "address");
   const workingHours = contactList.filter((c: any) => c.type === "working_hours");
   const socialItems = contactList.filter((c: any) => c.type === "social");
+
+  // Use DB socials if available, otherwise fallback
+  const socials = socialItems.length > 0
+    ? socialItems.map((item: any) => ({
+        label: item.label,
+        value: item.value,
+        Icon: getIconForSocial(item.label),
+      }))
+    : FALLBACK_SOCIALS;
 
   return (
     <footer className="bg-gradient-to-b from-[#e3ebdd] to-white pt-16 pb-8 border-t border-[#c8d5be]">
@@ -69,25 +76,20 @@ export default async function Footer() {
               Terrarium thủ công mang thiên nhiên vào không gian sống của bạn. Mỗi sản phẩm là một hệ sinh thái thu nhỏ, được tạo tình tỉ mỉ.
             </p>
             {/* Social Links */}
-            {socialItems.length > 0 && (
-              <div className="flex gap-3 pt-2">
-                {socialItems.map((item: any, idx: number) => {
-                  const Icon = getIconForLabel(item.label);
-                  return Icon && item.value ? (
-                    <a
-                      key={idx}
-                      href={item.value}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="w-9 h-9 rounded-full bg-[#e3ebdd] hover:bg-[#c8d5be] flex items-center justify-center text-[hsl(220,14%,45%)] hover:text-[#425733] transition-all"
-                      aria-label={item.label}
-                    >
-                      <Icon className="w-4 h-4" />
-                    </a>
-                  ) : null;
-                })}
-              </div>
-            )}
+            <div className="flex gap-3 pt-2">
+              {socials.map((item, idx) => (
+                <a
+                  key={idx}
+                  href={item.value}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-9 h-9 rounded-full bg-[#e3ebdd] hover:bg-[#c8d5be] flex items-center justify-center text-[hsl(220,14%,45%)] hover:text-[#425733] transition-all"
+                  aria-label={item.label}
+                >
+                  <item.Icon className="w-4 h-4" />
+                </a>
+              ))}
+            </div>
           </div>
 
           {/* Quick Links */}
@@ -216,26 +218,23 @@ export default async function Footer() {
         {/* Bottom */}
         <div className="border-t border-[#c8d5be] pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-sm text-[hsl(220,14%,45%)]">
-            © {new Date().getFullYear()} Tiệm Rêu decor. All rights reserved.
+            © {new Date().getFullYear()} Tiệm Rêu Décor. All rights reserved.
           </p>
           <div className="flex items-center gap-2">
             <span className="text-sm text-[hsl(220,14%,45%)]">Theo dõi chúng tôi:</span>
             <div className="flex gap-2">
-              {socialItems.map((item: any, idx: number) => {
-                const Icon = iconMap[item.label];
-                return Icon && item.value ? (
-                  <a
-                    key={idx}
-                    href={item.value}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label={`Theo dõi chúng tôi trên ${item.label}`}
-                    className="w-8 h-8 rounded-full bg-[#e3ebdd] hover:bg-[#425733] hover:text-white flex items-center justify-center transition-all"
-                  >
-                    <Icon className="w-4 h-4" />
-                  </a>
-                ) : null;
-              })}
+              {socials.map((item, idx) => (
+                <a
+                  key={idx}
+                  href={item.value}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={`Theo dõi chúng tôi trên ${item.label}`}
+                  className="w-8 h-8 rounded-full bg-[#e3ebdd] hover:bg-[#425733] hover:text-white flex items-center justify-center transition-all"
+                >
+                  <item.Icon className="w-4 h-4" />
+                </a>
+              ))}
             </div>
           </div>
         </div>
@@ -243,3 +242,4 @@ export default async function Footer() {
     </footer>
   );
 }
+
