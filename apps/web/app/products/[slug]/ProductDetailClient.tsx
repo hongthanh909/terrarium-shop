@@ -632,7 +632,7 @@ export function ProductDetailClient({
 
             {/* ── 3-tier Package selector (only for Bể products) ── */}
             {isBểProduct && (
-              <div className="mb-5">
+              <div className="mb-4">
                 <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Chọn phiên bản</p>
                 <div className="grid grid-cols-3 gap-2">
                   {PACKAGES.map((pkg) => {
@@ -642,22 +642,16 @@ export function ProductDetailClient({
                         key={pkg.key}
                         type="button"
                         onClick={() => setSelectedPackage(pkg.key)}
-                        className={`flex flex-col items-center gap-1 px-2 py-3 rounded-xl font-semibold text-xs transition-all duration-200 border-2 ${
+                        className={`flex flex-col items-center gap-0.5 px-2 py-2 rounded-xl font-semibold text-xs transition-all duration-200 border-2 ${
                           isSelected
                             ? "border-[#425733] bg-[#425733] text-white shadow-md"
                             : "border-gray-200 bg-white text-gray-600 hover:border-[#425733]/60 hover:bg-[#f8faf6]"
                         }`}
                       >
-                        <span className="text-lg leading-none">{pkg.icon}</span>
                         <span className="font-bold leading-tight text-center">{pkg.label}</span>
                         <span className={`text-[10px] leading-tight text-center ${
-                          isSelected ? "text-white/80" : "text-gray-400"
+                          isSelected ? "text-white/70" : "text-gray-400"
                         }`}>{pkg.sub}</span>
-                        {pkg.priceAdj > 0 && (
-                          <span className={`text-[10px] font-bold mt-0.5 ${
-                            isSelected ? "text-white/90" : "text-[#425733]"
-                          }`}>+{(pkg.priceAdj / 1000).toFixed(0)}k</span>
-                        )}
                       </button>
                     );
                   })}
@@ -693,46 +687,8 @@ export function ProductDetailClient({
               </div>
             )}
 
-            {/* Quantity + Buttons */}
-            <div className="flex items-center gap-3 mb-4">
-              {/* Qty stepper */}
-              <div className="flex items-center h-12 border-2 border-gray-200 rounded-xl px-1 bg-white flex-shrink-0">
-                <button type="button" onClick={() => setQuantity(Math.max(1, quantity - 1))} className="w-9 h-9 flex items-center justify-center text-gray-500 hover:text-[#425733] transition-colors rounded-lg hover:bg-[#f8faf6]"><Minus className="w-4 h-4" /></button>
-                <span className="w-8 text-center text-base font-bold text-[#1a2e12]">{quantity}</span>
-                <button type="button" onClick={() => setQuantity(quantity + 1)} className="w-9 h-9 flex items-center justify-center text-gray-500 hover:text-[#425733] transition-colors rounded-lg hover:bg-[#f8faf6]"><Plus className="w-4 h-4" /></button>
-              </div>
-              <Button size="lg" variant="outline" className="flex-1 h-12 border-2 border-[#425733] text-[#425733] hover:bg-[#f8faf6] rounded-xl font-bold text-sm" onClick={handleAddToCart} disabled={product.inventory <= 0}>Thêm Vào Giỏ</Button>
-              <Button size="lg" className="flex-1 h-12 bg-[#425733] hover:bg-[#364a29] text-white rounded-xl font-bold text-sm shadow-md hover:shadow-lg transition-all" onClick={handleBuyNow} disabled={product.inventory <= 0}>Mua Ngay</Button>
-            </div>
-
-            {/* Shipping */}
-            <div className="flex items-center gap-2 text-xs text-gray-500 mb-4">
-              <svg className="w-4 h-4 text-[#425733] flex-shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8l-.867 12.142A2 2 0 006.128 22h11.744a2 2 0 001.994-1.858L19 8M10 12v6m4-6v6" />
-              </svg>
-              Miễn phí vận chuyển cho đơn hàng từ <strong className="text-gray-700 ml-0.5">500.000₫</strong>
-            </div>
-
-            {/* Trust badges 2×2 */}
-            <div className="grid grid-cols-2 gap-2 mb-5">
-              {[
-                { icon: "✅", title: "Chất lượng tuyển chọn", sub: "Cây khỏe mạnh, dễ chăm sóc" },
-                { icon: "📦", title: "Đóng gói an toàn", sub: "Đảm bảo nguyên vẹn khi vận chuyển" },
-                { icon: "💡", title: "Tư vấn tận tâm", sub: "Hỗ trợ chăm sóc miễn phí mãi mãi" },
-                { icon: "🎁", title: "Quà tặng ý nghĩa", sub: "Thiết kế tinh tế, sang trọng" },
-              ].map((b) => (
-                <div key={b.title} className="flex items-start gap-2 p-2.5 bg-[#f6faf4] border border-[#daebd0] rounded-xl">
-                  <span className="text-base flex-shrink-0 leading-none mt-0.5">{b.icon}</span>
-                  <div>
-                    <p className="text-xs font-semibold text-[#2d4a1e] leading-tight">{b.title}</p>
-                    <p className="text-[11px] text-[#5a7a48] leading-snug mt-0.5">{b.sub}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-
             {/* ── Voucher Section ───────────────────────────────────────── */}
-            <div className="border border-[#daebd0] rounded-2xl overflow-hidden bg-white">
+            <div className="border border-[#daebd0] rounded-2xl overflow-hidden bg-white mb-4">
               {/* Header */}
               <div className="flex items-center gap-2 px-4 py-3 bg-[#f6faf4] border-b border-[#daebd0]">
                 <Tag className="w-4 h-4 text-[#425733] flex-shrink-0" />
@@ -866,6 +822,26 @@ export function ProductDetailClient({
                   </div>
                 </div>
               )}
+            </div>
+
+            {/* Quantity + Buttons */}
+            <div className="flex items-center gap-3 mb-4">
+              {/* Qty stepper */}
+              <div className="flex items-center h-12 border-2 border-gray-200 rounded-xl px-1 bg-white flex-shrink-0">
+                <button type="button" onClick={() => setQuantity(Math.max(1, quantity - 1))} className="w-9 h-9 flex items-center justify-center text-gray-500 hover:text-[#425733] transition-colors rounded-lg hover:bg-[#f8faf6]"><Minus className="w-4 h-4" /></button>
+                <span className="w-8 text-center text-base font-bold text-[#1a2e12]">{quantity}</span>
+                <button type="button" onClick={() => setQuantity(quantity + 1)} className="w-9 h-9 flex items-center justify-center text-gray-500 hover:text-[#425733] transition-colors rounded-lg hover:bg-[#f8faf6]"><Plus className="w-4 h-4" /></button>
+              </div>
+              <Button size="lg" variant="outline" className="flex-1 h-12 border-2 border-[#425733] text-[#425733] hover:bg-[#f8faf6] rounded-xl font-bold text-sm" onClick={handleAddToCart} disabled={product.inventory <= 0}>Thêm Vào Giỏ</Button>
+              <Button size="lg" className="flex-1 h-12 bg-[#425733] hover:bg-[#364a29] text-white rounded-xl font-bold text-sm shadow-md hover:shadow-lg transition-all" onClick={handleBuyNow} disabled={product.inventory <= 0}>Mua Ngay</Button>
+            </div>
+
+            {/* Shipping */}
+            <div className="flex items-center gap-2 text-xs text-gray-500 mb-4">
+              <svg className="w-4 h-4 text-[#425733] flex-shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8l-.867 12.142A2 2 0 006.128 22h11.744a2 2 0 001.994-1.858L19 8M10 12v6m4-6v6" />
+              </svg>
+              Miễn phí vận chuyển cho đơn hàng từ <strong className="text-gray-700 ml-0.5">500.000₫</strong>
             </div>
           </div>
         </div>
