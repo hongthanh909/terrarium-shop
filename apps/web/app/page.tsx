@@ -458,7 +458,7 @@ export default function Home() {
             .wi-timeline-wrapper {
               display: flex;
               width: 100%;
-              height: 20rem;
+              height: 22rem;
               gap: 1.25rem;
               justify-content: center;
               padding: 0.5rem 0;
@@ -503,8 +503,19 @@ export default function Home() {
             }
 
             .wi-content {
-              transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+              transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
               text-align: left;
+              transform: translateY(0);
+            }
+
+            /* On hover/active, push content up to make room for description */
+            .wi-card.active .wi-content,
+            .wi-card:hover .wi-content {
+              transform: translateY(-0.5rem);
+            }
+
+            .wi-timeline-wrapper:hover .wi-card.active:not(:hover) .wi-content {
+              transform: translateY(0);
             }
 
             .wi-content h3 {
@@ -512,16 +523,41 @@ export default function Home() {
               margin: 0;
               font-size: 1.05rem;
               font-weight: 700;
-              transition: color 0.4s;
+              transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+              padding-bottom: 0;
             }
             
             .wi-card.active .wi-content h3,
             .wi-card:hover .wi-content h3 {
               color: #1e2e16;
+              padding-bottom: 0.75rem;
             }
             
             .wi-timeline-wrapper:hover .wi-card.active:not(:hover) .wi-content h3 {
               color: #425733;
+              padding-bottom: 0;
+            }
+
+            /* White divider line — hidden by default, visible on hover */
+            .wi-divider {
+              height: 1px;
+              background: rgba(255, 255, 255, 0.8);
+              width: 0;
+              opacity: 0;
+              transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+              margin: 0;
+            }
+
+            .wi-card.active .wi-divider,
+            .wi-card:hover .wi-divider {
+              width: 100%;
+              opacity: 1;
+              margin: 0;
+            }
+
+            .wi-timeline-wrapper:hover .wi-card.active:not(:hover) .wi-divider {
+              width: 0;
+              opacity: 0;
             }
 
             /* Description hidden by default, shown on hover/active */
@@ -535,7 +571,7 @@ export default function Home() {
               opacity: 0;
               overflow: hidden;
               transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-              margin-top: 0;
+              padding-top: 0;
             }
             
             .wi-card.active .wi-content p,
@@ -543,13 +579,13 @@ export default function Home() {
               max-height: 12rem;
               opacity: 1;
               color: #374151;
-              margin-top: 0.5rem;
+              padding-top: 0.75rem;
             }
 
             .wi-timeline-wrapper:hover .wi-card.active:not(:hover) .wi-content p {
               max-height: 0;
               opacity: 0;
-              margin-top: 0;
+              padding-top: 0;
             }
 
             .wi-year {
@@ -627,15 +663,25 @@ export default function Home() {
                 margin-right: 0;
               }
 
-              .wi-content p {
-                max-height: 12rem !important;
-                opacity: 1 !important;
-                margin-top: 0.5rem;
+              .wi-content {
+                transform: translateY(-0.5rem) !important;
               }
-              
+
               .wi-content h3 {
                 color: #1e2e16 !important;
                 font-size: 1.3rem !important;
+                padding-bottom: 0.75rem !important;
+              }
+
+              .wi-divider {
+                width: 100% !important;
+                opacity: 1 !important;
+              }
+
+              .wi-content p {
+                max-height: 12rem !important;
+                opacity: 1 !important;
+                padding-top: 0.75rem !important;
               }
 
               .wi-year {
@@ -702,6 +748,7 @@ export default function Home() {
                 {/* Content */}
                 <div className="wi-content">
                   <h3>{item.title}</h3>
+                  <div className="wi-divider" />
                   <p className="text-gray-600">{item.desc}</p>
                 </div>
               </div>
