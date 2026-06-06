@@ -1,8 +1,8 @@
-﻿"use client";
+"use client";
 
-import { useState, useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
-import { ArrowLeft, Save, Eye, EyeOff, Upload, X, Image as ImageIcon } from "lucide-react";
+import { useState, useEffect, useRef, useMemo, useCallback } from "react";
+import { useRouter, useParams } from "next/navigation";
+import { ArrowLeft, Save, Eye, EyeOff, Upload, X, Image as ImageIcon, Clock, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { showToast } from "@/components/ui/custom-toast";
 import dynamic from "next/dynamic";
@@ -13,23 +13,32 @@ const ReactQuill = dynamic(
     return mod;
   }),
   { ssr: false, loading: () => <div className="h-48 bg-gray-50 rounded border animate-pulse" /> }
-);
+) as any;
 
 interface BlogCategory {
   id: string;
   name: string;
 }
 
-export default function CreateBlogPostPage() {
+export default function EditBlogPostPage() {
   const router = useRouter();
+  const params = useParams();
+  const postId = params.id as string;
+
   const [saving, setSaving] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [categories, setCategories] = useState<BlogCategory[]>([]);
+  const [currentTime, setCurrentTime] = useState(new Date());
+  const [originalPublishedAt, setOriginalPublishedAt] = useState<string | null>(null);
   
   const [uploadingThumbnail, setUploadingThumbnail] = useState(false);
   const [uploadingGallery, setUploadingGallery] = useState(false);
 
   const thumbnailInputRef = useRef<HTMLInputElement>(null);
   const galleryInputRef = useRef<HTMLInputElement>(null);
+  const introQuillRef = useRef<any>(null);
+  const bodyQuillRef = useRef<any>(null);
+  const conclusionQuillRef = useRef<any>(null);
 
   const [formData, setFormData] = useState({
     title: "",
@@ -42,6 +51,44 @@ export default function CreateBlogPostPage() {
     categoryId: "",
     published: true,
   });
+
+  // Cập nhật thời gian thực
+  useEffect(() => {
+    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  // Load existing post data
+  useEffect(() => {
+    const loadPost = async () => {
+      try {
+        const res = await fetch(`/api/admin/blog/posts/${postId}`);
+        if (!res.ok) {
+          showToast.error("Không tìm thấy bài viết");
+          router.push("/tiem-nho-nth24/blog");
+          return;
+        }
+        const post = await res.json();
+        setFormData({
+          title: post.title || "",
+          slug: post.slug || "",
+          thumbnail: post.thumbnail || "",
+          images: Array.isArray(post.images) ? post.images : [],
+          intro: post.intro || "",
+          body: post.body || "",
+          conclusion: post.conclusion || "",
+          categoryId: post.categoryId || "",
+          published: post.published ?? true,
+        });
+        setOriginalPublishedAt(post.publishedAt || null);
+      } catch {
+        showToast.error("Lỗi tải dữ liệu bài viết");
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadPost();
+  }, [postId, router]);
 
   useEffect(() => {
     fetch("/api/admin/blog/categories")
@@ -78,6 +125,78 @@ export default function CreateBlogPostPage() {
     const data = await res.json();
     return data.url;
   };
+
+  // Custom image handler cho Quill — chèn ảnh inline
+  const createImageHandler = useCallback((quillRef: React.RefObject<any>) => {
+    return () => {
+      const input = document.createElement("input");
+      input.setAttribute("type", "file");
+      input.setAttribute("accept", "image/*");
+      input.click();
+
+      input.onchange = async () => {
+        const file = input.files?.[0];
+        if (!file) return;
+
+        showToast.info("Đang tải ảnh lên...");
+        const url = await uploadImage(file);
+        if (url) {
+          const quill = quillRef.current?.getEditor?.();
+          if (quill) {
+            const range = quill.getSelection(true);
+            quill.insertEmbed(range.index, "image", url);
+            quill.setSelection(range.index + 1);
+          }
+          showToast.success("Đã chèn ảnh vào bài viết!");
+        }
+      };
+    };
+  }, []);
+
+  // Quill modules với image handler
+  const introModules = useMemo(() => ({
+    toolbar: {
+      container: [
+        ["bold", "italic", "underline", "strike"],
+        [{ list: "ordered" }, { list: "bullet" }],
+        ["link", "image"],
+        ["clean"],
+      ],
+      handlers: {
+        image: createImageHandler(introQuillRef),
+      },
+    },
+  }), [createImageHandler]);
+
+  const bodyModules = useMemo(() => ({
+    toolbar: {
+      container: [
+        [{ header: [1, 2, 3, false] }],
+        ["bold", "italic", "underline", "strike", "blockquote"],
+        [{ list: "ordered" }, { list: "bullet" }],
+        [{ align: [] }],
+        ["link", "image"],
+        ["clean"],
+      ],
+      handlers: {
+        image: createImageHandler(bodyQuillRef),
+      },
+    },
+  }), [createImageHandler]);
+
+  const conclusionModules = useMemo(() => ({
+    toolbar: {
+      container: [
+        ["bold", "italic", "underline", "strike"],
+        [{ list: "ordered" }, { list: "bullet" }],
+        ["link", "image"],
+        ["clean"],
+      ],
+      handlers: {
+        image: createImageHandler(conclusionQuillRef),
+      },
+    },
+  }), [createImageHandler]);
 
   const handleThumbnailUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -144,8 +263,8 @@ export default function CreateBlogPostPage() {
     setSaving(true);
 
     try {
-      const response = await fetch("/api/admin/blog/posts", {
-        method: "POST",
+      const response = await fetch(`/api/admin/blog/posts/${postId}`, {
+        method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       });
@@ -153,14 +272,10 @@ export default function CreateBlogPostPage() {
       const result = await response.json();
 
       if (response.ok) {
-        showToast.success(
-          formData.published
-            ? "Bài viết đã được xuất bản thành công!"
-            : "Đã lưu bài viết dưới dạng bản nháp!"
-        );
+        showToast.success("Bài viết đã được cập nhật thành công!");
         router.push("/tiem-nho-nth24/blog");
       } else {
-        showToast.error(result.error || "Lỗi khi tạo bài viết");
+        showToast.error(result.error || "Lỗi khi cập nhật bài viết");
       }
     } catch (error) {
       console.error("Error:", error);
@@ -169,6 +284,30 @@ export default function CreateBlogPostPage() {
       setSaving(false);
     }
   };
+
+  const formatTime = (date: Date | string) => {
+    const d = typeof date === "string" ? new Date(date) : date;
+    return d.toLocaleString("vi-VN", {
+      weekday: "long",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+    });
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <div className="flex flex-col items-center gap-3">
+          <Loader2 className="w-8 h-8 text-[#425733] animate-spin" />
+          <p className="text-sm text-gray-500">Đang tải bài viết...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -180,8 +319,23 @@ export default function CreateBlogPostPage() {
           <ArrowLeft className="w-4 h-4" />
           Quay lại Blog
         </Link>
-        <h2 className="text-2xl font-bold text-gray-800">Tạo Bài Viết Mới</h2>
-        <p className="text-sm text-gray-500">Phân chia cấu trúc bài viết rõ ràng và trực quan</p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-2xl font-bold text-gray-800">Chỉnh Sửa Bài Viết</h2>
+            <p className="text-sm text-gray-500">Cập nhật nội dung bài viết và chèn ảnh tùy ý</p>
+          </div>
+          <div className="flex flex-col items-end gap-1">
+            <div className="flex items-center gap-2 bg-gray-50 px-4 py-2 rounded-xl border border-gray-100">
+              <Clock className="w-4 h-4 text-[#425733]" />
+              <span className="text-xs font-medium text-gray-600">{formatTime(currentTime)}</span>
+            </div>
+            {originalPublishedAt && (
+              <span className="text-[10px] text-gray-400">
+                Xuất bản lần đầu: {formatTime(originalPublishedAt)}
+              </span>
+            )}
+          </div>
+        </div>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6 pb-12">
@@ -323,26 +477,28 @@ export default function CreateBlogPostPage() {
 
           <hr className="border-gray-100" />
 
-          {/* Rich Text Editors stacked */}
+          {/* Rich Text Editors with inline image support */}
           <div className="space-y-6">
+            {/* Tip */}
+            <div className="flex items-start gap-2 p-3 bg-blue-50 border border-blue-100 rounded-xl">
+              <ImageIcon className="w-4 h-4 text-blue-500 mt-0.5 shrink-0" />
+              <p className="text-xs text-blue-700">
+                <strong>Mẹo:</strong> Bấm nút <span className="inline-flex items-center px-1.5 py-0.5 bg-white border rounded text-[10px] font-mono">🖼 Ảnh</span> trên thanh công cụ để chèn ảnh trực tiếp vào vị trí con trỏ trong bài viết.
+              </p>
+            </div>
+
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-1">
                 1. Mở bài (Introduction)
               </label>
               <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
                 <ReactQuill
+                  ref={introQuillRef}
                   theme="snow"
                   value={formData.intro}
-                  onChange={(intro) => setFormData((prev) => ({ ...prev, intro }))}
+                  onChange={(intro: string) => setFormData((prev) => ({ ...prev, intro }))}
                   className="h-44 mb-12"
-                  modules={{
-                    toolbar: [
-                      ["bold", "italic", "underline", "strike"],
-                      [{ list: "ordered" }, { list: "bullet" }],
-                      ["link"],
-                      ["clean"],
-                    ],
-                  }}
+                  modules={introModules}
                 />
               </div>
             </div>
@@ -353,19 +509,12 @@ export default function CreateBlogPostPage() {
               </label>
               <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
                 <ReactQuill
+                  ref={bodyQuillRef}
                   theme="snow"
                   value={formData.body}
-                  onChange={(body) => setFormData((prev) => ({ ...prev, body }))}
+                  onChange={(body: string) => setFormData((prev) => ({ ...prev, body }))}
                   className="h-64 mb-12"
-                  modules={{
-                    toolbar: [
-                      [{ header: [1, 2, 3, false] }],
-                      ["bold", "italic", "underline", "strike", "blockquote"],
-                      [{ list: "ordered" }, { list: "bullet" }],
-                      ["link"],
-                      ["clean"],
-                    ],
-                  }}
+                  modules={bodyModules}
                 />
               </div>
             </div>
@@ -376,18 +525,12 @@ export default function CreateBlogPostPage() {
               </label>
               <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
                 <ReactQuill
+                  ref={conclusionQuillRef}
                   theme="snow"
                   value={formData.conclusion}
-                  onChange={(conclusion) => setFormData((prev) => ({ ...prev, conclusion }))}
+                  onChange={(conclusion: string) => setFormData((prev) => ({ ...prev, conclusion }))}
                   className="h-44 mb-12"
-                  modules={{
-                    toolbar: [
-                      ["bold", "italic", "underline", "strike"],
-                      [{ list: "ordered" }, { list: "bullet" }],
-                      ["link"],
-                      ["clean"],
-                    ],
-                  }}
+                  modules={conclusionModules}
                 />
               </div>
             </div>
@@ -407,13 +550,13 @@ export default function CreateBlogPostPage() {
             ) : (
               <EyeOff className="w-5 h-5 text-gray-400" />
             )}
-            <div>
+            <div className="flex-1">
               <p className="font-semibold text-sm text-gray-800">
-                {formData.published ? "Xuất bản ngay" : "Lưu bản nháp"}
+                {formData.published ? "Đang xuất bản" : "Bản nháp"}
               </p>
               <p className="text-xs text-gray-400 mt-0.5">
                 {formData.published
-                  ? "Bài viết sẽ hiển thị ngay trên trang Blog của khách hàng"
+                  ? `Bài viết đang hiển thị trên trang Blog • Cập nhật lúc: ${formatTime(currentTime)}`
                   : "Bài viết sẽ được lưu nhưng chưa hiển thị với khách hàng"}
               </p>
             </div>
@@ -441,10 +584,27 @@ export default function CreateBlogPostPage() {
             className="flex items-center gap-2 bg-[#425733] text-white px-6 py-2.5 rounded-full font-semibold shadow hover:bg-[#364a29] transition-all disabled:bg-gray-400 disabled:cursor-not-allowed text-sm"
           >
             <Save className="w-4 h-4" />
-            {saving ? "Đang lưu..." : formData.published ? "Xuất Bản Bài Viết" : "Lưu Bản Nháp"}
+            {saving ? "Đang lưu..." : "Cập Nhật Bài Viết"}
           </button>
         </div>
       </form>
+
+      {/* Custom styles for Quill images */}
+      <style dangerouslySetInnerHTML={{ __html: `
+        .ql-editor img {
+          max-width: 100%;
+          height: auto;
+          border-radius: 0.75rem;
+          margin: 1rem 0;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        .ql-snow .ql-toolbar button.ql-image {
+          color: #425733;
+        }
+        .ql-snow .ql-toolbar button.ql-image:hover {
+          color: #364a29;
+        }
+      `}} />
     </div>
   );
 }
