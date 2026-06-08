@@ -1,7 +1,8 @@
 "use client";
 
+import Image from "next/image";
 import { motion } from "framer-motion";
-import { Shield, MessageCircle, ChevronDown } from "lucide-react";
+import { MessageCircle, ChevronDown } from "lucide-react";
 import { useState } from "react";
 
 interface Policy {
@@ -12,13 +13,15 @@ interface Policy {
   order: number;
 }
 
-const typeLabels: Record<string, { label: string; icon: string }> = {
-  warranty: { label: "Bảo hành", icon: "🛡️" },
-  shipping: { label: "Vận chuyển", icon: "🚚" },
-  returns: { label: "Đổi trả", icon: "↩️" },
-  privacy: { label: "Bảo mật", icon: "🔒" },
-  faq: { label: "Câu hỏi thường gặp", icon: "❓" },
-  policy: { label: "Chính sách khác", icon: "📋" },
+const TYPE_ORDER = ["warranty", "shipping", "returns", "privacy", "faq", "policy"];
+
+const typeLabels: Record<string, { label: string; emoji: string }> = {
+  warranty: { label: "Bảo hành", emoji: "🛡️" },
+  shipping: { label: "Vận chuyển", emoji: "🚚" },
+  returns: { label: "Đổi trả", emoji: "↩️" },
+  privacy: { label: "Bảo mật", emoji: "🔒" },
+  faq: { label: "Câu hỏi thường gặp", emoji: "❓" },
+  policy: { label: "Chính sách khác", emoji: "📋" },
 };
 
 function AccordionItem({ policy, index }: { policy: Policy; index: number }) {
@@ -74,6 +77,18 @@ export function PoliciesClient({
     return acc;
   }, {});
 
+  // Sort groups by defined order
+  const sortedGroups = TYPE_ORDER
+    .filter((t) => grouped[t] && grouped[t].length > 0)
+    .map((t) => ({ type: t, items: grouped[t] }));
+
+  // Any leftover types not in TYPE_ORDER
+  Object.keys(grouped).forEach((t) => {
+    if (!TYPE_ORDER.includes(t)) {
+      sortedGroups.push({ type: t, items: grouped[t] });
+    }
+  });
+
   return (
     <motion.main
       className="min-h-screen bg-[#fafbf8] py-12 px-6"
@@ -90,21 +105,32 @@ export function PoliciesClient({
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1, duration: 0.5 }}
         >
-          <div className="w-18 h-18 rounded-2xl bg-gradient-to-br from-[#425733] to-[#6d8c5a] flex items-center justify-center mx-auto mb-5 shadow-[0_8px_24px_rgba(66,87,51,0.3)] p-4">
-            <Shield className="w-10 h-10 text-white" />
+          {/* Logo thay vì icon Shield */}
+          <div className="flex justify-center mb-5">
+            <div className="w-20 h-20 rounded-2xl overflow-hidden shadow-[0_8px_24px_rgba(66,87,51,0.25)] bg-white p-1">
+              <Image
+                src="/logo.png"
+                alt="Tiệm Rêu Décor logo"
+                width={80}
+                height={80}
+                className="w-full h-full object-contain"
+              />
+            </div>
           </div>
           <div className="inline-flex items-center gap-2 bg-[#e3ebdd] px-4 py-2 rounded-full text-sm font-medium text-[#425733] mb-3">
-            <span>Minh bạch & Tin cậy</span>
+            <span>Minh bạch &amp; Tin cậy</span>
           </div>
           <h1 className="text-4xl md:text-5xl font-bold text-[#1a2e12] mb-4">
-            Chính sách & Hướng dẫn
+            Chính sách &amp; Hướng dẫn
+            <br />
+            <span className="text-2xl md:text-3xl font-medium text-[#6d8c5a]">của Rêu</span>
           </h1>
           <p className="text-gray-500 max-w-2xl mx-auto leading-relaxed">
-            Tìm hiểu về các chính sách, điều khoản và thông tin hữu ích khi mua sắm tại Tiệm Rêu decor
+            Tìm hiểu về các chính sách, điều khoản và thông tin hữu ích khi mua sắm tại Tiệm Rêu décor
           </p>
         </motion.div>
 
-        {/* Policy Sections */}
+        {/* Policy Sections — numbered 01, 02, ... */}
         {policies.length === 0 ? (
           <motion.div
             className="text-center py-16"
@@ -115,8 +141,9 @@ export function PoliciesClient({
           </motion.div>
         ) : (
           <div className="space-y-10">
-            {Object.entries(grouped).map(([type, typePolicies], groupIndex) => {
-              const meta = typeLabels[type] || { label: type, icon: "📄" };
+            {sortedGroups.map(({ type, items }, groupIndex) => {
+              const meta = typeLabels[type] || { label: type, emoji: "📄" };
+              const num = String(groupIndex + 1).padStart(2, "0");
               return (
                 <motion.section
                   key={type}
@@ -125,13 +152,29 @@ export function PoliciesClient({
                   viewport={{ once: true, margin: "-40px" }}
                   transition={{ duration: 0.4, delay: groupIndex * 0.08 }}
                 >
-                  <div className="flex items-center gap-3 mb-5">
-                    <span className="text-2xl">{meta.icon}</span>
-                    <h2 className="text-xl font-bold text-[#1a2e12]">{meta.label}</h2>
-                    <div className="flex-1 h-px bg-[#d4e4c9] ml-1" />
+                  {/* Numbered section header */}
+                  <div className="flex items-center gap-4 mb-5">
+                    <span
+                      className="text-5xl font-extrabold leading-none select-none"
+                      style={{
+                        color: "transparent",
+                        WebkitTextStroke: "2px #d4e4c9",
+                        fontFamily: "'Dancing Script', cursive",
+                      }}
+                    >
+                      {num}
+                    </span>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xl">{meta.emoji}</span>
+                        <h2 className="text-xl font-bold text-[#1a2e12]">{meta.label}</h2>
+                      </div>
+                      <div className="h-px bg-[#d4e4c9] mt-1.5" />
+                    </div>
                   </div>
+
                   <div>
-                    {[...typePolicies]
+                    {[...items]
                       .sort((a, b) => a.order - b.order)
                       .map((policy, i) => (
                         <AccordionItem key={policy.id} policy={policy} index={i} />

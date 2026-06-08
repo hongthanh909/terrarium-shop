@@ -233,24 +233,19 @@ export function SearchPalette({ open, onClose }: SearchPaletteProps) {
   );
 }
 
-/** Trigger button for navbar */
+/** Trigger button for navbar — icon only (magnifying glass, no text, no shortcut) */
 export function SearchTrigger({ onClick, light = false }: { onClick: () => void; light?: boolean }) {
   return (
     <button
       onClick={onClick}
-      className={`hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full text-sm transition-all duration-200 group ${
+      aria-label="Mở tìm kiếm"
+      className={`hidden md:flex items-center justify-center w-9 h-9 rounded-full transition-all duration-200 ${
         light
-          ? "bg-white/15 hover:bg-white/25 text-white/70 hover:text-white border border-white/20"
-          : "bg-black/5 hover:bg-[#e3ebdd]/80 text-gray-400 hover:text-[#425733] border border-transparent hover:border-[#c2d6b0]"
+          ? "bg-white/15 hover:bg-white/25 text-white/70 hover:text-white"
+          : "bg-black/5 hover:bg-[#e3ebdd]/80 text-gray-400 hover:text-[#425733]"
       }`}
     >
-      <Search className="w-3.5 h-3.5" />
-      <span className="text-xs">Tìm kiếm</span>
-      <kbd className={`ml-1 text-[10px] font-mono px-1.5 py-0.5 rounded border ${
-        light ? "bg-white/10 border-white/20 text-white/40" : "bg-black/5 border-gray-200 text-gray-400 group-hover:border-[#c2d6b0]"
-      }`}>
-        ⌘K
-      </kbd>
+      <Search className="w-4 h-4" />
     </button>
   );
 }
