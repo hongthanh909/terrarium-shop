@@ -27,26 +27,17 @@ const getIconForSocial = (label: string) => {
 };
 
 export default async function Footer() {
-  const contactList = await prisma.contactInfo.findMany({
-    where: { isActive: true },
-    orderBy: { orderIndex: "asc" },
-  }).catch(() => []);
+  // Hardcoded correct business info — đảm bảo luôn hiển thị đúng bất kể DB
+  const emails = [{ value: 'tiemreudecor@gmail.com' }];
+  const phones = [{ value: '0706 668 296' }];
+  const addresses = [{ value: '32/16 Tam Đa, Phường Long Trường, TP. Hồ Chí Minh' }];
+  const workingHours = [{ value: 'Thứ 2 - Chủ nhật: 9:00 - 21:00' }];
 
-  // Extract by type
-  const emails = contactList.filter((c: any) => c.type === "email");
-  const phones = contactList.filter((c: any) => c.type === "phone");
-  const addresses = contactList.filter((c: any) => c.type === "address");
-  const workingHours = contactList.filter((c: any) => c.type === "working_hours");
-  const socialItems = contactList.filter((c: any) => c.type === "social");
-
-  // Use DB socials if available, otherwise fallback
-  const socials = socialItems.length > 0
-    ? socialItems.map((item: any) => ({
-        label: item.label,
-        value: item.value,
-        Icon: getIconForSocial(item.label),
-      }))
-    : FALLBACK_SOCIALS;
+  const socials = [
+    { label: "TikTok", value: "https://www.tiktok.com/@tiemreudecor?lang=vi-VN", Icon: TikTokIcon },
+    { label: "Instagram", value: "https://www.instagram.com/tiemreudecor/", Icon: Instagram },
+    { label: "Facebook", value: "https://www.facebook.com/tiemreudecor", Icon: Facebook },
+  ];
 
   return (
     <footer className="bg-gradient-to-b from-[#e3ebdd] to-white pt-16 pb-8 border-t border-[#c8d5be]">
