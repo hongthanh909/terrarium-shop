@@ -18,7 +18,7 @@ import { HeroCarousel } from "@/components/ui/hero-carousel";
 export const revalidate = 60;
 
 export const metadata: Metadata = {
-  title: "Terrarium Shop | Mang Thiên Nhiên Vào Trong Nhà",
+  title: "Tiệm Rêu Décor | Một Chút Rêu — Một Chút Xanh",
   description: "Khám phá bộ sưu tập terrarium thủ công của chúng tôi — những hệ sinh thái thu nhỏ biến không gian của bạn thành thiên nhiên trong trẻo.",
   openGraph: {
     title: "Terrarium Shop | Khám Phá Hệ Sinh Thái Của Bạn",
@@ -376,8 +376,8 @@ export default function Home() {
           <div>
             <ScrollReveal direction="up" delay={0.2}>
               <h1 className="text-5xl md:text-6xl lg:text-7xl font-extrabold mb-6 leading-tight tracking-tight text-gray-900">
-                Mang Thiên Nhiên <br/>
-                Vào Trong Nhà
+                <span className="block">Một chút rêu</span>
+                <span className="block pl-12 md:pl-16 lg:pl-20">Một chút xanh</span>
               </h1>
             </ScrollReveal>
 

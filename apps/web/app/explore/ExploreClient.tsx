@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useSession } from "next-auth/react";
-import { Package, Compass, Sparkles, Check, Sprout, RefreshCw, Sun, Ruler, Gift, ShoppingBasket, ChevronLeft, ChevronRight } from "lucide-react";
+import { Package, Compass, Sparkles, Check, Sprout, Gift, ShoppingBasket, ChevronLeft, ChevronRight } from "lucide-react";
 import { showToast } from "@/components/ui/custom-toast";
 import { useCartStore } from "@/lib/store/cartStore";
 import { Button } from "@/components/ui/button";
@@ -137,7 +137,7 @@ export function ExploreClient({ featured, pinned, topVoted, newArrivals, weeklyF
 
   return (
     <PageTransition>
-      <main className="min-h-screen bg-[#fafbf8] py-10 px-6">
+      <main className="min-h-screen bg-gradient-to-b from-[#eef4e8] to-[#f5f9f2] py-10 px-6">
         <div className="max-w-7xl mx-auto">
           {/* Hero — slides left and fades on scroll */}
           <div ref={heroRef}>
@@ -228,17 +228,19 @@ export function ExploreClient({ featured, pinned, topVoted, newArrivals, weeklyF
                         Terrarium {currentFeatured.product.name.toLowerCase()} mô phỏng một khu rừng tự nhiên thu nhỏ với hệ thực vật phong phú, rêu xanh và bố cục hài hòa. Được chế tác thủ công tinh xảo, mỗi sản phẩm mang vẻ đẹp nghệ thuật độc nhất vô nhị giúp thư giãn và trang trí sang trọng cho không gian của bạn.
                       </p>
 
-                      {/* 4 Feature Badges Row */}
+                      {/* 4 Feature Badges Row — clean buttons with hover bounce */}
                       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-2">
                         {[
-                          { icon: <Sprout className="w-4 h-4 text-[#a3e288]" />, text: "Cây thật 100%" },
-                          { icon: <RefreshCw className="w-4 h-4 text-[#93c5fd]" />, text: "Hệ sinh thái khép kín" },
-                          { icon: <Sun className="w-4 h-4 text-[#fde047]" />, text: "Dễ chăm sóc ít bão trì" },
-                          { icon: <Ruler className="w-4 h-4 text-[#c084fc]" />, text: "Thiết kế thủ công tinh xảo" }
-                        ].map((feat, i) => (
-                          <div key={i} className="flex items-center gap-2 bg-[#55694b] px-3 py-2.5 rounded-xl text-[11px] font-semibold border border-[#637a58]">
-                            {feat.icon}
-                            <span className="truncate">{feat.text}</span>
+                          "Cây thật 100%",
+                          "Hệ sinh thái khép kín",
+                          "Dễ chăm sóc ít bảo trì",
+                          "Thiết kế thủ công tinh xảo"
+                        ].map((text, i) => (
+                          <div
+                            key={i}
+                            className="flex items-center justify-center bg-white/10 backdrop-blur-sm px-3 py-2.5 rounded-xl text-[11px] font-semibold border border-white/20 text-white/90 cursor-default transition-all duration-300 hover:-translate-y-1 hover:bg-white/20 hover:border-white/40 hover:shadow-lg hover:shadow-white/5"
+                          >
+                            <span className="truncate">{text}</span>
                           </div>
                         ))}
                       </div>
@@ -281,6 +283,19 @@ export function ExploreClient({ featured, pinned, topVoted, newArrivals, weeklyF
                             <Sprout className="w-3.5 h-3.5 text-[#a3e288]" />
                             <span>Cây thật 100%</span>
                           </div>
+
+                          {/* Discount badge in image corner */}
+                          {(() => {
+                            const base = Number(currentFeatured.product.basePrice.toString());
+                            const sale = currentFeatured.product.salePrice ? Number(currentFeatured.product.salePrice.toString()) : null;
+                            const isOnSale = sale != null && sale < base && (currentFeatured.product.saleEndDate == null || new Date(currentFeatured.product.saleEndDate) > new Date());
+                            const discountPct = isOnSale ? Math.round(((base - sale!) / base) * 100) : 0;
+                            return isOnSale ? (
+                              <div className="absolute bottom-4 right-4 z-10 bg-red-500 text-white px-3 py-1.5 rounded-xl text-sm font-extrabold shadow-lg shadow-red-500/30 animate-pulse">
+                                -{discountPct}%
+                              </div>
+                            ) : null;
+                          })()}
                           
                           {currentFeatured.product.images.length > 0 ? (
                             <Image
