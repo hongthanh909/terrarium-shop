@@ -125,16 +125,15 @@ export default function Header() {
 
   return (
     <>
-      {/* ─── Floating Pill Navbar — GREEN ────────────────────────────────────── */}
-      <div className="sticky top-0 z-40 flex justify-center px-4 pt-2 pb-1 pointer-events-none">
-        <motion.header
-          className={`pointer-events-auto w-full max-w-6xl rounded-2xl transition-all duration-300 ${
-            scrolled
-              ? "bg-[#1e2e16] backdrop-blur-xl shadow-[0_4px_30px_rgba(0,0,0,0.35)] border border-[#425733]"
-              : "bg-[#2d3d23] backdrop-blur-lg shadow-[0_2px_20px_rgba(0,0,0,0.25)] border border-[#3d5230]"
-          }`}
-        >
-          <div className="flex items-center justify-between px-5 py-3">
+      {/* ─── Full-Width Navbar — GREEN ────────────────────────────────────── */}
+      <motion.header
+        className={`sticky top-0 z-40 w-full transition-all duration-300 ${
+          scrolled
+            ? "bg-[#1a2a12]/95 backdrop-blur-xl shadow-[0_2px_20px_rgba(0,0,0,0.3)] border-b border-[#425733]/60"
+            : "bg-[#2d3d23] backdrop-blur-md border-b border-[#3d5230]/40"
+        }`}
+      >
+          <div className="flex items-center justify-between px-6 py-3 max-w-7xl mx-auto">
             {/* Logo */}
             <Link href="/" className="flex flex-col group flex-shrink-0">
               <span
@@ -298,8 +297,7 @@ export default function Header() {
               </button>
             </div>
           </div>
-        </motion.header>
-      </div>
+      </motion.header>
 
       {/* ─── Search Palette ───────────────────────────────────────────────── */}
       <SearchPalette open={searchOpen} onClose={() => setSearchOpen(false)} />
