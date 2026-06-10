@@ -568,22 +568,51 @@ export default async function Home() {
 
             .wi-card.active {
               flex: 1 1 auto;
-              background: #e3ebdd;
               border-color: #c8d5be;
+            }
+            /* Background khi KHÔNG có ảnh nền */
+            .wi-card:not([style*="background-image"]).active {
+              background: #e3ebdd;
             }
 
             .wi-card:hover {
               flex: 1 1 auto !important;
-              background: #e3ebdd !important;
               border-color: #c8d5be !important;
               box-shadow: 0 15px 35px rgba(66, 87, 51, 0.1) !important;
+            }
+            /* Background hover khi KHÔNG có ảnh nền */
+            .wi-card:not([style*="background-image"]):hover {
+              background: #e3ebdd !important;
             }
 
             .wi-timeline-wrapper:hover .wi-card.active:not(:hover) {
               flex: 0 0 12rem;
-              background: #ffffff;
               border-color: #daebd0;
               box-shadow: 0 8px 24px rgba(66, 87, 51, 0.04);
+            }
+            .wi-timeline-wrapper:hover .wi-card.active:not(:hover):not([style*="background-image"]) {
+              background: #ffffff;
+            }
+
+            /* ── Overlay cho ảnh nền ──────────────────────────────────── */
+            .wi-overlay {
+              position: absolute;
+              inset: 0;
+              pointer-events: none;
+              background: rgba(255,255,255,0.85);
+              transition: background 0.55s cubic-bezier(0.16, 1, 0.3, 1);
+            }
+            /* Khi card hover → ảnh lộ rõ hơn */
+            .wi-card:hover .wi-overlay {
+              background: rgba(240,244,236,0.35);
+            }
+            /* Khi card là active mặc định → ảnh hiển thị vừa phải */
+            .wi-card.active .wi-overlay {
+              background: rgba(255,255,255,0.55);
+            }
+            /* Khi wrapper hover, card active không được hover → mờ lại */
+            .wi-timeline-wrapper:hover .wi-card.active:not(:hover) .wi-overlay {
+              background: rgba(255,255,255,0.85);
             }
 
             /* Header row: icon + number + title inline */
@@ -823,12 +852,9 @@ export default async function Home() {
                     backgroundPosition: "center",
                   } : undefined}
                 >
-                  {/* White overlay when bg image is set */}
+                  {/* Overlay — animate opacity on hover via .wi-overlay CSS class */}
                   {bgImage && (
-                    <div
-                      className="absolute inset-0 pointer-events-none"
-                      style={{ background: "rgba(255,255,255,0.72)" }}
-                    />
+                    <div className="wi-overlay" />
                   )}
                   {/* Header: Icon + Number + Title (inline) */}
                   <div className="wi-header" style={{ position: "relative" }}>
