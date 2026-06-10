@@ -11,6 +11,7 @@ import { showToast } from "@/components/ui/custom-toast";
 import { FormField } from "@/components/admin/ui/FormField";
 import { FormSelect } from "@/components/admin/ui/FormSelect";
 import { compressImage } from "@/lib/image";
+import { ImageCropModal } from "@/components/ui/image-crop-modal";
 
 interface Category {
   id: string;
@@ -48,6 +49,10 @@ export default function EditProductPage() {
   const [fetching, setFetching] = useState(true);
   const [uploadingMain, setUploadingMain] = useState(false);
   const [uploadingSub, setUploadingSub] = useState(false);
+
+  // Crop modal state
+  const [mainCropSrc, setMainCropSrc] = useState<string | null>(null);
+  const [subCropSrc, setSubCropSrc] = useState<string | null>(null);
 
   // Main image (1 only)
   const [mainImage, setMainImage] = useState<string>("");
@@ -161,11 +166,18 @@ export default function EditProductPage() {
   const handleMainImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    setUploadingMain(true);
-    const url = await uploadImage(file);
-    if (url) { setMainImage(url); showToast.success("Đã tải ảnh chính"); }
-    setUploadingMain(false);
+    // Open crop modal
+    const objectUrl = URL.createObjectURL(file);
+    setMainCropSrc(objectUrl);
     if (mainImageInputRef.current) mainImageInputRef.current.value = "";
+  };
+
+  const handleMainCropConfirm = async (blob: Blob) => {
+    setMainCropSrc(null);
+    setUploadingMain(true);
+    const url = await uploadImage(new File([blob], "main.jpg", { type: "image/jpeg" }));
+    if (url) { setMainImage(url); showToast.success("Đã cắt và tải ảnh chính"); }
+    setUploadingMain(false);
   };
 
   const handleSubImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -174,16 +186,35 @@ export default function EditProductPage() {
       showToast.error("Tối đa 10 ảnh phụ");
       return;
     }
-    setUploadingSub(true);
-    const urls: string[] = [];
-    for (const file of files) {
-      const url = await uploadImage(file);
-      if (url) urls.push(url);
+    if (files.length === 1) {
+      // Single: open crop
+      const objectUrl = URL.createObjectURL(files[0]);
+      setSubCropSrc(objectUrl);
+    } else {
+      // Multi: upload directly without crop
+      setUploadingSub(true);
+      const urls: string[] = [];
+      for (const file of files) {
+        const url = await uploadImage(file);
+        if (url) urls.push(url);
+      }
+      setSubImages((prev) => [...prev, ...urls]);
+      if (urls.length) showToast.success(`Đã tải ${urls.length} ảnh phụ`);
+      setUploadingSub(false);
     }
-    setSubImages((prev) => [...prev, ...urls]);
-    if (urls.length) showToast.success(`Đã tải ${urls.length} ảnh phụ`);
-    setUploadingSub(false);
     if (subImageInputRef.current) subImageInputRef.current.value = "";
+  };
+
+  const handleSubCropConfirm = async (blob: Blob) => {
+    setSubCropSrc(null);
+    if (subImages.length >= 10) { showToast.error("Tối đa 10 ảnh phụ"); return; }
+    setUploadingSub(true);
+    const url = await uploadImage(new File([blob], "sub.jpg", { type: "image/jpeg" }));
+    if (url) {
+      setSubImages((prev) => [...prev, url]);
+      showToast.success("Đã cắt và tải ảnh phụ");
+    }
+    setUploadingSub(false);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -250,6 +281,7 @@ export default function EditProductPage() {
   }
 
   return (
+    <>
     <div>
       <div className="mb-6">
         <Link href="/tiem-nho-nth24/products" className="inline-flex items-center text-[#425733] hover:text-[#364a29] mb-4 gap-1 text-sm">
@@ -509,5 +541,34 @@ export default function EditProductPage() {
         </div>
       </form>
     </div>
+
+      {/* Crop Modal: Ảnh chính sản phẩm (1:1) */}
+      {mainCropSrc && (
+        <ImageCropModal
+          src={mainCropSrc}
+          aspect={1}
+          title="Ảnh Chính Sản Phẩm — Cắt theo tỉ lệ 1:1"
+          onConfirm={handleMainCropConfirm}
+          onCancel={() => {
+            URL.revokeObjectURL(mainCropSrc);
+            setMainCropSrc(null);
+          }}
+        />
+      )}
+
+      {/* Crop Modal: Ảnh phụ (tự do) */}
+      {subCropSrc && (
+        <ImageCropModal
+          src={subCropSrc}
+          title="Ảnh Phụ Sản Phẩm — Kéo để chọn vùng cắt"
+          onConfirm={handleSubCropConfirm}
+          onCancel={() => {
+            URL.revokeObjectURL(subCropSrc);
+            setSubCropSrc(null);
+          }}
+        />
+      )}
+    </>
   );
 }
+

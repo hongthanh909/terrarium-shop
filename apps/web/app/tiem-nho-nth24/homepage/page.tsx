@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import Image from "next/image";
 import {
   ImageIcon, Plus, Trash2, Eye, EyeOff, ArrowUp, ArrowDown,
@@ -11,6 +11,9 @@ import { Input } from "@/components/ui/input";
 import { showToast } from "@/components/ui/custom-toast";
 import Link from "next/link";
 import { compressImage } from "@/lib/image";
+import { ImageCropModal } from "@/components/ui/image-crop-modal";
+
+
 
 interface FeatureCard {
   id: string;
@@ -82,6 +85,12 @@ export default function AdminHomepagePage() {
   const [savingHeroBg, setSavingHeroBg] = useState(false);
   const [uploadingHeroBg, setUploadingHeroBg] = useState(false);
   const heroBgFileInputRef = useRef<HTMLInputElement>(null);
+
+  // ── Crop modal state ────────────────────────────────────────────────────────
+  // Hero BG crop
+  const [heroBgCropSrc, setHeroBgCropSrc] = useState<string | null>(null);
+  // Feature Card crop: { cardId, src }
+  const [cardCropState, setCardCropState] = useState<{ cardId: string; src: string } | null>(null);
 
   // Load existing banners, products & feature cards
   useEffect(() => {
@@ -251,33 +260,32 @@ export default function AdminHomepagePage() {
       showToast.error("Chỉ chấp nhận file ảnh");
       return;
     }
-    if (file.size > 3 * 1024 * 1024) {
-      showToast.error("Ảnh tối đa 3MB. Vui lòng chọn ảnh nhỏ hơn.");
-      return;
-    }
+    // Open crop modal
+    const objectUrl = URL.createObjectURL(file);
+    setCardCropState({ cardId, src: objectUrl });
+    // Reset file input
+    const ref = cardFileInputRefs.current[cardId];
+    if (ref) ref.value = "";
+  };
+
+  const handleCardCropConfirm = useCallback(async (blob: Blob) => {
+    if (!cardCropState) return;
+    const { cardId } = cardCropState;
+    setCardCropState(null);
     setUploadingCardId(cardId);
     try {
-      const compressed = await compressImage(file);
-      const formData = new FormData();
-      formData.append("file", compressed);
-      formData.append("bucket", "banners");
-
-      const res = await fetch("/api/upload", { method: "POST", body: formData });
-      if (!res.ok) throw new Error("Upload thất bại");
-      const data = await res.json();
-
+      const url = await uploadBlob(blob, "banners");
+      if (!url) throw new Error();
       setFeatureCards((prev) =>
-        prev.map((c) => (c.id === cardId ? { ...c, bgImage: data.url } : c))
+        prev.map((c) => (c.id === cardId ? { ...c, bgImage: url } : c))
       );
-      showToast.success(`Đã tải ảnh nền cho card ${cardId}!`);
+      showToast.success(`Đã cắt và tải ảnh nền cho card ${cardId}!`);
     } catch {
       showToast.error("Upload ảnh thất bại. Vui lòng thử lại.");
     } finally {
       setUploadingCardId(null);
-      const ref = cardFileInputRefs.current[cardId];
-      if (ref) ref.value = "";
     }
-  };
+  }, [cardCropState, uploadBlob]);
 
   const handleCardImageRemove = (cardId: string) => {
     setFeatureCards((prev) =>
@@ -399,24 +407,37 @@ export default function AdminHomepagePage() {
   const handleHeroBgUpload = async (file: File) => {
     if (!file.type.startsWith("image/")) { showToast.error("Chỉ chấp nhận file ảnh"); return; }
     if (file.size > 5 * 1024 * 1024) { showToast.error("Ảnh tối đa 5MB"); return; }
+    // Open crop modal instead of uploading directly
+    const objectUrl = URL.createObjectURL(file);
+    setHeroBgCropSrc(objectUrl);
+  };
+
+  const uploadBlob = useCallback(async (blob: Blob, bucket: string): Promise<string | null> => {
+    const compressed = await compressImage(new File([blob], "crop.jpg", { type: blob.type || "image/jpeg" }));
+    const fd = new FormData();
+    fd.append("file", compressed);
+    fd.append("bucket", bucket);
+    const res = await fetch("/api/upload", { method: "POST", body: fd });
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data.url;
+  }, []);
+
+  const handleHeroBgCropConfirm = useCallback(async (blob: Blob) => {
+    setHeroBgCropSrc(null);
     setUploadingHeroBg(true);
     try {
-      const compressed = await compressImage(file);
-      const fd = new FormData();
-      fd.append("file", compressed);
-      fd.append("bucket", "banners");
-      const res = await fetch("/api/upload", { method: "POST", body: fd });
-      if (!res.ok) throw new Error();
-      const data = await res.json();
-      setHeroBgUrl(data.url);
-      showToast.success("Đã tải ảnh nền Hero lên! Nhấn Lưu để áp dụng.");
+      const url = await uploadBlob(blob, "banners");
+      if (!url) throw new Error();
+      setHeroBgUrl(url);
+      showToast.success("Đã cắt và tải ảnh nền Hero lên! Nhấn Lưu để áp dụng.");
     } catch {
       showToast.error("Upload thất bại. Vui lòng thử lại.");
     } finally {
       setUploadingHeroBg(false);
       if (heroBgFileInputRef.current) heroBgFileInputRef.current.value = "";
     }
-  };
+  }, [uploadBlob]);
 
   const handleSaveHeroBg = async () => {
     setSavingHeroBg(true);
@@ -447,6 +468,7 @@ export default function AdminHomepagePage() {
   }
 
   return (
+    <>
     <div className="max-w-5xl space-y-8">
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-4">
@@ -1181,5 +1203,34 @@ export default function AdminHomepagePage() {
         )}
       </div>
     </div>
+
+      {/* Crop Modals */}
+      {heroBgCropSrc && (
+        <ImageCropModal
+          src={heroBgCropSrc}
+          aspect={16 / 9}
+          title="Ảnh Nền Hero — Cắt theo tỉ lệ 16:9"
+          onConfirm={handleHeroBgCropConfirm}
+          onCancel={() => {
+            URL.revokeObjectURL(heroBgCropSrc);
+            setHeroBgCropSrc(null);
+            if (heroBgFileInputRef.current) heroBgFileInputRef.current.value = "";
+          }}
+        />
+      )}
+      {cardCropState && (
+        <ImageCropModal
+          src={cardCropState.src}
+          aspect={4 / 3}
+          title={`Card ${cardCropState.cardId} — Cắt ảnh nền (4:3)`}
+          onConfirm={handleCardCropConfirm}
+          onCancel={() => {
+            URL.revokeObjectURL(cardCropState.src);
+            setCardCropState(null);
+          }}
+        />
+      )}
+    </>
   );
 }
+
