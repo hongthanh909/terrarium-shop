@@ -893,20 +893,7 @@ export default function AdminHomepagePage() {
         </div>
       )}
 
-      {/* Info note */}
-      {banners.length > 0 && (
-        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm text-amber-700 flex gap-3">
-          <span className="text-base flex-shrink-0">💡</span>
-          <div>
-            <p className="font-medium">Lưu ý về thứ tự hiển thị</p>
-            <p className="mt-0.5 text-amber-600">
-              Banner <strong>#1</strong> sẽ hiển thị đầu tiên trên carousel trang chủ.
-              Nếu không có banner nào được kích hoạt, trang chủ sẽ tự động hiển thị các sản phẩm nổi bật.
-              Nhớ nhấn <strong>Lưu</strong> sau mỗi thay đổi!
-            </p>
-          </div>
-        </div>
-      )}
+
 
       {/* ── Feature Cards Background ─────────────────────────────────────── */}
       <div className="border-t border-gray-100 pt-8">
@@ -933,20 +920,7 @@ export default function AdminHomepagePage() {
           </Button>
         </div>
 
-        {/* Spec guide */}
-        <div className="bg-[#f0f4ec] border border-[#c8d5be] rounded-xl p-4 mb-5 text-sm text-[#364a29] flex gap-3">
-          <span className="text-base flex-shrink-0">📐</span>
-          <div className="space-y-0.5">
-            <p className="font-semibold">Tiêu chuẩn ảnh nền để hiển thị đẹp nhất</p>
-            <ul className="text-xs text-[#4b6b3a] space-y-0.5 mt-1 list-disc list-inside">
-              <li>Kích thước khuyến nghị: <strong>800 × 600px</strong> (tỉ lệ 4:3 hoặc rộng hơn)</li>
-              <li>Dung lượng tối đa: <strong>3MB</strong> — hệ thống tự nén xuống ~500KB</li>
-              <li>Định dạng: JPG, PNG, WebP</li>
-              <li>Ảnh sẽ được crop tự động (<strong>object-fit: cover</strong>), không bao giờ bị vỡ tỉ lệ</li>
-              <li>Overlay trắng mờ được thêm tự động để text luôn đọc được</li>
-            </ul>
-          </div>
-        </div>
+
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {FEATURE_CARD_META.map(({ id, title, icon: Icon }) => {
@@ -1058,20 +1032,7 @@ export default function AdminHomepagePage() {
           </Button>
         </div>
 
-        {/* Spec guide */}
-        <div className="bg-[#f0f4ec] border border-[#c8d5be] rounded-xl p-4 mb-5 text-sm text-[#364a29] flex gap-3">
-          <span className="text-base flex-shrink-0">🖼️</span>
-          <div className="space-y-0.5">
-            <p className="font-semibold">Tiêu chuẩn ảnh gallery</p>
-            <ul className="text-xs text-[#4b6b3a] space-y-0.5 mt-1 list-disc list-inside">
-              <li>Kích thước khuyến nghị: <strong>1200 × 900px</strong> trở lên (tỉ lệ bất kỳ)</li>
-              <li>Dung lượng tối đa: <strong>5MB</strong> — hệ thống tự nén</li>
-              <li>Định dạng: JPG, PNG, WebP</li>
-              <li>Tối đa <strong>20 ảnh</strong> — có thể upload nhiều ảnh cùng lúc</li>
-              <li>Click vào ảnh trên frontend để xem lightbox toàn màn hình</li>
-            </ul>
-          </div>
-        </div>
+
 
         {/* Upload zone */}
         <div
@@ -1122,7 +1083,7 @@ export default function AdminHomepagePage() {
                 }`}
               >
                 {/* Thumbnail */}
-                <div className="relative aspect-square bg-gray-100">
+                <div className="relative aspect-[4/3] bg-gray-100">
                   <Image
                     src={img.imageUrl}
                     alt={img.alt || `Gallery ${index + 1}`}
@@ -1209,8 +1170,7 @@ export default function AdminHomepagePage() {
       {heroBgCropSrc && (
         <ImageCropModal
           src={heroBgCropSrc}
-          aspect={16 / 9}
-          title="Ảnh Nền Hero — Cắt theo tỉ lệ 16:9"
+          title="Ảnh Nền Hero — Cắt tự do"
           onConfirm={handleHeroBgCropConfirm}
           onCancel={() => {
             URL.revokeObjectURL(heroBgCropSrc);
@@ -1222,8 +1182,7 @@ export default function AdminHomepagePage() {
       {cardCropState && (
         <ImageCropModal
           src={cardCropState.src}
-          aspect={4 / 3}
-          title={`Card ${cardCropState.cardId} — Cắt ảnh nền (4:3)`}
+          title={`Card ${cardCropState.cardId} — Cắt ảnh nền`}
           onConfirm={handleCardCropConfirm}
           onCancel={() => {
             URL.revokeObjectURL(cardCropState.src);
