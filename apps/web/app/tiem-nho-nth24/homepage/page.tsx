@@ -1,16 +1,28 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import {
   ImageIcon, Plus, Trash2, Eye, EyeOff, ArrowUp, ArrowDown,
-  Loader2, Save, ExternalLink, LayoutDashboard,
+  Loader2, Save, ExternalLink, LayoutDashboard, Sparkles, Bot, Truck, Gift, Upload, X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { showToast } from "@/components/ui/custom-toast";
 import Link from "next/link";
 import { compressImage } from "@/lib/image";
+
+interface FeatureCard {
+  id: string;
+  bgImage: string;
+}
+
+const FEATURE_CARD_META = [
+  { id: "01", title: "Tác Phẩm Độc Bản & Cá Nhân Hóa", icon: Sparkles },
+  { id: "02", title: "Bảo Hành Thực Vật & Trợ Lý Rêu 24/7", icon: Bot },
+  { id: "03", title: "Vận Chuyển An Toàn", icon: Truck },
+  { id: "04", title: "Quà Tặng Tinh Tế", icon: Gift },
+];
 
 interface HomeBanner {
   id: string;
@@ -27,6 +39,18 @@ function generateId() {
   return `banner_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
 }
 
+interface GalleryImage {
+  id: string;
+  imageUrl: string;
+  alt: string;
+  order: number;
+  isActive: boolean;
+}
+
+function generateGalleryId() {
+  return `gallery_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+}
+
 export default function AdminHomepagePage() {
   const [banners, setBanners] = useState<HomeBanner[]>([]);
   const [products, setProducts] = useState<any[]>([]);
@@ -35,18 +59,70 @@ export default function AdminHomepagePage() {
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Load existing banners & products list
+  // Feature Cards bg state
+  const [featureCards, setFeatureCards] = useState<FeatureCard[]>([
+    { id: "01", bgImage: "" },
+    { id: "02", bgImage: "" },
+    { id: "03", bgImage: "" },
+    { id: "04", bgImage: "" },
+  ]);
+  const [savingCards, setSavingCards] = useState(false);
+  const [uploadingCardId, setUploadingCardId] = useState<string | null>(null);
+  const cardFileInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
+
+  // Gallery state
+  const [gallery, setGallery] = useState<GalleryImage[]>([]);
+  const [savingGallery, setSavingGallery] = useState(false);
+  const [uploadingGallery, setUploadingGallery] = useState(false);
+  const galleryFileInputRef = useRef<HTMLInputElement>(null);
+
+  // Hero Background state
+  const [heroBgUrl, setHeroBgUrl] = useState("");
+  const [heroBgOverlay, setHeroBgOverlay] = useState(40);
+  const [savingHeroBg, setSavingHeroBg] = useState(false);
+  const [uploadingHeroBg, setUploadingHeroBg] = useState(false);
+  const heroBgFileInputRef = useRef<HTMLInputElement>(null);
+
+  // Load existing banners, products & feature cards
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await fetch("/api/admin/homepage");
-        const data = await res.json();
-        setBanners(data.banners ?? []);
+        const [bannerRes, prodRes, cardsRes, galleryRes, heroBgRes] = await Promise.all([
+          fetch("/api/admin/homepage"),
+          fetch("/api/products?limit=100&status=all"),
+          fetch("/api/admin/feature-cards"),
+          fetch("/api/admin/gallery"),
+          fetch("/api/admin/hero-bg"),
+        ]);
 
-        const prodRes = await fetch("/api/products?limit=100&status=all");
+        const bannerData = await bannerRes.json();
+        setBanners(bannerData.banners ?? []);
+
         if (prodRes.ok) {
           const prodData = await prodRes.json();
           setProducts(prodData.products ?? []);
+        }
+
+        if (cardsRes.ok) {
+          const cardsData = await cardsRes.json();
+          if (cardsData.cards?.length === 4) {
+            setFeatureCards(cardsData.cards);
+          }
+        }
+
+        if (galleryRes.ok) {
+          const galleryData = await galleryRes.json();
+          setGallery(
+            (galleryData.images ?? []).sort(
+              (a: GalleryImage, b: GalleryImage) => a.order - b.order
+            )
+          );
+        }
+
+        if (heroBgRes.ok) {
+          const heroBgData = await heroBgRes.json();
+          setHeroBgUrl(heroBgData.heroBg?.imageUrl ?? "");
+          setHeroBgOverlay(heroBgData.heroBg?.overlayOpacity ?? 40);
         }
       } catch (err) {
         showToast.error("Không thể tải danh sách dữ liệu");
@@ -169,6 +245,196 @@ export default function AdminHomepagePage() {
     }
   };
 
+  // ── Feature Cards handlers ─────────────────────────────────────────────
+  const handleCardImageUpload = async (cardId: string, file: File) => {
+    if (!file.type.startsWith("image/")) {
+      showToast.error("Chỉ chấp nhận file ảnh");
+      return;
+    }
+    if (file.size > 3 * 1024 * 1024) {
+      showToast.error("Ảnh tối đa 3MB. Vui lòng chọn ảnh nhỏ hơn.");
+      return;
+    }
+    setUploadingCardId(cardId);
+    try {
+      const compressed = await compressImage(file);
+      const formData = new FormData();
+      formData.append("file", compressed);
+      formData.append("bucket", "banners");
+
+      const res = await fetch("/api/upload", { method: "POST", body: formData });
+      if (!res.ok) throw new Error("Upload thất bại");
+      const data = await res.json();
+
+      setFeatureCards((prev) =>
+        prev.map((c) => (c.id === cardId ? { ...c, bgImage: data.url } : c))
+      );
+      showToast.success(`Đã tải ảnh nền cho card ${cardId}!`);
+    } catch {
+      showToast.error("Upload ảnh thất bại. Vui lòng thử lại.");
+    } finally {
+      setUploadingCardId(null);
+      const ref = cardFileInputRefs.current[cardId];
+      if (ref) ref.value = "";
+    }
+  };
+
+  const handleCardImageRemove = (cardId: string) => {
+    setFeatureCards((prev) =>
+      prev.map((c) => (c.id === cardId ? { ...c, bgImage: "" } : c))
+    );
+    showToast.info(`Đã xóa ảnh nền card ${cardId}. Nhấn Lưu để xác nhận.`);
+  };
+
+  const handleSaveCards = async () => {
+    setSavingCards(true);
+    try {
+      const res = await fetch("/api/admin/feature-cards", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ cards: featureCards }),
+      });
+      if (!res.ok) throw new Error("Lưu thất bại");
+      showToast.success("Đã lưu ảnh nền feature cards thành công!");
+    } catch {
+      showToast.error("Không thể lưu. Vui lòng thử lại.");
+    } finally {
+      setSavingCards(false);
+    }
+  };
+
+  // ── Gallery handlers ────────────────────────────────────────────────────────
+  const handleGalleryUpload = async (files: FileList | null) => {
+    if (!files || files.length === 0) return;
+    const remaining = 20 - gallery.length;
+    if (remaining <= 0) {
+      showToast.error("Đã đạt giới hạn 20 ảnh.");
+      return;
+    }
+    const toUpload = Array.from(files).slice(0, remaining);
+    setUploadingGallery(true);
+    const newImages: GalleryImage[] = [];
+    for (const file of toUpload) {
+      if (!file.type.startsWith("image/")) continue;
+      if (file.size > 5 * 1024 * 1024) {
+        showToast.error(`"${file.name}" vượt quá 5MB, bỏ qua.`);
+        continue;
+      }
+      try {
+        const compressed = await compressImage(file);
+        const fd = new FormData();
+        fd.append("file", compressed);
+        fd.append("bucket", "banners");
+        const res = await fetch("/api/upload", { method: "POST", body: fd });
+        if (!res.ok) continue;
+        const data = await res.json();
+        newImages.push({
+          id: generateGalleryId(),
+          imageUrl: data.url,
+          alt: "",
+          order: gallery.length + newImages.length + 1,
+          isActive: true,
+        });
+      } catch { /* skip */ }
+    }
+    if (newImages.length > 0) {
+      setGallery((prev) => [...prev, ...newImages]);
+      showToast.success(`Đã tải lên ${newImages.length} ảnh gallery!`);
+    }
+    setUploadingGallery(false);
+    if (galleryFileInputRef.current) galleryFileInputRef.current.value = "";
+  };
+
+  const handleGalleryDelete = (id: string) => {
+    setGallery((prev) =>
+      prev.filter((g) => g.id !== id).map((g, i) => ({ ...g, order: i + 1 }))
+    );
+    showToast.info("Đã xóa ảnh. Nhấn Lưu để xác nhận.");
+  };
+
+  const handleGalleryToggle = (id: string) => {
+    setGallery((prev) =>
+      prev.map((g) => (g.id === id ? { ...g, isActive: !g.isActive } : g))
+    );
+  };
+
+  const handleGalleryMoveUp = (index: number) => {
+    if (index === 0) return;
+    const next = [...gallery];
+    [next[index - 1], next[index]] = [next[index], next[index - 1]];
+    setGallery(next.map((g, i) => ({ ...g, order: i + 1 })));
+  };
+
+  const handleGalleryMoveDown = (index: number) => {
+    if (index === gallery.length - 1) return;
+    const next = [...gallery];
+    [next[index], next[index + 1]] = [next[index + 1], next[index]];
+    setGallery(next.map((g, i) => ({ ...g, order: i + 1 })));
+  };
+
+  const handleGalleryAltChange = (id: string, alt: string) => {
+    setGallery((prev) => prev.map((g) => (g.id === id ? { ...g, alt } : g)));
+  };
+
+  const handleSaveGallery = async () => {
+    setSavingGallery(true);
+    try {
+      const ordered = gallery.map((g, i) => ({ ...g, order: i + 1 }));
+      const res = await fetch("/api/admin/gallery", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ images: ordered }),
+      });
+      if (!res.ok) throw new Error("Lưu thất bại");
+      setGallery(ordered);
+      showToast.success("Đã lưu gallery thương hiệu thành công!");
+    } catch {
+      showToast.error("Không thể lưu. Vui lòng thử lại.");
+    } finally {
+      setSavingGallery(false);
+    }
+  };
+
+  // ── Hero Background handlers ──────────────────────────────────────────────────
+  const handleHeroBgUpload = async (file: File) => {
+    if (!file.type.startsWith("image/")) { showToast.error("Chỉ chấp nhận file ảnh"); return; }
+    if (file.size > 5 * 1024 * 1024) { showToast.error("Ảnh tối đa 5MB"); return; }
+    setUploadingHeroBg(true);
+    try {
+      const compressed = await compressImage(file);
+      const fd = new FormData();
+      fd.append("file", compressed);
+      fd.append("bucket", "banners");
+      const res = await fetch("/api/upload", { method: "POST", body: fd });
+      if (!res.ok) throw new Error();
+      const data = await res.json();
+      setHeroBgUrl(data.url);
+      showToast.success("Đã tải ảnh nền Hero lên! Nhấn Lưu để áp dụng.");
+    } catch {
+      showToast.error("Upload thất bại. Vui lòng thử lại.");
+    } finally {
+      setUploadingHeroBg(false);
+      if (heroBgFileInputRef.current) heroBgFileInputRef.current.value = "";
+    }
+  };
+
+  const handleSaveHeroBg = async () => {
+    setSavingHeroBg(true);
+    try {
+      const res = await fetch("/api/admin/hero-bg", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ imageUrl: heroBgUrl, overlayOpacity: heroBgOverlay }),
+      });
+      if (!res.ok) throw new Error();
+      showToast.success("Đã lưu ảnh nền Hero thành công!");
+    } catch {
+      showToast.error("Không thể lưu. Vui lòng thử lại.");
+    } finally {
+      setSavingHeroBg(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-24">
@@ -219,6 +485,98 @@ export default function AdminHomepagePage() {
               </>
             )}
           </Button>
+        </div>
+      </div>
+
+      {/* ── Hero Background Section ─────────────────────────────────────────── */}
+      <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
+        <div className="p-5 border-b border-gray-100 flex items-center justify-between gap-4 flex-wrap">
+          <div>
+            <h3 className="font-bold text-gray-800 flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-[#425733] inline-block" />
+              Ảnh Nền Hero Section
+            </h3>
+            <p className="text-xs text-gray-500 mt-0.5">Thay thế màu xanh nhạt mặc định bằng ảnh tùy chỉnh</p>
+          </div>
+          <Button
+            onClick={handleSaveHeroBg}
+            disabled={savingHeroBg}
+            size="sm"
+            className="bg-[#425733] hover:bg-[#364a29] text-white gap-2"
+          >
+            {savingHeroBg
+              ? <><Loader2 className="w-4 h-4 animate-spin" />Đang lưu...</>
+              : <><Save className="w-4 h-4" />Lưu nền Hero</>
+            }
+          </Button>
+        </div>
+
+        <div className="p-5 flex flex-col sm:flex-row gap-5">
+          {/* Preview */}
+          <div className="relative w-full sm:w-56 h-32 rounded-xl overflow-hidden bg-gradient-to-br from-[#f0f4ec] to-[#e3ebdd] flex-shrink-0">
+            {heroBgUrl && (
+              <>
+                <Image src={heroBgUrl} alt="Hero background preview" fill className="object-cover" sizes="224px" />
+                <div className="absolute inset-0" style={{ background: `rgba(240,244,236,${heroBgOverlay / 100})` }} />
+              </>
+            )}
+            <div className="absolute inset-0 flex items-end p-3">
+              <div className="text-[#425733] font-bold text-sm leading-tight">
+                <div>Một chút rêu</div>
+                <div>Một chút xanh</div>
+              </div>
+            </div>
+            {heroBgUrl && (
+              <button
+                onClick={() => setHeroBgUrl("")}
+                className="absolute top-2 right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
+
+          {/* Controls */}
+          <div className="flex-1 space-y-4">
+            {/* Upload button */}
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-2">Chọn ảnh nền</label>
+              <button
+                onClick={() => !uploadingHeroBg && heroBgFileInputRef.current?.click()}
+                disabled={uploadingHeroBg}
+                className="flex items-center gap-2 border-2 border-dashed border-[#c2d6b0] rounded-xl px-4 py-3 text-sm font-medium text-[#425733] hover:bg-[#f0f4ec] transition-colors disabled:opacity-50 w-full justify-center"
+              >
+                {uploadingHeroBg
+                  ? <><Loader2 className="w-4 h-4 animate-spin" />Đang tải lên...</>
+                  : <><Upload className="w-4 h-4" />{heroBgUrl ? "Thay ảnh nền" : "Tải ảnh nền lên"}</>
+                }
+              </button>
+              <input
+                ref={heroBgFileInputRef}
+                type="file" accept="image/*" className="hidden"
+                onChange={(e) => { const f = e.target.files?.[0]; if (f) handleHeroBgUpload(f); }}
+              />
+              <p className="text-xs text-gray-400 mt-1.5">JPG, PNG, WebP • Tối đa 5MB • Khuyến nghị: 1920×1080px</p>
+            </div>
+
+            {/* Overlay opacity slider */}
+            <div>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="text-xs font-medium text-gray-600">Overlay (che phủ để text rõ)</label>
+                <span className="text-xs font-semibold text-[#425733]">{heroBgOverlay}%</span>
+              </div>
+              <input
+                type="range" min="0" max="80" step="5"
+                value={heroBgOverlay}
+                onChange={(e) => setHeroBgOverlay(Number(e.target.value))}
+                className="w-full accent-[#425733]"
+              />
+              <div className="flex justify-between text-[10px] text-gray-400 mt-0.5">
+                <span>Trong suốt (thấy ảnh rõ)</span>
+                <span>Mờ (text dễ đọc)</span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -526,6 +884,302 @@ export default function AdminHomepagePage() {
           </div>
         </div>
       )}
+
+      {/* ── Feature Cards Background ─────────────────────────────────────── */}
+      <div className="border-t border-gray-100 pt-8">
+        <div className="flex items-center justify-between flex-wrap gap-4 mb-6">
+          <div>
+            <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+              <Sparkles className="w-5 h-5 text-[#425733]" />
+              Ảnh Nền Feature Cards
+            </h3>
+            <p className="text-gray-500 text-sm mt-1">
+              Tuỳ chỉnh ảnh nền cho 4 mục &ldquo;Tại Sao Chọn Chúng Tôi&rdquo; trên trang chủ
+            </p>
+          </div>
+          <Button
+            onClick={handleSaveCards}
+            disabled={savingCards}
+            className="bg-[#425733] hover:bg-[#364a29] text-white gap-2"
+          >
+            {savingCards ? (
+              <><Loader2 className="w-4 h-4 animate-spin" />Đang lưu...</>
+            ) : (
+              <><Save className="w-4 h-4" />Lưu ảnh nền</>              
+            )}
+          </Button>
+        </div>
+
+        {/* Spec guide */}
+        <div className="bg-[#f0f4ec] border border-[#c8d5be] rounded-xl p-4 mb-5 text-sm text-[#364a29] flex gap-3">
+          <span className="text-base flex-shrink-0">📐</span>
+          <div className="space-y-0.5">
+            <p className="font-semibold">Tiêu chuẩn ảnh nền để hiển thị đẹp nhất</p>
+            <ul className="text-xs text-[#4b6b3a] space-y-0.5 mt-1 list-disc list-inside">
+              <li>Kích thước khuyến nghị: <strong>800 × 600px</strong> (tỉ lệ 4:3 hoặc rộng hơn)</li>
+              <li>Dung lượng tối đa: <strong>3MB</strong> — hệ thống tự nén xuống ~500KB</li>
+              <li>Định dạng: JPG, PNG, WebP</li>
+              <li>Ảnh sẽ được crop tự động (<strong>object-fit: cover</strong>), không bao giờ bị vỡ tỉ lệ</li>
+              <li>Overlay trắng mờ được thêm tự động để text luôn đọc được</li>
+            </ul>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {FEATURE_CARD_META.map(({ id, title, icon: Icon }) => {
+            const card = featureCards.find((c) => c.id === id);
+            const bgImage = card?.bgImage || "";
+            const isUploading = uploadingCardId === id;
+
+            return (
+              <div
+                key={id}
+                className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm"
+              >
+                {/* Preview area */}
+                <div className="relative h-36 bg-[#f0f4ec] overflow-hidden">
+                  {bgImage ? (
+                    <Image
+                      src={bgImage}
+                      alt={`Ảnh nền card ${id}`}
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 640px) 100vw, 50vw"
+                    />
+                  ) : (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-[#a8c098]">
+                      <ImageIcon className="w-8 h-8" />
+                      <span className="text-xs">Chưa có ảnh nền</span>
+                    </div>
+                  )}
+                  {/* Overlay preview */}
+                  {bgImage && (
+                    <div className="absolute inset-0 bg-white/60" />
+                  )}
+                  {/* Card number badge */}
+                  <div className="absolute top-2 left-2 bg-[#425733] text-white text-xs font-bold px-2 py-0.5 rounded-md">
+                    {id}
+                  </div>
+                  {/* Remove button */}
+                  {bgImage && (
+                    <button
+                      onClick={() => handleCardImageRemove(id)}
+                      className="absolute top-2 right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors"
+                      title="Xóa ảnh nền"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
+
+                {/* Card info + upload */}
+                <div className="p-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-7 h-7 rounded-lg bg-[#e3ebdd] flex items-center justify-center text-[#425733]">
+                      <Icon className="w-4 h-4" />
+                    </div>
+                    <p className="text-sm font-semibold text-gray-800 line-clamp-1">{title}</p>
+                  </div>
+
+                  <button
+                    onClick={() => !isUploading && cardFileInputRefs.current[id]?.click()}
+                    disabled={isUploading}
+                    className="w-full flex items-center justify-center gap-2 border-2 border-dashed border-[#c2d6b0] rounded-xl py-2.5 text-sm font-medium text-[#425733] hover:bg-[#f0f4ec] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isUploading ? (
+                      <><Loader2 className="w-4 h-4 animate-spin" />Đang tải lên...</>
+                    ) : (
+                      <><Upload className="w-4 h-4" />{bgImage ? "Thay ảnh nền" : "Tải ảnh nền lên"}</>
+                    )}
+                  </button>
+
+                  <input
+                    ref={(el) => { cardFileInputRefs.current[id] = el; }}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) handleCardImageUpload(id, file);
+                    }}
+                  />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* ── Brand Gallery ──────────────────────────────────────────────────── */}
+      <div className="border-t border-gray-100 pt-8">
+        <div className="flex items-center justify-between flex-wrap gap-4 mb-6">
+          <div>
+            <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+              <ImageIcon className="w-5 h-5 text-[#425733]" />
+              Gallery Thương Hiệu
+            </h3>
+            <p className="text-gray-500 text-sm mt-1">
+              Ảnh gallery hiển thị ngay dưới Hero — tăng nhận diện thương hiệu ({gallery.length}/20 ảnh)
+            </p>
+          </div>
+          <Button
+            onClick={handleSaveGallery}
+            disabled={savingGallery}
+            className="bg-[#425733] hover:bg-[#364a29] text-white gap-2"
+          >
+            {savingGallery ? (
+              <><Loader2 className="w-4 h-4 animate-spin" />Đang lưu...</>
+            ) : (
+              <><Save className="w-4 h-4" />Lưu gallery ({gallery.length})</>
+            )}
+          </Button>
+        </div>
+
+        {/* Spec guide */}
+        <div className="bg-[#f0f4ec] border border-[#c8d5be] rounded-xl p-4 mb-5 text-sm text-[#364a29] flex gap-3">
+          <span className="text-base flex-shrink-0">🖼️</span>
+          <div className="space-y-0.5">
+            <p className="font-semibold">Tiêu chuẩn ảnh gallery</p>
+            <ul className="text-xs text-[#4b6b3a] space-y-0.5 mt-1 list-disc list-inside">
+              <li>Kích thước khuyến nghị: <strong>1200 × 900px</strong> trở lên (tỉ lệ bất kỳ)</li>
+              <li>Dung lượng tối đa: <strong>5MB</strong> — hệ thống tự nén</li>
+              <li>Định dạng: JPG, PNG, WebP</li>
+              <li>Tối đa <strong>20 ảnh</strong> — có thể upload nhiều ảnh cùng lúc</li>
+              <li>Click vào ảnh trên frontend để xem lightbox toàn màn hình</li>
+            </ul>
+          </div>
+        </div>
+
+        {/* Upload zone */}
+        <div
+          className={`border-2 border-dashed border-[#c2d6b0] rounded-2xl bg-[#f9fbf7] hover:bg-[#f0f4ec] transition-colors cursor-pointer flex flex-col items-center justify-center py-8 px-4 mb-5 ${
+            gallery.length >= 20 ? "opacity-50 cursor-not-allowed" : ""
+          }`}
+          onClick={() => gallery.length < 20 && !uploadingGallery && galleryFileInputRef.current?.click()}
+        >
+          {uploadingGallery ? (
+            <>
+              <Loader2 className="w-10 h-10 text-[#425733] animate-spin mb-3" />
+              <p className="text-sm text-gray-500">Đang tải ảnh lên...</p>
+            </>
+          ) : (
+            <>
+              <div className="w-12 h-12 rounded-2xl bg-[#e3ebdd] flex items-center justify-center mb-3">
+                <Plus className="w-6 h-6 text-[#425733]" />
+              </div>
+              <p className="font-semibold text-[#425733]">
+                {gallery.length >= 20 ? "Đã đạt giới hạn 20 ảnh" : "Tải ảnh gallery lên"}
+              </p>
+              <p className="text-xs text-gray-400 mt-1">Click để chọn • Hỗ trợ chọn nhiều ảnh cùng lúc • JPG, PNG, WebP • Tối đa 5MB/ảnh</p>
+            </>
+          )}
+          <input
+            ref={galleryFileInputRef}
+            type="file"
+            accept="image/*"
+            multiple
+            className="hidden"
+            onChange={(e) => handleGalleryUpload(e.target.files)}
+          />
+        </div>
+
+        {/* Gallery list */}
+        {gallery.length === 0 ? (
+          <div className="text-center py-12 bg-white rounded-2xl border border-gray-100">
+            <ImageIcon className="w-10 h-10 mx-auto text-gray-200 mb-2" />
+            <p className="text-sm text-gray-400">Chưa có ảnh nào — Upload ảnh ở trên để bắt đầu</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+            {gallery.map((img, index) => (
+              <div
+                key={img.id}
+                className={`bg-white border rounded-xl overflow-hidden shadow-sm transition-opacity ${
+                  img.isActive ? "border-[#daebd0]" : "border-gray-200 opacity-60"
+                }`}
+              >
+                {/* Thumbnail */}
+                <div className="relative aspect-square bg-gray-100">
+                  <Image
+                    src={img.imageUrl}
+                    alt={img.alt || `Gallery ${index + 1}`}
+                    fill
+                    className="object-cover"
+                    sizes="200px"
+                  />
+                  <div className="absolute top-1.5 left-1.5">
+                    <span className="bg-black/60 text-white text-[10px] font-bold px-1.5 py-0.5 rounded">
+                      #{index + 1}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Controls */}
+                <div className="p-2 space-y-1.5">
+                  <input
+                    type="text"
+                    value={img.alt}
+                    onChange={(e) => handleGalleryAltChange(img.id, e.target.value)}
+                    placeholder="Mô tả ảnh..."
+                    className="w-full text-xs px-2 py-1 border border-gray-200 rounded-lg focus:outline-none focus:border-[#425733]/50"
+                  />
+                  <div className="flex items-center justify-between gap-1">
+                    {/* Move buttons */}
+                    <div className="flex gap-0.5">
+                      <button
+                        onClick={() => handleGalleryMoveUp(index)}
+                        disabled={index === 0}
+                        className="p-1 rounded hover:bg-gray-100 text-gray-400 disabled:opacity-30 transition-colors"
+                        title="Lên"
+                      >
+                        <ArrowUp className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        onClick={() => handleGalleryMoveDown(index)}
+                        disabled={index === gallery.length - 1}
+                        className="p-1 rounded hover:bg-gray-100 text-gray-400 disabled:opacity-30 transition-colors"
+                        title="Xuống"
+                      >
+                        <ArrowDown className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                    {/* Active toggle */}
+                    <button
+                      onClick={() => handleGalleryToggle(img.id)}
+                      className={`p-1 rounded transition-colors ${
+                        img.isActive
+                          ? "bg-[#e3ebdd] text-[#425733] hover:bg-[#d0dfca]"
+                          : "bg-gray-100 text-gray-400 hover:bg-gray-200"
+                      }`}
+                      title={img.isActive ? "Đang hiện — ẩn đi" : "Đang ẩn — hiện lên"}
+                    >
+                      {img.isActive ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+                    </button>
+                    {/* Delete */}
+                    <button
+                      onClick={() => handleGalleryDelete(img.id)}
+                      className="p-1 rounded hover:bg-red-50 text-gray-400 hover:text-red-500 transition-colors"
+                      title="Xóa ảnh"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {gallery.length > 0 && (
+          <div className="mt-4 bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm text-amber-700 flex gap-3">
+            <span className="flex-shrink-0">💡</span>
+            <p>
+              Nhớ nhấn <strong>Lưu gallery</strong> sau mỗi thay đổi!
+              Ảnh gallery sẽ hiển thị ngay bên dưới Hero Section trên trang chủ với layout masonry đẹp.
+            </p>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

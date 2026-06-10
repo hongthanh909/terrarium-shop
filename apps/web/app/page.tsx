@@ -12,10 +12,30 @@ import { StatsSection } from "@/components/ui/number-ticker";
 import { prisma } from "@/lib/prisma";
 import { FeaturedProductCard } from "@/components/ui/featured-product-card";
 import { HeroCarousel } from "@/components/ui/hero-carousel";
+import { BrandGallery } from "@/components/ui/brand-gallery";
 
 // ISR: Cache page for 60 seconds, revalidate in background
 // This makes the page INSTANT for most requests instead of waiting for DB every time
 export const revalidate = 60;
+
+// ─── Fetch feature card background images ─────────────────────────────────────
+async function getFeatureCardsBg(): Promise<Record<string, string>> {
+  try {
+    const setting = await prisma.siteSetting.findUnique({
+      where: { key: "feature_cards" },
+    });
+    if (setting && Array.isArray(setting.value)) {
+      const map: Record<string, string> = {};
+      (setting.value as any[]).forEach((c: any) => {
+        if (c.id && c.bgImage) map[c.id] = c.bgImage;
+      });
+      return map;
+    }
+  } catch (e) {
+    console.error("getFeatureCardsBg error", e);
+  }
+  return {};
+}
 
 export const metadata: Metadata = {
   title: "Tiệm Rêu Décor | Một Chút Rêu — Một Chút Xanh",
@@ -145,7 +165,45 @@ async function HeroCarouselSection() {
   return <HeroCarousel products={products as any} />;
 }
 
+// ─── Brand Gallery Section ─────────────────────────────────────────────────
+async function BrandGallerySection() {
+  try {
+    const setting = await prisma.siteSetting.findUnique({
+      where: { key: "brand_gallery" },
+    });
+    if (setting && Array.isArray(setting.value)) {
+      const active = (setting.value as any[])
+        .filter((img: any) => img.isActive !== false)
+        .sort((a: any, b: any) => (a.order ?? 0) - (b.order ?? 0));
+      if (active.length > 0) {
+        return (
+          <section className="py-10 px-6 bg-white">
+            <div className="max-w-7xl mx-auto">
+              <BrandGallery images={active as any} />
+            </div>
+          </section>
+        );
+      }
+    }
+  } catch (e) {
+    console.error("BrandGallerySection error", e);
+  }
+  return null;
+}
 
+function BrandGallerySkeleton() {
+  return (
+    <section className="py-10 px-6 bg-white">
+      <div className="max-w-7xl mx-auto">
+        <div className="flex gap-4">
+          {["h-56", "h-40", "h-64", "h-48"].map((h, i) => (
+            <div key={i} className={`flex-1 ${h} rounded-2xl bg-[#f0f4ec] animate-pulse`} />
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
 async function FeaturedProductsSection() {
   let products: any[] = [];
   try {
@@ -362,11 +420,32 @@ function BlogSkeleton() {
 
 // ─── Main Page (SYNC — no DB fetches here) ────────────────────────────────────
 
-export default function Home() {
+export default async function Home() {
+  const [featureCardsBg, heroBg] = await Promise.all([
+    getFeatureCardsBg(),
+    prisma.siteSetting.findUnique({ where: { key: "hero_bg" } }).then((s) =>
+      s ? (s.value as any) : { imageUrl: "", overlayOpacity: 40 }
+    ).catch(() => ({ imageUrl: "", overlayOpacity: 40 })),
+  ]);
   return (
     <main className="min-h-screen">
       {/* Hero Section — renders INSTANTLY, carousel streams in */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-[#f0f4ec] to-[#e3ebdd] min-h-[85vh] flex items-center">
+      <section
+        className="relative overflow-hidden min-h-[85vh] flex items-center"
+        style={heroBg?.imageUrl ? {
+          backgroundImage: `url(${heroBg.imageUrl})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        } : {}}
+      >
+        {/* Base gradient (shows when no image OR as tint over image) */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={heroBg?.imageUrl
+            ? { background: `rgba(240,244,236,${(heroBg.overlayOpacity ?? 40) / 100})` }
+            : { background: "linear-gradient(135deg, #f0f4ec 0%, #e3ebdd 100%)" }
+          }
+        />
         {/* Soft decorative blobs */}
         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[rgba(66,87,51,0.05)] rounded-full -translate-y-1/3 translate-x-1/3 blur-3xl pointer-events-none" />
         <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-[rgba(66,87,51,0.05)] rounded-full translate-y-1/2 -translate-x-1/4 blur-2xl pointer-events-none" />
@@ -442,6 +521,11 @@ export default function Home() {
           </ScrollReveal>
         </div>
       </section>
+
+      {/* Brand Gallery — streams in, hidden if no images */}
+      <Suspense fallback={<BrandGallerySkeleton />}>
+        <BrandGallerySection />
+      </Suspense>
 
       {/* Features Section */}
       <section className="py-24 px-6 bg-gradient-to-b from-white to-[#f0f4ec] overflow-hidden">
@@ -727,28 +811,43 @@ export default function Home() {
                 title: "Quà Tặng Tinh Tế",
                 desc: "Tiệm Rêu còn hỗ trợ chuẩn bị bao bì cao cấp, thay bạn trao gửi những thông điệp thiên nhiên ý nghĩa đến người trân quý.",
               },
-            ].map((item) => (
-              <div 
-                key={item.id} 
-                className={`wi-card ${item.isActive ? "active" : ""}`}
-              >
-                {/* Header: Icon + Number + Title (inline) */}
-                <div className="wi-header">
-                  <div className="wi-icon-wrapper">
-                    {item.icon}
+            ].map((item) => {
+              const bgImage = featureCardsBg[item.id] || "";
+              return (
+                <div
+                  key={item.id}
+                  className={`wi-card ${item.isActive ? "active" : ""}`}
+                  style={bgImage ? {
+                    backgroundImage: `url(${bgImage})`,
+                    backgroundSize: "cover",
+                    backgroundPosition: "center",
+                  } : undefined}
+                >
+                  {/* White overlay when bg image is set */}
+                  {bgImage && (
+                    <div
+                      className="absolute inset-0 pointer-events-none"
+                      style={{ background: "rgba(255,255,255,0.72)" }}
+                    />
+                  )}
+                  {/* Header: Icon + Number + Title (inline) */}
+                  <div className="wi-header" style={{ position: "relative" }}>
+                    <div className="wi-icon-wrapper">
+                      {item.icon}
+                    </div>
+                    <span className="wi-number">{item.id}</span>
+                    <h3>{item.title}</h3>
                   </div>
-                  <span className="wi-number">{item.id}</span>
-                  <h3>{item.title}</h3>
+
+                  {/* Body: title (inactive) + divider + description */}
+                  <div className="wi-body" style={{ position: "relative" }}>
+                    <div className="wi-body-title">{item.title}</div>
+                    <div className="wi-divider" />
+                    <p className="wi-desc">{item.desc}</p>
+                  </div>
                 </div>
-                
-                {/* Body: title (inactive) + divider + description */}
-                <div className="wi-body">
-                  <div className="wi-body-title">{item.title}</div>
-                  <div className="wi-divider" />
-                  <p className="wi-desc">{item.desc}</p>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>

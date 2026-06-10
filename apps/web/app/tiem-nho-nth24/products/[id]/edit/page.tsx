@@ -63,7 +63,7 @@ export default function EditProductPage() {
     type: "PRODUCT",
     categoryId: "",
     status: "DRAFT",
-    inventory: 0,
+    inventory: "",
     isFeatured: false,
   });
 
@@ -104,7 +104,7 @@ export default function EditProductPage() {
           type: product.type || "PRODUCT",
           categoryId: product.categoryId || "",
           status: product.status || "DRAFT",
-          inventory: product.inventory ?? 0,
+          inventory: product.inventory != null ? String(product.inventory) : "",
           isFeatured: product.featured ?? false,
         });
 
@@ -198,8 +198,11 @@ export default function EditProductPage() {
         return parseFloat(val.replace(/\./g, "")) || 0;
       };
 
+      const inventoryVal = formData.inventory === "" ? 0 : parseInt(formData.inventory) || 0;
+
       const productData: Record<string, unknown> = {
         ...formData,
+        inventory: inventoryVal,
         basePrice: cleanPrice(formData.basePrice),
         salePrice: formData.salePrice ? cleanPrice(formData.salePrice) : null,
         saleEndDate: formData.saleEndDate
@@ -296,8 +299,9 @@ export default function EditProductPage() {
               label="Tồn kho"
               type="number"
               value={formData.inventory}
-              onChange={(e) => setFormData({ ...formData, inventory: parseInt(e.target.value) || 0 })}
+              onChange={(e) => setFormData({ ...formData, inventory: e.target.value })}
               min="0"
+              placeholder="Nhập số lượng tồn kho"
             />
             {/* Sale end date - chỉ hiển thị nếu có giá KM */}
             {formData.salePrice && (

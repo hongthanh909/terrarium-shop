@@ -77,7 +77,7 @@ export default function AdminOrdersPage() {
 
   const handleUpdateStatus = async (orderId: string, newStatus: string) => {
     setUpdatingId(orderId);
-    const promise = async () => {
+    try {
       const res = await fetch(`/api/admin/orders`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -87,10 +87,6 @@ export default function AdminOrdersPage() {
         throw new Error("Không thể cập nhật trạng thái đơn hàng");
       }
       queryClient.invalidateQueries({ queryKey: ["admin-orders"] });
-    };
-
-    try {
-      await promise();
       showToast.success("Cập nhật trạng thái thành công!");
     } catch (err: any) {
       showToast.error(err.message || "Lỗi khi cập nhật trạng thái");
@@ -169,26 +165,14 @@ export default function AdminOrdersPage() {
           return styles[status] || "bg-gray-100 text-gray-600 border-gray-200";
         };
 
-        const dotColors: Record<string, string> = {
-          PENDING:    "bg-amber-500",
-          CONFIRMED:  "bg-blue-500",
-          PROCESSING: "bg-purple-500",
-          SHIPPING:   "bg-indigo-500",
-          DELIVERED:  "bg-[#364a29]",
-          CANCELLED:  "bg-red-500",
-        };
-
-        const dotColor = dotColors[o.status] || "bg-gray-500";
-
         return (
           <div className="relative inline-flex items-center">
-            <span className={`absolute left-2.5 w-1.5 h-1.5 rounded-full ${dotColor} pointer-events-none opacity-80`} />
             <select
               value={o.status}
               onChange={(e) => handleUpdateStatus(o.id, e.target.value)}
               onClick={(e) => e.stopPropagation()}
               disabled={updatingId !== null}
-              className={`text-xs rounded-full border py-0.5 pl-5.5 pr-7 font-semibold cursor-pointer transition-colors focus:outline-none focus:ring-1 disabled:opacity-50 disabled:cursor-not-allowed appearance-none ${getSelectStyles(o.status)}`}
+              className={`text-xs rounded-full border py-0.5 pl-3 pr-7 font-semibold cursor-pointer transition-colors focus:outline-none focus:ring-1 disabled:opacity-50 disabled:cursor-not-allowed appearance-none ${getSelectStyles(o.status)}`}
             >
               {UPDATE_OPTIONS.map((opt) => (
                 <option key={opt.value} value={opt.value} className="bg-white text-gray-700 font-normal">
