@@ -268,6 +268,17 @@ export default function AdminHomepagePage() {
     if (ref) ref.value = "";
   };
 
+  const uploadBlob = useCallback(async (blob: Blob, bucket: string): Promise<string | null> => {
+    const compressed = await compressImage(new File([blob], "crop.jpg", { type: blob.type || "image/jpeg" }));
+    const fd = new FormData();
+    fd.append("file", compressed);
+    fd.append("bucket", bucket);
+    const res = await fetch("/api/upload", { method: "POST", body: fd });
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data.url;
+  }, []);
+
   const handleCardCropConfirm = useCallback(async (blob: Blob) => {
     if (!cardCropState) return;
     const { cardId } = cardCropState;
@@ -412,16 +423,6 @@ export default function AdminHomepagePage() {
     setHeroBgCropSrc(objectUrl);
   };
 
-  const uploadBlob = useCallback(async (blob: Blob, bucket: string): Promise<string | null> => {
-    const compressed = await compressImage(new File([blob], "crop.jpg", { type: blob.type || "image/jpeg" }));
-    const fd = new FormData();
-    fd.append("file", compressed);
-    fd.append("bucket", bucket);
-    const res = await fetch("/api/upload", { method: "POST", body: fd });
-    if (!res.ok) return null;
-    const data = await res.json();
-    return data.url;
-  }, []);
 
   const handleHeroBgCropConfirm = useCallback(async (blob: Blob) => {
     setHeroBgCropSrc(null);

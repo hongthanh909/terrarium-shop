@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useCallback, useEffect } from "react";
-import ReactCrop, { Crop, PixelCrop, centerCrop, makeAspectCrop } from "react-image-crop";
+import ReactCrop, { Crop, PixelCrop, PercentCrop, centerCrop, makeAspectCrop } from "react-image-crop";
 import "react-image-crop/dist/ReactCrop.css";
 import { X, Check, ZoomIn, ZoomOut, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -46,8 +46,9 @@ export function ImageCropModal({
     } else {
       // Default: select 90% of image
       setCrop(centerCrop(
-        { unit: "%", width: 90, height: 90 } as Crop,
-        width, height
+        { unit: "%", width: 90, height: 90 } as PercentCrop,
+        width,
+        height
       ));
     }
   }
@@ -79,9 +80,7 @@ export function ImageCropModal({
     );
 
     canvas.toBlob(
-      (blob) => {
-        if (blob) onConfirm(blob);
-      },
+      (blob) => { if (blob) onConfirm(blob); },
       "image/jpeg",
       0.92
     );
