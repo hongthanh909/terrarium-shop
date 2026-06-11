@@ -87,15 +87,15 @@
 }
 
 @layer utilities {
-  /* Soft shadow utilities */
+  /* Soft shadow utilities — tinted to brand green per taste skill Rule 4.4 */
   .shadow-soft {
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04), 0 4px 16px rgba(0, 0, 0, 0.03);
+    box-shadow: 0 2px 8px rgba(66, 87, 51, 0.04), 0 4px 16px rgba(66, 87, 51, 0.03);
   }
   .shadow-soft-lg {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06), 0 8px 24px rgba(0, 0, 0, 0.04);
+    box-shadow: 0 4px 12px rgba(66, 87, 51, 0.06), 0 8px 24px rgba(66, 87, 51, 0.04);
   }
   .shadow-soft-xl {
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08), 0 16px 32px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 8px 16px rgba(66, 87, 51, 0.08), 0 16px 32px rgba(66, 87, 51, 0.05);
   }
 
   /* === CARD UNIFORM SIZE === */

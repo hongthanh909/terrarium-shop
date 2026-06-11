@@ -130,7 +130,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             <h1 className="text-lg font-semibold text-gray-800">
               {menuItems.find((m) => isActive(m.href))?.label ?? "Bảng Điều Khiển"}
             </h1>
-            <p className="text-xs text-gray-400 mt-0.5">tiệm Rêu Décor — Hệ thống quản lý</p>
+            <p className="text-xs text-gray-400 mt-0.5">tiệm Rêu Décor · Hệ thống quản lý</p>
           </div>
           <Link
             href="/"

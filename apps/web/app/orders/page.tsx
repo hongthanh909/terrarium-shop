@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
@@ -438,7 +438,7 @@ export default function MyOrdersPage() {
                       {["CONFIRMED", "PROCESSING", "SHIPPING"].includes(order.status) && (
                         <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-xl flex items-center gap-2">
                           <CheckCircle className="w-4 h-4 text-blue-500 flex-shrink-0" />
-                          <p className="text-xs text-blue-700">Đơn hàng đã được xác nhận — không thể hủy. Vui lòng liên hệ shop để được hỗ trợ.</p>
+                          <p className="text-xs text-blue-700">Đơn hàng đã được xác nhận, không thể hủy. Vui lòng liên hệ shop để được hỗ trợ.</p>
                         </div>
                       )}
                     </div>

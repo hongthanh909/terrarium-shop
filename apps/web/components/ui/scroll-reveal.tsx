@@ -1,6 +1,6 @@
 "use client";
 
-import { motion, useInView } from "framer-motion";
+import { motion, useInView, useReducedMotion } from "framer-motion";
 import { useRef, memo } from "react";
 
 interface ScrollRevealProps {
@@ -28,8 +28,20 @@ export const ScrollReveal = memo(function ScrollReveal({
 }: ScrollRevealProps) {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-5% 0px" });
+  const prefersReducedMotion = useReducedMotion();
 
   const isFullHeight = className.includes("h-full");
+
+  // Rule 6.B: respect prefers-reduced-motion
+  if (prefersReducedMotion) {
+    return (
+      <div ref={ref} style={{ width }} className={className}>
+        <div className={isFullHeight ? "h-full" : undefined}>
+          {children}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div ref={ref} style={{ width }} className={className}>

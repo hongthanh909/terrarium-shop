@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { Heart, Star, ShoppingBag, Package } from "lucide-react";
@@ -55,12 +55,14 @@ export function ProductCard({
 
   const displayPrice = isOnSale ? salePrice! : basePrice;
 
+  const prefersReducedMotion = useReducedMotion();
+
   return (
     <motion.div
-      initial={{ opacity: 0, y: 24 }}
+      initial={prefersReducedMotion ? false : { opacity: 0, y: 24 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-40px" }}
-      whileHover={{ y: -6 }}
+      whileHover={prefersReducedMotion ? undefined : { y: -6 }}
       transition={{ duration: 0.35 }}
       className={cn(
         "group relative flex flex-col rounded-2xl bg-white p-4 shadow-sm border border-[#e3ebdd]",

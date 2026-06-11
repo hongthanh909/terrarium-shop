@@ -124,7 +124,7 @@ export default function AdminOrdersPage() {
       render: (o) => (
         <div>
           <p className="font-semibold text-gray-800 text-sm">{o.customer?.name || o.shippingInfo?.name || "Khách vãng lai"}</p>
-          <p className="text-xs text-gray-400 truncate max-w-[180px]">{o.customer?.email || o.shippingInfo?.email || "—"}</p>
+          <p className="text-xs text-gray-400 truncate max-w-[180px]">{o.customer?.email || o.shippingInfo?.email || "-"}</p>
         </div>
       ),
     },

@@ -795,8 +795,8 @@ export function ProductDetailClient({
                   <span className="text-xs font-semibold text-green-700 flex-1">
                     Đã áp dụng <strong>{appliedVoucher.code}</strong>
                     {appliedVoucher.type === "PERCENTAGE"
-                      ? ` — Giảm ${appliedVoucher.value}%`
-                      : ` — Giảm ${Number(appliedVoucher.value).toLocaleString("vi-VN")}₫`}
+                      ? ` (Giảm ${appliedVoucher.value}%)`
+                      : ` (Giảm ${Number(appliedVoucher.value).toLocaleString("vi-VN")}₫)`}
                   </span>
                   <button onClick={() => { setAppliedVoucher(null); setVoucherInput(""); }} className="text-gray-400 hover:text-gray-600 text-xs font-medium">
                     Bỏ chọn

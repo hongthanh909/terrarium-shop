@@ -1,71 +1,195 @@
-# Dũng Lại Lập Trình — Official Website
+# DESIGN.md — Tiệm Rêu Décor Design System
 
-## Mission
-Create implementation-ready, token-driven UI guidance for Dũng Lại Lập Trình — Official Website that is optimized for consistency, accessibility, and fast delivery across web app.
+> Design Read: "E-commerce cây cảnh terrarium cho người Việt, premium consumer vibes, Forest palette, leaning toward Tailwind + shadcn/ui + Motion."
 
-## Brand
-- Product/brand: Dũng Lại Lập Trình — Official Website
-- URL: https://www.dunglailaptrinh.com/#
-- Audience: buyers, teams, and decision-makers
-- Product surface: web app
+## Taste Skill Dial Configuration
 
-## Style Foundations
-- Visual style: structured, tokenized, content-first
-- Main font style: `font.family.primary=Inter`, `font.family.stack=Inter, -apple-system, sans-serif`, `font.size.base=16px`, `font.weight.base=400`, `font.lineHeight.base=25.6px`
-- Typography scale: `font.size.xs=11px`, `font.size.sm=12px`, `font.size.md=13px`, `font.size.lg=13.33px`, `font.size.xl=14px`, `font.size.2xl=15px`, `font.size.3xl=16px`, `font.size.4xl=17px`
-- Color palette: `color.text.primary=#94a3b8`, `color.text.secondary=#f1f5f9`, `color.text.tertiary=#e2e8f0`, `color.text.inverse=#2dd4bf`, `color.surface.base=#000000`, `color.surface.muted=#111119`, `color.border.muted=#ffffff`, `color.surface.strong=#14b8a6`
-- Spacing scale: `space.1=6px`, `space.2=7px`, `space.3=8px`, `space.4=9px`, `space.5=10px`, `space.6=12px`, `space.7=14px`, `space.8=16px`
-- Radius/shadow/motion tokens: `radius.xs=8px`, `radius.sm=14px`, `radius.md=20px`, `radius.lg=28px`, `radius.xl=50px`, `radius.2xl=100px` | `shadow.1=rgba(249, 115, 22, 0.4) 0px 0px 0px 0px`, `shadow.2=rgba(200, 75, 36, 0.15) 0px 0px 0px 1px, rgba(0, 0, 0, 0.5) 0px 32px 80px 0px, rgba(200, 75, 36, 0.06) 0px 0px 60px 0px` | `motion.duration.instant=150ms`, `motion.duration.fast=200ms`
+```
+DESIGN_VARIANCE: 7    — Premium consumer, asymmetric layouts welcome but not wild
+MOTION_INTENSITY: 6   — Scroll reveals, spring hover, carousel. No GSAP hijacks.
+VISUAL_DENSITY: 4     — Lifestyle e-commerce, airy with product focus
+```
 
-## Accessibility
-- Target: WCAG 2.2 AA
-- Keyboard-first interactions required.
-- Focus-visible rules required.
-- Contrast constraints required.
+---
 
-## Writing Tone
-Concise, confident, implementation-focused.
+## Color Tokens
 
-## Rules: Do
-- Use semantic tokens, not raw hex values, in component guidance.
-- Every component must define states for default, hover, focus-visible, active, disabled, loading, and error.
-- Component behavior should specify responsive and edge-case handling.
-- Interactive components must document keyboard, pointer, and touch behavior.
-- Accessibility acceptance criteria must be testable in implementation.
+### Primary Palette — Forest Green
 
-## Rules: Don't
-- Do not allow low-contrast text or hidden focus indicators.
-- Do not introduce one-off spacing or typography exceptions.
-- Do not use ambiguous labels or non-descriptive actions.
-- Do not ship component guidance without explicit state rules.
+| Token | Value | Usage |
+|---|---|---|
+| `--brand-primary` | `#425733` | CTA buttons, active states, headings |
+| `--brand-primary-dark` | `#2d3d23` | Hover states, footer bg |
+| `--brand-primary-deeper` | `#1a2e12` | Text, dark surfaces |
+| `--brand-secondary` | `#e3ebdd` | Badges, soft backgrounds, tags |
+| `--brand-accent-green` | `#8fba6f` | Cart badge, success states |
+| `--brand-accent-soft` | `#a8c098` | Review borders, decorative |
 
-## Guideline Authoring Workflow
-1. Restate design intent in one sentence.
-2. Define foundations and semantic tokens.
-3. Define component anatomy, variants, interactions, and state behavior.
-4. Add accessibility acceptance criteria with pass/fail checks.
-5. Add anti-patterns, migration notes, and edge-case handling.
-6. End with a QA checklist.
+### Warm Accent (conversion elements)
 
-## Required Output Structure
-- Context and goals.
-- Design tokens and foundations.
-- Component-level rules (anatomy, variants, states, responsive behavior).
-- Accessibility requirements and testable acceptance criteria.
-- Content and tone standards with examples.
-- Anti-patterns and prohibited implementations.
-- QA checklist.
+| Token | Value | Usage |
+|---|---|---|
+| `--accent-warm` | `hsl(25, 40%, 59%)` | CTA emphasis, sale elements |
 
-## Component Rule Expectations
-- Include keyboard, pointer, and touch behavior.
-- Include spacing and typography token requirements.
-- Include long-content, overflow, and empty-state handling.
-- Include known page component density: buttons (37), links (32), cards (17), lists (16), navigation (1).
+### Neutrals
 
-- Extraction diagnostics: Audience and product surface inference confidence is low; verify generated brand context.
+| Token | Value | Usage |
+|---|---|---|
+| `--surface-page` | `#fafbf8` | Page background |
+| `--surface-card` | `#ffffff` | Product cards, review cards |
+| `--surface-muted` | `#f2f8f2` | Soft backgrounds |
+| `--border-default` | `#e3ebdd` | Card borders |
+| `--border-hover` | `#b8d8b8` | Hover card borders |
+| `--text-primary` | `hsl(220, 14%, 25%)` | Body text |
+| `--text-secondary` | `hsl(220, 14%, 45%)` | Muted text |
 
-## Quality Gates
-- Every non-negotiable rule must use "must".
-- Every recommendation should use "should".
-- Every accessibility rule must be testable in implementation.
-- Teams should prefer system consistency over local visual exceptions.
+### Banned Colors (per taste skill Section 4.2)
+
+- No AI-purple gradients
+- No random neon / blue glows
+- No warm beige/cream as page bg (#f5f1ea family)
+- Palette locked: Forest green family throughout
+
+---
+
+## Typography
+
+### Font Stack
+
+- **Primary**: `Inter` (justified: already in project, neutral/clean fit for e-commerce)
+- **Fallback**: `system-ui, -apple-system, sans-serif`
+
+### Scale
+
+| Element | Class | Notes |
+|---|---|---|
+| Hero H1 | `text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold` | Max 2 lines desktop |
+| Section H2 | `text-3xl md:text-4xl font-bold` | Gradient text applied |
+| Card title | `text-base font-semibold` | Single line, truncate |
+| Body | `text-base text-gray-600 leading-relaxed` | Max-width 65ch |
+| Small/Label | `text-sm font-medium` | Uppercase tracking for badges |
+
+### Heading Gradient Pattern
+
+```css
+background: linear-gradient(135deg, #1a2e12, #425733);
+-webkit-background-clip: text;
+-webkit-text-fill-color: transparent;
+```
+
+Used on ALL section headings for visual weight. Consistent across homepage, stats, reviews, about.
+
+---
+
+## Spacing & Layout
+
+### Section Rhythm
+
+| Section type | Padding | Container |
+|---|---|---|
+| Primary sections | `py-24 px-6` | `max-w-7xl mx-auto` |
+| Secondary sections | `py-14 px-6` | `max-w-7xl mx-auto` |
+| CTA sections | `py-16 px-6` | `max-w-3xl mx-auto text-center` |
+
+### Grid Patterns
+
+| Pattern | Columns | Gap |
+|---|---|---|
+| Product grid | `grid-cols-1 sm:grid-cols-2 lg:grid-cols-4` | `gap-6` |
+| Blog grid | `grid-cols-1 sm:grid-cols-2 lg:grid-cols-3` | `gap-8` |
+| Bento (explore) | `grid-cols-2 md:grid-cols-4` | `gap-4` |
+
+---
+
+## Component Patterns
+
+### Product Card
+
+- Background: `bg-white` (not `bg-[#f2f8f2]`)
+- Border: `border-[#e3ebdd]` → hover: `border-[#b8d8b8]`
+- Shadow: `shadow-sm` → hover: `shadow-lg`
+- CTA button: gradient `from-[#3a5229] to-[#4a6a35]` with shadow
+- Ratings: show "Chưa có đánh giá" when no reviews (no fake 5.0)
+- Wishlist: visible on mobile (`opacity-40`), hidden desktop (`sm:opacity-0 sm:group-hover:opacity-100`)
+
+### Buttons
+
+```
+Primary:   bg-gradient / bg-primary, text-white, rounded-full, active:scale-[0.97]
+Outline:   border-2, border-primary/30, rounded-full
+Ghost:     hover:bg-primary/10
+```
+
+### Sale Badge
+
+```
+bg-gradient-to-r from-red-500 to-rose-400 text-white text-xs font-bold
+```
+
+### Cards in General
+
+- Corner radius: `rounded-2xl` (consistent shape lock)
+- Always `bg-white` not tinted green
+- Shadow tinted to green: `shadow-[0_4px_20px_rgba(66,87,51,0.06)]`
+
+---
+
+## Motion Patterns
+
+### Allowed (MOTION_INTENSITY: 6)
+
+- ScrollReveal: `whileInView` with `y: 24` to `y: 0`, stagger `0.06s`
+- Cart badge: `type: "spring", stiffness: 500, damping: 15`
+- Hover lift: `whileHover={{ y: -6 }}` on cards
+- Button: `active:scale-[0.97]`
+- Social icons: `hover:scale-110 hover:-translate-y-0.5`
+
+### Banned
+
+- No `window.addEventListener('scroll')`
+- No `useState` for continuous scroll/mouse values
+- No GSAP scroll-hijack (overkill for this site)
+- No infinite loop animations on static content
+
+---
+
+## Mobile Rules
+
+- Hero: carousel FIRST (`order-1`), text SECOND (`order-2`) on mobile
+- Category pills: horizontal scroll with `scrollbar-none`
+- Cart items: `w-20 h-20` on mobile, `sm:w-16 sm:h-16` desktop
+- Feature cards: `min-height: auto; padding: 1rem` on mobile
+- Mobile menu: `backdrop-blur-md`
+- `min-h-[100dvh]` preferred over `h-screen`
+
+---
+
+## Footer Rules
+
+- Social icons at TOP section only (no duplicate at bottom)
+- Links: animated underline (`after:` pseudo-element)
+- Bottom: copyright + tagline only
+
+---
+
+## Selection & Global Polish
+
+```css
+html { scroll-behavior: smooth; }
+::selection { background: rgba(66, 87, 51, 0.15); color: #1a2e12; }
+```
+
+---
+
+## Taste Skill Pre-Flight Checklist (apply on every UI change)
+
+- [ ] One accent color (Forest Green) used consistently across all sections
+- [ ] Shape consistency: `rounded-2xl` cards, `rounded-full` buttons
+- [ ] Hero fits viewport (2 lines heading max, CTA visible)
+- [ ] No duplicate CTA intent on same page
+- [ ] Eyebrow count is less than or equal to ceil(sectionCount / 3)
+- [ ] No em-dashes in copy
+- [ ] Button text readable against background (WCAG AA)
+- [ ] Mobile collapse explicit for every multi-column layout
+- [ ] Real images used (no div-based fakes)
+- [ ] Copy audit: no AI-hallucinated phrases

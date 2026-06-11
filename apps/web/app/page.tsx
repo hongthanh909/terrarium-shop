@@ -2,7 +2,7 @@ import { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import { Suspense } from "react";
-import { Sprout, Truck, ArrowRight, Shield, FileText, Calendar, Gift, Sparkles, Bot } from "lucide-react";
+import { Sprout, Truck, ArrowRight, Shield, FileText, Calendar, Gift, Sparkles, Bot, Gauge } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -38,8 +38,8 @@ async function getFeatureCardsBg(): Promise<Record<string, string>> {
 }
 
 export const metadata: Metadata = {
-  title: "Tiệm Rêu Décor | Một Chút Rêu — Một Chút Xanh",
-  description: "Khám phá bộ sưu tập terrarium thủ công của chúng tôi — những hệ sinh thái thu nhỏ biến không gian của bạn thành thiên nhiên trong trẻo.",
+  title: "Tiệm Rêu Décor | Một Chút Rêu, Một Chút Xanh",
+  description: "Khám phá bộ sưu tập terrarium thủ công, những hệ sinh thái thu nhỏ biến không gian của bạn thành thiên nhiên trong trẻo.",
   openGraph: {
     title: "Terrarium Shop | Khám Phá Hệ Sinh Thái Của Bạn",
     description: "Cung cấp các sản phẩm terrarium thủ công, thiết kế độc bản.",
@@ -179,7 +179,7 @@ async function BrandGallerySection() {
         return (
           <section className="py-10 px-6 bg-white">
             <div className="max-w-7xl mx-auto">
-              <p className="text-center text-sm font-semibold text-[#425733] uppercase tracking-widest mb-6">✦ Góc Nhìn Từ Xưởng ✦</p>
+
               <BrandGallery images={active as any} />
             </div>
           </section>
@@ -304,7 +304,7 @@ async function LatestBlogSection() {
         <ScrollReveal direction="up">
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-4">
             <div>
-              <p className="text-[#425733] font-bold text-sm uppercase tracking-wide mb-3">Bài Viết Mới Nhất</p>
+
               <h2 className="text-3xl md:text-4xl font-bold" style={{ background: 'linear-gradient(135deg, #1a2e12, #425733)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Góc Chia Sẻ</h2>
             </div>
             <Button variant="outline" asChild className="self-start md:self-auto border-2 border-[#6d8c5a] text-[#425733] hover:bg-[#e3ebdd]">
@@ -463,7 +463,7 @@ export default async function Home() {
 
             <ScrollReveal direction="up" delay={0.3}>
               <p className="text-base md:text-lg mb-10 text-gray-600 max-w-xl leading-relaxed">
-                Khám phá bộ sưu tập terrarium thủ công của chúng tôi — những hệ sinh thái thu nhỏ biến không gian của bạn thành thiên nhiên trong trẻo.
+                Khám phá bộ sưu tập terrarium thủ công, những hệ sinh thái thu nhỏ biến không gian của bạn thành thiên nhiên trong trẻo.
               </p>
             </ScrollReveal>
 
@@ -475,7 +475,7 @@ export default async function Home() {
                   asChild
                 >
                   <Link href="/products">
-                    Mua Ngay
+                    Khám Phá Ngay
                   </Link>
                 </Button>
                 <Button
@@ -494,7 +494,7 @@ export default async function Home() {
               <div className="mt-12 flex gap-6 sm:gap-8">
                 <div className="flex flex-col items-center text-center gap-2.5 group">
                   <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm border border-[#425733]/10 flex items-center justify-center text-[#425733] group-hover:scale-110 transition-transform duration-300 shadow-sm">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 14 4-4"/><path d="M3.34 19a10 10 0 1 1 17.32 0"/></svg>
+                    <Gauge className="w-5 h-5" />
                   </div>
                   <span className="text-xs sm:text-sm text-gray-700 font-semibold">Cấp ẩm tự động</span>
                 </div>
@@ -506,7 +506,7 @@ export default async function Home() {
                 </div>
                 <div className="flex flex-col items-center text-center gap-2.5 group">
                   <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm border border-[#425733]/10 flex items-center justify-center text-[#425733] group-hover:scale-110 transition-transform duration-300 shadow-sm">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect width="20" height="5" x="2" y="7"/><line x1="12" x2="12" y1="22" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>
+                    <Gift className="w-5 h-5" />
                   </div>
                   <span className="text-xs sm:text-sm text-gray-700 font-semibold">Quà tặng ý nghĩa</span>
                 </div>
