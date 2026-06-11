@@ -288,6 +288,7 @@ export default function Header() {
                       initial={{ scale: 0 }}
                       animate={{ scale: 1 }}
                       exit={{ scale: 0 }}
+                      transition={{ type: "spring", stiffness: 500, damping: 15 }}
                       className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] bg-[#8fba6f] text-[#1a2c12] text-[10px] font-bold rounded-full flex items-center justify-center shadow px-0.5"
                     >
                       {cartCount}

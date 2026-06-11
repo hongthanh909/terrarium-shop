@@ -130,7 +130,7 @@ export function ProductsClient({
               <div className="flex-1 h-px bg-[#d4dec9]" />
             </div>
 
-            <div className="flex flex-wrap gap-2.5">
+            <div className="flex flex-nowrap sm:flex-wrap gap-2.5 overflow-x-auto pb-2 scrollbar-none -mx-6 px-6 sm:mx-0 sm:px-0">
               <button
                 onClick={() => handleCategoryChange(null)}
                 className={`px-5 py-2 rounded-full text-sm font-semibold transition-all duration-200 border-2 ${

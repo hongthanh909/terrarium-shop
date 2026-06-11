@@ -63,7 +63,7 @@ function StatCard({ value, suffix, label, icon, delay = 0 }: StatCardProps) {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.5, delay }}
-      className="flex flex-col items-center text-center px-6 py-8 bg-white rounded-2xl shadow-sm border border-[#e3ebdd] hover:shadow-md transition-shadow"
+      className="flex flex-col items-center text-center px-6 py-8 bg-gradient-to-br from-white to-[#f9fbf7] rounded-2xl shadow-[0_4px_20px_rgba(66,87,51,0.06)] border border-[#daebd0] hover:shadow-[0_8px_30px_rgba(66,87,51,0.1)] hover:-translate-y-1 transition-all duration-300"
     >
       {icon && <span className="text-3xl mb-3">{icon}</span>}
       <span className="text-4xl lg:text-5xl font-bold text-[#425733] leading-none">
@@ -82,7 +82,8 @@ export function StatsSection() {
           initial={{ opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="text-center text-3xl font-bold text-gray-800 mb-10"
+          className="text-center text-3xl md:text-4xl font-bold mb-10"
+          style={{ background: 'linear-gradient(135deg, #1a2e12, #425733)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}
         >
           Con số nói lên tất cả
         </motion.h2>

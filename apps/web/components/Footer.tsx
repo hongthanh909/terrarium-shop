@@ -74,7 +74,7 @@ export default async function Footer() {
                   href={item.value}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-9 h-9 rounded-full bg-[#e3ebdd] hover:bg-[#c8d5be] flex items-center justify-center text-[hsl(220,14%,45%)] hover:text-[#425733] transition-all"
+                  className="w-9 h-9 rounded-full bg-[#e3ebdd] hover:bg-[#c8d5be] flex items-center justify-center text-[hsl(220,14%,45%)] hover:text-[#425733] transition-all hover:scale-110 hover:-translate-y-0.5"
                   aria-label={item.label}
                 >
                   <item.Icon className="w-4 h-4" />
@@ -207,27 +207,13 @@ export default async function Footer() {
         </div>
 
         {/* Bottom */}
-        <div className="border-t border-[#c8d5be] pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+          <div className="border-t border-[#c8d5be] pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-sm text-[hsl(220,14%,45%)]">
             © {new Date().getFullYear()} Tiệm Rêu Décor. All rights reserved.
           </p>
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-[hsl(220,14%,45%)]">Theo dõi chúng tôi:</span>
-            <div className="flex gap-2">
-              {socials.map((item, idx) => (
-                <a
-                  key={idx}
-                  href={item.value}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label={`Theo dõi chúng tôi trên ${item.label}`}
-                  className="w-8 h-8 rounded-full bg-[#e3ebdd] hover:bg-[#425733] hover:text-white flex items-center justify-center transition-all"
-                >
-                  <item.Icon className="w-4 h-4" />
-                </a>
-              ))}
-            </div>
-          </div>
+          <p className="text-xs text-[hsl(220,14%,55%)]">
+            Crafted with 🌿 in Hồ Chí Minh
+          </p>
         </div>
       </div>
     </footer>

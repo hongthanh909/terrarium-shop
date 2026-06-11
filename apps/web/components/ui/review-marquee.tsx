@@ -59,7 +59,7 @@ function ReviewCard({ review, className }: { review: typeof REVIEWS[0]; classNam
   return (
     <div
       className={cn(
-        "flex-shrink-0 w-72 bg-white rounded-2xl border border-[#e3ebdd] p-5 shadow-sm mx-3",
+        "flex-shrink-0 w-72 bg-white rounded-2xl border border-[#e3ebdd] border-t-2 border-t-[#a8c098] p-5 shadow-sm mx-3",
         className
       )}
     >
@@ -108,7 +108,7 @@ export function ReviewMarquee({ className }: { className?: string }) {
           <span className="inline-block px-4 py-1 rounded-full bg-[#e3ebdd] text-[#425733] text-sm font-medium mb-3">
             ⭐ Đánh giá thực từ khách hàng
           </span>
-          <h2 className="text-3xl font-bold text-gray-800">Khách hàng nói gì về chúng tôi</h2>
+          <h2 className="text-3xl md:text-4xl font-bold" style={{ background: 'linear-gradient(135deg, #1a2e12, #425733)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Khách hàng nói gì về chúng tôi</h2>
         </motion.div>
       </div>
 

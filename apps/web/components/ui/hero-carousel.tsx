@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
@@ -210,7 +210,7 @@ function ProductCardHero({
       variants={cardVariants}
       animate={variant}
       transition={{ type: "spring", stiffness: 260, damping: 26 }}
-      className="absolute w-full max-w-[320px] bg-[#f2f8f2] rounded-2xl overflow-hidden shadow-xl border border-[#ddeedd] flex flex-col hover:shadow-2xl transition-all duration-300"
+      className="absolute w-full max-w-[320px] bg-white rounded-2xl overflow-hidden shadow-xl border border-[#e3ebdd] flex flex-col hover:shadow-2xl transition-all duration-300"
       onClick={() => {
         if (offset !== 0) onClickBg();
       }}

@@ -179,6 +179,7 @@ async function BrandGallerySection() {
         return (
           <section className="py-10 px-6 bg-white">
             <div className="max-w-7xl mx-auto">
+              <p className="text-center text-sm font-semibold text-[#425733] uppercase tracking-widest mb-6">✦ Góc Nhìn Từ Xưởng ✦</p>
               <BrandGallery images={active as any} />
             </div>
           </section>
@@ -227,7 +228,7 @@ async function FeaturedProductsSection() {
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-4">
             <div>
               <p className="text-[#425733] font-bold text-sm uppercase tracking-wide mb-3">Được Lựa Chọn Cho Bạn</p>
-              <h2 className="text-4xl font-bold text-[hsl(220,14%,25%)]">Sản Phẩm Nổi Bật</h2>
+              <h2 className="text-3xl md:text-4xl font-bold" style={{ background: 'linear-gradient(135deg, #1a2e12, #425733)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Sản Phẩm Nổi Bật</h2>
             </div>
             <Button variant="outline" asChild className="self-start md:self-auto border-2 border-[#6d8c5a] text-[#425733] hover:bg-[#e3ebdd]">
               <Link href="/products" className="group">
@@ -304,7 +305,7 @@ async function LatestBlogSection() {
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-4">
             <div>
               <p className="text-[#425733] font-bold text-sm uppercase tracking-wide mb-3">Bài Viết Mới Nhất</p>
-              <h2 className="text-4xl font-bold text-[hsl(220,14%,25%)]">Góc Chia Sẻ</h2>
+              <h2 className="text-3xl md:text-4xl font-bold" style={{ background: 'linear-gradient(135deg, #1a2e12, #425733)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Góc Chia Sẻ</h2>
             </div>
             <Button variant="outline" asChild className="self-start md:self-auto border-2 border-[#6d8c5a] text-[#425733] hover:bg-[#e3ebdd]">
               <Link href="/blog" className="group">
@@ -323,7 +324,7 @@ async function LatestBlogSection() {
             </div>
           </ScrollReveal>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-12 mb-12">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
             {latestPosts.map((post: any, index: number) => (
               <ScrollReveal key={post.id} direction="up" delay={index * 0.1} className="h-full">
                 <Link href={`/blog/${post.slug}`} className="block h-full">
@@ -450,18 +451,18 @@ export default async function Home() {
         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[rgba(66,87,51,0.05)] rounded-full -translate-y-1/3 translate-x-1/3 blur-3xl pointer-events-none" />
         <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-[rgba(66,87,51,0.05)] rounded-full translate-y-1/2 -translate-x-1/4 blur-2xl pointer-events-none" />
 
-        <div className="relative max-w-7xl mx-auto px-6 py-24 w-full grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+        <div className="relative max-w-7xl mx-auto px-6 py-24 w-full grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
           {/* Left Column: Text & CTA */}
-          <div>
+          <div className="order-2 lg:order-1">
             <ScrollReveal direction="up" delay={0.2}>
-              <h1 className="text-5xl md:text-6xl lg:text-7xl font-extrabold mb-6 leading-tight tracking-tight text-gray-900">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold mb-6 leading-tight tracking-tight text-gray-900" style={{ textWrap: 'balance' }}>
                 <span className="block">Một chút rêu</span>
                 <span className="block pl-12 md:pl-16 lg:pl-20">Một chút xanh</span>
               </h1>
             </ScrollReveal>
 
             <ScrollReveal direction="up" delay={0.3}>
-              <p className="text-lg md:text-xl mb-10 text-gray-600 max-w-lg leading-relaxed">
+              <p className="text-base md:text-lg mb-10 text-gray-600 max-w-xl leading-relaxed">
                 Khám phá bộ sưu tập terrarium thủ công của chúng tôi — những hệ sinh thái thu nhỏ biến không gian của bạn thành thiên nhiên trong trẻo.
               </p>
             </ScrollReveal>
@@ -490,31 +491,31 @@ export default async function Home() {
 
             {/* Feature Icons */}
             <ScrollReveal direction="up" delay={0.5}>
-              <div className="mt-12 flex gap-8">
-                <div className="flex flex-col items-center text-center gap-2">
-                  <div className="text-[#425733]">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 14 4-4"/><path d="M3.34 19a10 10 0 1 1 17.32 0"/></svg>
+              <div className="mt-12 flex gap-6 sm:gap-8">
+                <div className="flex flex-col items-center text-center gap-2.5 group">
+                  <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm border border-[#425733]/10 flex items-center justify-center text-[#425733] group-hover:scale-110 transition-transform duration-300 shadow-sm">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 14 4-4"/><path d="M3.34 19a10 10 0 1 1 17.32 0"/></svg>
                   </div>
-                  <span className="text-sm text-gray-700 font-medium">Cấp ẩm tự động</span>
+                  <span className="text-xs sm:text-sm text-gray-700 font-semibold">Cấp ẩm tự động</span>
                 </div>
-                <div className="flex flex-col items-center text-center gap-2">
-                  <div className="text-[#425733]">
-                    <Sprout className="w-6 h-6" />
+                <div className="flex flex-col items-center text-center gap-2.5 group">
+                  <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm border border-[#425733]/10 flex items-center justify-center text-[#425733] group-hover:scale-110 transition-transform duration-300 shadow-sm">
+                    <Sprout className="w-5 h-5" />
                   </div>
-                  <span className="text-sm text-gray-700 font-medium">Dễ chăm sóc</span>
+                  <span className="text-xs sm:text-sm text-gray-700 font-semibold">Dễ chăm sóc</span>
                 </div>
-                <div className="flex flex-col items-center text-center gap-2">
-                  <div className="text-[#425733]">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect width="20" height="5" x="2" y="7"/><line x1="12" x2="12" y1="22" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>
+                <div className="flex flex-col items-center text-center gap-2.5 group">
+                  <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm border border-[#425733]/10 flex items-center justify-center text-[#425733] group-hover:scale-110 transition-transform duration-300 shadow-sm">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect width="20" height="5" x="2" y="7"/><line x1="12" x2="12" y1="22" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>
                   </div>
-                  <span className="text-sm text-gray-700 font-medium">Quà tặng ý nghĩa</span>
+                  <span className="text-xs sm:text-sm text-gray-700 font-semibold">Quà tặng ý nghĩa</span>
                 </div>
               </div>
             </ScrollReveal>
           </div>
 
           {/* Right Column: Product Slider — streams in via Suspense */}
-          <ScrollReveal direction="left" delay={0.3}>
+          <ScrollReveal direction="left" delay={0.3} className="order-1 lg:order-2">
             <Suspense fallback={<HeroCarouselSkeleton />}>
               <HeroCarouselSection />
             </Suspense>
@@ -533,7 +534,7 @@ export default async function Home() {
           <ScrollReveal direction="up">
             <div className="text-center mb-16">
               <p className="text-[#425733] font-bold text-sm uppercase tracking-wide mb-3">Tại Sao Chọn Chúng Tôi</p>
-              <h2 className="text-4xl font-bold text-[hsl(220,14%,25%)]">Tất Cả Bạn Cần</h2>
+              <h2 className="text-3xl md:text-4xl font-bold" style={{ background: 'linear-gradient(135deg, #1a2e12, #425733)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Tất Cả Bạn Cần</h2>
             </div>
           </ScrollReveal>
 
@@ -542,7 +543,7 @@ export default async function Home() {
             .wi-timeline-wrapper {
               display: flex;
               width: 100%;
-              height: 16rem;
+              min-height: 18rem;
               gap: 1rem;
               justify-content: center;
               padding: 0.5rem 0;
@@ -898,10 +899,10 @@ export default async function Home() {
       <section id="about" className="py-24 px-6 bg-gradient-to-br from-[#f0f4ec] to-[#e3ebdd]">
         <div className="max-w-4xl mx-auto text-center">
           <ScrollReveal direction="up">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-[#a8c098] mb-6">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-[#a8c098] mb-6 shadow-lg ring-4 ring-[#e3ebdd]">
               <Sprout className="w-8 h-8 text-[#425733]" />
             </div>
-            <h2 className="text-4xl font-bold mb-6 text-[hsl(220,14%,25%)]">Về Sản Phẩm Của Chúng Tôi</h2>
+            <h2 className="text-3xl md:text-4xl font-bold mb-6" style={{ background: 'linear-gradient(135deg, #1a2e12, #425733)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Về Sản Phẩm Của Chúng Tôi</h2>
             <p className="text-lg text-[hsl(220,14%,45%)] mb-6 leading-relaxed">
               Mỗi terrarium được tạo hình tỉ mỉ, kết hợp thiết kế thủy tinh đẹp mắt
               với hệ thực vật được chọn lọc để tạo nên một hệ sinh thái tự duy trì.

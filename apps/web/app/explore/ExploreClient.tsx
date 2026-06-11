@@ -132,7 +132,7 @@ export function ExploreClient({ featured, pinned, topVoted, newArrivals, weeklyF
   // Scroll-based hero animation: slide left and fade out on scroll
   const heroRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: heroRef, offset: ["start start", "end start"] });
-  const heroX = useTransform(scrollYProgress, [0, 0.6], [0, -300]);
+  const heroX = useTransform(scrollYProgress, [0, 0.6], [0, -80]);
   const heroOpacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
 
   return (

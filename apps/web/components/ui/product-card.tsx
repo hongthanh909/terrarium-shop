@@ -63,8 +63,8 @@ export function ProductCard({
       whileHover={{ y: -6 }}
       transition={{ duration: 0.35 }}
       className={cn(
-        "group relative flex flex-col rounded-2xl bg-[#f2f8f2] p-4 shadow-sm border border-[#ddeedd]",
-        "hover:shadow-md hover:border-[#b8d8b8] transition-all duration-300 h-full",
+        "group relative flex flex-col rounded-2xl bg-white p-4 shadow-sm border border-[#e3ebdd]",
+        "hover:shadow-lg hover:border-[#b8d8b8] transition-all duration-300 h-full",
         className
       )}
     >
@@ -90,7 +90,7 @@ export function ProductCard({
         {/* ── Badges ─────────────────────────────────────────── */}
         <div className="absolute top-2 right-2 flex flex-col gap-1.5 z-10">
           {isOnSale && (
-            <span className="px-2.5 py-1 rounded-lg bg-red-500 text-white text-xs font-bold shadow-md">
+            <span className="px-2.5 py-1 rounded-lg bg-gradient-to-r from-red-500 to-rose-400 text-white text-xs font-bold shadow-md">
               -{discountPct}%
             </span>
           )}
@@ -111,7 +111,7 @@ export function ProductCard({
           onClick={(e) => { e.preventDefault(); onToggleWishlist?.(); }}
           className={cn(
             "absolute top-2 left-2 z-10 w-8 h-8 rounded-full flex items-center justify-center shadow-sm transition-all duration-200",
-            "opacity-0 group-hover:opacity-100",
+            "opacity-40 sm:opacity-0 sm:group-hover:opacity-100",
             wished
               ? "bg-red-500 text-white scale-100 opacity-100"
               : "bg-white text-gray-400 hover:bg-gray-50 hover:scale-110 active:scale-95"
@@ -138,13 +138,19 @@ export function ProductCard({
 
         {/* Rating */}
         <div className="flex items-center gap-1.5 mb-3">
-          <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
-          <span className="text-sm font-medium text-gray-700">
-            {rating > 0 ? rating.toFixed(1) : "5.0"}
-          </span>
-          <span className="text-xs text-gray-400">
-            ({reviewCount > 0 ? reviewCount : 5})
-          </span>
+          {rating > 0 || reviewCount > 0 ? (
+            <>
+              <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
+              <span className="text-sm font-medium text-gray-700">
+                {rating > 0 ? rating.toFixed(1) : "5.0"}
+              </span>
+              <span className="text-xs text-gray-400">
+                ({reviewCount})
+              </span>
+            </>
+          ) : (
+            <span className="text-xs text-gray-400 italic">Chưa có đánh giá</span>
+          )}
         </div>
 
         {/* Price row */}
@@ -165,7 +171,7 @@ export function ProductCard({
         {/* ── Add to cart Button ────────────────── */}
         <button
           onClick={(e) => { e.preventDefault(); onAddToCart?.(); }}
-          className="w-full py-2.5 rounded-lg bg-[#3a5229] text-white text-sm font-semibold hover:bg-[#2d3d23] transition-colors active:scale-[0.98]"
+          className="w-full py-2.5 rounded-lg bg-gradient-to-r from-[#3a5229] to-[#4a6a35] text-white text-sm font-semibold hover:from-[#2d3d23] hover:to-[#3a5229] transition-all active:scale-[0.98] shadow-[0_4px_14px_rgba(58,82,41,0.25)] hover:shadow-[0_6px_20px_rgba(58,82,41,0.35)]"
         >
           Thêm vào giỏ
         </button>
