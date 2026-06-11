@@ -46,7 +46,7 @@ OLLAMA_MODEL=llama3:8b
 | :--- | :---: | :--- |
 | **Trả lời đúng bằng data thật** | ✅ | Load catalog sản phẩm từ DB (cache 5 phút), inject vào system prompt. AI chỉ đề cập sản phẩm THẬT có trong hệ thống. |
 | **Không bịa sản phẩm/giá** | ✅ | System prompt cấm tuyệt đối bịa. Khi DB lỗi hoặc trống → thông báo thành thật. |
-| **Gợi ý sản phẩm + link** | ✅ | Gợi ý max 3 sản phẩm phù hợp, kèm link `/products/[slug]`. Frontend hiện thẻ sản phẩm clickable. |
+| **Gợi ý sản phẩm + link** | ✅ | Gợi ý max 3 sản phẩm phù hợp, kèm link `/products/[slug]`. Frontend hiện thẻ sản phẩm clickable. Bao gồm trường `image` URL cho ảnh thu nhỏ. |
 | **Nhận biết nhu cầu khách** | ✅ | Prompt hướng dẫn hỏi: mua tự dùng/làm quà, kinh nghiệm, ngân sách → gợi ý phù hợp. |
 | **Gợi ý chốt đơn** | ✅ | Hướng dẫn "bấm link → thêm giỏ hàng → thanh toán", nhắc freeship ≥ 500k. |
 | **Hướng dẫn chăm sóc** | ✅ | Load careGuide (tưới, sáng, nhiệt độ, ẩm, sự cố) từ DB theo từng sản phẩm. |

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useMemo } from "react";
+import Head from "next/head";
 import { usePathname } from "next/navigation";
 import {
   MessageCircle, Send, Bot, Sparkles, X,
@@ -57,20 +58,23 @@ const QUICK_QUESTIONS: Record<string, string[]> = {
   ],
 };
 
-function extractProductLinks(text: string): { name: string; slug: string; price: string }[] {
-  const products: { name: string; slug: string; price: string }[] = [];
+function extractProductLinks(text: string): { name: string; slug: string; price: string; image?: string }[] {
+  const products: { name: string; slug: string; price: string; image?: string }[] = [];
   const lines = text.split("\n");
   for (const line of lines) {
     const linkMatch = line.match(/Link:\s*(\/products\/[\w-]+)/);
     if (linkMatch) {
       const slug = linkMatch[1];
-      const nameMatch = line.match(/^[-•]\s*([^[⭐]+)/);
+      const nameMatch = line.match(/^[-•]\s*([^\[⭐]+)/);
+      const imageMatch = line.match(/Image:\s*(https?:\/\/[^\s]+)/);
+      const imageUrl = imageMatch ? imageMatch[1] : undefined;
       const priceMatch = line.match(/—\s*([\d.,]+₫[^|—]*)/);
       if (nameMatch) {
         products.push({
           name: nameMatch[1].replace("⭐", "").trim(),
           slug,
           price: priceMatch ? priceMatch[1].trim() : "",
+          image: imageUrl,
         });
       }
     }
@@ -79,7 +83,7 @@ function extractProductLinks(text: string): { name: string; slug: string; price:
 }
 
 function renderContent(content: string) {
-  const cleaned = content.replace(/\s*\|\s*Link:\s*\/products\/[\w-]+/g, "");
+  const cleaned = content.replace(/\s*\|\s*Link:\s*\/products\/[\w-]+/g, "").replace(/\s*\|\s*Image:\s*https?:\/\/[^\s]+/g, "");
   return cleaned.split("\n").map((line, i) => (
     <span key={i} className="block">
       {line.split(/(\*\*[^*]+\*\*)/g).map((part, j) =>
@@ -373,13 +377,23 @@ export default function ChatWidget() {
           overflow: "hidden",
           display: "flex",
           flexDirection: "column",
-          boxShadow: "0 8px 40px rgba(0,0,0,0.18)",
+          background: "#ffffff",
+          boxShadow: "0 8px 40px rgba(66,87,51,0.08)",
           opacity: open ? 1 : 0,
           transform: open ? "translateY(0) scale(1)" : "translateY(12px) scale(0.97)",
           pointerEvents: open ? "auto" : "none",
         }}
       >
         {/* Responsive styles */}
+        <style>{`
+          .suggestion-card {
+            transition: transform 0.2s, box-shadow 0.2s;
+          }
+          .suggestion-card:hover {
+            transform: translateY(-4px) scale(1.03);
+            box-shadow: 0 4px 12px rgba(66,87,51,0.12);
+          }
+        `}</style>
         <style>{`
           .chat-panel-responsive {
             width: calc(100vw - 48px);
@@ -398,7 +412,7 @@ export default function ChatWidget() {
         {/* ── HEADER ─────────────────────────────── */}
         <div
           style={{
-            background: "linear-gradient(135deg, #4a7c3f 0%, #2e5c25 100%)",
+            background: "#425733",
             padding: "12px 14px",
             display: "flex",
             alignItems: "center",
@@ -409,7 +423,7 @@ export default function ChatWidget() {
           {/* Avatar */}
           <div style={{
             width: 38, height: 38, borderRadius: "50%",
-            background: "rgba(255,255,255,0.2)",
+            background: "rgba(255,255,255,0.1)",
             display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
           }}>
             <Bot size={20} color="white" />
@@ -456,7 +470,7 @@ export default function ChatWidget() {
               title="Xem sản phẩm"
               style={{
                 width: 30, height: 30, borderRadius: 8,
-                background: "rgba(255,255,255,0.15)",
+                background: "rgba(255,255,255,0.1)",
                 display: "flex", alignItems: "center", justifyContent: "center",
                 color: "white", textDecoration: "none",
               }}
@@ -468,7 +482,7 @@ export default function ChatWidget() {
               title="Làm mới cuộc trò chuyện"
               style={{
                 width: 30, height: 30, borderRadius: 8,
-                background: "rgba(255,255,255,0.15)",
+                background: "rgba(255,255,255,0.1)",
                 border: "none", cursor: "pointer",
                 display: "flex", alignItems: "center", justifyContent: "center",
                 color: "white",
@@ -481,7 +495,7 @@ export default function ChatWidget() {
               title="Thu nhỏ"
               style={{
                 width: 30, height: 30, borderRadius: 8,
-                background: "rgba(255,255,255,0.15)",
+                background: "rgba(255,255,255,0.1)",
                 border: "none", cursor: "pointer",
                 display: "flex", alignItems: "center", justifyContent: "center",
                 color: "white",
@@ -497,7 +511,7 @@ export default function ChatWidget() {
           flex: 1,
           overflowY: "auto",
           padding: "14px 12px",
-          background: "#f2f5f0",
+          background: "transparent",
           display: "flex",
           flexDirection: "column",
           gap: "10px",
@@ -514,7 +528,7 @@ export default function ChatWidget() {
                 {msg.role === "assistant" && (
                   <div style={{
                     width: 26, height: 26, borderRadius: "50%",
-                    background: "#4a7c3f",
+                    background: "#425733",
                     display: "flex", alignItems: "center", justifyContent: "center",
                     flexShrink: 0,
                   }}>
@@ -525,13 +539,13 @@ export default function ChatWidget() {
                 {/* Bubble */}
                 <div style={{
                   maxWidth: "78%",
-                  background: msg.role === "user" ? "#4a7c3f" : "white",
+                  background: msg.role === "user" ? "#425733" : "white",
                   color: msg.role === "user" ? "white" : "#1f2d1c",
                   borderRadius: msg.role === "user" ? "18px 18px 4px 18px" : "18px 18px 18px 4px",
                   padding: "9px 13px",
                   fontSize: 13,
                   lineHeight: 1.55,
-                  boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
+                  boxShadow: "0 2px 4px rgba(66,87,51,0.06)",
                   whiteSpace: "pre-line",
                 }}>
                   {msg.isStreaming && msg.content === "" ? (
@@ -539,7 +553,7 @@ export default function ChatWidget() {
                       {[0, 150, 300].map((d) => (
                         <span key={d} style={{
                           width: 6, height: 6, borderRadius: "50%",
-                          background: "#4a7c3f",
+                          background: "#425733",
                           display: "inline-block",
                           animation: `bounce 1.2s ${d}ms ease-in-out infinite`,
                         }} />
@@ -561,22 +575,26 @@ export default function ChatWidget() {
                     <a
                       key={p.slug}
                       href={p.slug}
+                      className="suggestion-card"
                       style={{
                         display: "flex", alignItems: "center", justifyContent: "space-between",
-                        background: "white", border: "1px solid #c5d9c0",
-                        borderRadius: 10, padding: "8px 12px",
+                        background: "white", border: "1px solid #dbe2d8",
+                        borderRadius: 12, padding: "8px 12px",
                         textDecoration: "none", gap: 8,
-                        boxShadow: "0 1px 3px rgba(0,0,0,0.06)",
+                        boxShadow: "0 1px 3px rgba(66,87,51,0.06)",
                         transition: "box-shadow 0.2s",
                       }}
                     >
+                      <div className="relative w-12 h-12 rounded-lg overflow-hidden flex-shrink-0">
+                        <img src={p.image || "/placeholder.png"} alt={p.name} className="w-full h-full object-cover" />
+                      </div>
                       <span style={{ fontSize: 12, color: "#1f2d1c", fontWeight: 500, flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                         {p.name}
                       </span>
                       <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
-                        {p.price && <span style={{ fontSize: 11, color: "#4a7c3f", fontWeight: 600 }}>{p.price}</span>}
+                        {p.price && <span style={{ fontSize: 11, color: "#425733", fontWeight: 600 }}>{p.price}</span>}
                         <span style={{
-                          background: "#4a7c3f", color: "white",
+                          background: "#425733", color: "white",
                           fontSize: 10, padding: "3px 8px", borderRadius: 6,
                           display: "flex", alignItems: "center", gap: 3,
                         }}>
@@ -599,12 +617,12 @@ export default function ChatWidget() {
                         onClick={() => sendMessage(q)}
                         style={{
                           fontSize: 11, padding: "5px 11px",
-                          background: "white", border: "1px solid #c5d9c0",
+                          background: "white", border: "1px solid #dbe2d8",
                           borderRadius: 99, cursor: "pointer",
-                          color: "#2e5c25", fontWeight: 500,
+                          color: "#425733", fontWeight: 500,
                           transition: "all 0.15s",
                         }}
-                        onMouseEnter={(e) => { (e.target as HTMLButtonElement).style.background = "#e8f2e5"; }}
+                        onMouseEnter={(e) => { (e.target as HTMLButtonElement).style.background = "#f2f5f0"; }}
                         onMouseLeave={(e) => { (e.target as HTMLButtonElement).style.background = "white"; }}
                       >
                         {q}
@@ -649,6 +667,9 @@ export default function ChatWidget() {
                 background: "transparent", fontSize: 13, lineHeight: 1.5,
                 color: "#1f2d1c", minHeight: 36, maxHeight: 80,
                 fontFamily: "inherit",
+                outline: "none",
+                boxShadow: "none",
+                transition: "outline 0.2s",
               }}
             />
             {message.length > 300 && (
@@ -665,13 +686,15 @@ export default function ChatWidget() {
             onClick={() => sendMessage(message)}
             disabled={isSending || isCooldown || !message.trim() || messageCount >= MAX_MESSAGES_PER_SESSION}
             style={{
-              width: 36, height: 36, borderRadius: 10,
-              background: message.trim() && !isSending && !isCooldown ? "#4a7c3f" : "#c5d9c0",
+              width: 36, height: 36, borderRadius: 9999,
+              background: message.trim() && !isSending && !isCooldown ? "#425733" : "#c5d9c0",
               border: "none", cursor: message.trim() && !isSending && !isCooldown ? "pointer" : "default",
               display: "flex", alignItems: "center", justifyContent: "center",
               flexShrink: 0, transition: "background 0.2s",
             }}
             aria-label="Gửi"
+            onMouseEnter={(e) => { if (!e.currentTarget.disabled) e.currentTarget.style.background = "#425733"; }}
+            onMouseLeave={(e) => { if (!e.currentTarget.disabled) e.currentTarget.style.background = message.trim() && !isSending && !isCooldown ? "#425733" : "#c5d9c0"; }}
           >
             <Send size={15} color="white" />
           </button>
@@ -706,7 +729,7 @@ export default function ChatWidget() {
           <div
             onClick={() => setOpen(true)}
             style={{
-              background: "#4a7c3f", color: "white",
+              background: "#425733", color: "white",
               fontSize: 11, fontWeight: 500,
               padding: "6px 12px", borderRadius: 99,
               cursor: "pointer", userSelect: "none",
@@ -728,7 +751,7 @@ export default function ChatWidget() {
           aria-label="Mở hỗ trợ AI"
           style={{
             width: 56, height: 56, borderRadius: "50%",
-            background: "linear-gradient(135deg, #4a7c3f 0%, #2e5c25 100%)",
+            background: "linear-gradient(135deg, #425733 0%, #2d3d23 100%)",
             border: "none", cursor: "pointer",
             display: "flex", alignItems: "center", justifyContent: "center",
             boxShadow: "0 4px 20px rgba(74,124,63,0.45)",
