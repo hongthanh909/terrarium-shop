@@ -208,6 +208,7 @@ export async function POST(request: NextRequest) {
           status: status as any,
           images,
           featured: !!isFeatured,
+          inventory: validatedData.inventory ?? 0,
         } as any,
       });
 
