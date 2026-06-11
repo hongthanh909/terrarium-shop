@@ -536,7 +536,7 @@ export function ProductDetailClient({
                     }`}
                   >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={img} alt={`${product.name} - ${i + 1}`} className="w-full h-full object-cover" />
+                    <img src={img} alt={`${product.name} - ${i + 1}`} className="w-full h-full object-contain p-0.5" />
                   </button>
                 ))}
               </div>
@@ -554,7 +554,7 @@ export function ProductDetailClient({
                   <img
                     src={product.images[currentImageIndex]}
                     alt={product.name}
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                    className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-[1.03]"
                   />
 
                   {/* Sale badge */}
