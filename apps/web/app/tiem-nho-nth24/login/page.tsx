@@ -77,7 +77,7 @@ export default function AdminLoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#f5f7f4] flex items-center justify-center px-4 py-12">
+    <div className="min-h-screen bg-[#fafbf8] flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">
@@ -106,7 +106,7 @@ export default function AdminLoginPage() {
         </div>
 
         {/* Card */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 min-h-[350px] flex flex-col justify-center transition-all duration-300">
+        <div className="bg-white rounded-2xl shadow-[0_4px_20px_rgba(66,87,51,0.08)] border border-[#e3ebdd] p-8 min-h-[350px] flex flex-col justify-center transition-all duration-300">
           {isSuccess ? (
             <div className="text-center py-6 flex flex-col items-center justify-center">
               <div className="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mb-6 shadow-inner border border-green-100">
@@ -186,7 +186,7 @@ export default function AdminLoginPage() {
                 <Button
                   type="submit"
                   disabled={loading}
-                  className="w-full h-11 bg-[#425733] hover:bg-[#364a29] text-white font-medium rounded-lg transition-colors"
+                  className="w-full h-11 bg-[#425733] hover:bg-[#364a29] text-white font-medium rounded-full transition-colors"
                 >
                   {loading ? (
                     <span className="flex items-center gap-2">

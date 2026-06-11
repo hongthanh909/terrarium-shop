@@ -140,7 +140,7 @@ export function DataTable<T>({
   };
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm">
+    <div className="bg-white rounded-2xl border border-[#e3ebdd] overflow-hidden shadow-[0_2px_12px_rgba(66,87,51,0.06)]">
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
@@ -199,7 +199,7 @@ export function DataTable<T>({
                     <td key={col.key as string} className={cn("px-4 py-3", col.className)}>
                       {col.render
                         ? col.render(row, i)
-                        : String((row as any)[col.key] ?? "—")}
+                        : String((row as any)[col.key] ?? "-")}
                     </td>
                   ))}
                 </motion.tr>

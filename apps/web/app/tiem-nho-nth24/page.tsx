@@ -82,7 +82,7 @@ function StatCard({
   href?: string;
 }) {
   const card = (
-    <div className="bg-white rounded-2xl shadow-soft p-6 flex flex-col gap-4 hover:shadow-md transition-shadow">
+    <div className="bg-white rounded-2xl shadow-[0_2px_12px_rgba(66,87,51,0.06)] border border-[#e3ebdd] p-6 flex flex-col gap-4 hover:shadow-[0_8px_24px_rgba(66,87,51,0.1)] transition-shadow">
       <div className="flex items-start justify-between">
         <div>
           <p className="text-sm text-gray-500 mb-1">{label}</p>
@@ -147,7 +147,7 @@ export default function AdminDashboard() {
     <div className="space-y-8">
       {/* Header */}
       <div>
-        <h2 className="text-3xl font-bold text-gray-800 mb-1">Bảng Điều Khiển</h2>
+        <h2 className="text-3xl font-bold mb-1" style={{ background: 'linear-gradient(135deg, #1a2e12, #425733)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Bảng Điều Khiển</h2>
         <p className="text-gray-500">Tổng quan hoạt động của Tiệm Rêu Décor</p>
       </div>
 
@@ -210,7 +210,7 @@ export default function AdminDashboard() {
       {/* Tables row */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Recent Orders */}
-        <div className="lg:col-span-2 bg-white rounded-2xl shadow-soft overflow-hidden">
+        <div className="lg:col-span-2 bg-white rounded-2xl shadow-[0_2px_12px_rgba(66,87,51,0.06)] border border-[#e3ebdd] overflow-hidden">
           <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
             <h3 className="font-semibold text-gray-800">Đơn Hàng Gần Đây</h3>
             <Link href="/tiem-nho-nth24/orders" className="text-sm text-[#425733] hover:underline font-medium">
@@ -246,7 +246,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* Top Products */}
-        <div className="bg-white rounded-2xl shadow-soft overflow-hidden">
+        <div className="bg-white rounded-2xl shadow-[0_2px_12px_rgba(66,87,51,0.06)] border border-[#e3ebdd] overflow-hidden">
           <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
             <h3 className="font-semibold text-gray-800">Bán Chạy Nhất</h3>
             <Link href="/tiem-nho-nth24/products" className="text-sm text-[#425733] hover:underline font-medium">
@@ -272,7 +272,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* Quick Actions */}
-      <div className="bg-white rounded-2xl shadow-soft p-6">
+      <div className="bg-white rounded-2xl shadow-[0_2px_12px_rgba(66,87,51,0.06)] border border-[#e3ebdd] p-6">
         <h3 className="font-semibold text-gray-800 mb-4">Hành Động Nhanh</h3>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
           {[

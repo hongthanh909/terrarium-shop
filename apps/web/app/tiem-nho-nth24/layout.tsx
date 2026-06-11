@@ -20,7 +20,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   // If we are on the admin login page, render children directly without the sidebar & header
   if (pathname === "/tiem-nho-nth24/login") {
     return (
-      <div className="min-h-screen bg-[#f5f7f4]">
+      <div className="min-h-screen bg-[#fafbf8]">
 
         {children}
       </div>
@@ -52,11 +52,11 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   };
 
   return (
-    <div className="min-h-screen bg-[#f5f7f4]">
+    <div className="min-h-screen bg-[#fafbf8]">
 
 
       {/* Sidebar */}
-      <aside className="fixed left-0 top-0 h-full w-60 bg-[#2d3d23] text-white flex flex-col shadow-xl">
+      <aside className="fixed left-0 top-0 h-full w-60 bg-[#1a2e12] text-white flex flex-col shadow-[4px_0_24px_rgba(26,46,18,0.3)]">
         {/* Logo */}
         <div className="px-5 py-5 border-b border-white/10">
           <Link href="/" className="flex flex-col group">
@@ -125,7 +125,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
       {/* Main Content */}
       <div className="ml-60 min-h-screen flex flex-col">
-        <header className="bg-white shadow-sm border-b border-gray-100 px-8 py-3.5 sticky top-0 z-10 flex items-center justify-between">
+        <header className="bg-white shadow-[0_1px_8px_rgba(66,87,51,0.06)] border-b border-[#e3ebdd] px-8 py-3.5 sticky top-0 z-10 flex items-center justify-between">
           <div>
             <h1 className="text-lg font-semibold text-gray-800">
               {menuItems.find((m) => isActive(m.href))?.label ?? "Bảng Điều Khiển"}
