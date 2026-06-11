@@ -131,7 +131,7 @@ export function ExploreClient({ featured, pinned, topVoted, newArrivals, weeklyF
                   src={currentHero.product.images[0]}
                   alt={currentHero.product.name}
                   fill
-                  className="object-cover"
+                  className="object-cover object-[center_15%]"
                   sizes="100vw"
                   priority
                 />
@@ -262,7 +262,7 @@ export function ExploreClient({ featured, pinned, topVoted, newArrivals, weeklyF
                     href={`/products/${item.product.slug}`}
                     className="group flex-shrink-0 w-64 snap-start"
                   >
-                    <div className="relative aspect-[4/3] rounded-2xl overflow-hidden bg-gray-100 mb-3">
+                    <div className="relative aspect-square rounded-2xl overflow-hidden bg-gray-100 mb-3">
                       {item.product.images[0] ? (
                         <Image
                           src={item.product.images[0]}
@@ -304,7 +304,7 @@ export function ExploreClient({ featured, pinned, topVoted, newArrivals, weeklyF
               />
 
               {/* Bento layout: 1 large + small cards */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 auto-rows-[280px]">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 auto-rows-[220px]">
                 {allFeatured.slice(0, 5).map((product, idx) => {
                   const isLarge = idx === 0;
                   return (
@@ -491,14 +491,21 @@ function BentoCard({
         </div>
       )}
 
-      {/* Gradient overlay */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent opacity-80 group-hover:opacity-90 transition-opacity" />
+      {/* Gradient overlay — lighter on small cards so image breathes */}
+      <div className={`absolute inset-0 bg-gradient-to-t to-transparent transition-opacity ${
+        showDetails
+          ? "from-black/65 via-black/15 opacity-80 group-hover:opacity-90"
+          : "from-black/55 via-black/5 opacity-70 group-hover:opacity-80"
+      }`} />
 
       {/* Content */}
       <div className="absolute inset-0 p-4 sm:p-5 flex flex-col justify-end">
-        <span className="text-white/60 text-[11px] font-semibold uppercase tracking-wider mb-1">
-          {product.category?.name || "Terrarium"}
-        </span>
+        {/* Category eyebrow only on large card — taste-skill: max 1 eyebrow per 3 sections */}
+        {showDetails && (
+          <span className="text-white/60 text-[11px] font-semibold uppercase tracking-wider mb-1">
+            {product.category?.name || "Terrarium"}
+          </span>
+        )}
         <Link href={`/products/${product.slug}`}>
           <h3 className={`font-bold text-white group-hover:text-white/90 transition-colors leading-snug ${showDetails ? "text-lg sm:text-xl" : "text-sm"} line-clamp-2`}>
             {product.name}
