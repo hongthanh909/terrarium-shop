@@ -305,7 +305,7 @@ export default function Header() {
 
       {/* ─── Mobile Menu Drawer ────────────────────────────────────────────── */}
       <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-        <SheetContent side="left" className="w-[280px] sm:w-[320px] p-0 border-0">
+        <SheetContent side="left" className="w-[280px] sm:w-[320px] p-0 border-0 backdrop-blur-md">
           <div className="flex flex-col h-full bg-gradient-to-b from-[#2d3d23] to-[#1e2e16]">
             {/* Header */}
             <SheetHeader className="px-6 pt-6 pb-4 border-b border-white/10">
@@ -438,7 +438,7 @@ export default function Header() {
               <div className="space-y-3">
                 {items.map((item: CartItem) => (
                   <div key={`${item.productId}-${JSON.stringify(item.variants)}`} className="flex gap-3 p-3 rounded-xl bg-gray-50 border border-gray-100">
-                    <div className="w-16 h-16 rounded-lg overflow-hidden bg-[#e3ebdd] flex-shrink-0">
+                    <div className="w-20 h-20 sm:w-16 sm:h-16 rounded-lg overflow-hidden bg-[#e3ebdd] flex-shrink-0">
                       {item.productImage ? (
                         <Image src={item.productImage} alt={item.productName} width={64} height={64} className="w-full h-full object-cover" />
                       ) : (

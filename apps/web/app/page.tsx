@@ -773,7 +773,8 @@ export default async function Home() {
               .wi-card {
                 width: 100% !important;
                 flex: none !important;
-                min-height: 8rem;
+                min-height: auto;
+                padding: 1rem;
                 background: #e3ebdd !important;
                 border-color: #c8d5be !important;
                 box-shadow: 0 8px 24px rgba(66, 87, 51, 0.08) !important;
@@ -934,7 +935,7 @@ export default async function Home() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button
                 size="lg"
-                className="bg-white text-[#425733] hover:bg-[#f0f4ec] font-bold text-base px-8 shadow-soft-lg hover:-translate-y-1 transition-all duration-300"
+                className="bg-white text-[#425733] hover:bg-[#f0f4ec] font-bold text-base px-8 shadow-[0_8px_30px_rgba(255,255,255,0.3)] hover:shadow-[0_12px_40px_rgba(255,255,255,0.4)] hover:-translate-y-1 transition-all duration-300"
                 asChild
               >
                 <Link href="/products">
@@ -945,7 +946,7 @@ export default async function Home() {
               <Button
                 size="lg"
                 variant="outline"
-                className="border-2 border-white/50 bg-transparent text-white hover:bg-white/10 hover:border-white font-bold text-base px-8 hover:-translate-y-1 transition-all duration-300"
+                className="border-2 border-white/50 bg-transparent text-white hover:bg-white/10 hover:border-white backdrop-blur-sm font-bold text-base px-8 hover:-translate-y-1 transition-all duration-300"
                 asChild
               >
                 <Link href="/consult">Nhận Tư Vấn Cây Trồng</Link>

@@ -88,22 +88,22 @@ export default async function Footer() {
             <h3 className="font-bold text-[hsl(220,14%,25%)] mb-4">Khám phá</h3>
             <ul className="space-y-3 text-sm text-[hsl(220,14%,45%)]">
               <li>
-                <Link href="/products" className="hover:text-[#425733] transition-colors">
+                <Link href="/products" className="relative hover:text-[#425733] transition-colors after:absolute after:bottom-0 after:left-0 after:w-0 after:h-[1px] after:bg-[#425733] hover:after:w-full after:transition-all after:duration-300">
                   Tất cả sản phẩm
                 </Link>
               </li>
               <li>
-                <Link href="/explore" className="hover:text-[#425733] transition-colors">
+                <Link href="/explore" className="relative hover:text-[#425733] transition-colors after:absolute after:bottom-0 after:left-0 after:w-0 after:h-[1px] after:bg-[#425733] hover:after:w-full after:transition-all after:duration-300">
                   Được chọn tuần này
                 </Link>
               </li>
               <li>
-                <Link href="/blog" className="hover:text-[#425733] transition-colors">
+                <Link href="/blog" className="relative hover:text-[#425733] transition-colors after:absolute after:bottom-0 after:left-0 after:w-0 after:h-[1px] after:bg-[#425733] hover:after:w-full after:transition-all after:duration-300">
                   Blog & Kiến thức
                 </Link>
               </li>
               <li>
-                <Link href="/about" className="hover:text-[#425733] transition-colors">
+                <Link href="/about" className="relative hover:text-[#425733] transition-colors after:absolute after:bottom-0 after:left-0 after:w-0 after:h-[1px] after:bg-[#425733] hover:after:w-full after:transition-all after:duration-300">
                   Về chúng tôi
                 </Link>
               </li>
