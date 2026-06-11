@@ -131,7 +131,7 @@ export function ExploreClient({ featured, pinned, topVoted, newArrivals, weeklyF
                   src={currentHero.product.images[0]}
                   alt={currentHero.product.name}
                   fill
-                  className="object-contain object-center"
+                  className="object-cover object-[center_15%]"
                   sizes="100vw"
                   priority
                 />
@@ -262,13 +262,13 @@ export function ExploreClient({ featured, pinned, topVoted, newArrivals, weeklyF
                     href={`/products/${item.product.slug}`}
                     className="group flex-shrink-0 w-64 snap-start"
                   >
-                    <div className="relative aspect-square rounded-2xl overflow-hidden bg-[#f0f4ec] mb-3">
+                    <div className="relative aspect-square rounded-2xl overflow-hidden bg-gray-100 mb-3">
                       {item.product.images[0] ? (
                         <Image
                           src={item.product.images[0]}
                           alt={item.product.name}
                           fill
-                          className="object-contain object-center group-hover:scale-105 transition-transform duration-500"
+                          className="object-cover group-hover:scale-105 transition-transform duration-500"
                           sizes="256px"
                         />
                       ) : (
@@ -474,63 +474,68 @@ function BentoCard({
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.4 }}
-      className={`group relative rounded-2xl overflow-hidden bg-[#f0f4ec] flex flex-col shadow-[0_2px_12px_rgba(66,87,51,0.06)] border border-[#e3ebdd] ${className}`}
+      className={`group relative rounded-2xl overflow-hidden bg-gray-100 ${className}`}
     >
-      {/* Image — always fully visible, no overlay */}
-      <div className="relative flex-1 min-h-0">
-        {product.images[0] ? (
-          <Image
-            src={product.images[0]}
-            alt={product.name}
-            fill
-            className="object-contain object-center group-hover:scale-105 transition-transform duration-700"
-            sizes={showDetails ? "(max-width: 768px) 100vw, 50vw" : "(max-width: 768px) 50vw, 25vw"}
-          />
-        ) : (
-          <div className="absolute inset-0 flex items-center justify-center">
-            <Package className="w-12 h-12 text-[#c8d5be]" />
-          </div>
-        )}
-      </div>
+      {/* Image */}
+      {product.images[0] ? (
+        <Image
+          src={product.images[0]}
+          alt={product.name}
+          fill
+          className="object-cover group-hover:scale-105 transition-transform duration-700"
+          sizes={showDetails ? "(max-width: 768px) 100vw, 50vw" : "(max-width: 768px) 50vw, 25vw"}
+        />
+      ) : (
+        <div className="absolute inset-0 flex items-center justify-center">
+          <Package className="w-12 h-12 text-gray-300" />
+        </div>
+      )}
 
-      {/* Info panel below image */}
-      <div className="px-3 py-2.5 bg-white/80 backdrop-blur-sm border-t border-[#e3ebdd]">
+      {/* Gradient overlay — lighter on small cards so image breathes */}
+      <div className={`absolute inset-0 bg-gradient-to-t to-transparent transition-opacity ${
+        showDetails
+          ? "from-black/65 via-black/15 opacity-80 group-hover:opacity-90"
+          : "from-black/55 via-black/5 opacity-70 group-hover:opacity-80"
+      }`} />
+
+      {/* Content */}
+      <div className="absolute inset-0 p-4 sm:p-5 flex flex-col justify-end">
+        {/* Category eyebrow only on large card — taste-skill: max 1 eyebrow per 3 sections */}
         {showDetails && (
-          <span className="text-[#425733]/60 text-[10px] font-semibold uppercase tracking-wider block mb-0.5">
+          <span className="text-white/60 text-[11px] font-semibold uppercase tracking-wider mb-1">
             {product.category?.name || "Terrarium"}
           </span>
         )}
         <Link href={`/products/${product.slug}`}>
-          <h3 className={`font-bold text-[#1a2e12] group-hover:text-[#425733] transition-colors leading-snug ${
-            showDetails ? "text-base sm:text-lg" : "text-xs"
-          } line-clamp-1`}>
+          <h3 className={`font-bold text-white group-hover:text-white/90 transition-colors leading-snug ${showDetails ? "text-lg sm:text-xl" : "text-sm"} line-clamp-2`}>
             {product.name}
           </h3>
         </Link>
-        <div className="flex items-center justify-between mt-1 gap-2">
-          <PriceTag product={product} className={`text-[#1a2e12] ${showDetails ? "text-base" : "text-xs"}`} />
-          {showDetails ? (
-            <div className="flex gap-1.5">
-              <Button asChild size="sm" className="bg-[#425733] hover:bg-[#364a29] text-white font-semibold rounded-full shadow-sm text-xs h-7 px-3">
-                <Link href={`/products/${product.slug}`}>Xem</Link>
-              </Button>
-              <button
-                onClick={(e) => { e.preventDefault(); onAddToCart(); }}
-                className="flex items-center gap-1 border border-[#c8d5be] text-[#425733] px-2.5 py-1 rounded-full text-xs font-semibold hover:bg-[#e3ebdd] transition-all"
-              >
-                <ShoppingBasket className="w-3 h-3" />
-                Thêm
-              </button>
-            </div>
-          ) : (
+        <PriceTag product={product} className={`text-white mt-1.5 ${showDetails ? "text-lg" : "text-sm"}`} />
+
+        {/* Add to cart — only on large card or hover */}
+        {showDetails ? (
+          <div className="flex gap-2 mt-3">
+            <Button asChild size="sm" className="bg-white text-[#1a2e12] hover:bg-white/90 font-semibold rounded-lg shadow-md text-xs">
+              <Link href={`/products/${product.slug}`}>Xem chi tiết</Link>
+            </Button>
             <button
               onClick={(e) => { e.preventDefault(); onAddToCart(); }}
-              className="opacity-0 group-hover:opacity-100 flex items-center gap-1 border border-[#c8d5be] text-[#425733] px-2 py-0.5 rounded-full text-[10px] font-semibold hover:bg-[#e3ebdd] transition-all"
+              className="flex items-center gap-1.5 bg-white/15 backdrop-blur-sm border border-white/30 text-white px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-white/25 transition-all"
             >
-              <ShoppingBasket className="w-3 h-3" />
+              <ShoppingBasket className="w-3.5 h-3.5" />
+              Thêm
             </button>
-          )}
-        </div>
+          </div>
+        ) : (
+          <button
+            onClick={(e) => { e.preventDefault(); onAddToCart(); }}
+            className="mt-2 opacity-0 group-hover:opacity-100 flex items-center gap-1.5 bg-white/20 backdrop-blur-sm border border-white/30 text-white px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-white/30 transition-all w-fit"
+          >
+            <ShoppingBasket className="w-3.5 h-3.5" />
+            Thêm vào giỏ
+          </button>
+        )}
       </div>
     </motion.div>
   );
