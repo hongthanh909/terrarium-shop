@@ -13,7 +13,7 @@ interface ChatMessage {
   content: string;
   source?: "ai" | "db" | "fallback";
   isStreaming?: boolean;
-  suggestedProducts?: { name: string; slug: string; price: string }[];
+  suggestedProducts?: { name: string; slug: string; price: string; image?: string }[];
 }
 
 interface PageContext {
