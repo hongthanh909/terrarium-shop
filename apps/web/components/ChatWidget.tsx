@@ -667,9 +667,7 @@ export default function ChatWidget() {
                 background: "transparent", fontSize: 13, lineHeight: 1.5,
                 color: "#1f2d1c", minHeight: 36, maxHeight: 80,
                 fontFamily: "inherit",
-                outline: "none",
                 boxShadow: "none",
-                transition: "outline 0.2s",
               }}
             />
             {message.length > 300 && (
