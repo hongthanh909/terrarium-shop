@@ -177,7 +177,7 @@ async function BrandGallerySection() {
         .sort((a: any, b: any) => (a.order ?? 0) - (b.order ?? 0));
       if (active.length > 0) {
         return (
-          <section className="py-10 px-6 bg-white">
+          <section className="py-14 px-6 bg-white">
             <div className="max-w-7xl mx-auto">
 
               <BrandGallery images={active as any} />
@@ -194,7 +194,7 @@ async function BrandGallerySection() {
 
 function BrandGallerySkeleton() {
   return (
-    <section className="py-10 px-6 bg-white">
+    <section className="py-14 px-6 bg-white">
       <div className="max-w-7xl mx-auto">
         <div className="flex gap-4">
           {["h-56", "h-40", "h-64", "h-48"].map((h, i) => (
@@ -530,7 +530,7 @@ export default async function Home() {
 
       {/* Features Section */}
       <section className="py-24 px-6 bg-gradient-to-b from-white to-[#f0f4ec] overflow-hidden">
-        <div className="max-w-7xl mx-auto px-6">
+        <div className="max-w-7xl mx-auto">
           <ScrollReveal direction="up">
             <div className="text-center mb-16">
               <p className="text-[#425733] font-bold text-sm uppercase tracking-wide mb-3">Tại Sao Chọn Chúng Tôi</p>
@@ -914,7 +914,7 @@ export default async function Home() {
               Dù bạn là người yêu thích sự tĩnh lặng hay đang tìm kiếm một món quà độc đáo,
               sản phẩm của chúng tôi luôn là lựa chọn hoàn hảo.
             </p>
-            <Button size="lg" className="mt-10 bg-[#425733] text-white hover:bg-[#364a29] px-8 font-semibold shadow-soft-lg" asChild>
+            <Button size="lg" className="mt-10 bg-[#425733] text-white hover:bg-[#364a29] px-8 font-semibold shadow-soft-lg rounded-full" asChild>
               <Link href="/products">
                 Khám Phá Cửa Hàng
                 <ArrowRight className="ml-2 w-4 h-4" />

@@ -10,7 +10,7 @@ import { PageTransition, SlideInHeading } from "@/components/ui/page-transition"
 import { useCartStore } from "@/lib/store/cartStore";
 import { useSession } from "next-auth/react";
 import { showToast } from "@/components/ui/custom-toast";
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 
 interface Product {
   id: string;
@@ -48,6 +48,7 @@ export function ProductsClient({
   const [selectedCategory, setSelectedCategory] = useState<string | null>(initialCategory);
   const [searchQuery, setSearchQuery] = useState(initialSearch);
   const { addItem } = useCartStore();
+  const prefersReducedMotion = useReducedMotion();
 
   const handleAddToCart = (product: Product) => {
     // Yêu cầu đăng nhập trước khi thêm vào giỏ hàng
@@ -95,7 +96,7 @@ export function ProductsClient({
           <SlideInHeading className="mb-8">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               <div>
-                <h1 className="text-4xl font-bold text-[#1a2e12]">Sản Phẩm</h1>
+                <h1 className="text-4xl font-bold" style={{ background: 'linear-gradient(135deg, #1a2e12, #425733)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Sản Phẩm</h1>
                 <p className="text-gray-500 text-sm mt-1">{totalProducts} sản phẩm đang có</p>
               </div>
 
@@ -118,13 +119,13 @@ export function ProductsClient({
           {/* Category Filter */}
           <motion.div
             className="mb-10"
-            initial={{ opacity: 0, y: 12 }}
+            initial={prefersReducedMotion ? false : { opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.15, duration: 0.4 }}
           >
             <div className="flex items-center gap-3 mb-4">
               <Filter className="w-4 h-4 text-[#425733] flex-shrink-0" />
-              <span className="text-xs font-semibold uppercase tracking-widest text-gray-400">
+              <span className="text-xs font-semibold uppercase tracking-wider text-gray-400">
                 Danh mục
               </span>
               <div className="flex-1 h-px bg-[#d4dec9]" />
@@ -161,11 +162,11 @@ export function ProductsClient({
           {initialProducts.length === 0 ? (
             <motion.div
               className="text-center py-24"
-              initial={{ opacity: 0 }}
+              initial={prefersReducedMotion ? false : { opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.2 }}
             >
-              <Package className="w-16 h-16 mx-auto text-[#a8c49a] mb-4" />
+              <Package className="w-16 h-16 mx-auto text-[#a8c098] mb-4" />
               <p className="text-gray-400 mb-4">Không tìm thấy sản phẩm nào.</p>
               <Button
                 variant="outline"

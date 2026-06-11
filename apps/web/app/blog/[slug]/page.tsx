@@ -33,7 +33,7 @@ export default async function BlogPostPage({ params }: Props) {
   const hasStructuredContent = post.intro || post.body || post.conclusion;
 
   return (
-    <main className="min-h-screen bg-[hsl(0,0%,100%)] py-8 px-6">
+    <main className="min-h-screen bg-[#fafbf8] py-8 px-6">
       <div className="max-w-3xl mx-auto">
         {/* Back Link */}
         <Link
@@ -145,7 +145,7 @@ export default async function BlogPostPage({ params }: Props) {
           <p className="text-sm text-gray-500 mb-4 font-semibold">
             Thích bài viết này? Khám phá thêm tại
           </p>
-          <Button asChild variant="outline" className="border-gray-250 hover:bg-gray-50 rounded-full font-semibold px-6">
+          <Button asChild variant="outline" className="border-[#c8d5be] hover:bg-[#f0f4ec] rounded-full font-semibold px-6">
             <Link href="/blog">Xem Tất Cả Bài Viết</Link>
           </Button>
         </div>

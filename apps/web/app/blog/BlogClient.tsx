@@ -4,7 +4,7 @@ import { useState, useMemo } from "react";
 import Link from "next/link";
 import { Calendar, Tag, BookOpen, ImageOff } from "lucide-react";
 import { PageTransition } from "@/components/ui/page-transition";
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 
 interface BlogPost {
   id: string;
@@ -31,6 +31,7 @@ export function BlogClient({
   categories: BlogCategory[];
 }) {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const prefersReducedMotion = useReducedMotion();
 
   const filteredPosts = useMemo(() => {
     if (!selectedCategory) return initialPosts;
@@ -53,7 +54,7 @@ export function BlogClient({
               <BookOpen className="w-4 h-4" />
               <span>Kiến thức terrarium</span>
             </div>
-            <h1 className="text-5xl font-bold text-[#1a2e12] mb-4">Blog</h1>
+            <h1 className="text-5xl font-bold mb-4" style={{ background: 'linear-gradient(135deg, #1a2e12, #425733)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Blog</h1>
             <p className="text-gray-500 max-w-2xl mx-auto">
               Mẹo chăm sóc cây, hướng dẫn và cảm hứng từ thế giới terrarium
             </p>
@@ -102,14 +103,14 @@ export function BlogClient({
               {filteredPosts.map((post, i) => (
                 <motion.div
                   key={post.id}
-                  initial={{ opacity: 0, y: 30 }}
+                  initial={prefersReducedMotion ? false : { opacity: 0, y: 30 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true, margin: "-40px" }}
                   transition={{ duration: 0.4, delay: i * 0.06 }}
-                  whileHover={{ y: -4 }}
+                  whileHover={prefersReducedMotion ? undefined : { y: -4 }}
                 >
                   <Link href={`/blog/${post.slug}`} className="block h-full">
-                    <div className="group h-full bg-white border border-[#d4e4c9] rounded-2xl overflow-hidden shadow-[0_2px_12px_rgba(66,87,51,0.08)] hover:shadow-[0_16px_40px_rgba(66,87,51,0.16)] hover:border-[#425733]/40 transition-all duration-300">
+                    <div className="group h-full bg-white border border-[#e3ebdd] rounded-2xl overflow-hidden shadow-[0_2px_12px_rgba(66,87,51,0.06)] hover:shadow-[0_16px_40px_rgba(66,87,51,0.12)] hover:border-[#b8d8b8] transition-all duration-300">
                       
                       {/* Thumbnail Image */}
                       <div className="relative w-full aspect-[16/9] overflow-hidden bg-[#f0f4ed]">

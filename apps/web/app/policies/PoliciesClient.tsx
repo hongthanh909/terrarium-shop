@@ -2,8 +2,9 @@
 
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { MessageCircle, ChevronDown } from "lucide-react";
+import { MessageCircle, ChevronDown, Shield, Truck, Undo2, Lock, HelpCircle, FileText } from "lucide-react";
 import { useState } from "react";
+import { useReducedMotion } from "framer-motion";
 
 interface Policy {
   id: string;
@@ -15,13 +16,13 @@ interface Policy {
 
 const TYPE_ORDER = ["warranty", "shipping", "returns", "privacy", "faq", "policy"];
 
-const typeLabels: Record<string, { label: string; emoji: string }> = {
-  warranty: { label: "Bảo hành", emoji: "🛡️" },
-  shipping: { label: "Vận chuyển", emoji: "🚚" },
-  returns: { label: "Đổi trả", emoji: "↩️" },
-  privacy: { label: "Bảo mật", emoji: "🔒" },
-  faq: { label: "Câu hỏi thường gặp", emoji: "❓" },
-  policy: { label: "Chính sách khác", emoji: "📋" },
+const typeLabels: Record<string, { label: string; Icon: any }> = {
+  warranty: { label: "Bảo hành", Icon: Shield },
+  shipping: { label: "Vận chuyển", Icon: Truck },
+  returns: { label: "Đổi trả", Icon: Undo2 },
+  privacy: { label: "Bảo mật", Icon: Lock },
+  faq: { label: "Câu hỏi thường gặp", Icon: HelpCircle },
+  policy: { label: "Chính sách khác", Icon: FileText },
 };
 
 function AccordionItem({ policy, index }: { policy: Policy; index: number }) {
@@ -33,7 +34,7 @@ function AccordionItem({ policy, index }: { policy: Policy; index: number }) {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-30px" }}
       transition={{ duration: 0.35, delay: index * 0.05 }}
-      className="border border-[#d4e4c9] rounded-2xl mb-3 overflow-hidden bg-white"
+      className="border border-[#e3ebdd] rounded-2xl mb-3 overflow-hidden bg-white"
     >
       <button
         onClick={() => setOpen(!open)}
@@ -89,10 +90,12 @@ export function PoliciesClient({
     }
   });
 
+  const prefersReducedMotion = useReducedMotion();
+
   return (
     <motion.main
       className="min-h-screen bg-[#fafbf8] py-12 px-6"
-      initial={{ opacity: 0, y: 18 }}
+      initial={prefersReducedMotion ? false : { opacity: 0, y: 18 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.45 }}
     >
@@ -142,7 +145,7 @@ export function PoliciesClient({
         ) : (
           <div className="space-y-10">
             {sortedGroups.map(({ type, items }, groupIndex) => {
-              const meta = typeLabels[type] || { label: type, emoji: "📄" };
+              const meta = typeLabels[type] || { label: type, Icon: FileText };
               const num = String(groupIndex + 1).padStart(2, "0");
               return (
                 <motion.section
@@ -166,7 +169,7 @@ export function PoliciesClient({
                     </span>
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="text-xl">{meta.emoji}</span>
+                        <meta.Icon className="w-5 h-5 text-[#425733]" />
                         <h2 className="text-xl font-bold text-[#1a2e12]">{meta.label}</h2>
                       </div>
                       <div className="h-px bg-[#d4e4c9] mt-1.5" />
