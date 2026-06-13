@@ -4,7 +4,7 @@ import Link from "next/link";
 import { ImageWrapper } from "@/components/ui/ImageWrapper";
 import {
   ShoppingBasket, User, X, Minus, Plus, ShoppingBag,
-  ChevronDown, LogOut, Package, LayoutDashboard, Heart, Lock,
+  LogOut, Package, LayoutDashboard, Heart, Lock,
   Menu,
 } from "lucide-react";
 import { useCartStore, CartItem } from "@/lib/store/cartStore";
@@ -30,13 +30,7 @@ const NAV_LINKS = [
   { href: "/blog", label: "Blog" },
 ];
 
-const POLICY_LINKS = [
-  { href: "/policies/warranty", label: "Bảo hành" },
-  { href: "/policies/shipping", label: "Vận chuyển" },
-  { href: "/policies/returns", label: "Đổi trả" },
-  { href: "/policies/privacy", label: "Bảo mật" },
-  { href: "/policies/faq", label: "FAQ" },
-];
+
 
 /** ─── Animated NavLink — expanding circle effect ─────────────────────────── */
 function NavLink({ href, label }: { href: string; label: string }) {
@@ -159,23 +153,7 @@ export default function Header() {
               {NAV_LINKS.map((link) => (
                 <NavLink key={link.href} href={link.href} label={link.label} />
               ))}
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    className="px-4 py-1.5 h-auto rounded-full text-sm font-medium text-white/75 hover:text-white hover:bg-white/15 transition-all duration-200 flex items-center gap-1"
-                  >
-                    Chính sách <ChevronDown className="w-3.5 h-3.5" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="rounded-xl shadow-lg border border-[#e3ebdd] bg-white min-w-[160px]">
-                  {POLICY_LINKS.map((l) => (
-                    <DropdownMenuItem key={l.href} asChild>
-                      <Link href={l.href} className="cursor-pointer text-sm">{l.label}</Link>
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
+              <NavLink href="/policies" label="Chính sách" />
             </nav>
 
             {/* Right actions */}
@@ -344,16 +322,12 @@ export default function Header() {
 
               <div className="my-4 h-px bg-white/10" />
 
-              <p className="text-[10px] uppercase tracking-wider text-white/40 font-semibold px-3 mb-2">Chính sách</p>
-              {POLICY_LINKS.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className="flex items-center gap-3 px-3 py-2 rounded-xl text-sm text-white/60 hover:text-white hover:bg-white/10 transition-all duration-200"
-                >
-                  {link.label}
-                </Link>
-              ))}
+              <Link
+                href="/policies"
+                className="flex items-center gap-3 px-3 py-2 rounded-xl text-sm text-white/60 hover:text-white hover:bg-white/10 transition-all duration-200"
+              >
+                Chính sách
+              </Link>
             </nav>
 
             {/* Bottom actions */}
