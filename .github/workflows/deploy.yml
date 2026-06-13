@@ -52,7 +52,8 @@ jobs:
 
             # ── Pull code mới nhất từ GitHub ─────────────────────────────────
             echo "📦 Pulling latest code..."
-            git pull origin main
+            git fetch origin main
+            git reset --hard origin/main
 
             # ── Cài dependencies (toàn bộ monorepo) ──────────────────────────
             echo "📚 Installing dependencies..."
