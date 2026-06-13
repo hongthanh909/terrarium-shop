@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { ImageWrapper } from "@/components/ui/ImageWrapper";
 import { Package, ArrowRight, ShoppingBasket, ChevronLeft, ChevronRight, Flame, Clock, Star, TrendingUp } from "lucide-react";
 import { showToast } from "@/components/ui/custom-toast";
@@ -128,10 +127,11 @@ export function ExploreClient({ featured, pinned, topVoted, newArrivals, weeklyF
                 transition={{ duration: 0.8 }}
                 className="absolute inset-0"
               >
-                <Image
+                <ImageWrapper
                   src={currentHero.product.images[0]}
                   alt={currentHero.product.name}
                   fill
+                  noRound
                   className="object-cover object-[center_15%]"
                   sizes="100vw"
                   priority

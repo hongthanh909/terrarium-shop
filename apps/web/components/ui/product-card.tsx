@@ -2,11 +2,12 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { motion, useReducedMotion } from "framer-motion";
+import { useReducedMotion } from "framer-motion";
 import Link from "next/link";
 import { Heart, Star, Package } from "lucide-react";
 import { SaleCountdown } from "@/components/ui/sale-countdown";
 import { ImageWrapper } from "@/components/ui/ImageWrapper";
+import { GlassCard } from "@/components/ui/glass-card";
 
 export interface ProductCardProps {
   id: string;
@@ -58,14 +59,10 @@ export function ProductCard({
   const prefersReducedMotion = useReducedMotion();
 
   return (
-    <motion.div
-      initial={prefersReducedMotion ? false : { opacity: 0, y: 24 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-40px" }}
-      whileHover={prefersReducedMotion ? undefined : { y: -6 }}
-      transition={{ duration: 0.35 }}
+    <GlassCard
+      variant="solid"
       className={cn(
-        "group relative flex flex-col rounded-2xl bg-white p-4 border border-[#e3ebdd] shadow-[0_4px_20px_rgba(66,87,51,0.06)] hover:shadow-lg hover:border-[#b8d8b8] transition-all duration-300 h-full",
+        "group relative flex flex-col p-4 h-full",
         className
       )}
     >
@@ -164,6 +161,6 @@ export function ProductCard({
           Thêm vào giỏ
         </button>
       </div>
-    </motion.div>
+    </GlassCard>
   );
 }

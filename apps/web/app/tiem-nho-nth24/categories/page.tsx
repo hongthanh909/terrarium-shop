@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
-import Image from "next/image";
+import { ImageWrapper } from "@/components/ui/ImageWrapper";
 import {
   Plus, Edit, Trash2, Search, ChevronDown, ChevronRight,
   Package, ExternalLink,
@@ -166,10 +166,11 @@ function CategoryRow({
                     {/* Thumbnail */}
                     <div className="relative aspect-square bg-[#f5f7f4]">
                       {p.images?.[0] ? (
-                        <Image
+                        <ImageWrapper
                           src={p.images[0]}
                           alt={p.name}
                           fill
+                          noRound
                           className="object-cover group-hover:scale-105 transition-transform duration-300"
                           sizes="150px"
                         />

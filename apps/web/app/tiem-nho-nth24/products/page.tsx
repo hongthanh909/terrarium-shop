@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
-import Image from "next/image";
+import { ImageWrapper } from "@/components/ui/ImageWrapper";
 import { Plus, Edit, Trash2, Eye, Search, Filter, Pin, Star, Flame, Zap } from "lucide-react";
 import { showToast } from "@/components/ui/custom-toast";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
@@ -407,7 +407,7 @@ export default function AdminProductsPage() {
                     <div className="flex items-center">
                       <div className="w-12 h-12 flex-shrink-0 bg-gray-200 rounded">
                         {product.images.length > 0 ? (
-                          <Image
+                          <ImageWrapper
                             src={product.images[0]}
                             alt={product.name}
                             width={48}

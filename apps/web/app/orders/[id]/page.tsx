@@ -2,7 +2,7 @@
 
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
+import { ImageWrapper } from "@/components/ui/ImageWrapper";
 import { useQuery } from "@tanstack/react-query";
 import { useSession } from "next-auth/react";
 import {
@@ -202,7 +202,7 @@ export default function OrderDetailPage() {
               <div key={item.id} className="flex gap-4 bg-gray-50 rounded-lg p-3">
                 <div className="w-16 h-16 bg-gray-100 rounded overflow-hidden flex-shrink-0">
                   {item.productImage ? (
-                    <Image src={item.productImage} alt={item.productName} width={64} height={64} className="w-full h-full object-cover" />
+                    <ImageWrapper src={item.productImage} alt={item.productName} width={64} height={64} className="w-full h-full object-cover" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-gray-300 text-xs">N/A</div>
                   )}

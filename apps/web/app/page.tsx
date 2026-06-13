@@ -1,6 +1,6 @@
 import { Metadata } from "next";
 import Link from "next/link";
-import Image from "next/image";
+import { ImageWrapper } from "@/components/ui/ImageWrapper";
 import { Suspense } from "react";
 import { Sprout, Truck, ArrowRight, Shield, FileText, Calendar, Gift, Sparkles, Bot, Gauge } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -331,7 +331,7 @@ async function LatestBlogSection() {
                   <Card className="overflow-hidden hover:shadow-soft-xl transition-all duration-300 hover:-translate-y-1 group border-0 rounded-2xl h-full flex flex-col">
                     <CardContent className="p-0 flex flex-col h-full">
                       <div className="aspect-video relative overflow-hidden bg-[#f0f4ec]">
-                        <Image src={post.thumbnail || post.images?.[0] || fallbackImages[index % 3]} alt={post.title} fill className="object-cover group-hover:scale-105 transition-transform duration-500" sizes="(max-width: 768px) 100vw, 33vw" />
+                        <ImageWrapper src={post.thumbnail || post.images?.[0] || fallbackImages[index % 3]} alt={post.title} fill noRound className="object-cover group-hover:scale-105 transition-transform duration-500" sizes="(max-width: 768px) 100vw, 33vw" />
                         <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors duration-300" />
                       </div>
                       <div className="p-6 flex-1 flex flex-col">

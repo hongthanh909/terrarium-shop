@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import Image from "next/image";
+import { ImageWrapper } from "@/components/ui/ImageWrapper";
 import { X, ChevronLeft, ChevronRight, ZoomIn } from "lucide-react";
 
 interface GalleryImage {
@@ -103,10 +103,11 @@ export function BrandGallery({ images }: BrandGalleryProps) {
                   onClick={() => setLightboxIndex(globalIdx)}
                   className={`relative ${heightClass} w-full rounded-2xl overflow-hidden group cursor-zoom-in shadow-sm hover:shadow-xl transition-all duration-500 hover:-translate-y-1 focus:outline-none focus:ring-2 focus:ring-[#425733] focus:ring-offset-2`}
                 >
-                  <Image
+                  <ImageWrapper
                     src={img.imageUrl}
                     alt={img.alt || "Tiệm Rêu Décor"}
                     fill
+                    noRound
                     className="object-cover transition-transform duration-700 group-hover:scale-105"
                     sizes={`(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw`}
                   />
@@ -157,10 +158,11 @@ export function BrandGallery({ images }: BrandGalleryProps) {
             className="relative max-w-5xl max-h-[85vh] w-full h-full"
             onClick={(e) => e.stopPropagation()}
           >
-            <Image
+            <ImageWrapper
               src={currentImage.imageUrl}
               alt={currentImage.alt || "Tiệm Rêu Décor"}
               fill
+              noRound
               className="object-contain"
               sizes="100vw"
               priority

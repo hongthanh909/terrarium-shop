@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
+import { ImageWrapper } from "@/components/ui/ImageWrapper";
 import { ArrowLeft, Check, X, Printer, ChevronDown } from "lucide-react";
 import { showToast } from "@/components/ui/custom-toast";
 
@@ -213,10 +213,11 @@ export default function AdminOrderDetailPage() {
                 <div key={item.id} className="flex gap-4 border-b pb-4 last:border-0">
                   <div className="w-20 h-20 bg-gray-100 rounded-xl overflow-hidden relative flex-shrink-0">
                     {item.productImage ? (
-                      <Image
+                      <ImageWrapper
                         src={item.productImage}
                         alt={item.productName}
                         fill
+                        noRound
                         className="object-cover"
                       />
                     ) : (

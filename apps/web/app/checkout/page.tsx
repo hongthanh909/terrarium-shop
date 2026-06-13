@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import Image from "next/image";
+import { ImageWrapper } from "@/components/ui/ImageWrapper";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, CreditCard, Truck } from "lucide-react";
 import { useCartStore, CartItem } from "@/lib/store/cartStore";
@@ -395,7 +395,7 @@ export default function CheckoutPage() {
                 <div className="space-y-4 mb-6 max-h-64 overflow-y-auto">
                   {itemsToCheckout.map((item: CartItem) => (
                     <div key={item.id} className="flex gap-4">
-                      <Image src={item.productImage} alt={item.productName} width={64} height={64} className="w-16 h-16 object-cover rounded" />
+                      <ImageWrapper src={item.productImage} alt={item.productName} width={64} height={64} className="w-16 h-16 object-cover rounded" />
                       <div className="flex-1">
                         <p className="font-semibold text-sm">{item.productName}</p>
                         {item.variants && Object.keys(item.variants).filter(k => k !== "Đèn").length > 0 && (

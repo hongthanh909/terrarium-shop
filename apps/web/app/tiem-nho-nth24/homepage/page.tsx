@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import Image from "next/image";
+import { ImageWrapper } from "@/components/ui/ImageWrapper";
 import {
   ImageIcon, Plus, Trash2, Eye, EyeOff, ArrowUp, ArrowDown,
   Loader2, Save, ExternalLink, LayoutDashboard, Sparkles, Bot, Truck, Gift, Upload, X,
@@ -539,7 +539,7 @@ export default function AdminHomepagePage() {
           <div className="relative w-full sm:w-56 h-32 rounded-xl overflow-hidden bg-gradient-to-br from-[#f0f4ec] to-[#e3ebdd] flex-shrink-0">
             {heroBgUrl && (
               <>
-                <Image src={heroBgUrl} alt="Hero background preview" fill className="object-cover" sizes="224px" />
+                <ImageWrapper src={heroBgUrl} alt="Hero background preview" fill noRound className="object-cover" sizes="224px" />
                 <div className="absolute inset-0" style={{ background: `rgba(240,244,236,${heroBgOverlay / 100})` }} />
               </>
             )}
@@ -701,10 +701,11 @@ export default function AdminHomepagePage() {
               <div className="flex gap-0 sm:gap-4 p-4">
                 {/* Thumbnail */}
                 <div className="relative flex-shrink-0 w-36 h-28 rounded-xl overflow-hidden bg-gray-100 border border-gray-200">
-                  <Image
+                  <ImageWrapper
                     src={banner.imageUrl}
                     alt={banner.title || `Banner ${index + 1}`}
                     fill
+                    noRound
                     className="object-cover"
                     sizes="144px"
                   />
@@ -936,10 +937,11 @@ export default function AdminHomepagePage() {
                 {/* Preview area */}
                 <div className="relative h-36 bg-[#f0f4ec] overflow-hidden">
                   {bgImage ? (
-                    <Image
+                    <ImageWrapper
                       src={bgImage}
                       alt={`Ảnh nền card ${id}`}
                       fill
+                      noRound
                       className="object-cover"
                       sizes="(max-width: 640px) 100vw, 50vw"
                     />
@@ -1084,10 +1086,11 @@ export default function AdminHomepagePage() {
               >
                 {/* Thumbnail */}
                 <div className="relative aspect-[4/3] bg-gray-100">
-                  <Image
+                  <ImageWrapper
                     src={img.imageUrl}
                     alt={img.alt || `Gallery ${index + 1}`}
                     fill
+                    noRound
                     className="object-cover"
                     sizes="200px"
                   />

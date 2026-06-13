@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import Image from "next/image";
+import { ImageWrapper } from "@/components/ui/ImageWrapper";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Package, TrendingUp, Clock, CheckCircle, Truck, XCircle, AlertTriangle, CreditCard } from "lucide-react";
 import { useSession } from "next-auth/react";
@@ -310,7 +310,7 @@ export default function MyOrdersPage() {
                       {order.items.slice(0, 4).map((item: any) => (
                         <div key={item.id} className="w-14 h-14 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
                           {item.productImage ? (
-                            <Image src={item.productImage} alt={item.productName} width={56} height={56} className="w-full h-full object-cover" />
+                            <ImageWrapper src={item.productImage} alt={item.productName} width={56} height={56} className="w-full h-full object-cover" />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center text-gray-300 text-xs">N/A</div>
                           )}
@@ -343,7 +343,7 @@ export default function MyOrdersPage() {
                           <div key={item.id} className="flex gap-4 bg-white rounded-lg p-3">
                             <div className="w-16 h-16 bg-gray-100 rounded overflow-hidden flex-shrink-0">
                               {item.productImage ? (
-                                <Image src={item.productImage} alt={item.productName} width={64} height={64} className="w-full h-full object-cover" />
+                                <ImageWrapper src={item.productImage} alt={item.productName} width={64} height={64} className="w-full h-full object-cover" />
                               ) : (
                                 <div className="w-full h-full flex items-center justify-center text-gray-300 text-xs">N/A</div>
                               )}

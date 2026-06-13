@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
-import Image from "next/image";
+import { ImageWrapper } from "@/components/ui/ImageWrapper";
 import { ArrowLeft, Check, X, Star, Eye } from "lucide-react";
 import { showToast } from "@/components/ui/custom-toast";
 
@@ -202,7 +202,7 @@ export default function AdminReviewsPage() {
                 {review.images && review.images.length > 0 && (
                   <div className="flex gap-2 mb-4">
                     {review.images.map((img: string, idx: number) => (
-                      <Image
+                      <ImageWrapper
                         key={idx}
                         src={img}
                         alt={`Ảnh đánh giá ${idx + 1}`}

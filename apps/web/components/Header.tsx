@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
+import { ImageWrapper } from "@/components/ui/ImageWrapper";
 import {
   ShoppingBasket, User, X, Minus, Plus, ShoppingBag,
   ChevronDown, LogOut, Package, LayoutDashboard, Heart, Lock,
@@ -440,7 +440,7 @@ export default function Header() {
                   <div key={`${item.productId}-${JSON.stringify(item.variants)}`} className="flex gap-3 p-3 rounded-xl bg-gray-50 border border-gray-100">
                     <div className="w-20 h-20 sm:w-16 sm:h-16 rounded-lg overflow-hidden bg-[#e3ebdd] flex-shrink-0">
                       {item.productImage ? (
-                        <Image src={item.productImage} alt={item.productName} width={64} height={64} className="w-full h-full object-cover" />
+                        <ImageWrapper src={item.productImage} alt={item.productName} width={64} height={64} className="w-full h-full object-cover" />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">
                           <Package className="w-6 h-6 text-[#6d8c5a]" />

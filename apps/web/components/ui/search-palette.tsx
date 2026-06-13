@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, Package, FileText, X, ArrowRight } from "lucide-react";
 import Link from "next/link";
-import Image from "next/image";
+import { ImageWrapper } from "@/components/ui/ImageWrapper";
 import { useRouter } from "next/navigation";
 
 interface SearchResult {
@@ -158,7 +158,7 @@ export function SearchPalette({ open, onClose }: SearchPaletteProps) {
                           >
                             <div className="w-10 h-10 rounded-xl overflow-hidden bg-gray-100 flex-shrink-0 border border-gray-100">
                               {p.images[0] ? (
-                                <Image src={p.images[0]} alt={p.name} width={40} height={40} className="w-full h-full object-cover" />
+                                <ImageWrapper src={p.images[0]} alt={p.name} width={40} height={40} className="w-full h-full object-cover" />
                               ) : (
                                 <div className="w-full h-full flex items-center justify-center text-lg">🌿</div>
                               )}

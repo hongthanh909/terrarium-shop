@@ -1,8 +1,8 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import Image from "next/image";
+import { ImageWrapper } from "@/components/ui/ImageWrapper";
 import { Heart, ShoppingBag, ArrowLeft, Loader2, Package } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
@@ -127,10 +127,11 @@ export default function FavoritesPage() {
               {/* Image */}
               <Link href={`/products/${product.slug}`} className="block relative aspect-square bg-[#f6faf4]">
                 {product.images[0] ? (
-                  <Image
+                  <ImageWrapper
                     src={product.images[0]}
                     alt={product.name}
                     fill
+                    noRound
                     sizes="(max-width: 768px) 50vw, 25vw"
                     className="object-cover group-hover:scale-105 transition-transform duration-300"
                   />

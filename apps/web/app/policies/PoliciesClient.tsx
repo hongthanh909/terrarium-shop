@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import { ImageWrapper } from "@/components/ui/ImageWrapper";
 import { motion } from "framer-motion";
 import { MessageCircle, ChevronDown, Shield, Truck, Undo2, Lock, HelpCircle, FileText } from "lucide-react";
 import { useState } from "react";
@@ -111,7 +111,7 @@ export function PoliciesClient({
           {/* Logo thay vì icon Shield */}
           <div className="flex justify-center mb-5">
             <div className="w-20 h-20 rounded-2xl overflow-hidden shadow-[0_8px_24px_rgba(66,87,51,0.25)] bg-white p-1">
-              <Image
+              <ImageWrapper
                 src="/logo.png"
                 alt="Tiệm Rêu Décor logo"
                 width={80}

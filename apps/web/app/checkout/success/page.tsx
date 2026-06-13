@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
-import Image from "next/image";
+import { ImageWrapper } from "@/components/ui/ImageWrapper";
 import { useSearchParams } from "next/navigation";
 import {
   Check, Clock, AlertTriangle, Copy, Package,
@@ -159,7 +159,7 @@ export default function CheckoutSuccessPage() {
 
               {/* Logo tiệm */}
               <div className="flex items-center justify-center gap-3 mb-4">
-                <Image
+                <ImageWrapper
                   src="/logo.png"
                   alt="Tiệm Rêu Décor"
                   width={36}
@@ -195,7 +195,7 @@ export default function CheckoutSuccessPage() {
                   {orderItems.map((item) => (
                     <div key={item.id} className="flex items-center gap-3 bg-[#f6faf4] border border-[#daebd0] rounded-xl p-3">
                       <div className="relative w-12 h-12 rounded-lg overflow-hidden bg-white border border-gray-200 shrink-0">
-                        <Image src={item.productImage} alt={item.productName} fill sizes="48px" className="object-cover" />
+                        <ImageWrapper src={item.productImage} alt={item.productName} fill sizes="48px" noRound className="object-cover" />
                       </div>
                       <div className="flex-1 text-left min-w-0">
                         <p className="text-xs font-bold text-[#2d4a1e] truncate">{item.productName}</p>
@@ -496,11 +496,12 @@ export default function CheckoutSuccessPage() {
                       <div key={item.id} className="flex gap-4 p-3 rounded-xl bg-[#fafcf8] border border-[#e8f0e1] hover:border-[#c8d5be] transition">
                         {/* Product Thumbnail */}
                         <div className="relative w-20 h-20 rounded-xl overflow-hidden bg-white border border-gray-200 shrink-0 shadow-sm">
-                          <Image
+                          <ImageWrapper
                             src={item.productImage}
                             alt={item.productName}
                             fill
                             sizes="80px"
+                            noRound
                             className="object-cover"
                           />
                         </div>

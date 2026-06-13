@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
+import { ImageWrapper } from "@/components/ui/ImageWrapper";
 import {
   ArrowLeft, X, Save, Upload, Image as ImageIcon, Star, Plus, Loader2,
 } from "lucide-react";
@@ -404,7 +404,7 @@ export default function EditProductPage() {
               >
                 {mainImage ? (
                   <>
-                    <Image src={mainImage} alt="Ảnh chính" fill className="object-cover" />
+                    <ImageWrapper src={mainImage} alt="Ảnh chính" fill noRound className="object-cover" />
                     <div className="absolute inset-0 bg-black/0 hover:bg-black/20 transition-colors flex items-center justify-center">
                       <span className="text-white text-xs font-medium opacity-0 hover:opacity-100">Đổi ảnh</span>
                     </div>
@@ -457,7 +457,7 @@ export default function EditProductPage() {
             <div className="grid grid-cols-4 sm:grid-cols-6 gap-3 mb-3">
               {subImages.map((img, idx) => (
                 <div key={idx} className="relative aspect-square rounded-xl overflow-hidden border border-gray-200 group">
-                  <Image src={img} alt={`Ảnh phụ ${idx + 1}`} fill className="object-cover" />
+                  <ImageWrapper src={img} alt={`Ảnh phụ ${idx + 1}`} fill noRound className="object-cover" />
                   <button
                     type="button"
                     onClick={() => setSubImages((prev) => prev.filter((_, i) => i !== idx))}

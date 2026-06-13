@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import Image from "next/image";
+import { ImageWrapper } from "@/components/ui/ImageWrapper";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight, Star, Heart, Package, ShoppingBasket } from "lucide-react";
 import { useCartStore } from "@/lib/store/cartStore";
@@ -232,10 +232,11 @@ function ProductCardHero({
           className="relative w-full h-full"
         >
           {product.images[0] ? (
-            <Image
+            <ImageWrapper
               src={product.images[0]}
               alt={product.name}
               fill
+              noRound
               className="object-cover transition-transform duration-500 group-hover:scale-105"
               sizes="(max-width: 768px) 100vw, 400px"
               priority={offset === 0}

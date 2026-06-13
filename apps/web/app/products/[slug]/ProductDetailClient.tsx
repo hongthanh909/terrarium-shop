@@ -17,7 +17,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { ProductCard } from "@/components/ui/product-card";
-import Image from "next/image";
+import { ImageWrapper } from "@/components/ui/ImageWrapper";
 
 // ── Package variant constants ───────────────────────────────────────────────
 const LAMP_VARIANT_TYPE = "Đèn";
@@ -471,7 +471,7 @@ export function ProductDetailClient({
                       <div className="flex items-start gap-4">
                         <input type="checkbox" className="mt-2 w-4 h-4 rounded border-gray-300" checked={item.selected || false} onChange={() => toggleSelectItem(item.id)} />
                         <div className="relative w-20 h-20 flex-shrink-0 rounded overflow-hidden">
-                          <Image src={item.productImage || "/placeholder.png"} alt={item.productName} fill sizes="80px" className="object-cover" />
+                          <ImageWrapper src={item.productImage || "/placeholder.png"} alt={item.productName} fill sizes="80px" noRound className="object-cover" />
                         </div>
                         <div className="flex-1">
                           <h3 className="font-semibold text-sm">{item.productName}</h3>

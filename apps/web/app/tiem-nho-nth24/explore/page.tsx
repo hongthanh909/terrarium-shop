@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
@@ -6,7 +6,7 @@ import { showToast } from "@/components/ui/custom-toast";
 import {
   Star, StarOff, Search, Trash2, Plus, RefreshCw, ExternalLink,
 } from "lucide-react";
-import Image from "next/image";
+import { ImageWrapper } from "@/components/ui/ImageWrapper";
 import Link from "next/link";
 
 interface Product {
@@ -168,7 +168,7 @@ export default function AdminExplorePage() {
               >
                 <div className="w-14 h-14 rounded-xl overflow-hidden bg-gray-100 flex-shrink-0">
                   {item.product.images?.[0] ? (
-                    <Image src={item.product.images[0]} alt={item.product.name} width={56} height={56} className="w-full h-full object-cover" />
+                    <ImageWrapper src={item.product.images[0]} alt={item.product.name} width={56} height={56} className="w-full h-full object-cover" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-gray-300 text-xs">No img</div>
                   )}
@@ -264,7 +264,7 @@ export default function AdminExplorePage() {
                   >
                     <div className="w-10 h-10 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
                       {p.images?.[0] ? (
-                        <Image
+                        <ImageWrapper
                           src={p.images[0]}
                           alt={p.name}
                           width={40}
