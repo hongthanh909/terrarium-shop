@@ -1,11 +1,12 @@
+// src: apps/web/components/ui/product-card.tsx
 "use client";
 
 import { cn } from "@/lib/utils";
 import { motion, useReducedMotion } from "framer-motion";
-import Image from "next/image";
 import Link from "next/link";
-import { Heart, Star, ShoppingBag, Package } from "lucide-react";
+import { Heart, Star, Package } from "lucide-react";
 import { SaleCountdown } from "@/components/ui/sale-countdown";
+import { ImageWrapper } from "@/components/ui/ImageWrapper";
 
 export interface ProductCardProps {
   id: string;
@@ -43,7 +44,6 @@ export function ProductCard({
   onToggleWishlist,
   wished = false,
 }: ProductCardProps) {
-  // Tính sale: chỉ hiện nếu salePrice < basePrice và chưa hết hạn
   const isOnSale =
     salePrice != null &&
     salePrice < basePrice &&
@@ -65,31 +65,20 @@ export function ProductCard({
       whileHover={prefersReducedMotion ? undefined : { y: -6 }}
       transition={{ duration: 0.35 }}
       className={cn(
-        "group relative flex flex-col rounded-2xl bg-white p-4 shadow-sm border border-[#e3ebdd]",
-        "hover:shadow-lg hover:border-[#b8d8b8] transition-all duration-300 h-full",
+        "group relative flex flex-col rounded-2xl bg-white p-4 border border-[#e3ebdd] shadow-[0_4px_20px_rgba(66,87,51,0.06)] hover:shadow-lg hover:border-[#b8d8b8] transition-all duration-300 h-full",
         className
       )}
     >
-      {/* ── Image area ──────────────────────────── */}
-      <Link
-        href={`/products/${slug}`}
-        className="block relative overflow-hidden rounded-xl bg-gray-50 mb-4 aspect-[4/3] flex-shrink-0"
-      >
+      {/* Image area */}
+      <Link href={`/products/${slug}`} className="block relative overflow-hidden rounded-2xl bg-white mb-4 aspect-square flex-shrink-0">
         {images[0] ? (
-          <Image
-            src={images[0]}
-            alt={name}
-            fill
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-            className="object-cover transition-transform duration-500 group-hover:scale-105"
-          />
+          <ImageWrapper src={images[0]} alt={name} />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center text-gray-400">
             <Package className="w-12 h-12" />
           </div>
         )}
-
-        {/* ── Badges ─────────────────────────────────────────── */}
+        {/* Badges */}
         <div className="absolute top-2 right-2 flex flex-col gap-1.5 z-10">
           {isOnSale && (
             <span className="px-2.5 py-1 rounded-lg bg-gradient-to-r from-red-500 to-rose-400 text-white text-xs font-bold shadow-md">
@@ -107,8 +96,7 @@ export function ProductCard({
             </span>
           )}
         </div>
-
-        {/* ── Wishlist button (optional, keep it on hover) ──────── */}
+        {/* Wishlist button */}
         <button
           onClick={(e) => { e.preventDefault(); onToggleWishlist?.(); }}
           className={cn(
@@ -124,7 +112,7 @@ export function ProductCard({
         </button>
       </Link>
 
-      {/* ── Info section ─────────────────────────────────────── */}
+      {/* Info section */}
       <div className="flex flex-col flex-1">
         {/* Category */}
         <span className="text-gray-400 text-[11px] font-semibold uppercase tracking-wider mb-1 block">
@@ -144,11 +132,9 @@ export function ProductCard({
             <>
               <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
               <span className="text-sm font-medium text-gray-700">
-                {rating > 0 ? rating.toFixed(1) : "5.0"}
+                {rating > 0 ? rating.toFixed(1) : ""}
               </span>
-              <span className="text-xs text-gray-400">
-                ({reviewCount})
-              </span>
+              <span className="text-xs text-gray-400">({reviewCount})</span>
             </>
           ) : (
             <span className="text-xs text-gray-400 italic">Chưa có đánh giá</span>
@@ -170,7 +156,7 @@ export function ProductCard({
           )}
         </div>
 
-        {/* ── Add to cart Button ────────────────── */}
+        {/* Add to cart button */}
         <button
           onClick={(e) => { e.preventDefault(); onAddToCart?.(); }}
           className="w-full py-2.5 rounded-lg bg-gradient-to-r from-[#3a5229] to-[#4a6a35] text-white text-sm font-semibold hover:from-[#2d3d23] hover:to-[#3a5229] transition-all active:scale-[0.98] shadow-[0_4px_14px_rgba(58,82,41,0.25)] hover:shadow-[0_6px_20px_rgba(58,82,41,0.35)]"

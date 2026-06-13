@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { ImageWrapper } from "@/components/ui/ImageWrapper";
 import { Package, ArrowRight, ShoppingBasket, ChevronLeft, ChevronRight, Flame, Clock, Star, TrendingUp } from "lucide-react";
 import { showToast } from "@/components/ui/custom-toast";
 import { useCartStore } from "@/lib/store/cartStore";
@@ -263,15 +264,9 @@ export function ExploreClient({ featured, pinned, topVoted, newArrivals, weeklyF
                     className="group flex-shrink-0 w-64 snap-start"
                   >
                     <div className="relative aspect-square rounded-2xl overflow-hidden bg-gray-100 mb-3">
-                      {item.product.images[0] ? (
-                        <Image
-                          src={item.product.images[0]}
-                          alt={item.product.name}
-                          fill
-                          className="object-cover group-hover:scale-105 transition-transform duration-500"
-                          sizes="256px"
-                        />
-                      ) : (
+                       {item.product.images[0] ? (
+                         <ImageWrapper src={item.product.images[0]} alt={item.product.name} />
+                       ) : (
                         <div className="w-full h-full flex items-center justify-center">
                           <Package className="w-8 h-8 text-gray-300" />
                         </div>
@@ -478,13 +473,7 @@ function BentoCard({
     >
       {/* Image */}
       {product.images[0] ? (
-        <Image
-          src={product.images[0]}
-          alt={product.name}
-          fill
-          className="object-cover group-hover:scale-105 transition-transform duration-700"
-          sizes={showDetails ? "(max-width: 768px) 100vw, 50vw" : "(max-width: 768px) 50vw, 25vw"}
-        />
+        <ImageWrapper src={product.images[0]} alt={product.name} />
       ) : (
         <div className="absolute inset-0 flex items-center justify-center">
           <Package className="w-12 h-12 text-gray-300" />
