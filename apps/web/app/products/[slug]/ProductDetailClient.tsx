@@ -18,6 +18,7 @@ import { Badge } from "@/components/ui/badge";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { ProductCard } from "@/components/ui/product-card";
 import { ImageWrapper } from "@/components/ui/ImageWrapper";
+import { useWishlist } from "@/lib/hooks/useWishlist";
 
 // ── Package variant constants ───────────────────────────────────────────────
 const LAMP_VARIANT_TYPE = "Đèn";
@@ -79,6 +80,7 @@ export function ProductDetailClient({
   const [product, setProduct] = useState<any>(initialProduct);
   const [relatedProducts] = useState<any[]>(initialRelated);
   const [loading] = useState(false);
+  const { isWished, toggleWishlist } = useWishlist();
 
   const isBểProduct = initialProduct?.category?.name?.toLowerCase().includes("bể") || 
                        initialProduct?.category?.slug?.toLowerCase().includes("be") ||
@@ -1092,6 +1094,8 @@ export function ProductDetailClient({
                   images={rel.images}
                   category={rel.category}
                   reviewCount={rel._count?.reviews ?? 0}
+                  wished={isWished(rel.id)}
+                  onToggleWishlist={() => toggleWishlist(rel.id, rel.name)}
                 />
               ))}
             </div>

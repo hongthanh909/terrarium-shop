@@ -2,7 +2,7 @@
 
 import { ImageWrapper } from "@/components/ui/ImageWrapper";
 import { motion } from "framer-motion";
-import { MessageCircle, ChevronDown, Shield, Truck, Undo2, Lock, HelpCircle, FileText } from "lucide-react";
+import { MessageCircle, ChevronDown } from "lucide-react";
 import { useState } from "react";
 import { useReducedMotion } from "framer-motion";
 
@@ -16,29 +16,20 @@ interface Policy {
 
 const TYPE_ORDER = ["warranty", "shipping", "returns", "privacy", "faq", "policy"];
 
-const typeLabels: Record<string, { label: string; Icon: any }> = {
-  warranty: { label: "Bảo hành", Icon: Shield },
-  shipping: { label: "Vận chuyển", Icon: Truck },
-  returns: { label: "Đổi trả", Icon: Undo2 },
-  privacy: { label: "Bảo mật", Icon: Lock },
-  faq: { label: "Câu hỏi thường gặp", Icon: HelpCircle },
-  policy: { label: "Chính sách khác", Icon: FileText },
-};
-
 function AccordionItem({ policy, index }: { policy: Policy; index: number }) {
   const [open, setOpen] = useState(false);
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 16 }}
+      initial={{ opacity: 0, y: 12 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-30px" }}
-      transition={{ duration: 0.35, delay: index * 0.05 }}
-      className="border border-[#e3ebdd] rounded-2xl mb-3 overflow-hidden bg-white"
+      transition={{ duration: 0.3, delay: index * 0.04 }}
+      className="border-b border-[#e3ebdd] last:border-b-0"
     >
       <button
         onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between px-6 py-4 text-left hover:bg-[#f5f8f3] transition-colors group"
+        className="w-full flex items-center justify-between px-6 py-5 text-left hover:bg-[#f5f8f3] transition-colors group"
       >
         <span className="font-semibold text-[#1a2e12] group-hover:text-[#425733] transition-colors pr-4">
           {policy.title}
@@ -59,7 +50,7 @@ function AccordionItem({ policy, index }: { policy: Policy; index: number }) {
         className="overflow-hidden"
       >
         <div
-          className="px-6 pb-5 pt-1 text-gray-600 text-sm leading-relaxed prose prose-sm max-w-none border-t border-[#e8f0e3]"
+          className="px-6 pb-6 pt-1 text-gray-600 text-sm leading-relaxed prose prose-sm max-w-none"
           dangerouslySetInnerHTML={{ __html: policy.content.replace(/\n/g, "<br/>") }}
         />
       </motion.div>
@@ -72,22 +63,14 @@ export function PoliciesClient({
 }: {
   policies: Policy[];
 }) {
-  const grouped = policies.reduce<Record<string, Policy[]>>((acc, p) => {
-    if (!acc[p.type]) acc[p.type] = [];
-    acc[p.type].push(p);
-    return acc;
-  }, {});
-
-  // Sort groups by defined order
-  const sortedGroups = TYPE_ORDER
-    .filter((t) => grouped[t] && grouped[t].length > 0)
-    .map((t) => ({ type: t, items: grouped[t] }));
-
-  // Any leftover types not in TYPE_ORDER
-  Object.keys(grouped).forEach((t) => {
-    if (!TYPE_ORDER.includes(t)) {
-      sortedGroups.push({ type: t, items: grouped[t] });
-    }
+  // Sort all policies: first by type order, then by order within type
+  const sortedPolicies = [...policies].sort((a, b) => {
+    const typeA = TYPE_ORDER.indexOf(a.type);
+    const typeB = TYPE_ORDER.indexOf(b.type);
+    const orderA = typeA === -1 ? 999 : typeA;
+    const orderB = typeB === -1 ? 999 : typeB;
+    if (orderA !== orderB) return orderA - orderB;
+    return a.order - b.order;
   });
 
   const prefersReducedMotion = useReducedMotion();
@@ -99,7 +82,7 @@ export function PoliciesClient({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.45 }}
     >
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-3xl mx-auto">
 
         {/* Hero Header */}
         <motion.div
@@ -108,7 +91,7 @@ export function PoliciesClient({
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1, duration: 0.5 }}
         >
-          {/* Logo thay vì icon Shield */}
+          {/* Logo */}
           <div className="flex justify-center mb-5">
             <div className="w-20 h-20 rounded-2xl overflow-hidden shadow-[0_8px_24px_rgba(66,87,51,0.25)] bg-white p-1">
               <ImageWrapper
@@ -133,7 +116,7 @@ export function PoliciesClient({
           </p>
         </motion.div>
 
-        {/* Policy Sections — numbered 01, 02, ... */}
+        {/* All policies — single flat accordion */}
         {policies.length === 0 ? (
           <motion.div
             className="text-center py-16"
@@ -143,49 +126,10 @@ export function PoliciesClient({
             <p className="text-gray-400">Chưa có chính sách nào.</p>
           </motion.div>
         ) : (
-          <div className="space-y-10">
-            {sortedGroups.map(({ type, items }, groupIndex) => {
-              const meta = typeLabels[type] || { label: type, Icon: FileText };
-              const num = String(groupIndex + 1).padStart(2, "0");
-              return (
-                <motion.section
-                  key={type}
-                  initial={{ opacity: 0, x: -20 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true, margin: "-40px" }}
-                  transition={{ duration: 0.4, delay: groupIndex * 0.08 }}
-                >
-                  {/* Numbered section header */}
-                  <div className="flex items-center gap-4 mb-5">
-                    <span
-                      className="text-5xl font-extrabold leading-none select-none"
-                      style={{
-                        color: "transparent",
-                        WebkitTextStroke: "2px #d4e4c9",
-                        fontFamily: "'Dancing Script', cursive",
-                      }}
-                    >
-                      {num}
-                    </span>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <meta.Icon className="w-5 h-5 text-[#425733]" />
-                        <h2 className="text-xl font-bold text-[#1a2e12]">{meta.label}</h2>
-                      </div>
-                      <div className="h-px bg-[#d4e4c9] mt-1.5" />
-                    </div>
-                  </div>
-
-                  <div>
-                    {[...items]
-                      .sort((a, b) => a.order - b.order)
-                      .map((policy, i) => (
-                        <AccordionItem key={policy.id} policy={policy} index={i} />
-                      ))}
-                  </div>
-                </motion.section>
-              );
-            })}
+          <div className="bg-white rounded-2xl border border-[#e3ebdd] shadow-sm overflow-hidden">
+            {sortedPolicies.map((policy, i) => (
+              <AccordionItem key={policy.id} policy={policy} index={i} />
+            ))}
           </div>
         )}
 

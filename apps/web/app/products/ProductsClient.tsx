@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { ProductCard } from "@/components/ui/product-card";
 import { PageTransition, SlideInHeading } from "@/components/ui/page-transition";
 import { useCartStore } from "@/lib/store/cartStore";
+import { useWishlist } from "@/lib/hooks/useWishlist";
 import { useSession } from "next-auth/react";
 import { showToast } from "@/components/ui/custom-toast";
 import { motion, useReducedMotion } from "framer-motion";
@@ -48,6 +49,7 @@ export function ProductsClient({
   const [selectedCategory, setSelectedCategory] = useState<string | null>(initialCategory);
   const [searchQuery, setSearchQuery] = useState(initialSearch);
   const { addItem } = useCartStore();
+  const { isWished, toggleWishlist } = useWishlist();
   const prefersReducedMotion = useReducedMotion();
 
   const handleAddToCart = (product: Product) => {
@@ -191,6 +193,8 @@ export function ProductsClient({
                   category={product.category}
                   reviewCount={product._count?.reviews ?? 0}
                   onAddToCart={() => handleAddToCart(product)}
+                  wished={isWished(product.id)}
+                  onToggleWishlist={() => toggleWishlist(product.id, product.name)}
                 />
               ))}
             </div>

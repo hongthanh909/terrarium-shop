@@ -1,7 +1,8 @@
-﻿"use client";
+"use client";
 
 import { ProductCard } from "@/components/ui/product-card";
 import { useCartStore } from "@/lib/store/cartStore";
+import { useWishlist } from "@/lib/hooks/useWishlist";
 import { showToast } from "@/components/ui/custom-toast";
 
 interface FeaturedProductCardProps {
@@ -21,6 +22,7 @@ interface FeaturedProductCardProps {
 
 export function FeaturedProductCard(props: FeaturedProductCardProps) {
   const { addItem } = useCartStore();
+  const { isWished, toggleWishlist } = useWishlist();
 
   const handleAddToCart = () => {
     const price = props.salePrice != null && props.salePrice < props.basePrice
@@ -40,6 +42,8 @@ export function FeaturedProductCard(props: FeaturedProductCardProps) {
     <ProductCard
       {...props}
       onAddToCart={handleAddToCart}
+      wished={isWished(props.id)}
+      onToggleWishlist={() => toggleWishlist(props.id, props.name)}
     />
   );
 }

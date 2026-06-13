@@ -6,6 +6,7 @@ import { ImageWrapper } from "@/components/ui/ImageWrapper";
 import { Package, ArrowRight, ShoppingBasket, ChevronLeft, ChevronRight, Flame, Clock, Star, TrendingUp } from "lucide-react";
 import { showToast } from "@/components/ui/custom-toast";
 import { useCartStore } from "@/lib/store/cartStore";
+import { useWishlist } from "@/lib/hooks/useWishlist";
 import { Button } from "@/components/ui/button";
 import { ProductCard } from "@/components/ui/product-card";
 import { PageTransition } from "@/components/ui/page-transition";
@@ -87,6 +88,7 @@ function PriceTag({ product, className = "" }: { product: Product; className?: s
 
 export function ExploreClient({ featured, pinned, topVoted, newArrivals, weeklyFeaturedItems }: ExploreProps) {
   const addToCart = useAddToCart();
+  const { isWished, toggleWishlist } = useWishlist();
   const [heroIndex, setHeroIndex] = useState(0);
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -329,6 +331,8 @@ export function ExploreClient({ featured, pinned, topVoted, newArrivals, weeklyF
                       images={product.images}
                       category={product.category}
                       onAddToCart={() => addToCart(product)}
+                      wished={isWished(product.id)}
+                      onToggleWishlist={() => toggleWishlist(product.id, product.name)}
                     />
                   ))}
                 </div>
@@ -359,6 +363,8 @@ export function ExploreClient({ featured, pinned, topVoted, newArrivals, weeklyF
                     images={product.images}
                     category={product.category}
                     onAddToCart={() => addToCart(product)}
+                    wished={isWished(product.id)}
+                    onToggleWishlist={() => toggleWishlist(product.id, product.name)}
                   />
                 ))}
               </div>
@@ -389,6 +395,8 @@ export function ExploreClient({ featured, pinned, topVoted, newArrivals, weeklyF
                     category={product.category}
                     isNew
                     onAddToCart={() => addToCart(product)}
+                    wished={isWished(product.id)}
+                    onToggleWishlist={() => toggleWishlist(product.id, product.name)}
                   />
                 ))}
               </div>
