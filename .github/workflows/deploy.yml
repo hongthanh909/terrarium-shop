@@ -86,6 +86,39 @@ jobs:
             # ── Lưu PM2 process list ──────────────────────────────────────────
             pm2 save
 
+            # ── Kiểm tra & khởi động Ollama AI ───────────────────────────────
+            echo "🤖 Checking Ollama AI..."
+            if command -v ollama &> /dev/null; then
+              # Đảm bảo Ollama service đang chạy
+              sudo systemctl restart ollama 2>/dev/null || true
+              sleep 3
+
+              # Kiểm tra kết nối
+              if curl -sf http://127.0.0.1:11434/api/tags > /dev/null 2>&1; then
+                echo "✅ Ollama đang chạy!"
+                # Kiểm tra model đã pull chưa
+                if ollama list | grep -q "llama3:8b"; then
+                  echo "✅ Model llama3:8b sẵn sàng"
+                else
+                  echo "⏳ Đang tải model llama3:8b (có thể mất vài phút)..."
+                  ollama pull llama3:8b &
+                  echo "📥 Model đang tải nền, AI sẽ sẵn sàng sau khi tải xong"
+                fi
+              else
+                echo "⚠️ Ollama chưa phản hồi, thử khởi động lại..."
+                sudo systemctl start ollama 2>/dev/null || ollama serve &
+                sleep 5
+                if curl -sf http://127.0.0.1:11434/api/tags > /dev/null 2>&1; then
+                  echo "✅ Ollama đã khởi động thành công!"
+                else
+                  echo "⚠️ Ollama chưa sẵn sàng — chatbot sẽ dùng chế độ cơ bản"
+                fi
+              fi
+            else
+              echo "⚠️ Ollama chưa được cài đặt — chatbot dùng chế độ cơ bản"
+              echo "   Cài đặt: curl -fsSL https://ollama.com/install.sh | sh"
+            fi
+
             echo "✅ Deploy hoàn tất lúc $(date)!"
 
       # ── 4. Thông báo kết quả ──────────────────────────────────────────────

@@ -29,7 +29,10 @@ module.exports = {
       env_production: {
         NODE_ENV: "production",
         PORT: 3000,
-        // Các biến khác đặt trong file .env.local tại apps/web/
+        // Ollama AI — chạy cùng VPS
+        OLLAMA_BASE_URL: "http://127.0.0.1:11434",
+        OLLAMA_MODEL: "llama3:8b",
+        // Các biến khác (DB, secrets) đặt trong file .env.local tại apps/web/
         // KHÔNG hardcode secrets ở đây
       },
 
