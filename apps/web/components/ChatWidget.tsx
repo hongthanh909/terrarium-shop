@@ -1,13 +1,14 @@
 "use client";
 
 import { useState, useRef, useEffect, useMemo } from "react";
-import Head from "next/head";
 import { usePathname } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
 import {
-  MessageCircle, Send, Bot, Sparkles, X,
-  ShoppingBag, ExternalLink, RefreshCw
+  MessageCircle, Send, X,
+  ShoppingBag, ExternalLink, RefreshCw, Leaf, Sparkles
 } from "lucide-react";
 
+// ── Types ────────────────────────────────────────────
 interface ChatMessage {
   role: "user" | "assistant";
   content: string;
@@ -25,6 +26,7 @@ interface PageContext {
   blogTitle?: string;
 }
 
+// ── Quick Questions per page ─────────────────────────
 const QUICK_QUESTIONS: Record<string, string[]> = {
   product: [
     "Sản phẩm này phù hợp phòng nào?",
@@ -58,6 +60,7 @@ const QUICK_QUESTIONS: Record<string, string[]> = {
   ],
 };
 
+// ── Helpers (unchanged logic) ────────────────────────
 function extractProductLinks(text: string): { name: string; slug: string; price: string; image?: string }[] {
   const products: { name: string; slug: string; price: string; image?: string }[] = [];
   const lines = text.split("\n");
@@ -88,7 +91,7 @@ function renderContent(content: string) {
     <span key={i} className="block">
       {line.split(/(\*\*[^*]+\*\*)/g).map((part, j) =>
         part.startsWith("**") && part.endsWith("**")
-          ? <strong key={j}>{part.slice(2, -2)}</strong>
+          ? <strong key={j} className="font-semibold">{part.slice(2, -2)}</strong>
           : <span key={j}>{part}</span>
       )}
     </span>
@@ -99,24 +102,12 @@ function getPageContext(pathname: string): PageContext {
   if (pathname.match(/^\/products\/[\w-]+$/)) {
     return { type: "product", slug: pathname.replace("/products/", "") };
   }
-  if (pathname.startsWith("/blog")) {
-    return { type: "blog" };
-  }
-  if (pathname === "/explore") {
-    return { type: "explore" };
-  }
-  if (pathname.startsWith("/checkout")) {
-    return { type: "checkout" };
-  }
-  if (pathname.startsWith("/orders")) {
-    return { type: "orders" };
-  }
-  if (pathname === "/consult") {
-    return { type: "consult" };
-  }
-  if (pathname === "/") {
-    return { type: "home" };
-  }
+  if (pathname.startsWith("/blog")) return { type: "blog" };
+  if (pathname === "/explore") return { type: "explore" };
+  if (pathname.startsWith("/checkout")) return { type: "checkout" };
+  if (pathname.startsWith("/orders")) return { type: "orders" };
+  if (pathname === "/consult") return { type: "consult" };
+  if (pathname === "/") return { type: "home" };
   return { type: "general" };
 }
 
@@ -124,28 +115,70 @@ function getWelcomeMessage(ctx: PageContext): string {
   switch (ctx.type) {
     case "product":
       if (ctx.productName) {
-        return `Xin chào! 👋 Bạn đang xem **${ctx.productName}**${ctx.productPrice ? ` (${ctx.productPrice})` : ""}.\nHỏi tôi bất cứ điều gì về sản phẩm này nhé:\n• Chăm sóc & bảo hành\n• Sản phẩm tương tự\n• Gợi ý mua kèm phụ kiện`;
+        return `Xin chào! Bạn đang xem **${ctx.productName}**${ctx.productPrice ? ` (${ctx.productPrice})` : ""}.\nHỏi tôi bất cứ điều gì về sản phẩm này nhé:\n• Chăm sóc & bảo hành\n• Sản phẩm tương tự\n• Gợi ý mua kèm phụ kiện`;
       }
-      return "Xin chào! 👋 Tôi là trợ lý AI của **Tiệm Rêu**.\nBạn đang xem chi tiết sản phẩm — hỏi tôi về sản phẩm này nhé!";
+      return "Xin chào! Tôi là trợ lý của **Tiệm Rêu**.\nBạn đang xem chi tiết sản phẩm — hỏi tôi nhé!";
     case "blog":
-      return "Xin chào! 👋 Tôi là trợ lý AI của **Tiệm Rêu**.\nBạn đang đọc blog — tôi có thể giúp bạn:\n• Tìm kiếm sản phẩm liên quan\n• Tư vấn chăm sóc terrarium\n• Giải đáp thắc mắc";
+      return "Xin chào! Tôi là trợ lý của **Tiệm Rêu**.\nBạn đang đọc blog — tôi có thể giúp bạn:\n• Tìm kiếm sản phẩm liên quan\n• Tư vấn chăm sóc terrarium\n• Giải đáp thắc mắc";
     case "explore":
-      return "Xin chào! 👋 Tôi là trợ lý AI của **Tiệm Rêu**.\nBạn đang khám phá bộ sưu tập — tôi có thể giúp:\n• Gợi ý sản phẩm phù hợp với bạn\n• So sánh các sản phẩm\n• Tư vấn quà tặng";
+      return "Xin chào! Tôi là trợ lý của **Tiệm Rêu**.\nBạn đang khám phá bộ sưu tập — tôi có thể giúp:\n• Gợi ý sản phẩm phù hợp với bạn\n• So sánh các sản phẩm\n• Tư vấn quà tặng";
     case "checkout":
-      return "Xin chào! 👋 Bạn đang thanh toán.\nTôi có thể giúp bạn:\n• Thông tin vận chuyển & giao hàng\n• Hỗ trợ mã giảm giá\n• Chính sách đổi trả";
+      return "Xin chào! Bạn đang thanh toán.\nTôi có thể giúp bạn:\n• Thông tin vận chuyển & giao hàng\n• Hỗ trợ mã giảm giá\n• Chính sách đổi trả";
     case "orders":
-      return "Xin chào! 👋 Bạn đang xem đơn hàng.\nTôi có thể giúp bạn:\n• Kiểm tra tình trạng đơn hàng\n• Chính sách đổi trả & bảo hành\n• Hỗ trợ liên hệ shop";
+      return "Xin chào! Bạn đang xem đơn hàng.\nTôi có thể giúp bạn:\n• Kiểm tra tình trạng đơn hàng\n• Chính sách đổi trả & bảo hành\n• Hỗ trợ liên hệ shop";
     case "home":
-      return "Xin chào! 👋 Tôi là trợ lý AI của **Tiệm Rêu**.\nTôi có thể giúp bạn:\n• Tư vấn chọn terrarium phù hợp\n• Hướng dẫn chăm sóc cây\n• Gợi ý sản phẩm và giá cả";
+      return "Xin chào! Tôi là trợ lý của **Tiệm Rêu**.\nTôi có thể giúp bạn:\n• Tư vấn chọn terrarium phù hợp\n• Hướng dẫn chăm sóc cây\n• Gợi ý sản phẩm và giá cả";
     default:
-      return "Xin chào! 👋 Tôi là trợ lý AI của **Tiệm Rêu**.\nTôi có thể giúp bạn:\n• Tư vấn chọn terrarium phù hợp\n• Hướng dẫn chăm sóc cây\n• Gợi ý sản phẩm và giá cả";
+      return "Xin chào! Tôi là trợ lý của **Tiệm Rêu**.\nTôi có thể giúp bạn:\n• Tư vấn chọn terrarium phù hợp\n• Hướng dẫn chăm sóc cây\n• Gợi ý sản phẩm và giá cả";
   }
 }
 
+// ── Constants ────────────────────────────────────────
 const MAX_MESSAGES_PER_SESSION = 30;
 const SEND_COOLDOWN_MS = 3000;
 const MAX_INPUT_LENGTH = 400;
 
+// ── Motion variants ─────────────────────────────────
+const panelVariants = {
+  hidden: { opacity: 0, y: 16, scale: 0.96 },
+  visible: {
+    opacity: 1, y: 0, scale: 1,
+    transition: { type: "spring", stiffness: 340, damping: 28 },
+  },
+  exit: {
+    opacity: 0, y: 12, scale: 0.96,
+    transition: { duration: 0.18, ease: "easeIn" },
+  },
+};
+
+const msgVariants = {
+  hidden: { opacity: 0, y: 10, scale: 0.97 },
+  visible: {
+    opacity: 1, y: 0, scale: 1,
+    transition: { type: "spring", stiffness: 400, damping: 30 },
+  },
+};
+
+const chipVariants = {
+  hidden: { opacity: 0, y: 8 },
+  visible: (i: number) => ({
+    opacity: 1, y: 0,
+    transition: { delay: 0.08 * i, type: "spring", stiffness: 400, damping: 28 },
+  }),
+};
+
+const tooltipVariants = {
+  hidden: { opacity: 0, x: 10, scale: 0.9 },
+  visible: {
+    opacity: 1, x: 0, scale: 1,
+    transition: { type: "spring", stiffness: 400, damping: 25 },
+  },
+  exit: { opacity: 0, x: 10, scale: 0.9, transition: { duration: 0.15 } },
+};
+
+// ═══════════════════════════════════════════════════
+// COMPONENT
+// ═══════════════════════════════════════════════════
 export default function ChatWidget() {
   const pathname = usePathname() ?? "";
 
@@ -162,7 +195,6 @@ export default function ChatWidget() {
   const [pageCtx, setPageCtx] = useState<PageContext>(() => getPageContext(pathname));
   const [productData, setProductData] = useState<{ name: string; price: string; category: string } | null>(null);
 
-  // Detect page changes → update context & reset chat
   const prevPathRef = useRef(pathname);
   useEffect(() => {
     if (pathname !== prevPathRef.current) {
@@ -171,7 +203,6 @@ export default function ChatWidget() {
       setPageCtx(ctx);
       setProductData(null);
 
-      // Fetch product info if on a product detail page
       if (ctx.type === "product" && ctx.slug) {
         fetch(`/api/products?slug=${ctx.slug}`)
           .then(r => r.ok ? r.json() : null)
@@ -193,7 +224,6 @@ export default function ChatWidget() {
     }
   }, [pathname]);
 
-  // Build enriched page context for API
   const enrichedCtx = useMemo<PageContext>(() => {
     if (pageCtx.type === "product" && productData) {
       return {
@@ -206,7 +236,6 @@ export default function ChatWidget() {
     return pageCtx;
   }, [pageCtx, productData]);
 
-  // Initial message depends on context
   const initialMessage = useMemo<ChatMessage>(() => ({
     role: "assistant",
     content: getWelcomeMessage(enrichedCtx),
@@ -214,7 +243,6 @@ export default function ChatWidget() {
 
   const [messages, setMessages] = useState<ChatMessage[]>([initialMessage]);
 
-  // Reset messages when initial message changes (page navigation)
   const prevWelcomeRef = useRef(initialMessage.content);
   useEffect(() => {
     if (initialMessage.content !== prevWelcomeRef.current) {
@@ -225,8 +253,6 @@ export default function ChatWidget() {
   }, [initialMessage]);
 
   const messageCount = messages.filter(m => m.role === "user").length;
-
-  // Quick questions for current page type
   const quickQs = QUICK_QUESTIONS[enrichedCtx.type] || QUICK_QUESTIONS.general;
 
   useEffect(() => {
@@ -248,18 +274,19 @@ export default function ChatWidget() {
     setIsAIAvailable(null);
   };
 
+  // ── Send message (unchanged logic) ─────────────
   const sendMessage = async (text: string) => {
     if (!text.trim() || isSending || isCooldown) return;
-    
+
     if (messageCount >= MAX_MESSAGES_PER_SESSION) {
       setMessages((prev) => [...prev, {
         role: "assistant",
-        content: "Dạ cuộc trò chuyện đã khá dài rồi 🌿 Để được tư vấn chi tiết hơn, anh/chị liên hệ trực tiếp qua Zalo hoặc Facebook của Tiệm Rêu nhé!\n\nHoặc bấm nút 🔄 để bắt đầu cuộc trò chuyện mới.",
+        content: "Dạ cuộc trò chuyện đã khá dài rồi. Để được tư vấn chi tiết hơn, anh/chị liên hệ trực tiếp qua Zalo hoặc Facebook của Tiệm Rêu nhé!\n\nHoặc bấm nút làm mới để bắt đầu cuộc trò chuyện mới.",
         isStreaming: false,
       }]);
       return;
     }
-    
+
     const userMsg = text.trim();
     if (userMsg.length > MAX_INPUT_LENGTH) return;
     setMessage("");
@@ -269,7 +296,6 @@ export default function ChatWidget() {
     setIsSending(true);
 
     const history = newMessages.slice(1).map((m) => ({ role: m.role, content: m.content }));
-
     setMessages((prev) => [...prev, { role: "assistant", content: "", isStreaming: true }]);
 
     const controller = new AbortController();
@@ -339,7 +365,7 @@ export default function ChatWidget() {
       if (err instanceof Error && err.name === "AbortError") return;
       setMessages((prev) => {
         const u = [...prev];
-        u[u.length - 1] = { role: "assistant", content: "Xin lỗi, có lỗi xảy ra. Vui lòng thử lại! 🌿", isStreaming: false };
+        u[u.length - 1] = { role: "assistant", content: "Xin lỗi, có lỗi xảy ra. Vui lòng thử lại!", isStreaming: false };
         return u;
       });
     } finally {
@@ -354,437 +380,469 @@ export default function ChatWidget() {
     if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(message); }
   };
 
-  const Cursor = () => (
-    <span className="inline-block w-[2px] h-3.5 bg-[#4a7c3f] ml-0.5 align-middle rounded-full animate-pulse" />
-  );
-
-  // ── Page-aware label for tooltip ──
   const tooltipLabel = enrichedCtx.type === "product" && enrichedCtx.productName
-    ? `Hỏi AI về ${enrichedCtx.productName.length > 15 ? enrichedCtx.productName.slice(0, 15) + "…" : enrichedCtx.productName}`
-    : "Tư vấn AI 24/7 🌿";
+    ? `Hỏi về ${enrichedCtx.productName.length > 15 ? enrichedCtx.productName.slice(0, 15) + "…" : enrichedCtx.productName}`
+    : "Tư vấn AI 24/7";
 
+  // ═══════════════════════════════════════════════
+  // RENDER
+  // ═══════════════════════════════════════════════
   return (
     <>
-      {/* ═══════════════════════════════════════
-          CHAT PANEL — fixed, bottom-right, above button
-      ═══════════════════════════════════════ */}
-      <div
-        className={`fixed z-[9998] transition-all duration-300 ease-out`}
-        style={{
-          bottom: "90px",
-          right: "24px",
-          borderRadius: "16px",
-          overflow: "hidden",
-          display: "flex",
-          flexDirection: "column",
-          background: "#ffffff",
-          boxShadow: "0 8px 40px rgba(66,87,51,0.08)",
-          opacity: open ? 1 : 0,
-          transform: open ? "translateY(0) scale(1)" : "translateY(12px) scale(0.97)",
-          pointerEvents: open ? "auto" : "none",
-        }}
-      >
-        {/* Responsive styles */}
-        <style>{`
-          .suggestion-card {
-            transition: transform 0.2s, box-shadow 0.2s;
-          }
-          .suggestion-card:hover {
-            transform: translateY(-4px) scale(1.03);
-            box-shadow: 0 4px 12px rgba(66,87,51,0.12);
-          }
-        `}</style>
-        <style>{`
-          .chat-panel-responsive {
-            width: calc(100vw - 48px);
-            height: calc(100vh - 160px);
-            max-height: 600px;
-          }
-          @media (min-width: 640px) {
-            .chat-panel-responsive {
-              width: 380px;
-              height: 520px;
-              max-height: 520px;
-            }
-          }
-        `}</style>
-        <div className="chat-panel-responsive flex flex-col" style={{ borderRadius: "inherit", overflow: "hidden" }}>
-        {/* ── HEADER ─────────────────────────────── */}
-        <div
-          style={{
-            background: "#425733",
-            padding: "12px 14px",
-            display: "flex",
-            alignItems: "center",
-            gap: "10px",
-            flexShrink: 0,
-          }}
-        >
-          {/* Avatar */}
-          <div style={{
-            width: 38, height: 38, borderRadius: "50%",
-            background: "rgba(255,255,255,0.1)",
-            display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
-          }}>
-            <Bot size={20} color="white" />
-          </div>
+      {/* ── CSS ─────────────────────────────────── */}
+      <style>{`
+        .cw-panel {
+          width: calc(100vw - 32px);
+          max-width: 400px;
+          height: calc(100dvh - 140px);
+          max-height: 560px;
+        }
+        @media (min-width: 640px) {
+          .cw-panel { width: 390px; height: 530px; max-height: 530px; }
+        }
+        .cw-scrollbar::-webkit-scrollbar { width: 4px; }
+        .cw-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .cw-scrollbar::-webkit-scrollbar-thumb {
+          background: rgba(66,87,51,0.15); border-radius: 99px;
+        }
+        .cw-input::placeholder { color: #9aab93; }
+        .cw-chip {
+          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .cw-chip:hover {
+          background: #425733 !important;
+          color: white !important;
+          border-color: #425733 !important;
+          transform: translateY(-1px);
+          box-shadow: 0 3px 12px rgba(66,87,51,0.2);
+        }
+        .cw-chip:active { transform: translateY(0) scale(0.97); }
+        .cw-product-card {
+          transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .cw-product-card:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 6px 20px rgba(66,87,51,0.12);
+          border-color: #b8d8b8;
+        }
+        .cw-action-btn {
+          transition: all 0.2s ease;
+        }
+        .cw-action-btn:hover {
+          background: rgba(255,255,255,0.2);
+          transform: scale(1.08);
+        }
+        .cw-send-btn {
+          transition: all 0.2s ease;
+        }
+        .cw-send-btn:not(:disabled):hover {
+          transform: scale(1.08);
+          box-shadow: 0 3px 12px rgba(66,87,51,0.35);
+        }
+        .cw-send-btn:not(:disabled):active {
+          transform: scale(0.95);
+        }
+        .cw-fab {
+          transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .cw-fab:hover {
+          transform: scale(1.1);
+          box-shadow: 0 6px 28px rgba(66,87,51,0.5);
+        }
+        .cw-fab:active { transform: scale(0.95); }
+        @keyframes cw-typing {
+          0%, 80%, 100% { transform: translateY(0); opacity: 0.4; }
+          40% { transform: translateY(-4px); opacity: 1; }
+        }
+        @keyframes cw-pulse-ring {
+          0% { transform: scale(1); opacity: 0.6; }
+          100% { transform: scale(1.8); opacity: 0; }
+        }
+      `}</style>
 
-          {/* Name + status */}
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-              <span style={{ color: "white", fontWeight: 600, fontSize: 14 }}>Trợ lý Tiệm Rêu</span>
-              {isAIAvailable === true && (
-                <span style={{
-                  display: "flex", alignItems: "center", gap: 3,
-                  background: "rgba(255,255,255,0.2)",
-                  borderRadius: 99, padding: "2px 8px",
-                  fontSize: 10, color: "white",
-                }}>
-                  <Sparkles size={10} /> AI
-                </span>
-              )}
-              {isAIAvailable === false && (
-                <span style={{
-                  background: "rgba(251,191,36,0.25)",
-                  borderRadius: 99, padding: "2px 8px",
-                  fontSize: 10, color: "#fde68a",
-                }}>Cơ bản</span>
-              )}
-            </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 5, marginTop: 2 }}>
-              <span style={{
-                width: 7, height: 7, borderRadius: "50%",
-                background: isAIAvailable === true ? "#4ade80" : isAIAvailable === false ? "#fbbf24" : "#a3c49a",
-                boxShadow: isAIAvailable === true ? "0 0 0 2px rgba(74,222,128,0.3)" : "none",
-              }} />
-              <span style={{ color: "rgba(255,255,255,0.75)", fontSize: 11 }}>
-                {isAIAvailable === true ? "AI đang hoạt động ✨" : isAIAvailable === false ? "Chế độ cơ bản" : "Đang hoạt động"}
-              </span>
-            </div>
-          </div>
-
-          {/* Action buttons */}
-          <div style={{ display: "flex", gap: 4, flexShrink: 0 }}>
-            <a
-              href="/products"
-              title="Xem sản phẩm"
+      {/* ═══ CHAT PANEL ═══════════════════════════ */}
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            variants={panelVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            className="fixed z-[9998] cw-panel flex flex-col"
+            style={{
+              bottom: 92,
+              right: 16,
+              borderRadius: 20,
+              overflow: "hidden",
+              background: "#ffffff",
+              boxShadow: "0 12px 48px rgba(26,46,18,0.12), 0 2px 8px rgba(66,87,51,0.08)",
+              border: "1px solid rgba(227,235,221,0.6)",
+            }}
+          >
+            {/* ── HEADER ──────────────────────────── */}
+            <div
+              className="flex-shrink-0 flex items-center gap-3 px-4 py-3"
               style={{
-                width: 30, height: 30, borderRadius: 8,
-                background: "rgba(255,255,255,0.1)",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                color: "white", textDecoration: "none",
+                background: "linear-gradient(135deg, #425733 0%, #2d3d23 100%)",
               }}
             >
-              <ShoppingBag size={14} />
-            </a>
-            <button
-              onClick={resetChat}
-              title="Làm mới cuộc trò chuyện"
-              style={{
-                width: 30, height: 30, borderRadius: 8,
-                background: "rgba(255,255,255,0.1)",
-                border: "none", cursor: "pointer",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                color: "white",
-              }}
-            >
-              <RefreshCw size={14} />
-            </button>
-            <button
-              onClick={() => setOpen(false)}
-              title="Thu nhỏ"
-              style={{
-                width: 30, height: 30, borderRadius: 8,
-                background: "rgba(255,255,255,0.1)",
-                border: "none", cursor: "pointer",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                color: "white",
-              }}
-            >
-              <X size={14} />
-            </button>
-          </div>
-        </div>
+              {/* Avatar */}
+              <div
+                className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
+                style={{
+                  background: "rgba(255,255,255,0.12)",
+                  backdropFilter: "blur(8px)",
+                  border: "1px solid rgba(255,255,255,0.15)",
+                }}
+              >
+                <Leaf size={20} color="white" strokeWidth={1.8} />
+              </div>
 
-        {/* ── MESSAGES ───────────────────────────── */}
-        <div style={{
-          flex: 1,
-          overflowY: "auto",
-          padding: "14px 12px",
-          background: "transparent",
-          display: "flex",
-          flexDirection: "column",
-          gap: "10px",
-        }}>
-          {messages.map((msg, i) => (
-            <div key={i}>
-              <div style={{
-                display: "flex",
-                justifyContent: msg.role === "user" ? "flex-end" : "flex-start",
-                gap: 7,
-                alignItems: "flex-end",
-              }}>
-                {/* Bot avatar */}
-                {msg.role === "assistant" && (
-                  <div style={{
-                    width: 26, height: 26, borderRadius: "50%",
-                    background: "#425733",
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    flexShrink: 0,
-                  }}>
-                    <Bot size={14} color="white" />
-                  </div>
-                )}
-
-                {/* Bubble */}
-                <div style={{
-                  maxWidth: "78%",
-                  background: msg.role === "user" ? "#425733" : "white",
-                  color: msg.role === "user" ? "white" : "#1f2d1c",
-                  borderRadius: msg.role === "user" ? "18px 18px 4px 18px" : "18px 18px 18px 4px",
-                  padding: "9px 13px",
-                  fontSize: 13,
-                  lineHeight: 1.55,
-                  boxShadow: "0 2px 4px rgba(66,87,51,0.06)",
-                  whiteSpace: "pre-line",
-                }}>
-                  {msg.isStreaming && msg.content === "" ? (
-                    <div style={{ display: "flex", gap: 4, alignItems: "center", padding: "2px 0" }}>
-                      {[0, 150, 300].map((d) => (
-                        <span key={d} style={{
-                          width: 6, height: 6, borderRadius: "50%",
-                          background: "#425733",
-                          display: "inline-block",
-                          animation: `bounce 1.2s ${d}ms ease-in-out infinite`,
-                        }} />
-                      ))}
-                    </div>
-                  ) : (
-                    <>
-                      {renderContent(msg.content)}
-                      {msg.isStreaming && <Cursor />}
-                    </>
+              {/* Name + status */}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  <span className="text-white font-semibold text-sm">Trợ lý Tiệm Rêu</span>
+                  {isAIAvailable === true && (
+                    <span
+                      className="flex items-center gap-1 text-[10px] text-white/90 px-2 py-0.5 rounded-full"
+                      style={{ background: "rgba(143,186,111,0.3)" }}
+                    >
+                      <Sparkles size={9} /> AI
+                    </span>
                   )}
+                  {isAIAvailable === false && (
+                    <span
+                      className="text-[10px] px-2 py-0.5 rounded-full"
+                      style={{ background: "rgba(251,191,36,0.25)", color: "#fde68a" }}
+                    >
+                      Cơ bản
+                    </span>
+                  )}
+                </div>
+                <div className="flex items-center gap-1.5 mt-0.5">
+                  <span
+                    className="w-[6px] h-[6px] rounded-full"
+                    style={{
+                      background: isAIAvailable === true ? "#4ade80" : isAIAvailable === false ? "#fbbf24" : "#a3c49a",
+                      boxShadow: isAIAvailable === true ? "0 0 0 3px rgba(74,222,128,0.25)" : "none",
+                    }}
+                  />
+                  <span className="text-[11px] text-white/60">
+                    {isAIAvailable === true ? "AI đang hoạt động" : isAIAvailable === false ? "Chế độ cơ bản" : "Đang hoạt động"}
+                  </span>
                 </div>
               </div>
 
-              {/* Product suggestion cards */}
-              {msg.suggestedProducts && msg.suggestedProducts.length > 0 && (
-                <div style={{ marginTop: 8, marginLeft: 33, display: "flex", flexDirection: "column", gap: 6 }}>
-                  {msg.suggestedProducts.map((p) => (
-                    <a
-                      key={p.slug}
-                      href={p.slug}
-                      className="suggestion-card"
+              {/* Actions */}
+              <div className="flex gap-1 flex-shrink-0">
+                <a
+                  href="/products"
+                  title="Xem sản phẩm"
+                  className="cw-action-btn w-8 h-8 rounded-lg flex items-center justify-center text-white/80"
+                  style={{ background: "rgba(255,255,255,0.08)" }}
+                >
+                  <ShoppingBag size={14} />
+                </a>
+                <button
+                  onClick={resetChat}
+                  title="Làm mới"
+                  className="cw-action-btn w-8 h-8 rounded-lg flex items-center justify-center text-white/80"
+                  style={{ background: "rgba(255,255,255,0.08)", border: "none", cursor: "pointer" }}
+                >
+                  <RefreshCw size={14} />
+                </button>
+                <button
+                  onClick={() => setOpen(false)}
+                  title="Đóng"
+                  className="cw-action-btn w-8 h-8 rounded-lg flex items-center justify-center text-white/80"
+                  style={{ background: "rgba(255,255,255,0.08)", border: "none", cursor: "pointer" }}
+                >
+                  <X size={14} />
+                </button>
+              </div>
+            </div>
+
+            {/* ── MESSAGES ─────────────────────────── */}
+            <div
+              className="flex-1 overflow-y-auto cw-scrollbar flex flex-col gap-3 px-3.5 py-3.5"
+              style={{ background: "#fafbf8" }}
+            >
+              {messages.map((msg, i) => (
+                <motion.div
+                  key={i}
+                  variants={msgVariants}
+                  initial="hidden"
+                  animate="visible"
+                >
+                  <div
+                    className="flex items-end gap-2"
+                    style={{ justifyContent: msg.role === "user" ? "flex-end" : "flex-start" }}
+                  >
+                    {/* Bot avatar */}
+                    {msg.role === "assistant" && (
+                      <div
+                        className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0"
+                        style={{
+                          background: "linear-gradient(135deg, #425733, #5a7a45)",
+                          boxShadow: "0 2px 6px rgba(66,87,51,0.2)",
+                        }}
+                      >
+                        <Leaf size={13} color="white" strokeWidth={2} />
+                      </div>
+                    )}
+
+                    {/* Bubble */}
+                    <div
+                      className="max-w-[80%]"
                       style={{
-                        display: "flex", alignItems: "center", justifyContent: "space-between",
-                        background: "white", border: "1px solid #dbe2d8",
-                        borderRadius: 12, padding: "8px 12px",
-                        textDecoration: "none", gap: 8,
-                        boxShadow: "0 1px 3px rgba(66,87,51,0.06)",
-                        transition: "box-shadow 0.2s",
+                        background: msg.role === "user"
+                          ? "linear-gradient(135deg, #3a5229 0%, #4a6a35 100%)"
+                          : "#ffffff",
+                        color: msg.role === "user" ? "white" : "#2c3e24",
+                        borderRadius: msg.role === "user" ? "18px 18px 4px 18px" : "18px 18px 18px 4px",
+                        padding: "10px 14px",
+                        fontSize: 13,
+                        lineHeight: 1.6,
+                        boxShadow: msg.role === "user"
+                          ? "0 2px 8px rgba(58,82,41,0.25)"
+                          : "0 1px 4px rgba(66,87,51,0.06), 0 0 0 1px rgba(227,235,221,0.5)",
+                        whiteSpace: "pre-line",
                       }}
                     >
-                      <div className="relative w-12 h-12 rounded-lg overflow-hidden flex-shrink-0">
-                        <img src={p.image || "/placeholder.png"} alt={p.name} className="w-full h-full object-cover" />
-                      </div>
-                      <span style={{ fontSize: 12, color: "#1f2d1c", fontWeight: 500, flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                        {p.name}
-                      </span>
-                      <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
-                        {p.price && <span style={{ fontSize: 11, color: "#425733", fontWeight: 600 }}>{p.price}</span>}
-                        <span style={{
-                          background: "#425733", color: "white",
-                          fontSize: 10, padding: "3px 8px", borderRadius: 6,
-                          display: "flex", alignItems: "center", gap: 3,
-                        }}>
-                          <ShoppingBag size={10} /> Xem
-                        </span>
-                      </div>
-                    </a>
-                  ))}
-                </div>
-              )}
-
-              {/* Quick reply chips — only after first bot message when no user messages yet */}
-              {i === 0 && msg.role === "assistant" && !isSending && messages.length === 1 && (
-                <div style={{ marginTop: 10, marginLeft: 33 }}>
-                  <p style={{ fontSize: 11, color: "#7a9272", marginBottom: 6 }}>Câu hỏi gợi ý:</p>
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-                    {quickQs.map((q) => (
-                      <button
-                        key={q}
-                        onClick={() => sendMessage(q)}
-                        style={{
-                          fontSize: 11, padding: "5px 11px",
-                          background: "white", border: "1px solid #dbe2d8",
-                          borderRadius: 99, cursor: "pointer",
-                          color: "#425733", fontWeight: 500,
-                          transition: "all 0.15s",
-                        }}
-                        onMouseEnter={(e) => { (e.target as HTMLButtonElement).style.background = "#f2f5f0"; }}
-                        onMouseLeave={(e) => { (e.target as HTMLButtonElement).style.background = "white"; }}
-                      >
-                        {q}
-                      </button>
-                    ))}
+                      {msg.isStreaming && msg.content === "" ? (
+                        <div className="flex gap-1 items-center py-1 px-1">
+                          {[0, 1, 2].map((d) => (
+                            <span
+                              key={d}
+                              className="w-[5px] h-[5px] rounded-full"
+                              style={{
+                                background: "#8fba6f",
+                                animation: `cw-typing 1.4s ${d * 0.16}s ease-in-out infinite`,
+                              }}
+                            />
+                          ))}
+                        </div>
+                      ) : (
+                        <>
+                          {renderContent(msg.content)}
+                          {msg.isStreaming && (
+                            <span className="inline-block w-[2px] h-3.5 bg-[#8fba6f] ml-0.5 align-middle rounded-full animate-pulse" />
+                          )}
+                        </>
+                      )}
+                    </div>
                   </div>
-                </div>
-              )}
+
+                  {/* Product suggestion cards */}
+                  {msg.suggestedProducts && msg.suggestedProducts.length > 0 && (
+                    <div className="mt-2 ml-9 flex flex-col gap-2">
+                      {msg.suggestedProducts.map((p) => (
+                        <a
+                          key={p.slug}
+                          href={p.slug}
+                          className="cw-product-card flex items-center gap-3 no-underline"
+                          style={{
+                            background: "#ffffff",
+                            border: "1px solid #e3ebdd",
+                            borderRadius: 14,
+                            padding: "8px 12px",
+                            boxShadow: "0 1px 4px rgba(66,87,51,0.05)",
+                          }}
+                        >
+                          <div className="w-12 h-12 rounded-xl overflow-hidden flex-shrink-0"
+                            style={{ background: "#f2f8f2" }}
+                          >
+                            <img src={p.image || "/placeholder.png"} alt={p.name}
+                              className="w-full h-full object-cover" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <span className="block text-xs font-medium text-[#2c3e24] truncate">
+                              {p.name}
+                            </span>
+                            {p.price && (
+                              <span className="text-[11px] font-semibold text-[#425733]">{p.price}</span>
+                            )}
+                          </div>
+                          <span
+                            className="flex items-center gap-1 text-[10px] font-medium text-white px-2.5 py-1 rounded-lg flex-shrink-0"
+                            style={{ background: "linear-gradient(135deg, #3a5229, #4a6a35)" }}
+                          >
+                            <ShoppingBag size={10} /> Xem
+                          </span>
+                        </a>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Quick reply chips */}
+                  {i === 0 && msg.role === "assistant" && !isSending && messages.length === 1 && (
+                    <div className="mt-3 ml-9">
+                      <p className="text-[11px] text-[#8aa480] mb-2 font-medium">Gợi ý cho bạn</p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {quickQs.map((q, qi) => (
+                          <motion.button
+                            key={q}
+                            custom={qi}
+                            variants={chipVariants}
+                            initial="hidden"
+                            animate="visible"
+                            onClick={() => sendMessage(q)}
+                            className="cw-chip text-[11px] font-medium cursor-pointer"
+                            style={{
+                              padding: "6px 12px",
+                              background: "#f2f8f2",
+                              border: "1px solid #dbe6d6",
+                              borderRadius: 99,
+                              color: "#425733",
+                            }}
+                          >
+                            {q}
+                          </motion.button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </motion.div>
+              ))}
+              <div ref={messagesEndRef} />
             </div>
-          ))}
-          <div ref={messagesEndRef} />
-        </div>
 
-        {/* ── INPUT AREA ──────────────────────────── */}
-        <div style={{
-          background: "white",
-          borderTop: "1px solid #e2eadf",
-          padding: "10px 12px",
-          display: "flex",
-          alignItems: "flex-end",
-          gap: 8,
-          flexShrink: 0,
-        }}>
-          <div style={{ flex: 1, position: "relative" }}>
-            <textarea
-              ref={textareaRef}
-              value={message}
-              onChange={(e) => {
-                const val = e.target.value;
-                if (val.length <= MAX_INPUT_LENGTH) {
-                  setMessage(val);
-                }
-                e.target.style.height = "auto";
-                e.target.style.height = Math.min(e.target.scrollHeight, 80) + "px";
-              }}
-              onKeyDown={handleKey}
-              disabled={isSending || isCooldown || messageCount >= MAX_MESSAGES_PER_SESSION}
-              placeholder={isCooldown ? "Đợi chút..." : messageCount >= MAX_MESSAGES_PER_SESSION ? "Đã đạt giới hạn tin nhắn" : "Nhập câu hỏi của bạn..."}
-              rows={1}
-              style={{
-                width: "100%", resize: "none", border: "none", outline: "none",
-                background: "transparent", fontSize: 13, lineHeight: 1.5,
-                color: "#1f2d1c", minHeight: 36, maxHeight: 80,
-                fontFamily: "inherit",
-                boxShadow: "none",
-              }}
-            />
-            {message.length > 300 && (
-              <span style={{
-                position: "absolute", right: 4, bottom: 2,
-                fontSize: 10, fontWeight: 600,
-                color: message.length >= MAX_INPUT_LENGTH ? "#dc2626" : "#9ca3af",
-              }}>
-                {message.length}/{MAX_INPUT_LENGTH}
-              </span>
-            )}
-          </div>
-          <button
-            onClick={() => sendMessage(message)}
-            disabled={isSending || isCooldown || !message.trim() || messageCount >= MAX_MESSAGES_PER_SESSION}
-            style={{
-              width: 36, height: 36, borderRadius: 9999,
-              background: message.trim() && !isSending && !isCooldown ? "#425733" : "#c5d9c0",
-              border: "none", cursor: message.trim() && !isSending && !isCooldown ? "pointer" : "default",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              flexShrink: 0, transition: "background 0.2s",
-            }}
-            aria-label="Gửi"
-            onMouseEnter={(e) => { if (!e.currentTarget.disabled) e.currentTarget.style.background = "#425733"; }}
-            onMouseLeave={(e) => { if (!e.currentTarget.disabled) e.currentTarget.style.background = message.trim() && !isSending && !isCooldown ? "#425733" : "#c5d9c0"; }}
-          >
-            <Send size={15} color="white" />
-          </button>
-        </div>
+            {/* ── INPUT AREA ──────────────────────── */}
+            <div
+              className="flex-shrink-0 px-3 py-2.5"
+              style={{ borderTop: "1px solid #e8efe3", background: "#ffffff" }}
+            >
+              <div
+                className="flex items-end gap-2 rounded-2xl px-3.5 py-2"
+                style={{ background: "#f5f8f3", border: "1px solid #e3ebdd" }}
+              >
+                <div className="flex-1 relative">
+                  <textarea
+                    ref={textareaRef}
+                    value={message}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (val.length <= MAX_INPUT_LENGTH) {
+                        setMessage(val);
+                      }
+                      e.target.style.height = "auto";
+                      e.target.style.height = Math.min(e.target.scrollHeight, 80) + "px";
+                    }}
+                    onKeyDown={handleKey}
+                    disabled={isSending || isCooldown || messageCount >= MAX_MESSAGES_PER_SESSION}
+                    placeholder={isCooldown ? "Đợi chút..." : messageCount >= MAX_MESSAGES_PER_SESSION ? "Đã đạt giới hạn" : "Nhập câu hỏi..."}
+                    rows={1}
+                    className="cw-input w-full resize-none border-none outline-none bg-transparent text-[13px] leading-relaxed text-[#2c3e24] font-[inherit]"
+                    style={{ minHeight: 32, maxHeight: 80, boxShadow: "none" }}
+                  />
+                  {message.length > 300 && (
+                    <span
+                      className="absolute right-0 bottom-0 text-[10px] font-semibold"
+                      style={{ color: message.length >= MAX_INPUT_LENGTH ? "#dc2626" : "#9ca3af" }}
+                    >
+                      {message.length}/{MAX_INPUT_LENGTH}
+                    </span>
+                  )}
+                </div>
+                <button
+                  onClick={() => sendMessage(message)}
+                  disabled={isSending || isCooldown || !message.trim() || messageCount >= MAX_MESSAGES_PER_SESSION}
+                  className="cw-send-btn w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
+                  style={{
+                    background: message.trim() && !isSending && !isCooldown
+                      ? "linear-gradient(135deg, #3a5229 0%, #4a6a35 100%)"
+                      : "#c5d9c0",
+                    border: "none",
+                    cursor: message.trim() && !isSending && !isCooldown ? "pointer" : "default",
+                  }}
+                  aria-label="Gửi"
+                >
+                  <Send size={14} color="white" />
+                </button>
+              </div>
 
-        {/* Link xem shop */}
-        <div style={{
-          background: "white", paddingBottom: 10, textAlign: "center",
-          borderTop: "1px solid #f0f4ee",
-        }}>
-          <a
-            href="/products"
-            style={{
-              fontSize: 11, color: "#4a7c3f",
-              textDecoration: "none", display: "inline-flex",
-              alignItems: "center", gap: 4,
-            }}
-          >
-            <ExternalLink size={11} />
-            Xem tất cả sản phẩm tại shop
-          </a>
-        </div>
-        </div>
-      </div>
-
-      {/* ═══════════════════════════════════════
-          FLOATING BUTTON
-      ═══════════════════════════════════════ */}
-      <div style={{ position: "fixed", bottom: 24, right: 24, zIndex: 9999, display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 8 }}>
-        {/* Tooltip */}
-        {!open && (
-          <div
-            onClick={() => setOpen(true)}
-            style={{
-              background: "#425733", color: "white",
-              fontSize: 11, fontWeight: 500,
-              padding: "6px 12px", borderRadius: 99,
-              cursor: "pointer", userSelect: "none",
-              boxShadow: "0 2px 10px rgba(74,124,63,0.4)",
-              animation: "chatPulse 2.5s ease-in-out infinite",
-              maxWidth: 200,
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              whiteSpace: "nowrap",
-            }}
-          >
-            {tooltipLabel}
-          </div>
+              {/* Shop link */}
+              <div className="text-center pt-2 pb-0.5">
+                <a
+                  href="/products"
+                  className="inline-flex items-center gap-1 text-[11px] font-medium no-underline"
+                  style={{ color: "#8aa480" }}
+                  onMouseEnter={(e) => { (e.currentTarget as HTMLAnchorElement).style.color = "#425733"; }}
+                  onMouseLeave={(e) => { (e.currentTarget as HTMLAnchorElement).style.color = "#8aa480"; }}
+                >
+                  <ExternalLink size={10} />
+                  Xem tất cả sản phẩm
+                </a>
+              </div>
+            </div>
+          </motion.div>
         )}
+      </AnimatePresence>
 
-        {/* Main button */}
+      {/* ═══ FLOATING BUTTON ═════════════════════ */}
+      <div className="fixed z-[9999] flex flex-col items-end gap-2" style={{ bottom: 20, right: 16 }}>
+        {/* Tooltip */}
+        <AnimatePresence>
+          {!open && (
+            <motion.div
+              variants={tooltipVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              onClick={() => setOpen(true)}
+              className="cursor-pointer select-none"
+              style={{
+                background: "linear-gradient(135deg, #425733 0%, #2d3d23 100%)",
+                color: "white",
+                fontSize: 11,
+                fontWeight: 500,
+                padding: "7px 14px",
+                borderRadius: 99,
+                boxShadow: "0 3px 14px rgba(66,87,51,0.35)",
+                maxWidth: 200,
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {tooltipLabel}
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* FAB */}
         <button
           onClick={() => setOpen(!open)}
           aria-label="Mở hỗ trợ AI"
+          className="cw-fab relative w-14 h-14 rounded-full flex items-center justify-center"
           style={{
-            width: 56, height: 56, borderRadius: "50%",
             background: "linear-gradient(135deg, #425733 0%, #2d3d23 100%)",
-            border: "none", cursor: "pointer",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            boxShadow: "0 4px 20px rgba(74,124,63,0.45)",
-            transition: "transform 0.2s",
-            position: "relative",
+            border: "none",
+            cursor: "pointer",
+            boxShadow: "0 4px 20px rgba(66,87,51,0.4)",
           }}
-          onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.transform = "scale(1.1)"; }}
-          onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.transform = "scale(1)"; }}
         >
-          {open
-            ? <X size={22} color="white" />
-            : <>
+          {open ? (
+            <X size={22} color="white" />
+          ) : (
+            <>
               <MessageCircle size={22} color="white" />
-              <span style={{
-                position: "absolute", top: -2, right: -2,
-                width: 12, height: 12, borderRadius: "50%",
-                background: "#4ade80", border: "2px solid white",
-                animation: "chatPulse 2s ease-in-out infinite",
-              }} />
+              {/* Pulse ring */}
+              <span
+                className="absolute top-0 right-0 w-3 h-3 rounded-full"
+                style={{ background: "#4ade80", border: "2px solid white" }}
+              />
+              <span
+                className="absolute top-0 right-0 w-3 h-3 rounded-full"
+                style={{
+                  background: "#4ade80",
+                  animation: "cw-pulse-ring 2s ease-out infinite",
+                }}
+              />
             </>
-          }
+          )}
         </button>
       </div>
-
-      {/* Keyframe animations */}
-      <style>{`
-        @keyframes chatPulse {
-          0%, 100% { opacity: 1; transform: scale(1); }
-          50% { opacity: 0.85; transform: scale(1.04); }
-        }
-        @keyframes bounce {
-          0%, 80%, 100% { transform: translateY(0); }
-          40% { transform: translateY(-5px); }
-        }
-      `}</style>
     </>
   );
 }
