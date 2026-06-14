@@ -203,10 +203,13 @@ async function streamFromGemini(
   history: { role: string; content: string }[]
 ): Promise<ReadableStream<Uint8Array> | null> {
   const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) return null;
+  if (!apiKey || apiKey.trim() === "") {
+    console.log("[AI] GEMINI_API_KEY is empty or not set, skipping Gemini");
+    return null;
+  }
 
   const model = process.env.GEMINI_MODEL || "gemini-2.0-flash";
-  // Use alt=sse to get Server-Sent Events format from Gemini
+  console.log(`[AI] Trying Gemini (model: ${model})...`);
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:streamGenerateContent?alt=sse&key=${apiKey}`;
 
   const contents = [
@@ -226,74 +229,77 @@ async function streamFromGemini(
     },
   };
 
-  const res = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
+  const abortCtrl = new AbortController();
+  const timeout = setTimeout(() => abortCtrl.abort(), 8000);
 
-  if (!res.ok) {
-    const errText = await res.text().catch(() => "unknown");
-    console.error(`Gemini API error ${res.status}: ${errText}`);
-    return null;
-  }
+  try {
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+      signal: abortCtrl.signal,
+    });
+    clearTimeout(timeout);
 
-  if (!res.body) return null;
+    if (!res.ok) {
+      const errText = await res.text().catch(() => "unknown");
+      console.error(`[AI] Gemini API error ${res.status}: ${errText}`);
+      return null;
+    }
 
-  const reader = res.body.getReader();
-  const decoder = new TextDecoder();
-  const encoder = new TextEncoder();
-  let buffer = "";
+    if (!res.body) return null;
+    console.log("[AI] ✅ Gemini connected, streaming response...");
 
-  return new ReadableStream({
-    async pull(controller) {
-      try {
-        const { done, value } = await reader.read();
-        if (done) {
-          // Flush any remaining buffer
-          if (buffer.trim()) {
-            const token = extractTokenFromSSE(buffer);
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    const encoder = new TextEncoder();
+    let buffer = "";
+
+    return new ReadableStream({
+      async pull(ctrl) {
+        try {
+          const { done, value } = await reader.read();
+          if (done) {
+            if (buffer.trim()) {
+              const token = extractTokenFromSSE(buffer);
+              if (token) {
+                ctrl.enqueue(encoder.encode(`data: {"token":"${escapeJsonString(token)}"}\n\n`));
+              }
+            }
+            ctrl.close();
+            activeAiRequests--;
+            return;
+          }
+
+          buffer += decoder.decode(value, { stream: true });
+          const parts = buffer.split("\n\n");
+          buffer = parts.pop() || "";
+
+          for (const part of parts) {
+            const token = extractTokenFromSSE(part);
             if (token) {
-              controller.enqueue(
-                encoder.encode(`data: {"token":"${escapeJsonString(token)}"}\n\n`)
-              );
+              ctrl.enqueue(encoder.encode(`data: {"token":"${escapeJsonString(token)}"}\n\n`));
             }
           }
-          controller.close();
+        } catch (err) {
+          console.error("[AI] Gemini stream read error:", err);
+          ctrl.close();
           activeAiRequests--;
-          return;
         }
-
-        buffer += decoder.decode(value, { stream: true });
-
-        // Gemini SSE format: "data: {json}\n\n"
-        const parts = buffer.split("\n\n");
-        // Keep the last (possibly incomplete) part in buffer
-        buffer = parts.pop() || "";
-
-        for (const part of parts) {
-          const token = extractTokenFromSSE(part);
-          if (token) {
-            controller.enqueue(
-              encoder.encode(`data: {"token":"${escapeJsonString(token)}"}\n\n`)
-            );
-          }
-        }
-      } catch (err) {
-        console.error("Gemini stream read error:", err);
-        controller.close();
+      },
+      cancel() {
+        reader.cancel();
         activeAiRequests--;
-      }
-    },
-    cancel() {
-      reader.cancel();
-      activeAiRequests--;
-    },
-  });
+      },
+    });
+  } catch (err) {
+    clearTimeout(timeout);
+    console.error("[AI] Gemini fetch error:", err);
+    return null;
+  }
 }
 
 function extractTokenFromSSE(sseChunk: string): string | null {
-  // Each SSE chunk looks like: "data: { ... json ... }"
   for (const line of sseChunk.split("\n")) {
     const trimmed = line.trim();
     if (trimmed.startsWith("data: ")) {
@@ -317,59 +323,74 @@ async function streamFromOllama(
 ): Promise<ReadableStream<Uint8Array> | null> {
   const ollamaUrl = process.env.OLLAMA_URL || "http://localhost:11434";
   const model = process.env.OLLAMA_MODEL || "llama3.2:3b";
+  console.log(`[AI] Trying Ollama (model: ${model}, url: ${ollamaUrl})...`);
 
-  const res = await fetch(`${ollamaUrl}/api/chat`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ model, messages, stream: true }),
-  });
+  const abortCtrl = new AbortController();
+  const timeout = setTimeout(() => abortCtrl.abort(), 10000);
 
-  if (!res.ok || !res.body) return null;
+  try {
+    const res = await fetch(`${ollamaUrl}/api/chat`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ model, messages, stream: true }),
+      signal: abortCtrl.signal,
+    });
+    clearTimeout(timeout);
 
-  const reader = res.body.getReader();
-  const decoder = new TextDecoder();
-  const encoder = new TextEncoder();
-  let buffer = "";
+    if (!res.ok || !res.body) {
+      console.error(`[AI] Ollama error: status ${res.status}`);
+      return null;
+    }
 
-  return new ReadableStream({
-    async pull(controller) {
-      try {
-        const { done, value } = await reader.read();
-        if (done) {
-          controller.close();
-          activeAiRequests--;
-          return;
-        }
+    console.log("[AI] ✅ Ollama connected, streaming response...");
 
-        buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split("\n");
-        buffer = lines.pop() || "";
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    const encoder = new TextEncoder();
+    let buffer = "";
 
-        for (const line of lines) {
-          if (!line.trim()) continue;
-          try {
-            const obj = JSON.parse(line);
-            const token = obj?.message?.content;
-            if (token) {
-              controller.enqueue(
-                encoder.encode(`data: {"token":"${escapeJsonString(token)}"}\n\n`)
-              );
-            }
-          } catch {
-            // ignore
+    return new ReadableStream({
+      async pull(ctrl) {
+        try {
+          const { done, value } = await reader.read();
+          if (done) {
+            ctrl.close();
+            activeAiRequests--;
+            return;
           }
+
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split("\n");
+          buffer = lines.pop() || "";
+
+          for (const line of lines) {
+            if (!line.trim()) continue;
+            try {
+              const obj = JSON.parse(line);
+              const token = obj?.message?.content;
+              if (token) {
+                ctrl.enqueue(encoder.encode(`data: {"token":"${escapeJsonString(token)}"}\n\n`));
+              }
+            } catch {
+              // ignore
+            }
+          }
+        } catch (err) {
+          console.error("[AI] Ollama stream read error:", err);
+          ctrl.close();
+          activeAiRequests--;
         }
-      } catch (err) {
-        console.error("Ollama stream read error:", err);
-        controller.close();
+      },
+      cancel() {
+        reader.cancel();
         activeAiRequests--;
-      }
-    },
-    cancel() {
-      reader.cancel();
-      activeAiRequests--;
-    },
-  });
+      },
+    });
+  } catch (err) {
+    clearTimeout(timeout);
+    console.error("[AI] Ollama fetch error:", err);
+    return null;
+  }
 }
 
 // =============================================
@@ -387,8 +408,12 @@ async function streamFromAI(
 
   try {
     // 1) Try Gemini first
+    console.log(`[AI] Processing message: "${message.slice(0, 50)}..."`);
     const geminiStream = await streamFromGemini(message, systemPrompt, history);
-    if (geminiStream) return geminiStream;
+    if (geminiStream) {
+      console.log("[AI] ✅ Using GEMINI");
+      return geminiStream;
+    }
 
     // 2) Fallback to Ollama
     const ollamaMessages = [
@@ -397,7 +422,11 @@ async function streamFromAI(
       { role: "user", content: message },
     ];
     const ollamaStream = await streamFromOllama(ollamaMessages);
-    if (ollamaStream) return ollamaStream;
+    if (ollamaStream) {
+      console.log("[AI] ✅ Using OLLAMA (fallback)");
+      return ollamaStream;
+    }
+    console.log("[AI] ❌ Both Gemini and Ollama failed, using static fallback");
 
     // Both failed
     activeAiRequests--;
