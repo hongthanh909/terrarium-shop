@@ -1,13 +1,14 @@
 /**
- * AI Consultation API Route — v4 (Streaming + Rate Limiting + Concurrency Guard)
+ * AI Consultation API Route — v5 (Intent-Aware + Streaming + Rate Limiting)
  *
+ * - Intent Classification: phân loại ý định khách (kiến thức/sản phẩm/chính sách/chẩn đoán)
  * - Khi Ollama online: stream từng token về client (như ChatGPT gõ từng chữ)
  * - Khi Ollama offline: fallback về DB query hoặc knowledge base tĩnh (vẫn JSON bình thường)
  * - Rate limiting: 6 request/phút/IP
  * - Concurrency: tối đa 2 Ollama inference đồng thời
  *
  * POST /api/consult
- * Body: { message: string, history?: { role: "user"|"assistant", content: string }[] }
+ * Body: { message: string, history?: { role: "user"|"assistant", content: string }[], pageContext?: PageContext }
  */
 
 import { NextResponse } from "next/server";
