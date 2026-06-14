@@ -38,7 +38,7 @@ OLLAMA_MODEL=llama3:8b
 
 ---
 
-## ✅ 2. Khả năng Hiện tại của AI Chatbot (v4)
+## ✅ 2. Khả năng Hiện tại của AI Chatbot (v5 — Intent-Aware)
 
 ### 2.1 Checklist khả năng
 
@@ -59,6 +59,9 @@ OLLAMA_MODEL=llama3:8b
 | **Concurrency Guard** | ✅ | Tối đa 2 Ollama inference đồng thời (bảo vệ VPS 8GB RAM). |
 | **Session Limit** | ✅ | Max 30 tin nhắn/session. Cooldown 3 giây giữa các tin. |
 | **Input Length Limit** | ✅ | Chặn tin nhắn > 400 ký tự. Hiển thị counter khi gần giới hạn. |
+| **Intent Classification** | ✅ | AI phân loại ý định khách (kiến thức/sản phẩm/chính sách/chẩn đoán/chào hỏi) → chỉ gợi ý SP khi hỏi mua. |
+| **Adaptive Response Length** | ✅ | Linh hoạt 2-8 câu tùy intent thay vì cố định 3-5 câu. |
+| **Natural Conversation** | ✅ | Prompt yêu cầu đa dạng cách diễn đạt, không lặp khuôn mẫu robot. |
 
 ### 2.2 Kiến trúc hệ thống
 
@@ -89,7 +92,7 @@ User → ChatWidget (client)
 | **Rate Limiting (IP-based)** | 6 request/phút/IP. In-memory Map, tự cleanup mỗi 2 phút. HTTP 429 khi vượt. | Ngăn spam, DDoS nhẹ. |
 | **Concurrent Inference Limiter** | Tối đa 2 Ollama inference đồng thời. Vượt → fallback DB/knowledge. | VPS 8GB RAM: 2 PM2 + Ollama → chỉ đủ 2 concurrent. |
 | **Input Filter** | Chặn tin nhắn > 400 ký tự. | Ngăn copy bài dài, prompt injection. |
-| **Output Limiter (`num_predict`)** | 400 tokens. | Cân bằng chất lượng vs tốc độ. |
+| **Output Limiter (`num_predict`)** | 700 tokens. | Đủ dài cho câu trả lời chi tiết. |
 | **Stop Sequences** | `["\nUser:", "User:", "\nKhách:", "Khách:"]` | Ngăn AI tự viết tiếp hội thoại (hallucination loop). |
 | **Timeout** | 60 giây. | llama3:8b cần thời gian nạp model lần đầu. |
 | **Catalog Cache** | Cache sản phẩm 5 phút. | Giảm tải PostgreSQL. |
@@ -211,4 +214,4 @@ Khi Ollama offline, chatbot tự động chuyển sang knowledge base tĩnh hỗ
 | Cảm ơn | "cảm ơn", "thank" |
 
 ---
-*Tài liệu được cập nhật ngày 05 tháng 06 năm 2026 — AI Chatbot v4 (Rate Limiting + Diagnosis + Sales Playbook).*
+*Tài liệu được cập nhật ngày 14 tháng 06 năm 2026 — AI Chatbot v5 (Intent Classification + Adaptive Response + Natural Conversation).*
