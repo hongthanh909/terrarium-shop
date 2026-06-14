@@ -17,7 +17,7 @@ module.exports = {
 
       // Số lượng instance — tận dụng 6 vCPU của VPS CHEAP 6
       // 2 instances = hiệu suất tốt nhất khi có AI Ollama cũng chạy song song trên VPS
-      instances: 2,
+      instances: 1,
       exec_mode: "cluster",    // cluster mode: cân bằng tải giữa 2 instance
 
       // Tự động restart nếu app crash
@@ -31,7 +31,7 @@ module.exports = {
         PORT: 3000,
         // Ollama AI — chạy cùng VPS
         OLLAMA_BASE_URL: "http://127.0.0.1:11434",
-        OLLAMA_MODEL: "llama3:8b",
+        OLLAMA_MODEL: "llama3.2:3b",
         // Các biến khác (DB, secrets) đặt trong file .env.local tại apps/web/
         // KHÔNG hardcode secrets ở đây
       },
