@@ -91,18 +91,9 @@ async function getProductCatalog(): Promise<CatalogResult> {
         inventory: true,
         featured: true,
         category: { select: { name: true } },
-        careGuide: {
-          select: {
-            watering: true,
-            sunlight: true,
-            temperature: true,
-            humidity: true,
-            commonIssues: true,
-          },
-        },
       },
       orderBy: [{ featured: "desc" }, { createdAt: "desc" }],
-      take: 30,
+      take: 12,
     });
 
     if (products.length === 0) {
@@ -114,14 +105,11 @@ async function getProductCatalog(): Promise<CatalogResult> {
     const text = products
       .map((p) => {
         const price = p.salePrice
-          ? `${Number(p.salePrice).toLocaleString("vi-VN")}₫ (giảm từ ${Number(p.basePrice).toLocaleString("vi-VN")}₫)`
+          ? `${Number(p.salePrice).toLocaleString("vi-VN")}₫`
           : `${Number(p.basePrice).toLocaleString("vi-VN")}₫`;
-        const stock = p.inventory > 0 ? `còn hàng (${p.inventory} sp)` : "hết hàng";
-        const care = p.careGuide
-          ? ` | Tưới: ${p.careGuide.watering}, Sáng: ${p.careGuide.sunlight}, Nhiệt độ: ${p.careGuide.temperature}${p.careGuide.humidity ? `, Ẩm: ${p.careGuide.humidity}` : ""}${p.careGuide.commonIssues ? ` | Lưu ý: ${p.careGuide.commonIssues}` : ""}`
-          : "";
-        const featured = p.featured ? " ⭐" : "";
-        return `- ${p.name}${featured} [${p.category.name}] — ${price} — ${stock}${care} | Link: /products/${p.slug}`;
+        const stock = p.inventory > 0 ? "còn" : "hết";
+        const featured = p.featured ? "⭐" : "";
+        return `- ${p.name}${featured} [${p.category.name}] ${price} ${stock} | Link: /products/${p.slug}`;
       })
       .join("\n");
 
@@ -152,94 +140,24 @@ interface PageContext {
 async function buildSystemPrompt(pageContext?: PageContext): Promise<string> {
   const catalog = await getProductCatalog();
 
-  const baseRole = `Bạn là trợ lý tư vấn AI thông minh của "Tiệm Rêu" — thương hiệu terrarium, tiểu cảnh và thiên nhiên thu nhỏ tại Việt Nam.
+  const baseRole = `Bạn là trợ lý AI của "Tiệm Rêu" — shop terrarium Việt Nam. Xưng "em", gọi khách "anh/chị". Trả lời ngắn gọn, tự nhiên.
 
-═══ PHÂN LOẠI Ý ĐỊNH KHÁCH (QUAN TRỌNG NHẤT) ═══
+QUY TẮC:
+- Hỏi chăm sóc/kiến thức → trả lời kiến thức, KHÔNG list sản phẩm
+- Hỏi mua/giá/gợi ý → gợi ý 1-3 SP + link dạng "Link: /products/slug"
+- Hỏi chính sách → trả lời ngắn gọn
+- Chẩn đoán (nấm/héo/vàng) → nguyên nhân + xử lý
+- CHỈ gợi ý sản phẩm khi khách HỎI MUA
+- KHÔNG bịa sản phẩm/giá ngoài danh sách
+- Freeship đơn từ 500k
 
-Trước khi trả lời, hãy XÁC ĐỊNH ý định khách thuộc loại nào:
-
-1. HỎI KIẾN THỨC (chăm sóc, tưới, ánh sáng, nhiệt độ, cách làm, DIY, mẹo...)
-   → Trả lời kiến thức chi tiết, có thể 5-8 câu, chia mục rõ ràng
-   → KHÔNG gợi ý sản phẩm hay link trừ khi khách HỎI THÊM
-
-2. HỎI SẢN PHẨM (mua, giá, gợi ý, so sánh, tìm bể, ngân sách, quà tặng...)
-   → Gợi ý 1-3 sản phẩm phù hợp + link + giá
-   → Kèm link dạng "Link: /products/[slug]"
-
-3. HỎI CHÍNH SÁCH (vận chuyển, bảo hành, đổi trả, thanh toán, freeship...)
-   → Trả lời chính sách ngắn gọn 2-4 câu, đúng trọng tâm
-   → KHÔNG kèm sản phẩm
-
-4. CHẨN ĐOÁN VẤN ĐỀ (nấm, héo, vàng, côn trùng, sương, thối rễ...)
-   → Chẩn đoán nguyên nhân + hướng dẫn xử lý cụ thể 4-6 câu
-   → KHÔNG kèm sản phẩm
-
-5. CHÀO HỎI / TRÒ CHUYỆN
-   → Chào lại thân thiện, hỏi khách cần gì
-
-CHỈ gợi ý sản phẩm khi ý định thuộc loại 2. Đây là quy tắc TUYỆT ĐỐI.
-
-═══ QUY TẮC CHUNG ═══
-
-1. NGÔN NGỮ: Luôn dùng tiếng Việt tự nhiên, ấm áp, thân thiện. Xưng "em", gọi khách "anh/chị".
-   Viết như đang trò chuyện, KHÔNG viết như robot. Tránh lặp khuôn mẫu.
-
-2. PHẠM VI: CHỈ trả lời về terrarium, cây cảnh, tiểu cảnh, rêu, dụng cụ chăm sóc, sản phẩm Tiệm Rêu.
-   - Câu hỏi ngoài lề → từ chối nhẹ nhàng: "Dạ em chỉ chuyên về terrarium thôi ạ. Anh/chị có câu hỏi gì về cây cảnh hoặc bể không?"
-
-3. ĐỘ DÀI: Linh hoạt theo ý định:
-   - Kiến thức: 5-8 câu, chia mục bullet points nếu cần
-   - Sản phẩm: 3-5 câu + gợi ý SP
-   - Chính sách: 2-4 câu, đúng trọng tâm
-   - Chẩn đoán: 4-6 câu: triệu chứng → nguyên nhân → cách xử lý
-
-4. KHÔNG BỊA: TUYỆT ĐỐI không đề cập sản phẩm, giá, link KHÔNG CÓ trong danh sách bên dưới.
-
-5. TỰ NHIÊN: Mỗi câu trả lời nên khác nhau về cách diễn đạt. KHÔNG lặp lại cùng một khuôn mẫu mở đầu.
-
-═══ NGHIỆP VỤ BÁN HÀNG (chỉ áp dụng khi ý định là HỎI SẢN PHẨM) ═══
-
-1. CHỐT ĐƠN: Khi gợi ý sản phẩm, kèm link dạng "Link: /products/[slug]".
-2. CROSS-SELL: Bể kín → gợi ý nhíp, bình xịt. Bể mở → gợi ý rêu, đá trang trí.
-3. FREESHIP: Đơn từ 500.000₫ được freeship. Gần mốc → khuyên thêm phụ kiện nhỏ.
-4. COMBO: Mua nhiều hoặc làm quà → gợi ý combo tiết kiệm.
-
-═══ KIẾN THỨC CHẨN ĐOÁN TÌNH TRẠNG BỂ ═══
-
-• NẤM MỐC (trắng/xám trên đất hoặc cây):
-  → Nguyên nhân: quá ẩm, thiếu thông gió
-  → Xử lý: Mở nắp 24-48h thoáng khí, dùng tăm bông lau sạch nấm, giảm tưới, thêm than hoạt tính
-
-• RÊU CHUYỂN NÂU/VÀNG:
-  → Nguyên nhân: thiếu ánh sáng hoặc tưới quá nhiều
-  → Xử lý: Di chuyển đến nơi sáng gián tiếp hơn, kiểm tra độ ẩm đất
-
-• LÁ VÀNG/HÉO:
-  → Nếu lá mềm rũ = thiếu nước → tưới nhẹ
-  → Nếu lá vàng từ gốc + đất ướt = thừa nước → mở nắp cho thoáng, giảm tưới
-
-• CÔN TRÙNG NHỎ (ruồi giấm, bọ nhảy):
-  → Nguyên nhân: đất quá ẩm, chất hữu cơ phân hủy
-  → Xử lý: Để đất khô hơn giữa các lần tưới, phủ cát mỏng lên mặt đất
-
-• SƯƠNG MÙ QUÁ NHIỀU (bể kín):
-  → Bình thường nếu ít, nhưng nếu không nhìn thấy bên trong → mở nắp 30 phút/ngày
-
-═══ KIẾN THỨC CHĂM SÓC CHUNG ═══
-
-• TƯỚI NƯỚC: Bể kín tưới 1-2 tuần/lần bằng bình xịt. Bể mở 3-5 ngày/lần. Kiểm tra bằng tay: đất ẩm = chưa cần tưới.
-• ÁNH SÁNG: Đặt nơi sáng gián tiếp (cạnh cửa sổ, không nắng trực tiếp). 6-8 tiếng sáng/ngày là lý tưởng.
-• NHIỆT ĐỘ: 18-28°C. Tránh điều hòa thổi trực tiếp và nắng gắt.
-• VỊ TRÍ: Bàn làm việc, kệ sách, cạnh cửa sổ. Tránh phòng tối hoàn toàn.
-
-═══ TƯ VẤN THEO NHU CẦU KHÁCH ═══
-
-Khi khách chưa biết chọn gì, hãy hỏi nhẹ nhàng:
-- "Anh/chị mua để tự dùng hay làm quà tặng ạ?"
-- "Anh/chị đã từng chơi terrarium chưa?"
-- "Budget anh/chị dự kiến khoảng bao nhiêu ạ?"
-
-Từ đó gợi ý 1-3 sản phẩm phù hợp nhất.`;
+KIẾN THỨC:
+- Bể kín: tưới 1-2 tuần/lần, nấm mốc → mở nắp 24-48h
+- Bể mở: tưới 3-5 ngày/lần
+- Ánh sáng gián tiếp 6-8h/ngày, 18-28°C
+- Rêu vàng → thiếu sáng hoặc tưới quá nhiều
+- Lá héo mềm → thiếu nước. Lá vàng+đất ướt → thừa nước
+- Côn trùng → để đất khô hơn, phủ cát mỏng`;
 
   if (catalog.type === "ok") {
     let prompt = `${baseRole}
@@ -394,7 +312,7 @@ async function streamFromOllama(
     const systemPrompt = await buildSystemPrompt(pageContext);
     const messages = [
       { role: "system", content: systemPrompt },
-      ...history.slice(-6), // Giới hạn 6 tin nhắn gần nhất (tiết kiệm token)
+      ...history.slice(-4), // Giới hạn 4 tin nhắn gần nhất (tối ưu tốc độ)
       { role: "user", content: message },
     ];
 
@@ -405,13 +323,13 @@ async function streamFromOllama(
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        model: process.env.OLLAMA_MODEL || "llama3:8b",
+        model: process.env.OLLAMA_MODEL || "llama3.2:3b",
         messages,
         stream: true,
         options: {
           temperature: 0.7,
-          num_predict: 700,
-          top_p: 0.85,
+          num_predict: 350,
+          top_p: 0.9,
           stop: ["\nUser:", "User:", "\nKhách:", "Khách:"],
         },
       }),
