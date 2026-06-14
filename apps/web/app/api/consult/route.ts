@@ -1,11 +1,12 @@
 /**
- * AI Consultation API Route — v5 (Intent-Aware + Streaming + Rate Limiting)
+ * AI Consultation API Route — v6 (Gemini Primary + Ollama Fallback)
  *
- * - Intent Classification: phân loại ý định khách (kiến thức/sản phẩm/chính sách/chẩn đoán)
- * - Khi Ollama online: stream từng token về client (như ChatGPT gõ từng chữ)
- * - Khi Ollama offline: fallback về DB query hoặc knowledge base tĩnh (vẫn JSON bình thường)
+ * - Primary: Gemini API (streaming via SSE mode)
+ * - Fallback: Ollama local (streaming)
+ * - Fallback 2: DB query trực tiếp
+ * - Fallback 3: Knowledge base tĩnh
  * - Rate limiting: 6 request/phút/IP
- * - Concurrency: tối đa 2 Ollama inference đồng thời
+ * - Concurrency: tối đa 2 AI inference đồng thời
  *
  * POST /api/consult
  * Body: { message: string, history?: { role: "user"|"assistant", content: string }[], pageContext?: PageContext }
@@ -16,21 +17,19 @@ import { prisma } from "@/lib/prisma";
 
 // =============================================
 // RATE LIMITING — In-memory, per-IP
-// 6 requests / phút. Auto-cleanup mỗi 2 phút
 // =============================================
-const RATE_LIMIT_WINDOW_MS = 60_000; // 1 phút
+const RATE_LIMIT_WINDOW_MS = 60_000;
 const RATE_LIMIT_MAX = 6;
-
 const rateLimitMap = new Map<string, { count: number; windowStart: number }>();
 
 // Cleanup expired entries mỗi 2 phút
 setInterval(() => {
   const now = Date.now();
-  Array.from(rateLimitMap.entries()).forEach(([key, val]) => {
+  for (const [key, val] of rateLimitMap.entries()) {
     if (now - val.windowStart > RATE_LIMIT_WINDOW_MS * 2) {
       rateLimitMap.delete(key);
     }
-  });
+  }
 }, 120_000);
 
 function checkRateLimit(ip: string): boolean {
@@ -39,43 +38,34 @@ function checkRateLimit(ip: string): boolean {
 
   if (!entry || now - entry.windowStart > RATE_LIMIT_WINDOW_MS) {
     rateLimitMap.set(ip, { count: 1, windowStart: now });
-    return true; // OK
+    return true;
   }
 
-  if (entry.count >= RATE_LIMIT_MAX) {
-    return false; // BLOCKED
-  }
+  if (entry.count >= RATE_LIMIT_MAX) return false;
 
   entry.count++;
-  return true; // OK
+  return true;
 }
 
 // =============================================
-// CONCURRENCY GUARD — Chỉ cho tối đa 2 Ollama inference đồng thời
-// VPS 8GB RAM: 2 PM2 instances + Ollama → chỉ đủ 2 concurrent AI
+// CONCURRENCY GUARD
 // =============================================
-let activeOllamaRequests = 0;
-const MAX_CONCURRENT_OLLAMA = 2;
+let activeAiRequests = 0;
+const MAX_CONCURRENT_AI = 2;
 
 // =============================================
-// LOAD CATALOG SẢN PHẨM THẬT TỪ DB
-// Cache 5 phút để tránh query DB mỗi request
+// PRODUCT CATALOG CACHE (5 min TTL)
 // =============================================
 type CatalogResult =
   | { type: "ok"; text: string }
   | { type: "empty" }
   | { type: "error" };
 
-let productCatalogCache: {
-  result: CatalogResult;
-  fetchedAt: number;
-} | null = null;
-
-const CACHE_TTL_MS = 5 * 60 * 1000; // 5 phút
+let productCatalogCache: { result: CatalogResult; fetchedAt: number } | null = null;
+const CACHE_TTL_MS = 5 * 60 * 1000;
 
 async function getProductCatalog(): Promise<CatalogResult> {
   const now = Date.now();
-
   if (productCatalogCache && now - productCatalogCache.fetchedAt < CACHE_TTL_MS) {
     return productCatalogCache.result;
   }
@@ -122,7 +112,7 @@ async function getProductCatalog(): Promise<CatalogResult> {
 }
 
 // =============================================
-// PAGE CONTEXT TYPE — from ChatWidget
+// PAGE CONTEXT TYPE
 // =============================================
 interface PageContext {
   type: "product" | "blog" | "explore" | "checkout" | "orders" | "consult" | "home" | "general";
@@ -134,8 +124,7 @@ interface PageContext {
 }
 
 // =============================================
-// SYSTEM PROMPT ĐỘNG — v5 (Page-Context Aware)
-// Nâng cấp: nhận biết trang user đang xem
+// SYSTEM PROMPT
 // =============================================
 async function buildSystemPrompt(pageContext?: PageContext): Promise<string> {
   const catalog = await getProductCatalog();
@@ -171,223 +160,251 @@ Quy tắc sản phẩm:
 - KHÔNG đề xuất sản phẩm không có trong danh sách trên
 - Sản phẩm "hết hàng" → vẫn đề cập nhưng ghi rõ hết hàng`;
 
-    // Inject page context
     if (pageContext?.type === "product" && pageContext.productName) {
       prompt += `\n\n═══ NGỮ CẢNH TRANG HIỆN TẠI ═══\nKhách đang xem SẢN PHẨM: "${pageContext.productName}"${pageContext.productPrice ? ` — Giá: ${pageContext.productPrice}` : ""}${pageContext.categoryName ? ` — Danh mục: ${pageContext.categoryName}` : ""}\n- Ưu tiên trả lời về sản phẩm này\n- Gợi ý mua kèm phụ kiện, so sánh với SP cùng danh mục`;
-    } else if (pageContext?.type === "explore") {
-      prompt += `\n\n═══ NGỮ CẢNH ═══\nKhách đang xem trang KHÁM PHÁ. Gợi ý sản phẩm hot, deal giảm giá.`;
-    } else if (pageContext?.type === "checkout") {
-      prompt += `\n\n═══ NGỮ CẢNH ═══\nKhách đang THANH TOÁN. Hỗ trợ vận chuyển, mã giảm giá, chính sách đổi trả.`;
-    } else if (pageContext?.type === "orders") {
-      prompt += `\n\n═══ NGỮ CẢNH ═══\nKhách đang xem ĐƠN HÀNG. Hỗ trợ tình trạng đơn, bảo hành, đổi trả.`;
-    } else if (pageContext?.type === "blog") {
-      prompt += `\n\n═══ NGỮ CẢNH ═══\nKhách đang đọc BLOG. Gợi ý sản phẩm liên quan.`;
     }
 
     return prompt;
   }
 
-  if (catalog.type === "empty") {
-    let prompt = `${baseRole}
-
-THÔNG TIN QUAN TRỌNG: Hiện tại shop CHƯA CÓ SẢN PHẨM đang bán.
-- TUYỆT ĐỐI KHÔNG bịa tên sản phẩm hoặc giá tiền
-- Khi khách hỏi sản phẩm: nói shop đang cập nhật, đề nghị liên hệ Zalo/Facebook
-- Vẫn tư vấn kiến thức chăm sóc terrarium nói chung`;
-
-    if (pageContext?.type && pageContext.type !== "general" && pageContext.type !== "home") {
-      prompt += `\n\nKhách đang ở trang: ${pageContext.type.toUpperCase()}.`;
-    }
-
-    return prompt;
-  }
-
-  // catalog.type === "error"
-  let prompt = `${baseRole}
-
-THÔNG TIN QUAN TRỌNG: Không thể tải danh sách sản phẩm lúc này.
-- TUYỆT ĐỐI KHÔNG đoán mò hoặc bịa sản phẩm/giá
-- Khi khách hỏi sản phẩm: xin lỗi và đề nghị xem trực tiếp trang Sản Phẩm
-- Vẫn tư vấn kiến thức chăm sóc terrarium nói chung`;
-
-  // ── Inject page context ──────────────────────
-  if (pageContext) {
-    switch (pageContext.type) {
-      case "product":
-        if (pageContext.productName) {
-          prompt += `\n\n═══ NGỮ CẢNH TRANG HIỆN TẠI ═══\nKhách đang xem SẢN PHẨM: "${pageContext.productName}"${pageContext.productPrice ? ` — Giá: ${pageContext.productPrice}` : ""}${pageContext.categoryName ? ` — Danh mục: ${pageContext.categoryName}` : ""}\n- Ưu tiên trả lời về sản phẩm này (chăm sóc, ưu nhược điểm, so sánh, gợi ý mua kèm)\n- Nếu khách hỏi sản phẩm khác → vẫn gợi ý nhưng nhắc sản phẩm đang xem`;
-        }
-        break;
-      case "blog":
-        prompt += `\n\n═══ NGỮ CẢNH TRANG HIỆN TẠI ═══\nKhách đang đọc BLOG. Có thể gợi ý sản phẩm liên quan đến bài viết hoặc tư vấn chăm sóc.`;
-        break;
-      case "explore":
-        prompt += `\n\n═══ NGỮ CẢNH TRANG HIỆN TẠI ═══\nKhách đang xem trang KHÁM PHÁ (explore). Giúp khách tìm sản phẩm phù hợp, so sánh, gợi ý hot deal.`;
-        break;
-      case "checkout":
-        prompt += `\n\n═══ NGỮ CẢNH TRANG HIỆN TẠI ═══\nKhách đang ở trang THANH TOÁN. Tập trung hỗ trợ: vận chuyển, mã giảm giá, phương thức thanh toán, chính sách đổi trả.`;
-        break;
-      case "orders":
-        prompt += `\n\n═══ NGỮ CẢNH TRANG HIỆN TẠI ═══\nKhách đang xem ĐƠN HÀNG. Hỗ trợ: tình trạng đơn, bảo hành, đổi trả, liên hệ shop.`;
-        break;
-    }
-  }
-
-  return prompt;
+  return baseRole;
 }
 
 // =============================================
-// FALLBACK KNOWLEDGE BASE (from Database)
-// Cached for 5 minutes, admin-editable
+// FALLBACK KNOWLEDGE BASE
 // =============================================
-let knowledgeCache: { keyword: string; response: string; priority: number }[] | null = null;
-let knowledgeCacheTime = 0;
-const KNOWLEDGE_CACHE_TTL = 5 * 60 * 1000; // 5 phút
-
-async function getKnowledgeBase(): Promise<{ keyword: string; response: string; priority: number }[]> {
-  const now = Date.now();
-  if (knowledgeCache && now - knowledgeCacheTime < KNOWLEDGE_CACHE_TTL) {
-    return knowledgeCache;
-  }
-
-  try {
-    const entries = await prisma.aiKnowledge.findMany({
-      where: { isActive: true },
-      select: { keyword: true, response: true, priority: true },
-      orderBy: [{ priority: "desc" }, { createdAt: "desc" }],
-    });
-    knowledgeCache = entries;
-    knowledgeCacheTime = now;
-    return entries;
-  } catch (err) {
-    console.error("Failed to load AI knowledge from DB:", err);
-    // Return empty if DB fails — sẽ dùng default response
-    return knowledgeCache || [];
-  }
-}
-
 async function getFallbackResponse(message: string): Promise<string> {
   const lower = message.toLowerCase();
-
-  if (/xin chào|hello|hi|chào|alo/.test(lower)) {
-    return "Xin chào! 🌿 Em là trợ lý AI của Tiệm Rêu. Em có thể giúp anh/chị về:\n• Gợi ý sản phẩm terrarium phù hợp\n• Chăm sóc cây và xử lý sự cố bể\n• Giá cả, đặt hàng và vận chuyển\n\nAnh/chị cần tư vấn gì ạ?";
-  }
-
-  if (/cảm ơn|thank/.test(lower)) {
-    return "Dạ không có gì! 😊 Chúc anh/chị chăm sóc terrarium thật vui. Nếu cần hỗ trợ thêm, cứ hỏi em nhé! 🌱";
-  }
-
-  // Query from database
-  const knowledge = await getKnowledgeBase();
-
-  // Match by keyword (sorted by priority already)
-  for (const entry of knowledge) {
-    if (lower.includes(entry.keyword)) {
-      return entry.response;
-    }
-  }
-
-  return "Dạ cảm ơn anh/chị! 🌿 Em có thể tư vấn về sản phẩm terrarium, cách chăm sóc cây, xử lý sự cố bể, giá cả và đặt hàng. Anh/chị hỏi cụ thể hơn để em hỗ trợ tốt nhất nhé!";
+  if (/xin chào|hello|hi|chào|alo/.test(lower))
+    return "Xin chào! 🌿 Em là trợ lý AI của Tiệm Rêu. Em có thể giúp gì cho anh/chị ạ?";
+  if (/cảm ơn|thank/.test(lower))
+    return "Dạ không có gì! 😊 Chúc anh/chị chăm sóc terrarium thật vui.";
+  return "Dạ, anh/chị vui lòng đợi chút hoặc liên hệ trực tiếp qua Zalo/Facebook để được nhân viên hỗ trợ ngay nhé! 🌿";
 }
 
 // =============================================
-// STREAMING RESPONSE TỪ OLLAMA
+// HELPER: Escape string for JSON value
+// =============================================
+function escapeJsonString(str: string): string {
+  return str
+    .replace(/\\/g, "\\\\")
+    .replace(/"/g, '\\"')
+    .replace(/\n/g, "\\n")
+    .replace(/\r/g, "\\r")
+    .replace(/\t/g, "\\t");
+}
+
+// =============================================
+// GEMINI STREAMING
+// =============================================
+async function streamFromGemini(
+  message: string,
+  systemPrompt: string,
+  history: { role: string; content: string }[]
+): Promise<ReadableStream<Uint8Array> | null> {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) return null;
+
+  const model = process.env.GEMINI_MODEL || "gemini-2.0-flash";
+  // Use alt=sse to get Server-Sent Events format from Gemini
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:streamGenerateContent?alt=sse&key=${apiKey}`;
+
+  const contents = [
+    ...history.slice(-4).map((msg) => ({
+      role: msg.role === "assistant" ? "model" : "user",
+      parts: [{ text: msg.content }],
+    })),
+    { role: "user", parts: [{ text: message }] },
+  ];
+
+  const payload = {
+    systemInstruction: { parts: [{ text: systemPrompt }] },
+    contents,
+    generationConfig: {
+      temperature: 0.7,
+      maxOutputTokens: 512,
+    },
+  };
+
+  const res = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+
+  if (!res.ok) {
+    const errText = await res.text().catch(() => "unknown");
+    console.error(`Gemini API error ${res.status}: ${errText}`);
+    return null;
+  }
+
+  if (!res.body) return null;
+
+  const reader = res.body.getReader();
+  const decoder = new TextDecoder();
+  const encoder = new TextEncoder();
+  let buffer = "";
+
+  return new ReadableStream({
+    async pull(controller) {
+      try {
+        const { done, value } = await reader.read();
+        if (done) {
+          // Flush any remaining buffer
+          if (buffer.trim()) {
+            const token = extractTokenFromSSE(buffer);
+            if (token) {
+              controller.enqueue(
+                encoder.encode(`data: {"token":"${escapeJsonString(token)}"}\n\n`)
+              );
+            }
+          }
+          controller.close();
+          activeAiRequests--;
+          return;
+        }
+
+        buffer += decoder.decode(value, { stream: true });
+
+        // Gemini SSE format: "data: {json}\n\n"
+        const parts = buffer.split("\n\n");
+        // Keep the last (possibly incomplete) part in buffer
+        buffer = parts.pop() || "";
+
+        for (const part of parts) {
+          const token = extractTokenFromSSE(part);
+          if (token) {
+            controller.enqueue(
+              encoder.encode(`data: {"token":"${escapeJsonString(token)}"}\n\n`)
+            );
+          }
+        }
+      } catch (err) {
+        console.error("Gemini stream read error:", err);
+        controller.close();
+        activeAiRequests--;
+      }
+    },
+    cancel() {
+      reader.cancel();
+      activeAiRequests--;
+    },
+  });
+}
+
+function extractTokenFromSSE(sseChunk: string): string | null {
+  // Each SSE chunk looks like: "data: { ... json ... }"
+  for (const line of sseChunk.split("\n")) {
+    const trimmed = line.trim();
+    if (trimmed.startsWith("data: ")) {
+      try {
+        const json = JSON.parse(trimmed.slice(6));
+        const text = json?.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (text) return text;
+      } catch {
+        // ignore parse errors
+      }
+    }
+  }
+  return null;
+}
+
+// =============================================
+// OLLAMA STREAMING (fallback)
 // =============================================
 async function streamFromOllama(
+  messages: { role: string; content: string }[]
+): Promise<ReadableStream<Uint8Array> | null> {
+  const ollamaUrl = process.env.OLLAMA_URL || "http://localhost:11434";
+  const model = process.env.OLLAMA_MODEL || "llama3.2:3b";
+
+  const res = await fetch(`${ollamaUrl}/api/chat`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ model, messages, stream: true }),
+  });
+
+  if (!res.ok || !res.body) return null;
+
+  const reader = res.body.getReader();
+  const decoder = new TextDecoder();
+  const encoder = new TextEncoder();
+  let buffer = "";
+
+  return new ReadableStream({
+    async pull(controller) {
+      try {
+        const { done, value } = await reader.read();
+        if (done) {
+          controller.close();
+          activeAiRequests--;
+          return;
+        }
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n");
+        buffer = lines.pop() || "";
+
+        for (const line of lines) {
+          if (!line.trim()) continue;
+          try {
+            const obj = JSON.parse(line);
+            const token = obj?.message?.content;
+            if (token) {
+              controller.enqueue(
+                encoder.encode(`data: {"token":"${escapeJsonString(token)}"}\n\n`)
+              );
+            }
+          } catch {
+            // ignore
+          }
+        }
+      } catch (err) {
+        console.error("Ollama stream read error:", err);
+        controller.close();
+        activeAiRequests--;
+      }
+    },
+    cancel() {
+      reader.cancel();
+      activeAiRequests--;
+    },
+  });
+}
+
+// =============================================
+// MAIN STREAMING FUNCTION (Gemini → Ollama)
+// =============================================
+async function streamFromAI(
   message: string,
   history: { role: string; content: string }[],
   pageContext?: PageContext
 ): Promise<ReadableStream<Uint8Array> | null> {
-  const ollamaUrl = process.env.OLLAMA_BASE_URL;
-  if (!ollamaUrl) return null;
+  if (activeAiRequests >= MAX_CONCURRENT_AI) return null;
 
-  // Concurrency guard
-  if (activeOllamaRequests >= MAX_CONCURRENT_OLLAMA) {
-    return null; // Fallback — quá tải
-  }
-
-  activeOllamaRequests++;
+  activeAiRequests++;
+  const systemPrompt = await buildSystemPrompt(pageContext);
 
   try {
-    const systemPrompt = await buildSystemPrompt(pageContext);
-    const messages = [
+    // 1) Try Gemini first
+    const geminiStream = await streamFromGemini(message, systemPrompt, history);
+    if (geminiStream) return geminiStream;
+
+    // 2) Fallback to Ollama
+    const ollamaMessages = [
       { role: "system", content: systemPrompt },
-      ...history.slice(-4), // Giới hạn 4 tin nhắn gần nhất (tối ưu tốc độ)
+      ...history.slice(-4),
       { role: "user", content: message },
     ];
+    const ollamaStream = await streamFromOllama(ollamaMessages);
+    if (ollamaStream) return ollamaStream;
 
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 60000);
-
-    const ollamaRes = await fetch(`${ollamaUrl}/api/chat`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: process.env.OLLAMA_MODEL || "llama3.2:3b",
-        messages,
-        stream: true,
-        options: {
-          temperature: 0.7,
-          num_predict: 350,
-          top_p: 0.9,
-          stop: ["\nUser:", "User:", "\nKhách:", "Khách:"],
-        },
-      }),
-      signal: controller.signal,
-    });
-
-    clearTimeout(timeout);
-    if (!ollamaRes.ok || !ollamaRes.body) {
-      activeOllamaRequests--;
-      return null;
-    }
-
-    const encoder = new TextEncoder();
-    const ollamaBody = ollamaRes.body;
-
-    const readable = new ReadableStream<Uint8Array>({
-      async start(streamController) {
-        const reader = ollamaBody.getReader();
-        const decoder = new TextDecoder();
-        let buffer = "";
-
-        try {
-          while (true) {
-            const { done, value } = await reader.read();
-            if (done) break;
-
-            buffer += decoder.decode(value, { stream: true });
-            const lines = buffer.split("\n");
-            buffer = lines.pop() ?? "";
-
-            for (const line of lines) {
-              if (!line.trim()) continue;
-              try {
-                const json = JSON.parse(line);
-                const token = json?.message?.content ?? "";
-                if (token) {
-                  streamController.enqueue(encoder.encode(`data: ${JSON.stringify({ token })}\n\n`));
-                }
-                if (json?.done) {
-                  streamController.enqueue(encoder.encode(`data: [DONE]\n\n`));
-                }
-              } catch {
-                // Dòng JSON không hợp lệ → bỏ qua
-              }
-            }
-          }
-        } catch {
-          streamController.enqueue(encoder.encode(`data: [DONE]\n\n`));
-        } finally {
-          activeOllamaRequests--;
-          streamController.close();
-        }
-      },
-    });
-
-    return readable;
-  } catch {
-    activeOllamaRequests--;
+    // Both failed
+    activeAiRequests--;
+    return null;
+  } catch (err) {
+    console.error("streamFromAI error:", err);
+    activeAiRequests--;
     return null;
   }
 }
@@ -397,15 +414,18 @@ async function streamFromOllama(
 // =============================================
 export async function POST(request: Request) {
   try {
-    // ── Rate Limiting ────────────────────────────
     const forwarded = request.headers.get("x-forwarded-for");
     const ip = forwarded?.split(",")[0]?.trim() || "unknown";
 
     if (!checkRateLimit(ip)) {
-      return NextResponse.json({
-        response: "Dạ anh/chị đang gửi hơi nhanh, vui lòng đợi 1 phút rồi hỏi lại nhé! 🌿 Em luôn sẵn sàng tư vấn ạ.",
-        rateLimited: true,
-      }, { status: 429 });
+      return NextResponse.json(
+        {
+          response:
+            "Dạ anh/chị đang gửi hơi nhanh, vui lòng đợi 1 phút rồi hỏi lại nhé! 🌿 Em luôn sẵn sàng tư vấn ạ.",
+          rateLimited: true,
+        },
+        { status: 429 }
+      );
     }
 
     const body = await request.json();
@@ -417,29 +437,31 @@ export async function POST(request: Request) {
 
     const trimmedMessage = message.trim();
 
-    // ── Guardrail: Chặn tin nhắn quá dài ────────
     if (trimmedMessage.length > 400) {
       return NextResponse.json({
-        response: "Dạ, câu hỏi của anh/chị hơi dài. Anh/chị tóm tắt ngắn gọn dưới 400 ký tự để em hỗ trợ nhanh nhất nhé! 🌿",
+        response:
+          "Dạ, câu hỏi của anh/chị hơi dài. Anh/chị tóm tắt ngắn gọn dưới 400 ký tự để em hỗ trợ nhanh nhất nhé! 🌿",
       });
     }
 
-    // ── Thử Streaming từ Ollama ──────────────────
-    const stream = await streamFromOllama(trimmedMessage, history, pageContext);
-
+    // ── Attempt AI Streaming ──────────────────────
+    const stream = await streamFromAI(trimmedMessage, history, pageContext);
     if (stream) {
       return new Response(stream, {
         headers: {
           "Content-Type": "text/event-stream",
           "Cache-Control": "no-cache",
           Connection: "keep-alive",
-          "X-Source": "ai",
         },
       });
     }
 
     // ── Fallback lớp 2: DB query trực tiếp ──────
-    if (/mua|giá|bao nhiêu|gợi ý sản phẩm|tìm (bể|sản phẩm)|đặt hàng|thêm vào giỏ|còn hàng|hết hàng|combo|freeship|khuyến mãi|giảm giá/i.test(trimmedMessage)) {
+    if (
+      /mua|giá|bao nhiêu|gợi ý sản phẩm|tìm (bể|sản phẩm)|đặt hàng|thêm vào giỏ|còn hàng|hết hàng|combo|freeship|khuyến mãi|giảm giá/i.test(
+        trimmedMessage
+      )
+    ) {
       try {
         const products = await prisma.product.findMany({
           where: { status: "ACTIVE", inventory: { gt: 0 } },

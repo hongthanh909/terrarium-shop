@@ -64,6 +64,22 @@ jobs:
             cd apps/web
             npx prisma generate
 
+            # ── Cập nhật .env với Gemini API Key ──────────────────────────────
+            echo "🔑 Updating .env with Gemini API Key..."
+            # Đảm bảo GEMINI_API_KEY có trong .env
+            if grep -q "^GEMINI_API_KEY=" .env 2>/dev/null; then
+              sed -i "s|^GEMINI_API_KEY=.*|GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}|" .env
+            else
+              echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" >> .env
+            fi
+            # Đảm bảo GEMINI_MODEL có trong .env
+            if grep -q "^GEMINI_MODEL=" .env 2>/dev/null; then
+              sed -i "s|^GEMINI_MODEL=.*|GEMINI_MODEL=gemini-2.0-flash|" .env
+            else
+              echo "GEMINI_MODEL=gemini-2.0-flash" >> .env
+            fi
+            echo "✅ .env updated"
+
             echo "🔄 Syncing DB schema..."
             npx prisma db push --accept-data-loss
             npx prisma migrate deploy || true
