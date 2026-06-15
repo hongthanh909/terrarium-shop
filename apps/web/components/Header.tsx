@@ -119,6 +119,22 @@ export default function Header() {
 
   return (
     <>
+      {/* ─── CSS Marquee left-to-right ───────────────────────────────────── */}
+      <style>{`
+        @keyframes cw-marquee {
+          0% { transform: translateX(-50%); }
+          100% { transform: translateX(0); }
+        }
+        .cw-marquee-track {
+          display: flex;
+          width: max-content;
+          animation: cw-marquee 30s linear infinite;
+        }
+        .cw-marquee-track:hover {
+          animation-play-state: paused;
+        }
+      `}</style>
+
       {/* ─── Full-Width Navbar — GREEN ────────────────────────────────────── */}
       <motion.header
         className={`sticky top-0 z-40 w-full transition-all duration-300 ${
@@ -127,155 +143,183 @@ export default function Header() {
             : "bg-[#2d3d23] backdrop-blur-md border-b border-[#3d5230]/40"
         }`}
       >
-          <div className="flex items-center justify-between px-6 py-3 max-w-7xl mx-auto">
-            {/* Logo */}
-            <Link href="/" className="flex flex-col group flex-shrink-0">
-              <span
-                className="text-xl text-white group-hover:text-[#e3ebdd] transition-colors leading-tight"
-                style={{ fontFamily: "'Dancing Script', cursive", fontWeight: 600 }}
-              >
-                tiệm Rêu Décor
-              </span>
-              <div className="flex items-center gap-1 mt-0.5">
-                <div className="flex-1 h-px bg-white/30" />
-                <span
-                  className="text-[9px] tracking-wider text-white/50 whitespace-nowrap px-1"
-                  style={{ fontFamily: "'Dancing Script', cursive" }}
-                >
-                  Terrarium &amp; Moss Art
-                </span>
-                <div className="w-4 h-px bg-white/30" />
-              </div>
-            </Link>
+        <div className="flex items-center justify-between px-6 py-3 max-w-7xl mx-auto">
+          {/* Left section: Hamburger (mobile) / Nav links (desktop) */}
+          <div className="flex items-center gap-0.5 flex-1 min-w-0">
+            {/* Hamburger — chỉ hiện trên mobile */}
+            <button
+              className="md:hidden w-9 h-9 flex items-center justify-center rounded-full text-white/70 hover:text-white hover:bg-white/15 transition-colors flex-shrink-0"
+              onClick={() => setMobileMenuOpen(true)}
+              aria-label="Mở menu"
+            >
+              <Menu className="w-5 h-5" />
+            </button>
 
-            {/* Center nav */}
+            {/* Desktop Navigation Links */}
             <nav className="hidden md:flex items-center gap-0.5">
               {NAV_LINKS.map((link) => (
                 <NavLink key={link.href} href={link.href} label={link.label} />
               ))}
               <NavLink href="/policies" label="Chính sách" />
             </nav>
+          </div>
 
-            {/* Right actions */}
-            <div className="flex items-center gap-1.5">
-              {/* Hamburger — chỉ hiện trên mobile */}
-              <button
-                className="md:hidden w-9 h-9 flex items-center justify-center rounded-full text-white/70 hover:text-white hover:bg-white/15 transition-colors"
-                onClick={() => setMobileMenuOpen(true)}
-                aria-label="Mở menu"
+          {/* Center section: Logo */}
+          <Link href="/" className="flex flex-col items-center group flex-shrink-0 mx-4">
+            <span
+              className="text-xl text-white group-hover:text-[#e3ebdd] transition-colors leading-tight"
+              style={{ fontFamily: "'Dancing Script', cursive", fontWeight: 600 }}
+            >
+              tiệm Rêu Décor
+            </span>
+            <div className="flex items-center gap-1 mt-0.5 w-full">
+              <div className="flex-1 h-px bg-white/30" />
+              <span
+                className="text-[9px] tracking-wider text-white/50 whitespace-nowrap px-1"
+                style={{ fontFamily: "'Dancing Script', cursive" }}
               >
-                <Menu className="w-5 h-5" />
-              </button>
+                Terrarium &amp; Moss Art
+              </span>
+              <div className="flex-1 h-px bg-white/30" />
+            </div>
+          </Link>
 
-              {/* Search trigger — light variant for green navbar */}
-              <SearchTrigger onClick={() => setSearchOpen(true)} light />
+          {/* Right section: Icons */}
+          <div className="flex items-center justify-end gap-1.5 flex-1">
+            {/* Search trigger — desktop */}
+            <SearchTrigger onClick={() => setSearchOpen(true)} light />
 
-              {/* Mobile search */}
-              <button
-                className="md:hidden w-9 h-9 flex items-center justify-center rounded-full text-white/70 hover:text-white hover:bg-white/15 transition-colors"
-                onClick={() => setSearchOpen(true)}
-              >
-                <Search className="w-4 h-4" />
-              </button>
+            {/* Search — mobile */}
+            <button
+              className="md:hidden w-9 h-9 flex items-center justify-center rounded-full text-white/70 hover:text-white hover:bg-white/15 transition-colors"
+              onClick={() => setSearchOpen(true)}
+            >
+              <Search className="w-4 h-4" />
+            </button>
 
-              {/* Tym (Heart) */}
-              <Link href={session ? "/profile/favorites" : "/login?callbackUrl=/profile/favorites"} className="hidden sm:block">
-                <button
-                  className="w-9 h-9 flex items-center justify-center rounded-full text-white/75 hover:text-white hover:bg-white/15 transition-colors flex-shrink-0"
-                  title="Sản phẩm yêu thích"
-                >
-                  <Heart className="w-5 h-5" />
-                </button>
-              </Link>
+            {/* Separator 1 — desktop only */}
+            <div className="hidden md:block w-px h-5 bg-white/20 mx-1" />
 
-              {/* User */}
-              {session ? (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <button
-                      className="w-9 h-9 rounded-full bg-white/20 text-white border border-white/30 flex items-center justify-center hover:bg-white/30 transition-colors flex-shrink-0"
-                      title={session.user?.name || "Tài khoản"}
-                    >
-                      <User className="w-5 h-5" />
-                    </button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="rounded-xl shadow-lg border border-[#e3ebdd] bg-white min-w-[185px]">
-                    <div className="px-3 py-2.5">
-                      <p className="font-semibold text-sm text-gray-800 truncate">{session.user?.name}</p>
-                      <p className="text-xs text-gray-400 truncate">{session.user?.email}</p>
-                      {(session.user as any)?.role === "ADMIN" && (
-                        <span className="inline-block mt-1 text-[10px] font-bold uppercase tracking-wider bg-[#425733] text-white px-2 py-0.5 rounded-full">Admin</span>
-                      )}
-                    </div>
-                    <DropdownMenuSeparator />
-                    {(session.user as any)?.role === "ADMIN" && (
-                      <DropdownMenuItem asChild>
-                        <Link href="/tiem-nho-nth24" className="cursor-pointer flex items-center gap-2 text-[#425733] font-semibold focus:bg-[#e3ebdd]">
-                          <LayoutDashboard className="w-4 h-4" /> Quản lý
-                        </Link>
-                      </DropdownMenuItem>
-                    )}
-                    <DropdownMenuItem asChild>
-                      <Link href="/profile" className="cursor-pointer flex items-center gap-2"><User className="w-4 h-4" /> Tài khoản</Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link href="/orders" className="cursor-pointer flex items-center gap-2"><Package className="w-4 h-4" /> Đơn hàng</Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link href="/profile/favorites" className="cursor-pointer flex items-center gap-2">
-                        <Heart className="w-4 h-4 fill-red-400 text-red-400" /> Yêu thích
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem
-                      onClick={() => { useCartStore.getState().clearCart(); signOut({ callbackUrl: "/" }); }}
-                      className="cursor-pointer text-red-500 focus:text-red-600 focus:bg-red-50 flex items-center gap-2"
-                    >
-                      <LogOut className="w-4 h-4" /> Đăng xuất
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              ) : (
-                <Link href="/login">
+            {/* Cart */}
+            <button
+              className="relative w-9 h-9 flex items-center justify-center rounded-full text-white/75 hover:text-white hover:bg-white/15 transition-colors"
+              onClick={() => {
+                if (!session) {
+                  window.location.href = "/login?callbackUrl=/";
+                  return;
+                }
+                setCartOpen(true);
+              }}
+              title="Giỏ hàng"
+            >
+              <ShoppingBag className="w-5 h-5" />
+              <AnimatePresence>
+                {cartCount > 0 && (
+                  <motion.span
+                    key="cart-badge"
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    exit={{ scale: 0 }}
+                    transition={{ type: "spring", stiffness: 500, damping: 15 }}
+                    className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] bg-[#8fba6f] text-[#1a2c12] text-[10px] font-bold rounded-full flex items-center justify-center shadow px-0.5"
+                  >
+                    {cartCount}
+                  </motion.span>
+                )}
+              </AnimatePresence>
+            </button>
+
+            {/* Separator 2 — desktop only */}
+            <div className="hidden md:block w-px h-5 bg-white/20 mx-1" />
+
+            {/* User */}
+            {session ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
                   <button
-                    className="w-9 h-9 flex items-center justify-center rounded-full text-white/75 hover:text-white hover:bg-white/15 transition-colors flex-shrink-0"
-                    title="Đăng nhập"
+                    className="w-9 h-9 rounded-full bg-white/20 text-white border border-white/30 flex items-center justify-center hover:bg-white/30 transition-colors flex-shrink-0"
+                    title={session.user?.name || "Tài khoản"}
                   >
                     <User className="w-5 h-5" />
                   </button>
-                </Link>
-              )}
-
-              {/* Cart */}
-              <button
-                className="relative w-9 h-9 flex items-center justify-center rounded-full text-white/75 hover:text-white hover:bg-white/15 transition-colors"
-                onClick={() => {
-                  if (!session) {
-                    // Chưa đăng nhập → chuyển sang trang login
-                    window.location.href = "/login?callbackUrl=/";
-                    return;
-                  }
-                  setCartOpen(true);
-                }}
-              >
-                <ShoppingBasket className="w-5 h-5" />
-                <AnimatePresence>
-                  {cartCount > 0 && (
-                    <motion.span
-                      key="cart-badge"
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      exit={{ scale: 0 }}
-                      transition={{ type: "spring", stiffness: 500, damping: 15 }}
-                      className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] bg-[#8fba6f] text-[#1a2c12] text-[10px] font-bold rounded-full flex items-center justify-center shadow px-0.5"
-                    >
-                      {cartCount}
-                    </motion.span>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="rounded-xl shadow-lg border border-[#e3ebdd] bg-white min-w-[185px]">
+                  <div className="px-3 py-2.5">
+                    <p className="font-semibold text-sm text-gray-800 truncate">{session.user?.name}</p>
+                    <p className="text-xs text-gray-400 truncate">{session.user?.email}</p>
+                    {(session.user as any)?.role === "ADMIN" && (
+                      <span className="inline-block mt-1 text-[10px] font-bold uppercase tracking-wider bg-[#425733] text-white px-2 py-0.5 rounded-full">Admin</span>
+                    )}
+                  </div>
+                  <DropdownMenuSeparator />
+                  {(session.user as any)?.role === "ADMIN" && (
+                    <DropdownMenuItem asChild>
+                      <Link href="/tiem-nho-nth24" className="cursor-pointer flex items-center gap-2 text-[#425733] font-semibold focus:bg-[#e3ebdd]">
+                        <LayoutDashboard className="w-4 h-4" /> Quản lý
+                      </Link>
+                    </DropdownMenuItem>
                   )}
-                </AnimatePresence>
-              </button>
-            </div>
+                  <DropdownMenuItem asChild>
+                    <Link href="/profile" className="cursor-pointer flex items-center gap-2"><User className="w-4 h-4" /> Tài khoản</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/orders" className="cursor-pointer flex items-center gap-2"><Package className="w-4 h-4" /> Đơn hàng</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/profile/favorites" className="cursor-pointer flex items-center gap-2">
+                      <Heart className="w-4 h-4 fill-red-400 text-red-400" /> Yêu thích
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onClick={() => { useCartStore.getState().clearCart(); signOut({ callbackUrl: "/" }); }}
+                    className="cursor-pointer text-red-500 focus:text-red-600 focus:bg-red-50 flex items-center gap-2"
+                  >
+                    <LogOut className="w-4 h-4" /> Đăng xuất
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Link href="/login">
+                <button
+                  className="w-9 h-9 flex items-center justify-center rounded-full text-white/75 hover:text-white hover:bg-white/15 transition-colors flex-shrink-0"
+                  title="Đăng nhập"
+                >
+                  <User className="w-5 h-5" />
+                </button>
+              </Link>
+            )}
           </div>
+        </div>
+
+        {/* ── Marquee contact bar ─────────────────────────────────────────── */}
+        <div
+          className="w-full overflow-hidden"
+          style={{
+            background: scrolled ? "rgba(26,42,18,0.6)" : "rgba(45,61,35,0.5)",
+            borderTop: "1px solid rgba(255,255,255,0.08)",
+          }}
+        >
+          <div className="cw-marquee-track py-1.5">
+            {[0, 1].map((dup) => (
+              <span
+                key={dup}
+                className="flex items-center gap-8 text-[11px] text-white/60 whitespace-nowrap px-8"
+                style={{ fontFamily: "inherit" }}
+              >
+                <span>📞 Liên hệ: <strong className="text-white/80">0355.999.825</strong></span>
+                <span className="text-white/30">|</span>
+                <span>📍 Đà Nẵng, Việt Nam</span>
+                <span className="text-white/30">|</span>
+                <span>🌿 Thiết kế Terrarium theo yêu cầu</span>
+                <span className="text-white/30">|</span>
+                <span>🚚 Giao hàng toàn quốc</span>
+                <span className="text-white/30">|</span>
+                <span>💚 Bảo hành thực vật miễn phí</span>
+              </span>
+            ))}
+          </div>
+        </div>
       </motion.header>
 
       {/* ─── Search Palette ───────────────────────────────────────────────── */}
