@@ -567,17 +567,21 @@ export async function POST(request: Request) {
       });
     }
 
-    // ── 2. Attempt AI Streaming (Gemini → Ollama) ────────
-    const stream = await streamFromAI(trimmedMessage, history, pageContext);
-    if (stream) {
-      return new Response(stream, {
-        headers: {
-          "Content-Type": "text/event-stream",
-          "Cache-Control": "no-cache",
-          Connection: "keep-alive",
-        },
-      });
-    }
+    // ── 2. AI Streaming (DISABLED — Gemini cần prepay, Ollama không chạy)
+    // Bỏ comment đoạn dưới khi muốn bật lại AI:
+    // - Gemini: nạp credit tại https://aistudio.google.com/billing
+    // - Ollama: chạy `ollama serve` + `ollama pull llama3.2:3b` trên VPS
+    //
+    // const stream = await streamFromAI(trimmedMessage, history, pageContext);
+    // if (stream) {
+    //   return new Response(stream, {
+    //     headers: {
+    //       "Content-Type": "text/event-stream",
+    //       "Cache-Control": "no-cache",
+    //       Connection: "keep-alive",
+    //     },
+    //   });
+    // }
 
     // ── 3. DB Product Query ──────────────────────────────
     if (/sản phẩm|mua|giá|bao nhiêu|gợi ý|tìm|đặt hàng|còn hàng|hết hàng|combo|quà|phụ kiện|rẻ|tiết kiệm|đắt|cao cấp/i.test(trimmedMessage)) {
