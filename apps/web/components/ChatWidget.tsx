@@ -12,7 +12,7 @@ import {
 interface ChatMessage {
   role: "user" | "assistant";
   content: string;
-  source?: "ai" | "db" | "fallback";
+  source?: "ai" | "db" | "fallback" | "knowledge";
   isStreaming?: boolean;
   suggestedProducts?: { name: string; slug: string; price: string; image?: string }[];
 }
@@ -354,7 +354,13 @@ export default function ChatWidget() {
         });
       } else {
         const data = await res.json();
-        if (data.source === "fallback") setIsAIAvailable(false);
+        // knowledge & db are smart responses — not "basic mode"
+        if (data.source === "fallback") {
+          setIsAIAvailable(false);
+        } else if (data.source === "knowledge" || data.source === "db") {
+          // Keep current status — don't mark as basic
+          if (isAIAvailable === null) setIsAIAvailable(true);
+        }
         setMessages((prev) => {
           const u = [...prev];
           u[u.length - 1] = { role: "assistant", content: data.response || "Xin lỗi, tôi chưa hiểu.", source: data.source, isStreaming: false };
