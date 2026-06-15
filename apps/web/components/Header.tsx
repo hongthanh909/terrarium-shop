@@ -139,8 +139,8 @@ export default function Header() {
       <motion.header
         className={`sticky top-0 z-40 w-full transition-all duration-300 ${
           scrolled
-            ? "bg-[#1a2a12]/95 backdrop-blur-xl shadow-[0_2px_20px_rgba(0,0,0,0.3)] border-b border-[#425733]/60"
-            : "bg-[#2d3d23] backdrop-blur-md border-b border-[#3d5230]/40"
+            ? "bg-[#293a20]/95 backdrop-blur-xl shadow-[0_2px_20px_rgba(0,0,0,0.25)] border-b border-[#425733]/50"
+            : "bg-[#36492c] backdrop-blur-md border-b border-[#425733]/30"
         }`}
       >
         <div className="flex items-center justify-between px-6 py-3 max-w-7xl mx-auto">
@@ -296,25 +296,26 @@ export default function Header() {
         <div
           className="w-full overflow-hidden"
           style={{
-            background: scrolled ? "rgba(26,42,18,0.6)" : "rgba(45,61,35,0.5)",
-            borderTop: "1px solid rgba(255,255,255,0.08)",
+            background: "#e3ebdd",
+            borderTop: "1px solid rgba(66, 87, 51, 0.12)",
+            borderBottom: scrolled ? "1px solid rgba(66, 87, 51, 0.15)" : "none",
           }}
         >
-          <div className="cw-marquee-track py-1.5">
+          <div className="cw-marquee-track py-2">
             {[0, 1].map((dup) => (
               <span
                 key={dup}
-                className="flex items-center gap-8 text-[11px] text-white/60 whitespace-nowrap px-8"
+                className="flex items-center gap-8 text-[11px] text-[#425733]/85 whitespace-nowrap px-8 font-medium"
                 style={{ fontFamily: "inherit" }}
               >
-                <span>📞 Liên hệ: <strong className="text-white/80">0355.999.825</strong></span>
-                <span className="text-white/30">|</span>
-                <span>📍 Đà Nẵng, Việt Nam</span>
-                <span className="text-white/30">|</span>
+                <span>📞 Liên hệ: <strong className="text-[#1a2e12] font-semibold">0706 668 296</strong></span>
+                <span className="text-[#425733]/25">|</span>
+                <span>📍 32/16 Tam Đa, TP. Hồ Chí Minh</span>
+                <span className="text-[#425733]/25">|</span>
                 <span>🌿 Thiết kế Terrarium theo yêu cầu</span>
-                <span className="text-white/30">|</span>
+                <span className="text-[#425733]/25">|</span>
                 <span>🚚 Giao hàng toàn quốc</span>
-                <span className="text-white/30">|</span>
+                <span className="text-[#425733]/25">|</span>
                 <span>💚 Bảo hành thực vật miễn phí</span>
               </span>
             ))}
@@ -328,7 +329,7 @@ export default function Header() {
       {/* ─── Mobile Menu Drawer ────────────────────────────────────────────── */}
       <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
         <SheetContent side="left" className="w-[280px] sm:w-[320px] p-0 border-0 backdrop-blur-md">
-          <div className="flex flex-col h-full bg-gradient-to-b from-[#2d3d23] to-[#1e2e16]">
+          <div className="flex flex-col h-full bg-gradient-to-b from-[#36492c] to-[#293a20]">
             {/* Header */}
             <SheetHeader className="px-6 pt-6 pb-4 border-b border-white/10">
               <SheetTitle className="text-left">
