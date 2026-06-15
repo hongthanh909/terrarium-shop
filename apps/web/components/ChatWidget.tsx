@@ -143,6 +143,15 @@ export default function ChatWidget() {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const abortRef = useRef<AbortController | null>(null);
 
+  // ── Viewport dimensions ────────────────────────
+  const [viewport, setViewport] = useState({ w: 0, h: 0 });
+  useEffect(() => {
+    const update = () => setViewport({ w: window.innerWidth, h: window.innerHeight });
+    update();
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  }, []);
+
   // ── Free drag (absolute position) ──────────────
   const [bubblePos, setBubblePos] = useState<{ right: number; bottom: number }>({ right: 16, bottom: 20 });
   const dragState = useRef<{ dragging: boolean; moved: boolean; startX: number; startY: number; startRight: number; startBottom: number } | null>(null);
@@ -411,7 +420,45 @@ export default function ChatWidget() {
 
       {/* ═══ CHAT PANEL ═══════════════════════════ */}
       <AnimatePresence>
-        {open && (
+        {open && (() => {
+          // ── Smart positioning: panel opens toward side with most space ──
+          const BUBBLE_SIZE = 56;
+          const GAP = 12;
+          const panelW = expanded ? 520 : 400;
+          const panelH = expanded ? 700 : 540;
+          const safeW = Math.min(panelW, viewport.w - 16);
+          const safeH = Math.min(panelH, viewport.h - 16);
+
+          // Bubble center in viewport coords
+          const bubbleCX = viewport.w - bubblePos.right - BUBBLE_SIZE / 2;
+          const bubbleCY = viewport.h - bubblePos.bottom - BUBBLE_SIZE / 2;
+
+          // Horizontal: open on side with more space
+          const pos: React.CSSProperties = {};
+          if (bubbleCX > viewport.w / 2) {
+            // Bubble on right half → panel right-aligned
+            pos.right = Math.max(8, bubblePos.right);
+          } else {
+            // Bubble on left half → panel left-aligned
+            const bubbleLeft = viewport.w - bubblePos.right - BUBBLE_SIZE;
+            pos.left = Math.max(8, Math.min(bubbleLeft, viewport.w - safeW - 8));
+          }
+
+          // Vertical: open above or below bubble based on available space
+          const spaceAbove = viewport.h - bubblePos.bottom - BUBBLE_SIZE;
+          const spaceBelow = bubblePos.bottom;
+          if (spaceAbove >= safeH + GAP) {
+            // Enough space above → open above bubble
+            pos.bottom = bubblePos.bottom + BUBBLE_SIZE + GAP;
+          } else if (spaceBelow >= safeH + GAP) {
+            // Enough space below → open below bubble
+            pos.top = viewport.h - bubblePos.bottom + GAP;
+          } else {
+            // Not enough space either way → clamp to viewport, center vertically
+            pos.top = Math.max(8, (viewport.h - safeH) / 2);
+          }
+
+          return (
           <motion.div
             initial={{ opacity: 0, y: 16, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -419,8 +466,7 @@ export default function ChatWidget() {
             transition={{ type: "spring", stiffness: 380, damping: 30 }}
             className={`fixed z-[9999] cw-panel flex flex-col ${expanded ? "cw-expanded" : ""}`}
             style={{
-              bottom: bubblePos.bottom + 64,
-              right: bubblePos.right,
+              ...pos,
               borderRadius: 16,
               overflow: "hidden",
               background: "#ffffff",
@@ -645,7 +691,8 @@ export default function ChatWidget() {
               </div>
             </div>
           </motion.div>
-        )}
+          );
+        })()}
       </AnimatePresence>
 
       {/* ═══ FLOATING BUBBLE (hidden when chat is open) ═══ */}
