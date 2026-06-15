@@ -1,82 +1,87 @@
 # 🌿 Tài liệu Quản lý & Cấu hình AI Consultant (Tiệm Rêu)
 
-Tài liệu này tổng hợp toàn bộ hướng dẫn cài đặt, cấu hình bảo vệ VPS, chiến lược bán hàng tự động (Sales Playbook) và khả năng hiện tại của hệ thống tư vấn AI tại **Tiệm Rêu**.
+Tài liệu này tổng hợp toàn bộ hướng dẫn cài đặt, cấu hình, chiến lược bán hàng tự động (Sales Playbook) và khả năng hiện tại của hệ thống tư vấn AI tại **Tiệm Rêu**.
 
 ---
 
 ## 📌 1. Hướng dẫn Cài đặt & Setup
 
-### 1.1 Gemini API (Primary — Khuyên dùng)
-Hệ thống sử dụng **Google Gemini API** làm AI chính — nhanh, thông minh, hỗ trợ tiếng Việt tốt.
+### 1.1 Chế độ hiện tại: Smart Knowledge Base (Không cần AI)
+
+Chatbox hoạt động **100% bằng Knowledge Base + DB query**, không dùng AI model nào.
+Phản hồi **instant (<100ms)**, không tốn chi phí, không tốn RAM.
 
 ```env
-# Gemini API Key (lấy từ https://aistudio.google.com/apikey)
-GEMINI_API_KEY=AIzaSyDXqMPgYWX4p5bOR2D4aA02EZPKn0AQxm8
-GEMINI_MODEL=gemini-2.0-flash
+# File .env trên VPS — KHÔNG cần Gemini/Ollama
+# AI layers đã tắt trong code (route.ts)
 ```
 
-> **Quota & Billing:**
-> - Free tier: 15 requests/phút, 1500 requests/ngày (reset lúc 2:00 PM VN)
-> - Paid tier (đã bật billing): **không giới hạn**, chi phí ~250₫/1000 requests
-> - Billing account: Google Cloud Console → link billing → upgrade to full account
-> - Free trial credit: ₫7,900,051 (90 ngày)
+### 1.2 Gemini API (Tắt — cần nạp credit để bật)
 
-### 1.2 Ollama (Fallback — Khi Gemini offline)
-**Ollama** chạy LLM mã nguồn mở trực tiếp trên VPS, không tốn phí API.
+Gemini API yêu cầu **prepay credit** (tối thiểu ₫300,000 ≈ $12).
 
-*   **Cài đặt trên Linux (VPS):**
-    ```bash
-    curl -fsSL https://ollama.com/install.sh | sh
-    ollama pull llama3:8b    # ~4.7GB, cho VPS 8GB RAM
-    ```
+- **Nạp credit**: https://aistudio.google.com/billing
+- **API Key hiện tại**: `AIzaSyDXqMPgYWX4p5bOR2D4aA02EZPKn0AQxm8` (project: Default Gemini Project)
+- **Billing account**: Google Cloud — đã upgrade Full Account (credit ₫7.9M cho GCP, riêng Gemini API cần prepay riêng)
+
+**Để bật lại Gemini:**
+1. Nạp credit tại https://aistudio.google.com/billing (₫300,000+)
+2. Bỏ comment AI streaming trong `apps/web/app/api/consult/route.ts` (dòng ~570)
+3. Push code → deploy tự động
 
 ```env
-# Ollama (fallback)
-OLLAMA_BASE_URL=http://localhost:11434
-OLLAMA_MODEL=llama3:8b
-```
-
-### 1.3 Environment Variables tổng hợp
-File `.env` trên VPS cần có:
-```env
-# AI — Gemini (primary)
+# Khi bật lại, thêm vào .env:
 GEMINI_API_KEY=<your-key>
 GEMINI_MODEL=gemini-2.0-flash
-
-# AI — Ollama (fallback)
-OLLAMA_BASE_URL=http://127.0.0.1:11434
-OLLAMA_MODEL=llama3:8b
 ```
 
-> ⚠️ GitHub Secrets cần có: `GEMINI_API_KEY` — được inject tự động vào VPS qua deploy pipeline.
+### 1.3 Ollama (Tắt — VPS không đủ tài nguyên)
+
+**Lý do tắt**: VPS 8GB RAM (6 CPU, không GPU) — Ollama `llama3:8b` chiếm ~4.7GB RAM, gây chậm toàn server.
+
+**Để gỡ hoàn toàn Ollama trên VPS** (giải phóng ~4GB RAM):
+```bash
+# SSH vào VPS:
+sudo systemctl stop ollama
+sudo systemctl disable ollama
+ollama rm llama3:8b 2>/dev/null
+ollama rm llama3.2:3b 2>/dev/null
+# Xác nhận RAM đã giải phóng:
+free -h
+```
+
+**Để bật lại Ollama** (cần VPS có GPU hoặc ≥16GB RAM):
+```bash
+sudo systemctl enable ollama && sudo systemctl start ollama
+ollama pull qwen2.5:1.5b  # Model nhẹ nhất (~0.9GB), phù hợp VPS CPU
+```
+
+> ⚠️ **Lưu ý**: Với VPS 8GB RAM không GPU, KHÔNG nên dùng Ollama. Model `llama3:8b` chiếm ~4.7GB RAM + CPU 100% mỗi request trong 15-30s → web chậm theo.
 
 ---
 
-## ✅ 2. Khả năng Hiện tại của AI Chatbot (v7 — Smart Knowledge Base + Gemini + Ollama)
+## ✅ 2. Khả năng Hiện tại của AI Chatbot (v8 — Smart Knowledge Base Only)
 
 ### 2.1 Checklist khả năng
 
 | Khả năng | Trạng thái | Chi tiết |
 | :--- | :---: | :--- |
-| **Smart Knowledge Base (40+ patterns)** | ✅ | Trả lời instant (<100ms) cho 90% câu hỏi phổ biến, không cần AI. |
-| **Gemini API (primary AI)** | ✅ | Google Gemini 2.0 Flash — streaming SSE, 8s timeout, retry on 429. |
-| **Ollama (fallback AI)** | ✅ | CPU inference 30s timeout, dùng khi Gemini offline. |
-| **Trả lời đúng bằng data thật** | ✅ | Load catalog từ DB (cache 5 phút), inject vào system prompt. |
-| **Không bịa sản phẩm/giá** | ✅ | System prompt cấm bịa. Khi DB lỗi → thông báo thành thật. |
-| **Gợi ý sản phẩm + link** | ✅ | Max 3 SP kèm link `/products/[slug]`. Frontend hiện thẻ clickable. |
-| **Intent Classification** | ✅ | Phân loại: kiến thức/sản phẩm/chính sách/chẩn đoán/chào hỏi. |
-| **Streaming (gõ từng chữ)** | ✅ | SSE stream giống ChatGPT, UX mượt mà. |
-| **4-layer Fallback** | ✅ | Smart KB → Gemini → Ollama → DB query → Helpful fallback. |
-| **Gemini Retry on 429** | ✅ | Tự retry 1 lần sau 2s khi bị rate limit. |
-| **Rate Limiting** | ✅ | 8 request/phút/IP. Trả lời thân thiện khi bị giới hạn. |
-| **Concurrency Guard** | ✅ | Max 3 AI inference đồng thời. |
+| **Smart Knowledge Base (40+ patterns)** | ✅ | Trả lời instant (<100ms) cho 90% câu hỏi phổ biến. |
+| **DB Product Query** | ✅ | Tìm sản phẩm từ DB khi hỏi "sản phẩm", "giá", "mua". |
+| **Helpful Fallback** | ✅ | Gợi ý chủ đề + liên hệ trực tiếp khi không match. |
+| **Gemini API** | ⏸️ | Đã tắt — cần nạp prepay ₫300,000 để bật. |
+| **Ollama** | ⏸️ | Đã tắt — VPS không đủ tài nguyên. |
+| **Trả lời đúng bằng data thật** | ✅ | Load catalog từ DB (cache 5 phút). |
+| **Không bịa sản phẩm/giá** | ✅ | Knowledge Base dùng data cứng. |
+| **Gợi ý sản phẩm + link** | ✅ | Max 3 SP kèm link `/products/[slug]`. |
+| **Intent Classification** | ✅ | Phân loại qua regex patterns. |
+| **Rate Limiting** | ✅ | 8 request/phút/IP. |
 | **Session Limit** | ✅ | Max 30 tin nhắn/session. Cooldown 3s. |
-| **Input Length Limit** | ✅ | Chặn > 400 ký tự. Counter khi gần giới hạn. |
-| **Cross-selling** | ✅ | Gợi ý mua kèm phụ kiện khi khách mua bể. |
-| **Guardrails** | ✅ | Từ chối khéo toán, code, chính trị. |
-| **Adaptive Response** | ✅ | 2-8 câu tùy intent, không cố định. |
+| **Input Length Limit** | ✅ | Chặn > 400 ký tự. |
+| **Cross-selling** | ✅ | Gợi ý mua kèm phụ kiện. |
+| **Guardrails** | ✅ | Từ chối khéo câu hỏi ngoài lề. |
 
-### 2.2 Kiến trúc hệ thống (v7)
+### 2.2 Kiến trúc hệ thống (v8)
 
 ```
 User → ChatWidget (client)
@@ -86,22 +91,38 @@ User → ChatWidget (client)
          ↓
     ┌─── Smart Knowledge Base (40+ patterns) ───┐
     │ MATCH? → Trả lời instant (<100ms)          │
+    │ source: "knowledge"                         │
+    │                                             │
     │ NO MATCH ↓                                  │
-    ├─── Concurrency check (≤ 3 concurrent)      │
-    │    ↓                                        │
-    │ ┌─ Gemini API ──┐                           │
-    │ │ OK → Stream SSE│  429 → Retry 1x         │
-    │ │ FAIL ↓         │                           │
-    │ ├─ Ollama ───────┤                           │
-    │ │ OK → Stream SSE│  FAIL ↓                  │
-    │ ├─ DB Query ─────┤                           │
-    │ │ Có SP → JSON   │  Không ↓                 │
-    │ └─ Helpful Fallback (hướng dẫn hỏi lại) ───┘
+    │                                             │
+    │ ┌─ [DISABLED] Gemini → Ollama ──────────┐  │
+    │ │ Bỏ comment trong route.ts để bật lại  │  │
+    │ └───────────────────────────────────────┘  │
+    │                                             │
+    │ ↓                                           │
+    ├─── DB Product Query ──────────────────────┤
+    │ Có sản phẩm match? → JSON response        │
+    │ source: "db"                                │
+    │                                             │
+    │ ↓                                           │
+    └─── Helpful Fallback ──────────────────────┘
+         Gợi ý chủ đề + liên hệ trực tiếp
+         source: "fallback"
 ```
+
+### 2.3 So sánh v7 vs v8
+
+| | v7 (trước) | v8 (hiện tại) |
+|---|---|---|
+| **Tốc độ** | 1-40s (chờ AI timeout) | **<100ms** (instant) |
+| **RAM usage** | ~5.1/8 GB (Ollama chiếm ~4.7GB) | **~1.5/8 GB** |
+| **Chi phí** | Gemini API quota + VPS | **₫0** |
+| **Độ phủ** | 100% câu hỏi (AI trả lời mọi thứ) | **90%** (10% trả fallback) |
+| **Uptime** | Phụ thuộc Gemini/Ollama | **100%** (không phụ thuộc dịch vụ nào) |
 
 ---
 
-## ⚡ 3. Kỹ thuật Tối ưu hóa Hiệu suất & Chống Quá tải VPS
+## ⚡ 3. Kỹ thuật Tối ưu hóa Hiệu suất
 
 ### 3.1 Bảo vệ Server (Backend API)
 
@@ -109,29 +130,26 @@ User → ChatWidget (client)
 | :--- | :--- | :--- |
 | **Smart KB First** | 40+ patterns trả lời instant, không gọi AI. | Giảm 90% AI requests. |
 | **Rate Limiting (IP-based)** | 8 request/phút/IP. Tự cleanup mỗi 2 phút. | Ngăn spam, DDoS nhẹ. |
-| **Concurrent Limiter** | Max 3 AI inference đồng thời. | Bảo vệ VPS + Gemini quota. |
-| **Gemini Timeout** | 8 giây + retry 1 lần khi 429. | Nhanh, không treo. |
-| **Ollama Timeout** | 30 giây (CPU inference cần thời gian). | Đủ cho llama3:8b. |
 | **Input Filter** | Chặn > 400 ký tự. | Ngăn prompt injection. |
 | **Catalog Cache** | Cache sản phẩm 5 phút. | Giảm tải PostgreSQL. |
-| **History Cap** | Chỉ gửi 4 tin nhắn gần nhất cho Gemini. | Giảm token, tăng tốc. |
+| **AI Disabled** | Gemini/Ollama tắt → 0 timeout wait. | Server luôn phản hồi nhanh. |
 
 ### 3.2 Bảo vệ Client (ChatWidget)
 
 | Kỹ thuật | Chi tiết | Mục đích |
 | :--- | :--- | :--- |
 | **Send Cooldown** | 3 giây giữa các tin nhắn. | Ngăn spam click. |
-| **Session Limit** | Max 30 tin nhắn/session. | Ngăn lạm dụng AI. |
+| **Session Limit** | Max 30 tin nhắn/session. | Ngăn lạm dụng. |
 | **Character Counter** | Hiển thị `xxx/400` khi nhập > 300 ký tự. | UX thông minh. |
 | **Abort Controller** | Hủy request khi đóng chat/reset. | Tránh request treo. |
-| **Source Badge** | Hiển thị "AI" (xanh) hoặc "Cơ bản" (vàng). | Minh bạch cho user. |
+| **Source Badge** | Hiển thị nguồn phản hồi (Knowledge/DB/Fallback). | Minh bạch. |
 
 ---
 
 ## 🎯 4. Chiến lược Bán hàng Tự động & Chốt đơn (Sales Playbook)
 
-### 4.1 Dynamic System Prompting / RAG
-Sử dụng **Dynamic System Prompting** kết hợp **RAG** — thông tin luôn chính xác từ DB realtime.
+### 4.1 Dynamic Knowledge Base
+Sử dụng **40+ regex patterns** cho trả lời instant — thông tin luôn chính xác, không bịa.
 
 ### 4.2 Vai trò "Nhân viên bán hàng chuyên nghiệp"
 
@@ -139,7 +157,7 @@ Sử dụng **Dynamic System Prompting** kết hợp **RAG** — thông tin luô
 2. **Gợi ý sản phẩm thật + Link:** Kèm `Link: /products/[slug]` → Frontend parse thẻ clickable.
 3. **Cross-selling:** Bể kín → nhíp, bình xịt. Bể mở → rêu, đá trang trí.
 4. **Freeship 500k:** Đơn gần 500k → khuyên thêm phụ kiện nhỏ.
-5. **Tư vấn theo nhu cầu:** Hỏi mục đích, kinh nghiệm, ngân sách → gợi ý 1-3 SP.
+5. **Tư vấn theo nhu cầu:** Gợi ý 1-3 SP theo mục đích, kinh nghiệm, ngân sách.
 
 ### 4.3 Kịch bản Chẩn đoán Tình trạng Bể
 
@@ -156,54 +174,46 @@ Sử dụng **Dynamic System Prompting** kết hợp **RAG** — thông tin luô
 
 ## 🛠️ 5. Kiểm tra & Khắc phục sự cố
 
-### 5.1 Test Gemini API
+### 5.1 Kiểm tra chatbox hoạt động
 ```bash
-# Test key hoạt động
-curl -s "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=YOUR_KEY" \
+# Test API endpoint
+curl -s -X POST https://tiemreudecor.com/api/consult \
   -H "Content-Type: application/json" \
-  -d '{"contents":[{"role":"user","parts":[{"text":"xin chào"}]}]}' | jq .
+  -d '{"message": "ship bao lâu"}' | jq .
 
-# Nếu 429 → kiểm tra quota tại https://ai.dev/rate-limit
-# Quota free tier reset lúc 2:00 PM VN (midnight Pacific)
+# Expected: source = "knowledge", phản hồi instant
 ```
 
-### 5.2 Test Ollama
+### 5.2 Gỡ Ollama giải phóng RAM (nên làm)
 ```bash
-# Kiểm tra Ollama chạy
-sudo systemctl status ollama
-
-# Khởi động lại
-sudo systemctl restart ollama
-
-# Test inference
-curl -X POST http://localhost:11434/api/chat -d '{
-  "model": "llama3:8b",
-  "messages": [{"role": "user", "content": "Xin chào"}],
-  "stream": false
-}'
+# SSH vào VPS:
+sudo systemctl stop ollama && sudo systemctl disable ollama
+ollama rm llama3:8b 2>/dev/null; ollama rm llama3.2:3b 2>/dev/null
+free -h  # Xác nhận RAM đã giải phóng
 ```
 
-### 5.3 Kiểm tra log
+### 5.3 Bật lại Gemini (khi muốn AI thông minh)
+```bash
+# 1. Nạp credit: https://aistudio.google.com/billing (₫300,000+)
+# 2. Bỏ comment trong route.ts (dòng ~570-580)
+# 3. Push code → deploy tự động
+```
+
+### 5.4 Kiểm tra log
 ```bash
 # Log Next.js (PM2)
 pm2 logs terrarium-shop --lines 50
 
-# Tìm log AI cụ thể
-pm2 logs terrarium-shop --lines 100 | grep "\[AI\]"
+# Kiểm tra RAM/CPU
+free -h
+htop
 ```
-
-### 5.4 Kiểm tra RAM/CPU
-```bash
-free -h          # Xem RAM
-htop             # Xem CPU + process
-```
-> ⚠️ Nếu RAM < 1GB free → Ollama sẽ rất chậm. Cần kill process thừa hoặc nâng VPS.
 
 ---
 
 ## 📊 6. Smart Knowledge Base (Instant — 40+ patterns)
 
-Khi AI offline HOẶC câu hỏi phổ biến, chatbot trả lời **ngay lập tức** (<100ms):
+Chatbot trả lời **ngay lập tức** (<100ms) cho các chủ đề sau:
 
 ### Chăm sóc (trả lời chi tiết, có hướng dẫn cụ thể)
 | Chủ đề | Từ khóa trigger |
@@ -239,11 +249,11 @@ Khi AI offline HOẶC câu hỏi phổ biến, chatbot trả lời **ngay lập 
 | Cảm ơn | "cảm ơn", "thank" |
 | Tạm biệt | "tạm biệt", "bye" |
 
-### Sản phẩm (chuyển qua AI hoặc DB)
+### Sản phẩm (chuyển qua DB query)
 | Chủ đề | Từ khóa trigger | Xử lý |
 | :--- | :--- | :--- |
-| Tìm/mua SP | "sản phẩm", "mua", "giá", "bao nhiêu" | → AI → DB query |
-| Giá rẻ/cao cấp | "rẻ", "tiết kiệm", "cao cấp", "premium" | → AI → DB query |
+| Tìm/mua SP | "sản phẩm", "mua", "giá", "bao nhiêu" | → DB query |
+| Giá rẻ/cao cấp | "rẻ", "tiết kiệm", "cao cấp", "premium" | → DB query |
 
 ---
 
@@ -252,7 +262,8 @@ Khi AI offline HOẶC câu hỏi phổ biến, chatbot trả lời **ngay lập 
 | Ngày | Version | Thay đổi |
 | :--- | :--- | :--- |
 | 14/06/2026 | v5 | Intent Classification, Adaptive Response, Natural Conversation |
-| 15/06/2026 | v7 | **Smart Knowledge Base (40+ patterns)**, Gemini API primary, Ollama fallback, Retry on 429, 4-layer fallback, Pattern order fix, Source badge frontend |
+| 15/06/2026 | v7 | Smart Knowledge Base (40+ patterns), Gemini API primary, Ollama fallback |
+| 15/06/2026 | **v8** | **Tắt Gemini (cần prepay) + Tắt Ollama (VPS không đủ RAM). Chatbox chạy 100% Knowledge Base + DB query. Instant response, 0 chi phí.** |
 
 ---
-*Tài liệu được cập nhật ngày 15 tháng 06 năm 2026 — AI Chatbot v7 (Smart KB + Gemini + Ollama + 4-layer Fallback).*
+*Tài liệu được cập nhật ngày 15 tháng 06 năm 2026 — AI Chatbot v8 (Smart KB Only — Instant, Free, 100% Uptime).*

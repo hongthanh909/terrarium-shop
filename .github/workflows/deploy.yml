@@ -102,44 +102,18 @@ jobs:
             # ── Lưu PM2 process list ──────────────────────────────────────────
             pm2 save
 
-            # ── Kiểm tra & khởi động Ollama AI ───────────────────────────────
-            echo "🤖 Checking Ollama AI..."
-            if command -v ollama &> /dev/null; then
-              # Đảm bảo Ollama service đang chạy
-              sudo systemctl restart ollama 2>/dev/null || true
-              sleep 3
-
-              # Kiểm tra kết nối
-              if curl -sf http://127.0.0.1:11434/api/tags > /dev/null 2>&1; then
-                echo "✅ Ollama đang chạy!"
-                # Kiểm tra model đã pull chưa
-                if ollama list | grep -q "llama3.2:3b"; then
-                  echo "✅ Model llama3.2:3b sẵn sàng"
-                else
-                  echo "⏳ Đang tải model llama3.2:3b (~2GB)..."
-                  ollama pull llama3.2:3b
-                  echo "✅ Model llama3.2:3b đã tải xong"
-                fi
-                # Warm-up: pre-load model vào RAM để request đầu tiên không chậm
-                echo "🔥 Warming up model..."
-                curl -sf -X POST http://127.0.0.1:11434/api/chat \
-                  -d '{"model":"llama3.2:3b","messages":[{"role":"user","content":"hi"}],"stream":false,"options":{"num_predict":5}}' \
-                  > /dev/null 2>&1 || true
-                echo "✅ Model đã sẵn sàng trong RAM"
-              else
-                echo "⚠️ Ollama chưa phản hồi, thử khởi động lại..."
-                sudo systemctl start ollama 2>/dev/null || ollama serve &
-                sleep 5
-                if curl -sf http://127.0.0.1:11434/api/tags > /dev/null 2>&1; then
-                  echo "✅ Ollama đã khởi động thành công!"
-                else
-                  echo "⚠️ Ollama chưa sẵn sàng — chatbot sẽ dùng chế độ cơ bản"
-                fi
-              fi
-            else
-              echo "⚠️ Ollama chưa được cài đặt — chatbot dùng chế độ cơ bản"
-              echo "   Cài đặt: curl -fsSL https://ollama.com/install.sh | sh"
-            fi
+            # ── Ollama AI (DISABLED — VPS 8GB RAM không đủ cho AI model) ────
+            # Ollama llama3:8b chiếm ~4.7GB RAM, gây chậm toàn bộ server.
+            # Chatbox hiện dùng Smart Knowledge Base (instant, 0 RAM).
+            #
+            # Để gỡ Ollama trên VPS (giải phóng ~4GB RAM), chạy:
+            #   sudo systemctl stop ollama && sudo systemctl disable ollama
+            #   ollama rm llama3:8b 2>/dev/null; ollama rm llama3.2:3b 2>/dev/null
+            #
+            # Để bật lại AI sau (cần nạp Gemini hoặc VPS có GPU):
+            #   1. Gemini: nạp credit tại https://aistudio.google.com/billing
+            #   2. Bỏ comment AI streaming trong apps/web/app/api/consult/route.ts
+            echo "ℹ️  AI chatbox: Smart Knowledge Base mode (no Ollama)"
 
             echo "✅ Deploy hoàn tất lúc $(date)!"
 
