@@ -207,16 +207,7 @@ function getSmartFallback(message: string): string | null {
     return "🏺 **So sánh Bể Kín vs Bể Mở:**\n\n**Bể kín (closed):**\n• Tự tạo hệ sinh thái tuần hoàn\n• Tưới rất ít (1-2 tuần/lần)\n• Phù hợp người bận, ít thời gian chăm\n• Cây phù hợp: rêu, fitonia, cỏ ngọc\n\n**Bể mở (open):**\n• Thoáng khí hơn, ít bị nấm mốc\n• Cần tưới thường xuyên hơn (3-5 ngày/lần)\n• Phù hợp sen đá, xương rồng\n\n💡 Cho người mới: Em khuyên bể kín ạ — dễ chăm và đẹp!";
 
   // ── Sản phẩm ────────────────────────────────
-  if (/sản phẩm|mua|giá|bao nhiêu|gợi ý|tìm.*bể|đặt hàng|thêm.*giỏ|còn hàng|hết hàng|combo|quà tặng|tặng|phụ kiện/i.test(q))
-    return null; // Để DB fallback xử lý
-
-  if (/rẻ|tiết kiệm|giá.*rẻ|bình dân|dưới.*\d/i.test(q))
-    return null; // Để DB fallback xử lý
-
-  if (/đắt|cao cấp|premium|sang|luxury/i.test(q))
-    return null; // Để DB fallback xử lý
-
-  // ── Chính sách ──────────────────────────────
+  // ── Chính sách (check TRƯỚC sản phẩm để "ship bao nhiêu" không match "bao nhiêu") ──
   if (/ship|giao hàng|vận chuyển|freeship|phí ship|bao lâu.*nhận|nhận.*bao lâu|giao.*nhanh/i.test(q))
     return "🚚 **Chính sách vận chuyển Tiệm Rêu:**\n\n• **Freeship** cho đơn hàng từ 500.000₫\n• Phí ship tiêu chuẩn: 25.000₫ - 40.000₫ (tùy khu vực)\n• **Nội thành HCM:** Giao trong 1-2 ngày\n• **Tỉnh khác:** 3-5 ngày làm việc\n• Đóng gói cẩn thận, bảo vệ cây an toàn\n• Hỗ trợ ship nhanh (phí phát sinh)";
 
@@ -244,6 +235,16 @@ function getSmartFallback(message: string): string | null {
 
   if (/sen đá|xương rồng|cactus|succulent/i.test(q))
     return "🌵 **Sen đá & Xương rồng trong terrarium:**\n\n• Dùng **bể mở** (cần thoáng khí, không thích ẩm).\n• Đất trồng: hỗn hợp đất + cát + đá pumice (thoát nước tốt).\n• Tưới: 7-10 ngày/lần, để đất khô hoàn toàn giữa 2 lần tưới.\n• Ánh sáng: Cần nhiều nắng, ít nhất 4-6h/ngày.\n\n⚠️ Sen đá KHÔNG phù hợp bể kín (quá ẩm sẽ thối rễ).";
+
+  // ── Sản phẩm (check SAU chính sách) ─────────
+  if (/sản phẩm|mua|giá|bao nhiêu|gợi ý|tìm.*bể|đặt hàng|thêm.*giỏ|còn hàng|hết hàng|combo|quà tặng|tặng|phụ kiện/i.test(q))
+    return null; // Để AI hoặc DB fallback xử lý
+
+  if (/rẻ|tiết kiệm|giá.*rẻ|bình dân|dưới.*\d/i.test(q))
+    return null;
+
+  if (/đắt|cao cấp|premium|sang|luxury/i.test(q))
+    return null;
 
   // ── Default fallback ────────────────────────
   return null;
