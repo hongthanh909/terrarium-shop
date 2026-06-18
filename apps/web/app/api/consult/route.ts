@@ -1,14 +1,18 @@
 /**
- * AI Consultation API Route — v9 (Smart KB + Ollama llama3.2:3b)
+ * AI Consultation API Route — v10 (Smart KB + Fuzzy Intent + Ollama + Product Cards)
  *
  * FLOW:
  * 1. Smart Knowledge Base (instant, 40+ patterns, <100ms)
+ *    → Fuzzy matching: suy luận ý khi user nhập sai từ khóa
  * 2. Ollama llama3.2:3b (~2GB RAM, local VPS)
- * 3. DB Product Query (nếu hỏi sản phẩm)
- * 4. Helpful Fallback
+ * 3. DB Product Query (trả về kèm thumbnail + giá)
+ * 4. Helpful Fallback (gợi ý chủ đề thay vì "em không hiểu")
  *
  * POST /api/consult
  * Body: { message, history?, pageContext? }
+ *
+ * Response JSON: { response, source, products? }
+ * - products: [{ name, slug, price, image, category }] — hiển thị card trong chat
  */
 
 import { NextResponse } from "next/server";
@@ -118,6 +122,126 @@ interface PageContext {
 }
 
 // =============================================
+// PRODUCT CARD TYPE (trả về cho frontend)
+// =============================================
+interface ProductCard {
+  name: string;
+  slug: string;
+  price: string;
+  originalPrice?: string;
+  image: string;
+  category: string;
+  inStock: boolean;
+}
+
+// =============================================
+// FUZZY MATCHING — Suy luận ý khi user nhập sai/viết tắt
+// =============================================
+// Vietnamese typo corrections & synonyms
+const FUZZY_MAP: Record<string, string[]> = {
+  // Chăm sóc
+  "tưới": ["tuoi", "tươi", "tưoi", "tuới", "twoi", "tưới nước", "nước"],
+  "ánh sáng": ["anh sang", "anh sáng", "ánh sang", "as", "nắng", "nang", "sáng"],
+  "nấm": ["nam", "nấm mốc", "nam moc", "moc", "mốc"],
+  "héo": ["heo", "héo", "rũ", "rụ", "rủ", "héo lá"],
+  "vàng": ["vang", "vàng lá", "la vang", "úa"],
+  "chăm sóc": ["cham soc", "chamsoc", "cách chăm", "cach cham", "chăm", "cham"],
+  "côn trùng": ["con trung", "contr", "sâu", "sau", "bọ", "bo", "ruồi", "ruoi"],
+  "rêu": ["reu", "rêu", "moss"],
+  "bể": ["bê", "be", "bễ", "bể cá", "chậu"],
+  // Sản phẩm
+  "sản phẩm": ["san pham", "sp", "sanpham", "s.p", "sphẩm", "sảm phẩm"],
+  "mua": ["mua", "muốn mua", "đặt", "dat", "order"],
+  "giá": ["gia", "bao nhiêu", "bao nhiu", "bnhieu", "bn", "bnh", "giá cả", "giá tiền"],
+  // Chính sách
+  "ship": ["ship", "giao hàng", "giao hang", "giaohang", "vận chuyển", "van chuyen", "freeship", "phí ship"],
+  "đổi trả": ["doi tra", "doitra", "trả hàng", "tra hang", "bảo hành", "bao hanh"],
+  "thanh toán": ["thanh toan", "thanhtoan", "tt", "chuyển khoản", "chuyen khoan", "ck", "cod"],
+  "khuyến mãi": ["khuyen mai", "km", "giảm giá", "giam gia", "voucher", "sale", "ưu đãi", "discount"],
+  "liên hệ": ["lien he", "lienhe", "zalo", "facebook", "fb", "sdt", "hotline", "phone", "dt"],
+  // Greeting
+  "chào": ["chao", "hello", "hi", "hey", "alo", "helo", "xin chào", "xin chao"],
+  "cảm ơn": ["cam on", "camon", "thank", "thanks", "tks"],
+  "tạm biệt": ["tam biet", "bye", "goodbye", "bb"],
+  // Tư vấn
+  "tư vấn": ["tu van", "tuvan", "tv", "recommend", "gợi ý", "goi y", "đề xuất"],
+  "phù hợp": ["phu hop", "phuhop", "nên mua", "nen mua"],
+  "người mới": ["nguoi moi", "newbie", "beginner", "mới chơi", "lần đầu", "lan dau"],
+  // Loại bể
+  "bể kín": ["be kin", "bekin", "hệ kín", "he kin", "closed"],
+  "bể mở": ["be mo", "bemo", "hệ mở", "he mo", "open"],
+  "sen đá": ["sen da", "senda", "succulent", "xương rồng", "xuong rong", "cactus"],
+  // Đẹp/đề xuất sản phẩm
+  "đẹp": ["dep", "đẹp nhất", "dep nhat", "xinh", "cute", "nice"],
+};
+
+function normalizeVietnamese(str: string): string {
+  return str
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/đ/g, "d")
+    .replace(/[^a-z0-9\s]/g, "")
+    .trim();
+}
+
+function fuzzyMatch(input: string): string | null {
+  const q = input.toLowerCase().trim();
+  const normalized = normalizeVietnamese(q);
+
+  for (const [canonical, variants] of Object.entries(FUZZY_MAP)) {
+    for (const variant of variants) {
+      if (q.includes(variant) || normalized.includes(normalizeVietnamese(variant))) {
+        return canonical;
+      }
+    }
+    // Also check if canonical itself is in the query
+    if (q.includes(canonical) || normalized.includes(normalizeVietnamese(canonical))) {
+      return canonical;
+    }
+  }
+  return null;
+}
+
+// Detect product-related intent (even with typos)
+function isProductIntent(message: string): boolean {
+  const q = message.toLowerCase().trim();
+  const n = normalizeVietnamese(q);
+
+  const productPatterns = [
+    /s(ả|a)n\s*ph(ẩ|a)m/,
+    /\bsp\b/,
+    /gi(á|a)\b/,
+    /b(a|ả)o\s*nhi(ê|e)u/,
+    /\bbn\b/,
+    /\bbnh\b/,
+    /mu(a|ố)n?\s*mua/,
+    /\bmua\b/,
+    /g(ợ|o)i\s*(ý|y)/,
+    /t(ì|i)m/,
+    /đ(ặ|a)t\s*h(à|a)ng/,
+    /c(ò|o)n\s*h(à|a)ng/,
+    /h(ế|e)t\s*h(à|a)ng/,
+    /qu(à|a)\s*t(ặ|a)ng/,
+    /ph(ụ|u)\s*ki(ệ|e)n/,
+    /combo/,
+    /r(ẻ|e)\b/,
+    /ti(ế|e)t\s*ki(ệ|e)m/,
+    /cao\s*c(ấ|a)p/,
+    /premium/,
+    /luxury/,
+    /\bd(ẹ|e)p\b/,
+    /xinh/,
+    /cute/,
+  ];
+
+  for (const p of productPatterns) {
+    if (p.test(q) || p.test(n)) return true;
+  }
+  return false;
+}
+
+// =============================================
 // SYSTEM PROMPT (dùng cho Ollama)
 // =============================================
 async function buildSystemPrompt(pageContext?: PageContext): Promise<string> {
@@ -125,7 +249,8 @@ async function buildSystemPrompt(pageContext?: PageContext): Promise<string> {
 
   const baseRole = `Bạn là trợ lý AI của "Tiệm Rêu" — shop terrarium Việt Nam. Xưng "em", gọi khách "anh/chị". Trả lời ngắn gọn, tự nhiên, bằng tiếng Việt.
 
-QUY TẮC:
+QUY TẮC QUAN TRỌNG:
+- Luôn CỐ GẮNG HIỂU Ý khách, kể cả khi họ viết sai chính tả, viết tắt, hoặc dùng tiếng lóng
 - Hỏi chăm sóc/kiến thức → trả lời kiến thức, KHÔNG list sản phẩm
 - Hỏi mua/giá/gợi ý → gợi ý 1-3 SP + link dạng "Link: /products/slug"
 - Hỏi chính sách → trả lời ngắn gọn
@@ -133,6 +258,7 @@ QUY TẮC:
 - CHỈ gợi ý sản phẩm khi khách HỎI MUA
 - KHÔNG bịa sản phẩm/giá ngoài danh sách
 - Freeship đơn từ 500k
+- Nếu không chắc ý khách → hỏi lại lịch sự
 
 KIẾN THỨC:
 - Bể kín: tưới 1-2 tuần/lần, nấm mốc → mở nắp 24-48h
@@ -159,8 +285,7 @@ Quy tắc: Gợi ý TỐI ĐA 3 SP phù hợp, kèm giá + link. Ưu tiên ⭐ v
 }
 
 // =============================================
-// SMART KNOWLEDGE BASE — 40+ patterns
-// Trả lời ngay, không cần AI, rất nhanh
+// SMART KNOWLEDGE BASE — 40+ patterns + Fuzzy
 // =============================================
 function getSmartFallback(message: string): string | null {
   const q = message.toLowerCase().trim();
@@ -206,7 +331,7 @@ function getSmartFallback(message: string): string | null {
   if (/bể kín|terrarium kín|kín.*hay.*mở|mở.*hay.*kín|loại nào|loại.*terrarium/i.test(q))
     return "🏺 **So sánh Bể Kín vs Bể Mở:**\n\n**Bể kín (closed):**\n• Tự tạo hệ sinh thái tuần hoàn\n• Tưới rất ít (1-2 tuần/lần)\n• Phù hợp người bận, ít thời gian chăm\n• Cây phù hợp: rêu, fitonia, cỏ ngọc\n\n**Bể mở (open):**\n• Thoáng khí hơn, ít bị nấm mốc\n• Cần tưới thường xuyên hơn (3-5 ngày/lần)\n• Phù hợp sen đá, xương rồng\n\n💡 Cho người mới: Em khuyên bể kín ạ — dễ chăm và đẹp!";
 
-  // ── Chính sách (check TRƯỚC sản phẩm để "ship bao nhiêu" không match "bao nhiêu") ──
+  // ── Chính sách ──────────────────────────────
   if (/ship|giao hàng|vận chuyển|freeship|phí ship|bao lâu.*nhận|nhận.*bao lâu|giao.*nhanh/i.test(q))
     return "🚚 **Chính sách vận chuyển Tiệm Rêu:**\n\n• **Freeship** cho đơn hàng từ 500.000₫\n• Phí ship tiêu chuẩn: 25.000₫ - 40.000₫ (tùy khu vực)\n• **Nội thành HCM:** Giao trong 1-2 ngày\n• **Tỉnh khác:** 3-5 ngày làm việc\n• Đóng gói cẩn thận, bảo vệ cây an toàn\n• Hỗ trợ ship nhanh (phí phát sinh)";
 
@@ -235,17 +360,16 @@ function getSmartFallback(message: string): string | null {
   if (/sen đá|xương rồng|cactus|succulent/i.test(q))
     return "🌵 **Sen đá & Xương rồng trong terrarium:**\n\n• Dùng **bể mở** (cần thoáng khí, không thích ẩm).\n• Đất trồng: hỗn hợp đất + cát + đá pumice (thoát nước tốt).\n• Tưới: 7-10 ngày/lần, để đất khô hoàn toàn giữa 2 lần tưới.\n• Ánh sáng: Cần nhiều nắng, ít nhất 4-6h/ngày.\n\n⚠️ Sen đá KHÔNG phù hợp bể kín (quá ẩm sẽ thối rễ).";
 
-  // ── Sản phẩm (check SAU chính sách) → để Ollama xử lý nếu có
-  if (/sản phẩm|mua|giá|bao nhiêu|gợi ý|tìm.*bể|đặt hàng|thêm.*giỏ|còn hàng|hết hàng|combo|quà tặng|tặng|phụ kiện/i.test(q))
-    return null; // Để Ollama hoặc DB fallback xử lý
+  // ── Sản phẩm → return null để AI hoặc DB xử lý ─────
+  if (isProductIntent(message)) return null;
 
-  if (/rẻ|tiết kiệm|giá.*rẻ|bình dân|dưới.*\d/i.test(q))
-    return null;
+  // ── Fuzzy fallback: suy luận ý từ typo ────────
+  const fuzzyIntent = fuzzyMatch(message);
+  if (fuzzyIntent) {
+    // Re-run with corrected intent
+    return getSmartFallback(fuzzyIntent);
+  }
 
-  if (/đắt|cao cấp|premium|sang|luxury/i.test(q))
-    return null;
-
-  // ── Default → để Ollama thử xử lý ────────────
   return null;
 }
 
@@ -268,12 +392,10 @@ async function streamFromOllama(
   messages: { role: string; content: string }[]
 ): Promise<ReadableStream<Uint8Array> | null> {
   const ollamaUrl = process.env.OLLAMA_URL || process.env.OLLAMA_BASE_URL || "http://localhost:11434";
-  // Dùng llama3.2:3b (~2GB) — nhẹ, phù hợp VPS 8GB RAM không GPU
   const model = process.env.OLLAMA_MODEL || "llama3.2:3b";
   console.log(`[AI] Trying Ollama (model: ${model}, url: ${ollamaUrl})...`);
 
   const abortCtrl = new AbortController();
-  // Timeout 25s cho CPU inference (llama3.2:3b nhanh hơn llama3:8b)
   const timeout = setTimeout(() => abortCtrl.abort(), 25000);
 
   try {
@@ -320,7 +442,7 @@ async function streamFromOllama(
                 ctrl.enqueue(encoder.encode(`data: {"token":"${escapeJsonString(token)}"}\n\n`));
               }
             } catch {
-              // ignore malformed JSON
+              // ignore
             }
           }
         } catch (err) {
@@ -383,6 +505,71 @@ async function streamFromAI(
 }
 
 // =============================================
+// DB PRODUCT QUERY — Trả về product cards với thumbnail
+// =============================================
+async function queryProducts(message: string): Promise<{ text: string; products: ProductCard[] } | null> {
+  try {
+    const q = message.toLowerCase();
+
+    // Determine sort/filter based on intent
+    type OrderBy = { featured?: "desc" | "asc"; createdAt?: "desc" | "asc"; basePrice?: "desc" | "asc" };
+    let orderBy: OrderBy[] = [{ featured: "desc" }, { createdAt: "desc" }];
+    let take = 5;
+
+    if (/rẻ|tiết kiệm|bình dân|giá thấp|dưới/i.test(q)) {
+      orderBy = [{ basePrice: "asc" }];
+    } else if (/đắt|cao cấp|premium|sang|luxury/i.test(q)) {
+      orderBy = [{ basePrice: "desc" }];
+    } else if (/đẹp|xinh|cute|hot|nổi bật/i.test(q)) {
+      orderBy = [{ featured: "desc" }, { createdAt: "desc" }];
+    }
+
+    const products = await prisma.product.findMany({
+      where: { status: "ACTIVE", inventory: { gt: 0 } },
+      select: {
+        name: true,
+        slug: true,
+        basePrice: true,
+        salePrice: true,
+        images: true,
+        category: { select: { name: true } },
+        featured: true,
+      },
+      take,
+      orderBy,
+    });
+
+    if (products.length === 0) return null;
+
+    const productCards: ProductCard[] = products.map((p) => ({
+      name: p.name,
+      slug: `/products/${p.slug}`,
+      price: p.salePrice
+        ? `${Number(p.salePrice).toLocaleString("vi-VN")}₫`
+        : `${Number(p.basePrice).toLocaleString("vi-VN")}₫`,
+      originalPrice: p.salePrice
+        ? `${Number(p.basePrice).toLocaleString("vi-VN")}₫`
+        : undefined,
+      image: p.images?.[0] || "",
+      category: p.category.name,
+      inStock: true,
+    }));
+
+    // Build text response
+    let intro = "🌿 Dạ, đây là một số sản phẩm nổi bật tại Tiệm Rêu:";
+    if (/rẻ|tiết kiệm|bình dân/i.test(q)) intro = "🌿 Dạ, đây là các sản phẩm giá tốt nhất:";
+    if (/đắt|cao cấp|premium/i.test(q)) intro = "🌿 Dạ, đây là các sản phẩm cao cấp:";
+    if (/đẹp|xinh|cute/i.test(q)) intro = "🌿 Dạ, đây là các sản phẩm đẹp nhất tại Tiệm Rêu:";
+
+    const text = `${intro}\n\n💡 Bấm vào sản phẩm để xem chi tiết. Freeship đơn từ 500.000₫ ạ!`;
+
+    return { text, products: productCards };
+  } catch {
+    return null;
+  }
+}
+
+// =============================================
 // ROUTE HANDLER
 // =============================================
 export async function POST(request: Request) {
@@ -423,8 +610,19 @@ export async function POST(request: Request) {
       });
     }
 
-    // ── 2. Ollama AI Streaming (llama3.2:3b ~2GB) ────────
-    // Bật khi Ollama chạy trên VPS: ollama pull llama3.2:3b
+    // ── 2. Product query with thumbnails (if product intent detected) ──
+    if (isProductIntent(trimmedMessage)) {
+      const productResult = await queryProducts(trimmedMessage);
+      if (productResult) {
+        return NextResponse.json({
+          response: productResult.text,
+          source: "db",
+          products: productResult.products,
+        });
+      }
+    }
+
+    // ── 3. Ollama AI Streaming (llama3.2:3b ~2GB) ────────
     const stream = await streamFromAI(trimmedMessage, history, pageContext);
     if (stream) {
       return new Response(stream, {
@@ -436,44 +634,29 @@ export async function POST(request: Request) {
       });
     }
 
-    // ── 3. DB Product Query ──────────────────────────────
-    if (/sản phẩm|mua|giá|bao nhiêu|gợi ý|tìm|đặt hàng|còn hàng|hết hàng|combo|quà|phụ kiện|rẻ|tiết kiệm|đắt|cao cấp/i.test(trimmedMessage)) {
-      try {
-        const products = await prisma.product.findMany({
-          where: { status: "ACTIVE", inventory: { gt: 0 } },
-          select: {
-            name: true,
-            slug: true,
-            basePrice: true,
-            salePrice: true,
-            category: { select: { name: true } },
-            featured: true,
-          },
-          take: 5,
-          orderBy: [{ featured: "desc" }, { createdAt: "desc" }],
+    // ── 4. Fallback DB Product Query (nếu Ollama offline) ──
+    const fallbackProducts = await queryProducts(trimmedMessage);
+    if (fallbackProducts) {
+      return NextResponse.json({
+        response: fallbackProducts.text,
+        source: "db",
+        products: fallbackProducts.products,
+      });
+    }
+
+    // ── 5. Smart Fallback — gợi ý chủ đề thay vì "em không hiểu" ──
+    // Cố gắng suy luận ý
+    const fuzzyIntent = fuzzyMatch(trimmedMessage);
+    if (fuzzyIntent) {
+      const retryResponse = getSmartFallback(fuzzyIntent);
+      if (retryResponse) {
+        return NextResponse.json({
+          response: retryResponse,
+          source: "knowledge",
         });
-
-        if (products.length > 0) {
-          const productList = products
-            .map((p) => {
-              const price = p.salePrice
-                ? `${Number(p.salePrice).toLocaleString("vi-VN")}₫ (giảm giá)`
-                : `${Number(p.basePrice).toLocaleString("vi-VN")}₫`;
-              return `• ${p.name} [${p.category.name}] — ${price}\n  → Xem: /products/${p.slug}`;
-            })
-            .join("\n");
-
-          return NextResponse.json({
-            response: `🌿 Dạ, đây là một số sản phẩm nổi bật tại Tiệm Rêu:\n\n${productList}\n\n💡 Bấm vào link để xem chi tiết và đặt hàng. Freeship đơn từ 500.000₫ ạ!`,
-            source: "db",
-          });
-        }
-      } catch {
-        // continue to final fallback
       }
     }
 
-    // ── 4. Final fallback ────────────────────────────────
     return NextResponse.json({
       response: "Dạ em chưa hiểu rõ câu hỏi. Anh/chị có thể hỏi em về:\n\n• 🌿 **Chăm sóc terrarium** (tưới nước, ánh sáng, xử lý nấm mốc)\n• 🛒 **Sản phẩm** (gợi ý, giá cả, so sánh)\n• 📦 **Chính sách** (ship, đổi trả, thanh toán)\n\nHoặc liên hệ trực tiếp qua Zalo/Facebook Tiệm Rêu nhé! 😊",
       source: "fallback",

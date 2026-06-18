@@ -6,11 +6,22 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Send, X, Maximize2, Minimize2, ExternalLink } from "lucide-react";
 
 // ── Types ────────────────────────────────────────────
+interface ProductCard {
+  name: string;
+  slug: string;
+  price: string;
+  originalPrice?: string;
+  image: string;
+  category: string;
+  inStock: boolean;
+}
+
 interface ChatMessage {
   role: "user" | "assistant";
   content: string;
   source?: "ai" | "db" | "fallback" | "knowledge";
   isStreaming?: boolean;
+  products?: ProductCard[];
   suggestedProducts?: { name: string; slug: string; price: string; image?: string }[];
 }
 
@@ -335,7 +346,13 @@ export default function ChatWidget() {
         else if ((data.source === "knowledge" || data.source === "db") && isAIAvailable === null) setIsAIAvailable(true);
         setMessages(prev => {
           const u = [...prev];
-          u[u.length - 1] = { role: "assistant", content: data.response || "Xin lỗi, mình chưa hiểu.", source: data.source, isStreaming: false };
+          u[u.length - 1] = {
+            role: "assistant",
+            content: data.response || "Xin lỗi, mình chưa hiểu.",
+            source: data.source,
+            isStreaming: false,
+            products: data.products || undefined,
+          };
           return u;
         });
       }
@@ -579,9 +596,54 @@ export default function ChatWidget() {
                     </div>
                   )}
 
-                  {/* Product cards */}
-                  {msg.suggestedProducts && msg.suggestedProducts.length > 0 && (
-                    <div className="mt-2 flex flex-col gap-2">
+                  {/* Product cards from API */}
+                  {msg.products && msg.products.length > 0 && (
+                    <div className="mt-3 flex flex-col gap-2">
+                      {msg.products.map((p) => (
+                        <a
+                          key={p.slug}
+                          href={p.slug}
+                          className="cw-product-card flex items-center gap-3 no-underline"
+                          style={{
+                            background: "#ffffff",
+                            border: "1px solid #e3ebdd",
+                            borderRadius: 14,
+                            padding: "10px 12px",
+                          }}
+                        >
+                          <div className="w-14 h-14 rounded-xl overflow-hidden flex-shrink-0 relative" style={{ background: "#f2f8f2" }}>
+                            {p.image ? (
+                              <img src={p.image} alt={p.name} className="w-full h-full object-cover" loading="lazy" />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center">
+                                <span className="text-lg">🌿</span>
+                              </div>
+                            )}
+                            {p.originalPrice && (
+                              <span className="absolute top-0.5 left-0.5 text-[8px] font-bold text-white px-1 py-0.5 rounded" style={{ background: "#e74c3c" }}>SALE</span>
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <span className="block text-[12px] font-semibold truncate" style={{ color: "#2c3e24" }}>{p.name}</span>
+                            <span className="text-[10px] mt-0.5 block" style={{ color: "#8aa480" }}>{p.category}</span>
+                            <div className="flex items-center gap-1.5 mt-0.5">
+                              <span className="text-[12px] font-bold" style={{ color: "#425733" }}>{p.price}</span>
+                              {p.originalPrice && (
+                                <span className="text-[10px] line-through" style={{ color: "#b0b0b0" }}>{p.originalPrice}</span>
+                              )}
+                            </div>
+                          </div>
+                          <div className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center" style={{ background: "#425733" }}>
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                          </div>
+                        </a>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Legacy product cards from AI streaming */}
+                  {msg.suggestedProducts && msg.suggestedProducts.length > 0 && !msg.products && (
+                    <div className="mt-3 flex flex-col gap-2">
                       {msg.suggestedProducts.map((p) => (
                         <a
                           key={p.slug}
@@ -590,20 +652,26 @@ export default function ChatWidget() {
                           style={{
                             background: "#ffffff",
                             border: "1px solid #e3ebdd",
-                            borderRadius: 12,
-                            padding: "8px 12px",
+                            borderRadius: 14,
+                            padding: "10px 12px",
                           }}
                         >
-                          <div className="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0" style={{ background: "#f2f8f2" }}>
-                            <img src={p.image || "/placeholder.png"} alt={p.name} className="w-full h-full object-cover" />
+                          <div className="w-14 h-14 rounded-xl overflow-hidden flex-shrink-0" style={{ background: "#f2f8f2" }}>
+                            {p.image ? (
+                              <img src={p.image} alt={p.name} className="w-full h-full object-cover" loading="lazy" />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center">
+                                <span className="text-lg">🌿</span>
+                              </div>
+                            )}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <span className="block text-xs font-medium truncate" style={{ color: "#2c3e24" }}>{p.name}</span>
-                            {p.price && <span className="text-[11px] font-semibold" style={{ color: "#425733" }}>{p.price}</span>}
+                            <span className="block text-[12px] font-semibold truncate" style={{ color: "#2c3e24" }}>{p.name}</span>
+                            {p.price && <span className="text-[12px] font-bold" style={{ color: "#425733" }}>{p.price}</span>}
                           </div>
-                          <span className="text-[10px] font-medium text-white px-2.5 py-1 rounded-lg flex-shrink-0" style={{ background: "#425733" }}>
-                            Xem
-                          </span>
+                          <div className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center" style={{ background: "#425733" }}>
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                          </div>
                         </a>
                       ))}
                     </div>
