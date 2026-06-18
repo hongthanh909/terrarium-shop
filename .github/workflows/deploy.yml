@@ -64,25 +64,52 @@ jobs:
             cd apps/web
             npx prisma generate
 
-            # ── Cập nhật .env với Gemini API Key ──────────────────────────────
-            echo "🔑 Updating .env with Gemini API Key..."
-            # Đảm bảo GEMINI_API_KEY có trong .env
-            if grep -q "^GEMINI_API_KEY=" .env 2>/dev/null; then
-              sed -i "s|^GEMINI_API_KEY=.*|GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}|" .env
-            else
-              echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" >> .env
-            fi
-            # Đảm bảo GEMINI_MODEL có trong .env
-            if grep -q "^GEMINI_MODEL=" .env 2>/dev/null; then
-              sed -i "s|^GEMINI_MODEL=.*|GEMINI_MODEL=gemini-2.0-flash|" .env
-            else
-              echo "GEMINI_MODEL=gemini-2.0-flash" >> .env
-            fi
-            echo "✅ .env updated"
-
             echo "🔄 Syncing DB schema..."
             npx prisma db push --accept-data-loss
             npx prisma migrate deploy || true
+
+            # ── Cập nhật Ollama env trong .env ───────────────────────────────
+            echo "🤖 Updating Ollama env..."
+            # Xóa dòng Gemini cũ nếu còn
+            sed -i '/^GEMINI_API_KEY=/d' .env 2>/dev/null || true
+            sed -i '/^GEMINI_MODEL=/d' .env 2>/dev/null || true
+            # Đặt Ollama config
+            if grep -q "^OLLAMA_URL=" .env 2>/dev/null; then
+              sed -i "s|^OLLAMA_URL=.*|OLLAMA_URL=http://localhost:11434|" .env
+            else
+              echo "OLLAMA_URL=http://localhost:11434" >> .env
+            fi
+            if grep -q "^OLLAMA_MODEL=" .env 2>/dev/null; then
+              sed -i "s|^OLLAMA_MODEL=.*|OLLAMA_MODEL=llama3.2:3b|" .env
+            else
+              echo "OLLAMA_MODEL=llama3.2:3b" >> .env
+            fi
+            echo "✅ .env updated (Gemini removed, Ollama configured)"
+
+            # ── Setup Ollama llama3.2:3b (~2GB) ──────────────────────────────
+            echo "🧠 Setting up Ollama llama3.2:3b..."
+            # Bật Ollama service nếu chưa bật
+            sudo systemctl enable ollama 2>/dev/null || true
+            sudo systemctl start ollama 2>/dev/null || true
+            # Đợi Ollama sẵn sàng
+            for i in 1 2 3 4 5; do
+              if curl -sf http://localhost:11434/api/tags > /dev/null 2>&1; then
+                echo "✅ Ollama is running"
+                break
+              fi
+              echo "⏳ Waiting for Ollama... ($i/5)"
+              sleep 5
+            done
+            # Xóa model cũ llama3:8b (~4.7GB) nếu còn
+            ollama rm llama3:8b 2>/dev/null && echo "🗑️  Removed llama3:8b (4.7GB freed)" || echo "ℹ️  llama3:8b not found (OK)"
+            # Kéo model mới nếu chưa có
+            if ollama list 2>/dev/null | grep -q "llama3.2:3b"; then
+              echo "✅ llama3.2:3b already pulled"
+            else
+              echo "⬇️  Pulling llama3.2:3b (~2GB)..."
+              ollama pull llama3.2:3b
+              echo "✅ llama3.2:3b ready"
+            fi
 
             # ── Clean stale build cache ───────────────────────────────────────
             echo "🧹 Cleaning old build cache..."
@@ -102,18 +129,9 @@ jobs:
             # ── Lưu PM2 process list ──────────────────────────────────────────
             pm2 save
 
-            # ── Ollama AI (DISABLED — VPS 8GB RAM không đủ cho AI model) ────
-            # Ollama llama3:8b chiếm ~4.7GB RAM, gây chậm toàn bộ server.
-            # Chatbox hiện dùng Smart Knowledge Base (instant, 0 RAM).
-            #
-            # Để gỡ Ollama trên VPS (giải phóng ~4GB RAM), chạy:
-            #   sudo systemctl stop ollama && sudo systemctl disable ollama
-            #   ollama rm llama3:8b 2>/dev/null; ollama rm llama3.2:3b 2>/dev/null
-            #
-            # Để bật lại AI sau (cần nạp Gemini hoặc VPS có GPU):
-            #   1. Gemini: nạp credit tại https://aistudio.google.com/billing
-            #   2. Bỏ comment AI streaming trong apps/web/app/api/consult/route.ts
-            echo "ℹ️  AI chatbox: Smart Knowledge Base mode (no Ollama)"
+            # ── Kiểm tra RAM sau deploy ───────────────────────────────────────
+            echo "📊 RAM status:"
+            free -h
 
             echo "✅ Deploy hoàn tất lúc $(date)!"
 
@@ -123,6 +141,7 @@ jobs:
         run: |
           echo "🎉 Deploy thành công!"
           echo "🌐 Site: https://tiemreudecor.com"
+          echo "🤖 AI: Ollama llama3.2:3b (~2GB RAM)"
           echo "📊 Commit: ${{ github.sha }}"
           echo "👤 By: ${{ github.actor }}"
 
