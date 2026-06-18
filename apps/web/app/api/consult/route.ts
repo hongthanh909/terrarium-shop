@@ -1,11 +1,11 @@
 /**
- * AI Consultation API Route — v7 (Smart Fallback + Gemini + Ollama)
+ * AI Consultation API Route — v9 (Smart KB + Ollama llama3.2:3b)
  *
  * FLOW:
- * 1. Gemini API (primary, timeout 8s, 1 retry on 429)
- * 2. Ollama local (fallback, timeout 30s for CPU inference)
- * 3. Smart Knowledge Base (instant, intent-aware, 40+ patterns)
- *    → Đây là layer quan trọng nhất — khi AI offline, khách vẫn được tư vấn đầy đủ
+ * 1. Smart Knowledge Base (instant, 40+ patterns, <100ms)
+ * 2. Ollama llama3.2:3b (~2GB RAM, local VPS)
+ * 3. DB Product Query (nếu hỏi sản phẩm)
+ * 4. Helpful Fallback
  *
  * POST /api/consult
  * Body: { message, history?, pageContext? }
@@ -46,7 +46,7 @@ function checkRateLimit(ip: string): boolean {
 // CONCURRENCY
 // =============================================
 let activeAiRequests = 0;
-const MAX_CONCURRENT_AI = 3;
+const MAX_CONCURRENT_AI = 2;
 
 // =============================================
 // PRODUCT CATALOG CACHE
@@ -118,12 +118,12 @@ interface PageContext {
 }
 
 // =============================================
-// SYSTEM PROMPT (compact for Gemini token efficiency)
+// SYSTEM PROMPT (dùng cho Ollama)
 // =============================================
 async function buildSystemPrompt(pageContext?: PageContext): Promise<string> {
   const catalog = await getProductCatalog();
 
-  const baseRole = `Bạn là trợ lý AI của "Tiệm Rêu" — shop terrarium Việt Nam. Xưng "em", gọi khách "anh/chị". Trả lời ngắn gọn, tự nhiên.
+  const baseRole = `Bạn là trợ lý AI của "Tiệm Rêu" — shop terrarium Việt Nam. Xưng "em", gọi khách "anh/chị". Trả lời ngắn gọn, tự nhiên, bằng tiếng Việt.
 
 QUY TẮC:
 - Hỏi chăm sóc/kiến thức → trả lời kiến thức, KHÔNG list sản phẩm
@@ -206,7 +206,6 @@ function getSmartFallback(message: string): string | null {
   if (/bể kín|terrarium kín|kín.*hay.*mở|mở.*hay.*kín|loại nào|loại.*terrarium/i.test(q))
     return "🏺 **So sánh Bể Kín vs Bể Mở:**\n\n**Bể kín (closed):**\n• Tự tạo hệ sinh thái tuần hoàn\n• Tưới rất ít (1-2 tuần/lần)\n• Phù hợp người bận, ít thời gian chăm\n• Cây phù hợp: rêu, fitonia, cỏ ngọc\n\n**Bể mở (open):**\n• Thoáng khí hơn, ít bị nấm mốc\n• Cần tưới thường xuyên hơn (3-5 ngày/lần)\n• Phù hợp sen đá, xương rồng\n\n💡 Cho người mới: Em khuyên bể kín ạ — dễ chăm và đẹp!";
 
-  // ── Sản phẩm ────────────────────────────────
   // ── Chính sách (check TRƯỚC sản phẩm để "ship bao nhiêu" không match "bao nhiêu") ──
   if (/ship|giao hàng|vận chuyển|freeship|phí ship|bao lâu.*nhận|nhận.*bao lâu|giao.*nhanh/i.test(q))
     return "🚚 **Chính sách vận chuyển Tiệm Rêu:**\n\n• **Freeship** cho đơn hàng từ 500.000₫\n• Phí ship tiêu chuẩn: 25.000₫ - 40.000₫ (tùy khu vực)\n• **Nội thành HCM:** Giao trong 1-2 ngày\n• **Tỉnh khác:** 3-5 ngày làm việc\n• Đóng gói cẩn thận, bảo vệ cây an toàn\n• Hỗ trợ ship nhanh (phí phát sinh)";
@@ -236,9 +235,9 @@ function getSmartFallback(message: string): string | null {
   if (/sen đá|xương rồng|cactus|succulent/i.test(q))
     return "🌵 **Sen đá & Xương rồng trong terrarium:**\n\n• Dùng **bể mở** (cần thoáng khí, không thích ẩm).\n• Đất trồng: hỗn hợp đất + cát + đá pumice (thoát nước tốt).\n• Tưới: 7-10 ngày/lần, để đất khô hoàn toàn giữa 2 lần tưới.\n• Ánh sáng: Cần nhiều nắng, ít nhất 4-6h/ngày.\n\n⚠️ Sen đá KHÔNG phù hợp bể kín (quá ẩm sẽ thối rễ).";
 
-  // ── Sản phẩm (check SAU chính sách) ─────────
+  // ── Sản phẩm (check SAU chính sách) → để Ollama xử lý nếu có
   if (/sản phẩm|mua|giá|bao nhiêu|gợi ý|tìm.*bể|đặt hàng|thêm.*giỏ|còn hàng|hết hàng|combo|quà tặng|tặng|phụ kiện/i.test(q))
-    return null; // Để AI hoặc DB fallback xử lý
+    return null; // Để Ollama hoặc DB fallback xử lý
 
   if (/rẻ|tiết kiệm|giá.*rẻ|bình dân|dưới.*\d/i.test(q))
     return null;
@@ -246,7 +245,7 @@ function getSmartFallback(message: string): string | null {
   if (/đắt|cao cấp|premium|sang|luxury/i.test(q))
     return null;
 
-  // ── Default fallback ────────────────────────
+  // ── Default → để Ollama thử xử lý ────────────
   return null;
 }
 
@@ -263,155 +262,19 @@ function escapeJsonString(str: string): string {
 }
 
 // =============================================
-// GEMINI STREAMING (with retry on 429)
-// =============================================
-async function streamFromGemini(
-  message: string,
-  systemPrompt: string,
-  history: { role: string; content: string }[]
-): Promise<ReadableStream<Uint8Array> | null> {
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey || apiKey.trim() === "") {
-    console.log("[AI] GEMINI_API_KEY not set, skipping");
-    return null;
-  }
-
-  const model = process.env.GEMINI_MODEL || "gemini-2.0-flash";
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:streamGenerateContent?alt=sse&key=${apiKey}`;
-
-  const contents = [
-    ...history.slice(-4).map((msg) => ({
-      role: msg.role === "assistant" ? "model" : "user",
-      parts: [{ text: msg.content }],
-    })),
-    { role: "user", parts: [{ text: message }] },
-  ];
-
-  const payload = {
-    systemInstruction: { parts: [{ text: systemPrompt }] },
-    contents,
-    generationConfig: {
-      temperature: 0.7,
-      maxOutputTokens: 512,
-    },
-  };
-
-  // Try up to 2 times (initial + 1 retry on 429)
-  for (let attempt = 0; attempt < 2; attempt++) {
-    const abortCtrl = new AbortController();
-    const timeout = setTimeout(() => abortCtrl.abort(), 8000);
-
-    try {
-      console.log(`[AI] Gemini attempt ${attempt + 1} (model: ${model})...`);
-      const res = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-        signal: abortCtrl.signal,
-      });
-      clearTimeout(timeout);
-
-      if (res.status === 429) {
-        console.warn(`[AI] Gemini 429 rate limited (attempt ${attempt + 1})`);
-        if (attempt === 0) {
-          // Wait 2s then retry once
-          await new Promise((r) => setTimeout(r, 2000));
-          continue;
-        }
-        return null; // Give up after retry
-      }
-
-      if (!res.ok) {
-        const errText = await res.text().catch(() => "unknown");
-        console.error(`[AI] Gemini error ${res.status}: ${errText}`);
-        return null;
-      }
-
-      if (!res.body) return null;
-      console.log("[AI] ✅ Gemini connected, streaming...");
-
-      const reader = res.body.getReader();
-      const decoder = new TextDecoder();
-      const encoder = new TextEncoder();
-      let buffer = "";
-
-      return new ReadableStream({
-        async pull(ctrl) {
-          try {
-            const { done, value } = await reader.read();
-            if (done) {
-              if (buffer.trim()) {
-                const token = extractTokenFromSSE(buffer);
-                if (token) {
-                  ctrl.enqueue(encoder.encode(`data: {"token":"${escapeJsonString(token)}"}\n\n`));
-                }
-              }
-              ctrl.close();
-              activeAiRequests--;
-              return;
-            }
-
-            buffer += decoder.decode(value, { stream: true });
-            const parts = buffer.split("\n\n");
-            buffer = parts.pop() || "";
-
-            for (const part of parts) {
-              const token = extractTokenFromSSE(part);
-              if (token) {
-                ctrl.enqueue(encoder.encode(`data: {"token":"${escapeJsonString(token)}"}\n\n`));
-              }
-            }
-          } catch (err) {
-            console.error("[AI] Gemini stream error:", err);
-            ctrl.close();
-            activeAiRequests--;
-          }
-        },
-        cancel() {
-          reader.cancel();
-          activeAiRequests--;
-        },
-      });
-    } catch (err) {
-      clearTimeout(timeout);
-      console.error(`[AI] Gemini fetch error (attempt ${attempt + 1}):`, err);
-      if (attempt === 0) continue;
-      return null;
-    }
-  }
-  return null;
-}
-
-function extractTokenFromSSE(sseChunk: string): string | null {
-  for (const line of sseChunk.split("\n")) {
-    const trimmed = line.trim();
-    if (trimmed.startsWith("data: ")) {
-      try {
-        const json = JSON.parse(trimmed.slice(6));
-        const text = json?.candidates?.[0]?.content?.parts?.[0]?.text;
-        if (text) return text;
-      } catch {
-        // ignore
-      }
-    }
-  }
-  return null;
-}
-
-// =============================================
-// OLLAMA STREAMING (fallback)
+// OLLAMA STREAMING — llama3.2:3b (~2GB RAM)
 // =============================================
 async function streamFromOllama(
   messages: { role: string; content: string }[]
 ): Promise<ReadableStream<Uint8Array> | null> {
-  // Support both env var names
   const ollamaUrl = process.env.OLLAMA_URL || process.env.OLLAMA_BASE_URL || "http://localhost:11434";
+  // Dùng llama3.2:3b (~2GB) — nhẹ, phù hợp VPS 8GB RAM không GPU
   const model = process.env.OLLAMA_MODEL || "llama3.2:3b";
   console.log(`[AI] Trying Ollama (model: ${model}, url: ${ollamaUrl})...`);
 
   const abortCtrl = new AbortController();
-  // CPU inference needs more time (30s)
-  const timeout = setTimeout(() => abortCtrl.abort(), 30000);
+  // Timeout 25s cho CPU inference (llama3.2:3b nhanh hơn llama3:8b)
+  const timeout = setTimeout(() => abortCtrl.abort(), 25000);
 
   try {
     const res = await fetch(`${ollamaUrl}/api/chat`, {
@@ -457,7 +320,7 @@ async function streamFromOllama(
                 ctrl.enqueue(encoder.encode(`data: {"token":"${escapeJsonString(token)}"}\n\n`));
               }
             } catch {
-              // ignore
+              // ignore malformed JSON
             }
           }
         } catch (err) {
@@ -479,7 +342,7 @@ async function streamFromOllama(
 }
 
 // =============================================
-// MAIN STREAMING (Gemini → Ollama)
+// MAIN AI FUNCTION (Ollama only)
 // =============================================
 async function streamFromAI(
   message: string,
@@ -497,26 +360,19 @@ async function streamFromAI(
   try {
     console.log(`[AI] Processing: "${message.slice(0, 50)}..."`);
 
-    // 1) Gemini
-    const geminiStream = await streamFromGemini(message, systemPrompt, history);
-    if (geminiStream) {
-      console.log("[AI] ✅ Using GEMINI");
-      return geminiStream;
-    }
-
-    // 2) Ollama
     const ollamaMessages = [
       { role: "system", content: systemPrompt },
       ...history.slice(-4),
       { role: "user", content: message },
     ];
+
     const ollamaStream = await streamFromOllama(ollamaMessages);
     if (ollamaStream) {
-      console.log("[AI] ✅ Using OLLAMA");
+      console.log("[AI] ✅ Using OLLAMA llama3.2:3b");
       return ollamaStream;
     }
 
-    console.log("[AI] ❌ Both AI providers failed");
+    console.log("[AI] ❌ Ollama unavailable");
     activeAiRequests--;
     return null;
   } catch (err) {
@@ -567,21 +423,18 @@ export async function POST(request: Request) {
       });
     }
 
-    // ── 2. AI Streaming (DISABLED — Gemini cần prepay, Ollama không chạy)
-    // Bỏ comment đoạn dưới khi muốn bật lại AI:
-    // - Gemini: nạp credit tại https://aistudio.google.com/billing
-    // - Ollama: chạy `ollama serve` + `ollama pull llama3.2:3b` trên VPS
-    //
-    // const stream = await streamFromAI(trimmedMessage, history, pageContext);
-    // if (stream) {
-    //   return new Response(stream, {
-    //     headers: {
-    //       "Content-Type": "text/event-stream",
-    //       "Cache-Control": "no-cache",
-    //       Connection: "keep-alive",
-    //     },
-    //   });
-    // }
+    // ── 2. Ollama AI Streaming (llama3.2:3b ~2GB) ────────
+    // Bật khi Ollama chạy trên VPS: ollama pull llama3.2:3b
+    const stream = await streamFromAI(trimmedMessage, history, pageContext);
+    if (stream) {
+      return new Response(stream, {
+        headers: {
+          "Content-Type": "text/event-stream",
+          "Cache-Control": "no-cache",
+          Connection: "keep-alive",
+        },
+      });
+    }
 
     // ── 3. DB Product Query ──────────────────────────────
     if (/sản phẩm|mua|giá|bao nhiêu|gợi ý|tìm|đặt hàng|còn hàng|hết hàng|combo|quà|phụ kiện|rẻ|tiết kiệm|đắt|cao cấp/i.test(trimmedMessage)) {
