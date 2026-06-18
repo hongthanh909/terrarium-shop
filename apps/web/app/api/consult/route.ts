@@ -23,9 +23,9 @@ const rateLimitMap = new Map<string, { count: number; windowStart: number }>();
 
 setInterval(() => {
   const now = Date.now();
-  for (const [key, val] of rateLimitMap.entries()) {
+  Array.from(rateLimitMap.entries()).forEach(([key, val]) => {
     if (now - val.windowStart > RATE_LIMIT_WINDOW_MS * 2) rateLimitMap.delete(key);
-  }
+  });
 }, 120_000);
 
 function checkRateLimit(ip: string): boolean {
