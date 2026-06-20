@@ -103,11 +103,11 @@ export default async function BlogPostPage({ params }: Props) {
                 {post.images && post.images.length > 0 && (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 my-8">
                     {post.images.map((img: string, idx: number) => (
-                      <div key={idx} className="relative aspect-video rounded-xl overflow-hidden shadow-sm border border-gray-100 bg-gray-50">
+                      <div key={idx} className="relative rounded-xl overflow-hidden shadow-sm border border-gray-100 bg-gray-50 flex items-center justify-center p-2 min-h-[220px]">
                         <img
                           src={img}
                           alt={`${post.title} gallery ${idx + 1}`}
-                          className="w-full h-full object-cover hover:scale-102 transition-transform duration-300 cursor-pointer"
+                          className="max-w-full max-h-[400px] w-auto h-auto object-contain hover:scale-[1.02] transition-transform duration-300 cursor-pointer"
                         />
                       </div>
                     ))}

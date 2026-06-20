@@ -267,7 +267,7 @@ export function ExploreClient({ featured, pinned, topVoted, newArrivals, weeklyF
                   >
                     <div className="relative aspect-square rounded-2xl overflow-hidden bg-gray-100 mb-3">
                        {item.product.images[0] ? (
-                         <ImageWrapper src={item.product.images[0]} alt={item.product.name} />
+                         <ImageWrapper src={item.product.images[0]} alt={item.product.name} fill className="object-contain bg-[#f8faf6] p-2" />
                        ) : (
                         <div className="w-full h-full flex items-center justify-center">
                           <Package className="w-8 h-8 text-gray-300" />
@@ -481,7 +481,7 @@ function BentoCard({
     >
       {/* Image */}
       {product.images[0] ? (
-        <ImageWrapper src={product.images[0]} alt={product.name} />
+        <ImageWrapper src={product.images[0]} alt={product.name} fill className="object-cover" />
       ) : (
         <div className="absolute inset-0 flex items-center justify-center">
           <Package className="w-12 h-12 text-gray-300" />
