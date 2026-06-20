@@ -1,87 +1,59 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import {
   Star, ThumbsUp, Check, Search, ArrowLeft, MoreHorizontal,
-  Mail, Clock, Leaf, Heart, Sparkles, MessageCircle, ChevronLeft, ChevronRight
+  Mail, Clock, Leaf, Heart, Sparkles, MessageCircle
 } from "lucide-react";
 
 export function ReviewMarquee({ className }: { className?: string }) {
-  // Positive customer reviews array (Image 1 reviews + ratings)
+  // 4 primary positive reviews matching the requested Vietnamese contents
   const reviews = [
-    {
-      name: "Trần Minh Khoa",
-      product: "Terrarium Cactus",
-      rating: 5,
-      location: "Hồ Chí Minh",
-      stats: "1 đánh giá · 12 thích",
-      text: "Shop tư vấn rất nhiệt tình, giao hàng nhanh. Terrarium đặt bàn làm việc trông sang lắm.",
-      avatarBg: "from-[#a8c098] to-[#8fa87f]"
-    },
     {
       name: "Phạm Thu Hà",
       product: "Bộ Quà Tặng Terrarium",
       rating: 5,
       location: "Hà Nội",
-      stats: "2 đánh giá · 30 thích",
       text: "Mua làm quà tặng sinh nhật bạn, được khen không ngớt. Thiết kế tinh tế, rất đáng tiền.",
-      avatarBg: "from-[#daebd0] to-[#a8c098]"
+      avatarBg: "from-[#daebd0] to-[#a8c098]",
+      initials: "TH",
+      isGreenBg: true,
+      tiltClass: "md:-translate-x-4 rotate-1.5 hover:rotate-0 hover:-translate-y-1 hover:shadow-lg"
+    },
+    {
+      name: "Trần Minh Khoa",
+      product: "Terrarium Cactus",
+      rating: 5,
+      location: "Hồ Chí Minh",
+      text: "Shop tư vấn rất nhiệt tình, giao hàng nhanh. Terrarium đặt bàn làm việc trông sang lắm.",
+      avatarBg: "from-[#a8c098] to-[#8fa87f]",
+      initials: "MK",
+      isGreenBg: false,
+      tiltClass: "md:translate-x-4 -rotate-1 hover:rotate-0 hover:-translate-y-1 hover:shadow-lg"
     },
     {
       name: "Lê Văn Hùng",
       product: "Terrarium Rêu Biển",
       rating: 5,
       location: "Đà Nẵng",
-      stats: "3 đánh giá · 15 thích",
       text: "Chất lượng tuyệt vời, nhân viên support nhiệt tình. Terrarium vẫn xanh tốt sau 3 tháng!",
-      avatarBg: "from-[#8fa87f] to-[#6d8c5a]"
-    },
-    {
-      name: "Võ Thị Mai",
-      product: "Terrarium Tre Trúc",
-      rating: 5,
-      location: "Hải Phòng",
-      stats: "1 đánh giá · 8 thích",
-      text: "Sản phẩm handmade thực sự, mỗi cái đều unique. Mình mua 3 cái rồi vẫn muốn mua thêm.",
-      avatarBg: "from-[#c8d5be] to-[#a8c098]"
-    },
-    {
-      name: "Đặng Quốc Bảo",
-      product: "Terrarium Cẩm Thạch",
-      rating: 5,
-      location: "Cần Thơ",
-      stats: "4 đánh giá · 22 thích",
-      text: "Hướng dẫn chăm sóc kèm theo rất chi tiết. Người không có kinh nghiệm như mình cũng nuôi được.",
-      avatarBg: "from-[#a8c098] to-[#6d8c5a]"
+      avatarBg: "from-[#8fa87f] to-[#6d8c5a]",
+      initials: "VH",
+      isGreenBg: true,
+      tiltClass: "md:-translate-x-3 rotate-1 hover:rotate-0 hover:-translate-y-1 hover:shadow-lg"
     },
     {
       name: "Nguyễn Thị Lan",
       product: "Terrarium Rêu Suối",
       rating: 5,
       location: "Nha Trang",
-      stats: "1 đánh giá · 18 thích",
       text: "Terrarium đẹp hơn hình rất nhiều! Cây rất khỏe, đóng gói cẩn thận. Sẽ mua lại!",
-      avatarBg: "from-[#e3ebdd] to-[#a8c098]"
+      avatarBg: "from-[#e3ebdd] to-[#a8c098]",
+      initials: "TL",
+      isGreenBg: false,
+      tiltClass: "md:translate-x-3 -rotate-1.5 hover:rotate-0 hover:-translate-y-1 hover:shadow-lg"
     }
   ];
-
-  const [currentIndex, setCurrentIndex] = useState(0);
-
-  const handlePrev = () => {
-    setCurrentIndex((prev) => (prev - 1 + reviews.length) % reviews.length);
-  };
-
-  const handleNext = () => {
-    setCurrentIndex((prev) => (prev + 1) % reviews.length);
-  };
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      handleNext();
-    }, 6500);
-    return () => clearInterval(timer);
-  }, []);
 
   const floatAnimation = (yOffset: number, duration: number) => ({
     animate: {
@@ -95,18 +67,19 @@ export function ReviewMarquee({ className }: { className?: string }) {
     }
   });
 
-  const activeReview = reviews[currentIndex];
-  const initials = activeReview.name.split(" ").map(n => n[0]).join("").slice(-2).toUpperCase();
-
   return (
-    <section className={`py-20 px-6 bg-gradient-to-br from-[#fafbf8] to-[#edf3ea] overflow-hidden relative ${className || ""}`}>
-      {/* Decorative background elements */}
+    <section className={`py-24 px-6 bg-gradient-to-br from-[#fafbf8] to-[#edf3ea] overflow-hidden relative ${className || ""}`}>
+      {/* Decorative leaf shapes in background */}
       <div className="absolute top-10 left-10 text-[#425733]/5 pointer-events-none select-none">
         <Leaf size={140} className="rotate-45" />
       </div>
       <div className="absolute bottom-10 right-10 text-[#425733]/5 pointer-events-none select-none">
         <Leaf size={140} className="-rotate-12" />
       </div>
+
+      {/* Decorative Dot Patterns from Image 1 */}
+      <div className="absolute top-12 right-12 w-16 h-16 opacity-20 hidden lg:block" style={{ backgroundImage: "radial-gradient(#425733 2px, transparent 0)", backgroundSize: "8px 8px" }} />
+      <div className="absolute bottom-12 left-12 w-16 h-16 opacity-20 hidden lg:block" style={{ backgroundImage: "radial-gradient(#425733 2px, transparent 0)", backgroundSize: "8px 8px" }} />
 
       <div className="max-w-6xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
@@ -292,114 +265,67 @@ export function ReviewMarquee({ className }: { className?: string }) {
             </div>
           </div>
 
-          {/* ─── RIGHT COLUMN: Feedback Card & Quote (Col-span 7) ─────────────────────────── */}
+          {/* ─── RIGHT COLUMN: Stacked Review Cards (Col-span 7) ─────────────────────────── */}
           <div className="lg:col-span-7 flex flex-col justify-center">
             
-            {/* Tagline Badge */}
-            <div className="mb-6">
-              <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-[#daebd0] text-[#425733] text-xs font-bold uppercase tracking-wider mb-2 shadow-sm">
-                <Sparkles className="w-3.5 h-3.5" /> Góc Feedback
+            {/* Header style from Image 1 */}
+            <div className="mb-8 text-center lg:text-left">
+              <span className="block font-serif italic text-[#6d8c5a] text-lg md:text-xl font-bold mb-1.5">
+                Guest Testimonial
               </span>
+              <h2 className="text-3xl md:text-5xl font-extrabold text-[#1a2e12] leading-tight tracking-tight">
+                What They Say?
+              </h2>
             </div>
 
-            {/* Interactive Carousel Card */}
-            <div className="relative min-h-[280px]">
-              <AnimatePresence mode="wait">
-                <motion.div 
-                  key={currentIndex}
-                  initial={{ opacity: 0, x: 25 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -25 }}
-                  transition={{ duration: 0.4, ease: "easeInOut" }}
-                  className="bg-white rounded-3xl p-6 md:p-8 shadow-[0_12px_40px_rgba(41,58,32,0.06)] border border-[#daebd0] relative z-10"
+            {/* Stacked Cards Container */}
+            <div className="space-y-4 md:space-y-5 relative z-10 max-w-xl mx-auto lg:mx-0">
+              {reviews.map((rev, index) => (
+                <div
+                  key={index}
+                  className={`rounded-2xl p-4 md:p-5 shadow-[0_8px_30px_rgba(41,58,32,0.04)] border border-[#daebd0] transition-all duration-300 flex items-start gap-4 cursor-default ${
+                    rev.isGreenBg ? "bg-[#e8efe2]" : "bg-white"
+                  } ${rev.tiltClass}`}
                 >
-                  {/* Card Header */}
-                  <div className="flex items-center gap-4 mb-4">
-                    {/* User avatar gradient */}
-                    <div className={`w-12 h-12 rounded-full overflow-hidden bg-gradient-to-tr ${activeReview.avatarBg} flex items-center justify-center text-white text-base font-extrabold shadow-inner flex-shrink-0`}>
-                      {initials}
-                    </div>
-                    {/* User metadata */}
-                    <div>
-                      <h4 className="font-bold text-gray-800 text-sm md:text-base leading-tight">
-                        {activeReview.name}
-                      </h4>
-                      <p className="text-xs text-gray-400 mt-0.5">
-                        {activeReview.location} · {activeReview.stats}
-                      </p>
-                    </div>
-                    {/* Verified purchase tag */}
-                    <span className="ml-auto text-[10px] bg-[#f0f7ec] text-[#425733] border border-[#daebd0] rounded-full px-3 py-0.5 font-bold flex items-center gap-1 flex-shrink-0">
-                      <Check className="w-2.5 h-2.5" /> Đã mua
-                    </span>
+                  {/* Left Column: Avatar */}
+                  <div className={`w-11 h-11 rounded-full overflow-hidden bg-gradient-to-tr ${rev.avatarBg} flex items-center justify-center text-white text-sm font-extrabold shadow-inner flex-shrink-0`}>
+                    {rev.initials}
                   </div>
 
-                  {/* Rating stars & Purchased Product info */}
-                  <div className="flex flex-wrap items-center gap-3 mb-3.5">
-                    <div className="flex gap-0.5">
-                      {Array.from({ length: activeReview.rating }).map((_, s) => (
-                        <Star key={s} className="w-4 h-4 text-yellow-400 fill-yellow-400" />
-                      ))}
+                  {/* Right Column: Content */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between gap-2 mb-1.5">
+                      <div>
+                        <h4 className="font-bold text-gray-800 text-xs md:text-sm truncate">
+                          {rev.name}
+                        </h4>
+                        <span className="text-[10px] text-gray-400 font-semibold block mt-0.5">
+                          {rev.location} · Đã mua
+                        </span>
+                      </div>
+                      
+                      {/* Star Rating on the Right */}
+                      <div className="flex gap-0.5 flex-shrink-0">
+                        {Array.from({ length: rev.rating }).map((_, s) => (
+                          <Star key={s} className="w-3.5 h-3.5 text-yellow-400 fill-yellow-400" />
+                        ))}
+                      </div>
                     </div>
-                    <span className="text-[11px] bg-gray-100 text-gray-600 font-semibold px-2 py-0.5 rounded">
-                      Sản phẩm: {activeReview.product}
-                    </span>
+                    <p className="text-xs md:text-sm text-gray-600 leading-relaxed font-medium">
+                      "{rev.text}"
+                    </p>
                   </div>
-
-                  {/* Review Text */}
-                  <p className="text-sm md:text-base text-gray-600 leading-relaxed font-medium min-h-[75px]">
-                    "{activeReview.text}"
-                  </p>
-
-                  {/* Card Footer Actions */}
-                  <div className="mt-5 pt-4 border-t border-gray-100 flex items-center justify-between">
-                    <button className="flex items-center gap-1.5 text-xs font-bold text-gray-400 hover:text-[#425733] transition-colors bg-gray-50 hover:bg-[#f0f7ec] border border-gray-200 hover:border-[#daebd0] rounded-lg px-3.5 py-1.5">
-                      <ThumbsUp className="w-3.5 h-3.5" /> Hữu ích
-                    </button>
-
-                    {/* Navigation Controls */}
-                    <div className="flex items-center gap-2">
-                      <button 
-                        onClick={handlePrev}
-                        className="w-8 h-8 rounded-full border border-gray-200 hover:border-[#daebd0] hover:bg-[#f0f7ec] flex items-center justify-center text-gray-400 hover:text-[#425733] transition-colors"
-                        aria-label="Đánh giá trước"
-                      >
-                        <ChevronLeft className="w-4 h-4" />
-                      </button>
-                      <button 
-                        onClick={handleNext}
-                        className="w-8 h-8 rounded-full border border-gray-200 hover:border-[#daebd0] hover:bg-[#f0f7ec] flex items-center justify-center text-gray-400 hover:text-[#425733] transition-colors"
-                        aria-label="Đánh giá tiếp theo"
-                      >
-                        <ChevronRight className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </div>
-                </motion.div>
-              </AnimatePresence>
-
-              {/* Progress Dots below Card */}
-              <div className="flex justify-center md:justify-start gap-1.5 mt-4 px-2">
-                {reviews.map((_, index) => (
-                  <button
-                    key={index}
-                    onClick={() => setCurrentIndex(index)}
-                    className={`h-1.5 rounded-full transition-all duration-300 ${
-                      index === currentIndex ? "w-6 bg-[#425733]" : "w-1.5 bg-gray-300"
-                    }`}
-                    aria-label={`Go to slide ${index + 1}`}
-                  />
-                ))}
-              </div>
+                </div>
+              ))}
             </div>
 
-            {/* Giant quote block quote below (Ảnh 2 style) */}
+            {/* Giant quote block quote below (Gộp nội dung ảnh 2) */}
             <motion.div
               initial={{ opacity: 0, y: 15 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.2 }}
-              className="mt-8 border-l-4 border-[#425733] pl-6 md:pl-8 text-left"
+              className="mt-10 border-l-4 border-[#425733] pl-6 md:pl-8 text-left max-w-xl"
             >
               <p className="text-lg md:text-2xl font-bold italic text-[#293a20] leading-relaxed font-serif">
                 “ Sự hài lòng, yêu mến và tin tưởng của quý khách hàng là động lực chăm sóc mảng xanh mỗi ngày của Tiệm Rêu Décor ”
@@ -413,5 +339,6 @@ export function ReviewMarquee({ className }: { className?: string }) {
     </section>
   );
 }
+
 
 
