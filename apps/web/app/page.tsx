@@ -931,9 +931,9 @@ export default async function Home() {
       {/* About Overlapping Cards Section */}
       <section className="relative z-20 max-w-6xl mx-auto px-6 -mt-24 pb-20">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <ScrollReveal direction="up" delay={0.1}>
-            <div className="bg-white rounded-2xl p-6 md:p-8 shadow-[0_10px_30px_rgba(66,87,51,0.06)] border border-[#e3ebdd] flex items-start gap-4 hover:shadow-[0_15px_40px_rgba(66,87,51,0.12)] hover:-translate-y-1 transition-all duration-300 h-full">
-              <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-[#f4f7f2] border border-[#e3ebdd] flex items-center justify-center text-[#425733]">
+          <ScrollReveal direction="up" delay={0.1} className="h-full">
+            <div className="bg-white rounded-2xl p-6 md:p-8 shadow-[0_8px_30px_rgba(41,58,32,0.08)] border border-[#daebd0] flex items-start gap-4 hover:shadow-[0_15px_40px_rgba(41,58,32,0.15)] hover:-translate-y-1 transition-all duration-300 h-full">
+              <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-[#f4f7f2] border border-[#daebd0] flex items-center justify-center text-[#425733]">
                 <Sprout className="w-6 h-6 stroke-[1.5]" />
               </div>
               <div>
@@ -945,9 +945,9 @@ export default async function Home() {
             </div>
           </ScrollReveal>
 
-          <ScrollReveal direction="up" delay={0.2}>
-            <div className="bg-white rounded-2xl p-6 md:p-8 shadow-[0_10px_30px_rgba(66,87,51,0.06)] border border-[#e3ebdd] flex items-start gap-4 hover:shadow-[0_15px_40px_rgba(66,87,51,0.12)] hover:-translate-y-1 transition-all duration-300 h-full">
-              <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-[#f4f7f2] border border-[#e3ebdd] flex items-center justify-center text-[#425733]">
+          <ScrollReveal direction="up" delay={0.2} className="h-full">
+            <div className="bg-white rounded-2xl p-6 md:p-8 shadow-[0_8px_30px_rgba(41,58,32,0.08)] border border-[#daebd0] flex items-start gap-4 hover:shadow-[0_15px_40px_rgba(41,58,32,0.15)] hover:-translate-y-1 transition-all duration-300 h-full">
+              <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-[#f4f7f2] border border-[#daebd0] flex items-center justify-center text-[#425733]">
                 <Leaf className="w-6 h-6 stroke-[1.5]" />
               </div>
               <div>
@@ -959,9 +959,9 @@ export default async function Home() {
             </div>
           </ScrollReveal>
 
-          <ScrollReveal direction="up" delay={0.3}>
-            <div className="bg-white rounded-2xl p-6 md:p-8 shadow-[0_10px_30px_rgba(66,87,51,0.06)] border border-[#e3ebdd] flex items-start gap-4 hover:shadow-[0_15px_40px_rgba(66,87,51,0.12)] hover:-translate-y-1 transition-all duration-300 h-full">
-              <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-[#f4f7f2] border border-[#e3ebdd] flex items-center justify-center text-[#425733]">
+          <ScrollReveal direction="up" delay={0.3} className="h-full">
+            <div className="bg-white rounded-2xl p-6 md:p-8 shadow-[0_8px_30px_rgba(41,58,32,0.08)] border border-[#daebd0] flex items-start gap-4 hover:shadow-[0_15px_40px_rgba(41,58,32,0.15)] hover:-translate-y-1 transition-all duration-300 h-full">
+              <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-[#f4f7f2] border border-[#daebd0] flex items-center justify-center text-[#425733]">
                 <Gift className="w-6 h-6 stroke-[1.5]" />
               </div>
               <div>
