@@ -2,7 +2,7 @@ import { Metadata } from "next";
 import Link from "next/link";
 import { ImageWrapper } from "@/components/ui/ImageWrapper";
 import { Suspense } from "react";
-import { Sprout, Truck, ArrowRight, Shield, FileText, Calendar, Gift, Sparkles, Bot, Gauge } from "lucide-react";
+import { Sprout, Truck, ArrowRight, Shield, FileText, Calendar, Gift, Sparkles, Bot, Gauge, Leaf } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -897,29 +897,80 @@ export default async function Home() {
       <StatsSection />
 
       {/* About Section (static) */}
-      <section id="about" className="py-24 px-6 bg-gradient-to-br from-[#f0f4ec] to-[#e3ebdd]">
-        <div className="max-w-4xl mx-auto text-center">
+      <section
+        id="about"
+        className="relative pt-32 pb-44 px-6 overflow-hidden bg-cover bg-center"
+        style={{
+          backgroundImage: "url('/about_us_bg.png')",
+        }}
+      >
+        <div className="absolute inset-0 bg-[#1c2c16]/75 z-0 pointer-events-none" />
+        <div className="relative z-10 max-w-3xl mx-auto text-center text-white">
           <ScrollReveal direction="up">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-[#a8c098] mb-6 shadow-lg ring-4 ring-[#e3ebdd]">
-              <Sprout className="w-8 h-8 text-[#425733]" />
-            </div>
-            <h2 className="text-3xl md:text-4xl font-bold mb-6" style={{ background: 'linear-gradient(135deg, #1a2e12, #425733)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Về Sản Phẩm Của Chúng Tôi</h2>
-            <p className="text-lg text-[hsl(220,14%,45%)] mb-6 leading-relaxed">
-              Mỗi terrarium được tạo hình tỉ mỉ, kết hợp thiết kế thủy tinh đẹp mắt
-              với hệ thực vật được chọn lọc để tạo nên một hệ sinh thái tự duy trì.
-              Hoàn hảo cho mọi không gian, mang lại sự hiện diện thanh tao của thiên nhiên
-              ngay tại bàn làm việc hoặc phòng khách của bạn.
+            <p className="text-[11px] font-extrabold tracking-[0.2em] text-[#c3d3ba] uppercase mb-4">VỀ CHÚNG TÔI</p>
+            <h2 className="text-3xl md:text-5xl font-extrabold mb-6 leading-tight tracking-tight">
+              Tạo nên những thiết kế terrarium mang dấu ấn riêng
+            </h2>
+            <p className="text-base md:text-lg text-white/85 max-w-2xl mx-auto mb-10 leading-relaxed font-medium">
+              Mỗi terrarium được tạo hình tỉ mỉ, kết hợp thiết kế thủy tinh đẹp mắt với hệ thực vật được chọn lọc để mang thiên nhiên thanh tao vào không gian sống của bạn.
             </p>
-            <p className="text-lg text-[hsl(220,14%,45%)] leading-relaxed">
-              Dù bạn là người yêu thích sự tĩnh lặng hay đang tìm kiếm một món quà độc đáo,
-              sản phẩm của chúng tôi luôn là lựa chọn hoàn hảo.
-            </p>
-            <Button size="lg" className="mt-10 bg-[#425733] text-white hover:bg-[#364a29] px-8 font-semibold shadow-soft-lg rounded-full" asChild>
+            <Button
+              size="lg"
+              className="bg-[#5f7454] text-white hover:bg-[#4d6043] px-8 font-semibold rounded-full hover:-translate-y-0.5 transition-all shadow-lg"
+              asChild
+            >
               <Link href="/products">
                 Khám Phá Cửa Hàng
                 <ArrowRight className="ml-2 w-4 h-4" />
               </Link>
             </Button>
+          </ScrollReveal>
+        </div>
+      </section>
+
+      {/* About Overlapping Cards Section */}
+      <section className="relative z-20 max-w-6xl mx-auto px-6 -mt-24 pb-20">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <ScrollReveal direction="up" delay={0.1}>
+            <div className="bg-white rounded-2xl p-6 md:p-8 shadow-[0_10px_30px_rgba(66,87,51,0.06)] border border-[#e3ebdd] flex items-start gap-4 hover:shadow-[0_15px_40px_rgba(66,87,51,0.12)] hover:-translate-y-1 transition-all duration-300 h-full">
+              <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-[#f4f7f2] border border-[#e3ebdd] flex items-center justify-center text-[#425733]">
+                <Sprout className="w-6 h-6 stroke-[1.5]" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-[#293a20] mb-2">Thiết kế theo cá nhân</h3>
+                <p className="text-sm text-gray-500 leading-relaxed font-medium">
+                  Terrarium được tạo riêng theo phong cách và nhu cầu của bạn.
+                </p>
+              </div>
+            </div>
+          </ScrollReveal>
+
+          <ScrollReveal direction="up" delay={0.2}>
+            <div className="bg-white rounded-2xl p-6 md:p-8 shadow-[0_10px_30px_rgba(66,87,51,0.06)] border border-[#e3ebdd] flex items-start gap-4 hover:shadow-[0_15px_40px_rgba(66,87,51,0.12)] hover:-translate-y-1 transition-all duration-300 h-full">
+              <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-[#f4f7f2] border border-[#e3ebdd] flex items-center justify-center text-[#425733]">
+                <Leaf className="w-6 h-6 stroke-[1.5]" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-[#293a20] mb-2">Thủ công tỉ mỉ</h3>
+                <p className="text-sm text-gray-500 leading-relaxed font-medium">
+                  Mỗi sản phẩm handmade được chăm chút trong từng chi tiết.
+                </p>
+              </div>
+            </div>
+          </ScrollReveal>
+
+          <ScrollReveal direction="up" delay={0.3}>
+            <div className="bg-white rounded-2xl p-6 md:p-8 shadow-[0_10px_30px_rgba(66,87,51,0.06)] border border-[#e3ebdd] flex items-start gap-4 hover:shadow-[0_15px_40px_rgba(66,87,51,0.12)] hover:-translate-y-1 transition-all duration-300 h-full">
+              <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-[#f4f7f2] border border-[#e3ebdd] flex items-center justify-center text-[#425733]">
+                <Gift className="w-6 h-6 stroke-[1.5]" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-[#293a20] mb-2">Quà tặng & trang trí</h3>
+                <p className="text-sm text-gray-500 leading-relaxed font-medium">
+                  Phù hợp cho bàn làm việc, phòng khách hoặc những món quà tinh tế.
+                </p>
+              </div>
+            </div>
           </ScrollReveal>
         </div>
       </section>
