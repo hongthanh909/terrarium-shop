@@ -8,7 +8,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ScrollReveal } from "@/components/ui/scroll-reveal";
 import { ReviewMarquee } from "@/components/ui/review-marquee";
-import { StatsSection } from "@/components/ui/number-ticker";
 import { prisma } from "@/lib/prisma";
 import { FeaturedProductCard } from "@/components/ui/featured-product-card";
 import { HeroCarousel } from "@/components/ui/hero-carousel";
@@ -893,8 +892,7 @@ export default async function Home() {
       {/* Testimonial / Social Proof — Marquee (static, no DB) */}
       <ReviewMarquee />
 
-      {/* Stats Section (static) */}
-      <StatsSection />
+
 
       {/* About Section (static) */}
       <section
