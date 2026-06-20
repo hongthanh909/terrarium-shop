@@ -5,7 +5,7 @@ import { ImageWrapper } from "@/components/ui/ImageWrapper";
 import {
   ShoppingBasket, User, X, Minus, Plus, ShoppingBag,
   LogOut, Package, LayoutDashboard, Heart, Lock,
-  Menu, ChevronDown,
+  Menu, ChevronDown, Phone, MapPin, Sprout, Truck, ShieldCheck,
 } from "lucide-react";
 import { useCartStore, CartItem } from "@/lib/store/cartStore";
 import { useState, useEffect, useCallback } from "react";
@@ -318,15 +318,30 @@ export default function Header() {
                 className="flex items-center gap-8 text-[11px] text-[#425733]/85 whitespace-nowrap px-8 font-medium"
                 style={{ fontFamily: "inherit" }}
               >
-                <span>📞 Liên hệ: <strong className="text-[#1a2e12] font-semibold">0706 668 296</strong></span>
+                <span className="inline-flex items-center gap-1.5">
+                  <Phone className="w-3.5 h-3.5 text-[#425733]/80" />
+                  <span>Liên hệ: <strong className="text-[#1a2e12] font-semibold">0706 668 296</strong></span>
+                </span>
                 <span className="text-[#425733]/25">|</span>
-                <span>📍 32/16 Tam Đa, TP. Hồ Chí Minh</span>
+                <span className="inline-flex items-center gap-1.5">
+                  <MapPin className="w-3.5 h-3.5 text-[#425733]/80" />
+                  <span>32/16 Tam Đa, TP. Hồ Chí Minh</span>
+                </span>
                 <span className="text-[#425733]/25">|</span>
-                <span>🌿 Thiết kế Terrarium theo yêu cầu</span>
+                <span className="inline-flex items-center gap-1.5">
+                  <Sprout className="w-3.5 h-3.5 text-[#425733]/80" />
+                  <span>Thiết kế Terrarium theo yêu cầu</span>
+                </span>
                 <span className="text-[#425733]/25">|</span>
-                <span>🚚 Giao hàng toàn quốc</span>
+                <span className="inline-flex items-center gap-1.5">
+                  <Truck className="w-3.5 h-3.5 text-[#425733]/80" />
+                  <span>Giao hàng toàn quốc</span>
+                </span>
                 <span className="text-[#425733]/25">|</span>
-                <span>💚 Bảo hành thực vật miễn phí</span>
+                <span className="inline-flex items-center gap-1.5">
+                  <ShieldCheck className="w-3.5 h-3.5 text-[#425733]/80" />
+                  <span>Bảo hành thực vật miễn phí</span>
+                </span>
               </span>
             ))}
           </div>
