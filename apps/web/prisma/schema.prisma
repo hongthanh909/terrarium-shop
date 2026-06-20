@@ -288,6 +288,7 @@ model Customer {
   phone           String?
   passwordHash    String?
   name            String?
+  image           String?
   role            UserRole           @default(CUSTOMER)
   loyaltyPoints   Int                @default(0)
   loyaltyTier     CustomerLoyaltyTier @default(BRONZE)

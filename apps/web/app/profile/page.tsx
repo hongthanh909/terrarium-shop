@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -25,6 +25,7 @@ interface ProfileData {
   name: string;
   email: string;
   phone?: string | null;
+  image?: string | null;
   role: string;
   loyaltyPoints: number;
   loyaltyTier: string;
@@ -50,11 +51,12 @@ const STATUS_LABELS: Record<string, { label: string; color: string }> = {
 type TabType = "info" | "password" | "orders";
 
 export default function ProfilePage() {
-  const { data: session, status } = useSession();
+  const { data: session, status, update: updateSession } = useSession();
   const router = useRouter();
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState<TabType>("info");
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
 
   // Form states
   const [name, setName] = useState("");
@@ -95,6 +97,7 @@ export default function ProfilePage() {
       });
       if (res.ok) {
         queryClient.invalidateQueries({ queryKey: ["customer-profile"] });
+        await updateSession({ name });
         showToast.success("Cập nhật thông tin thành công!");
       } else {
         const err = await res.json();
@@ -138,6 +141,74 @@ export default function ProfilePage() {
     }
   };
 
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("bucket", "avatars");
+
+      const uploadRes = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!uploadRes.ok) {
+        const err = await uploadRes.json();
+        throw new Error(err.error || "Tải ảnh lên thất bại");
+      }
+
+      const uploadData = await uploadRes.json();
+      const imageUrl = uploadData.url;
+
+      const profileRes = await fetch("/api/profile", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ image: imageUrl }),
+      });
+
+      if (profileRes.ok) {
+        queryClient.invalidateQueries({ queryKey: ["customer-profile"] });
+        await updateSession({ image: imageUrl });
+        showToast.success("Cập nhật ảnh đại diện thành công! 📸");
+      } else {
+        const err = await profileRes.json();
+        showToast.error(err.error || "Lưu ảnh thất bại");
+      }
+    } catch (err: any) {
+      showToast.error(err.message || "Đã xảy ra lỗi");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleDeleteAvatar = async () => {
+    setUploading(true);
+    try {
+      const profileRes = await fetch("/api/profile", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ image: null }),
+      });
+
+      if (profileRes.ok) {
+        queryClient.invalidateQueries({ queryKey: ["customer-profile"] });
+        await updateSession({ image: null });
+        showToast.success("Đã xóa ảnh đại diện");
+      } else {
+        const err = await profileRes.json();
+        showToast.error(err.error || "Không thể xóa ảnh");
+      }
+    } catch {
+      showToast.error("Lỗi kết nối");
+    } finally {
+      setUploading(false);
+    }
+  };
+
   if (status === "loading" || loading) {
     return (
       <main className="min-h-screen flex items-center justify-center">
@@ -169,8 +240,12 @@ export default function ProfilePage() {
         <div className={`relative rounded-2xl overflow-hidden mb-6 bg-gradient-to-r ${tier.color} p-6 text-white shadow-lg`}>
           <div className="flex items-center gap-5">
             {/* Avatar */}
-            <div className="w-20 h-20 rounded-full bg-white/20 backdrop-blur flex items-center justify-center text-3xl font-bold border-2 border-white/40 flex-shrink-0">
-              {profile.name?.charAt(0)?.toUpperCase() || "U"}
+            <div className="w-20 h-20 rounded-full overflow-hidden bg-white/20 backdrop-blur flex items-center justify-center text-3xl font-bold border-2 border-white/40 flex-shrink-0 relative">
+              {profile.image ? (
+                <img src={profile.image} alt={profile.name} className="w-full h-full object-cover" />
+              ) : (
+                profile.name?.charAt(0)?.toUpperCase() || "U"
+              )}
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-1">
@@ -241,6 +316,51 @@ export default function ProfilePage() {
         {activeTab === "info" && (
           <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
             <h2 className="text-lg font-semibold text-gray-800 mb-5">Thông tin cá nhân</h2>
+
+            {/* Avatar Upload */}
+            <div className="flex items-center gap-4 p-4 bg-[#f8faf6] border border-[#e3ebdd] rounded-2xl mb-6">
+              <div className="relative w-16 h-16 rounded-full overflow-hidden border-2 border-[#425733]/20 bg-white flex items-center justify-center flex-shrink-0 shadow-sm">
+                {profile.image ? (
+                  <img src={profile.image} alt="Avatar" className="w-full h-full object-cover" />
+                ) : (
+                  <span className="text-[#425733] text-xl font-bold">{(name || "U").charAt(0).toUpperCase()}</span>
+                )}
+                {uploading && (
+                  <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-10">
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  </div>
+                )}
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Ảnh đại diện</p>
+                <div className="flex gap-2">
+                  <input
+                    type="file"
+                    id="avatar-upload"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleAvatarUpload}
+                    disabled={uploading}
+                  />
+                  <label
+                    htmlFor="avatar-upload"
+                    className="inline-flex items-center justify-center text-xs font-bold px-3 py-1.5 rounded-lg border-2 border-[#c8d5be] text-[#425733] bg-white cursor-pointer hover:bg-[#e3ebdd] hover:border-[#425733]/40 transition-colors disabled:opacity-60"
+                  >
+                    {uploading ? "Đang tải..." : "Chọn ảnh mới"}
+                  </label>
+                  {profile.image && (
+                    <button
+                      type="button"
+                      onClick={handleDeleteAvatar}
+                      className="inline-flex items-center justify-center text-xs font-bold px-3 py-1.5 rounded-lg border-2 border-red-200 text-red-600 bg-white hover:bg-red-50 transition-colors"
+                    >
+                      Xóa ảnh
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+
             <form onSubmit={handleUpdateInfo} className="space-y-4">
               {/* Name */}
               <div>

@@ -496,13 +496,12 @@ export default function ChatWidget() {
               style={{ background: "#ffffff", borderBottom: "1px solid #e3ebdd" }}
             >
               {/* Avatar circle */}
-              <div
-                className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
-                style={{ background: "#2d3d23" }}
-              >
-                <span className="text-white text-[7px] leading-tight text-center select-none font-medium" style={{ letterSpacing: "0.02em" }}>
-                  tiệm<br />Rêu Décor
-                </span>
+              <div className="w-10 h-10 rounded-full overflow-hidden bg-white border border-[#2d3d23]/10 flex-shrink-0">
+                <img
+                  src="/logo.png"
+                  alt="Tiệm Rêu Décor Logo"
+                  className="w-full h-full object-cover select-none pointer-events-none"
+                />
               </div>
 
               {/* Name + status */}
@@ -792,20 +791,23 @@ export default function ChatWidget() {
 
               {/* Bubble */}
               <div
-                className="cw-bubble-idle relative w-14 h-14 rounded-full flex items-center justify-center cursor-pointer"
+                className="cw-bubble-idle relative w-14 h-14 flex items-center justify-center cursor-pointer"
                 style={{
-                  background: "#2d3d23",
                   boxShadow: "0 4px 20px rgba(66,87,51,0.35)",
                   transition: "transform 0.2s ease, box-shadow 0.2s ease",
                 }}
               >
-                <span className="text-white text-[7px] leading-tight text-center select-none pointer-events-none font-medium" style={{ letterSpacing: "0.02em" }}>
-                  tiệm Rêu<br />Décor
-                </span>
+                <div className="w-full h-full rounded-full overflow-hidden bg-white border border-[#2d3d23]/10">
+                  <img
+                    src="/logo.png"
+                    alt="Tiệm Rêu Décor Logo"
+                    className="w-full h-full object-cover select-none pointer-events-none"
+                  />
+                </div>
                 {/* Status dot */}
                 <span
-                  className="absolute -top-0.5 -right-0.5 w-3 h-3 rounded-full"
-                  style={{ background: "#8fba6f", border: "2px solid white" }}
+                  className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 rounded-full"
+                  style={{ background: "#8fba6f", border: "2.5px solid white", zIndex: 10 }}
                 />
               </div>
             </div>

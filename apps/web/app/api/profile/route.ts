@@ -9,6 +9,7 @@ export const dynamic = "force-dynamic";
 const updateProfileSchema = z.object({
   name: z.string().min(2, "Tên phải có ít nhất 2 ký tự").max(100).optional(),
   phone: z.string().regex(/^[0-9+\s-]{9,15}$/, "Số điện thoại không hợp lệ").optional().nullable(),
+  image: z.string().optional().nullable(),
 });
 
 const changePasswordSchema = z.object({
@@ -32,6 +33,7 @@ export async function GET(request: NextRequest) {
         email: true,
         phone: true,
         role: true,
+        image: true,
         loyaltyPoints: true,
         loyaltyTier: true,
         createdAt: true,
@@ -105,8 +107,9 @@ export async function PUT(request: NextRequest) {
       data: {
         ...(validated.name && { name: validated.name }),
         ...(validated.phone !== undefined && { phone: validated.phone }),
+        ...(validated.image !== undefined && { image: validated.image }),
       },
-      select: { id: true, name: true, email: true, phone: true },
+      select: { id: true, name: true, email: true, phone: true, image: true },
     });
 
     return NextResponse.json(updated);

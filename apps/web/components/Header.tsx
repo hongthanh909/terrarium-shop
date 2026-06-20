@@ -5,7 +5,7 @@ import { ImageWrapper } from "@/components/ui/ImageWrapper";
 import {
   ShoppingBasket, User, X, Minus, Plus, ShoppingBag,
   LogOut, Package, LayoutDashboard, Heart, Lock,
-  Menu,
+  Menu, ChevronDown,
 } from "lucide-react";
 import { useCartStore, CartItem } from "@/lib/store/cartStore";
 import { useState, useEffect, useCallback } from "react";
@@ -237,10 +237,20 @@ export default function Header() {
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <button
-                    className="w-9 h-9 rounded-full bg-white/20 text-white border border-white/30 flex items-center justify-center hover:bg-white/30 transition-colors flex-shrink-0"
+                    className="flex items-center gap-1.5 hover:bg-white/10 transition-all focus:outline-none py-1 px-2.5 rounded-full flex-shrink-0 text-white border border-white/20"
                     title={session.user?.name || "Tài khoản"}
                   >
-                    <User className="w-5 h-5" />
+                    <div className="w-6 h-6 rounded-full overflow-hidden bg-white/20 flex items-center justify-center relative flex-shrink-0 text-white font-bold text-xs">
+                      {session.user?.image ? (
+                        <img src={session.user.image} alt={session.user.name || "Avatar"} className="w-full h-full object-cover" />
+                      ) : (
+                        <span>{(session.user?.name || "U").substring(0, 1).toUpperCase()}</span>
+                      )}
+                    </div>
+                    <span className="hidden sm:inline-block text-xs font-semibold max-w-[100px] truncate text-white leading-none">
+                      {session.user?.name}
+                    </span>
+                    <ChevronDown className="w-3.5 h-3.5 text-white/70 flex-shrink-0" />
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="rounded-xl shadow-lg border border-[#e3ebdd] bg-white min-w-[185px]">
