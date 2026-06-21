@@ -205,7 +205,7 @@ export function ReviewMarquee({ className }: { className?: string }) {
                   {/* Phone Content Screen - Using high-resolution static screenshot image */}
                   <div className="flex-1 bg-[#18191a] rounded-[34px] overflow-hidden relative select-none">
                     <img
-                      src="/anhiphone.jpg"
+                      src="/fb.svg"
                       alt="Facebook profile mockup"
                       className="w-full h-full object-cover rounded-[34px]"
                     />
