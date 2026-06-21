@@ -43,17 +43,27 @@ interface ExploreProps {
 /* ── Helper: add to cart ── */
 function useAddToCart() {
   const { addItem } = useCartStore();
-  return (product: Product) => {
+  return (product: Product, selectedPackage = "basic", quantity = 1) => {
     const base = parseFloat(product.basePrice.toString());
     const sale = product.salePrice ? parseFloat(product.salePrice.toString()) : null;
-    const price = sale != null && sale < base ? sale : base;
+    const itemPrice = sale != null && sale < base ? sale : base;
+
+    const pkgPriceAdjustment =
+      selectedPackage === "standard" ? 150000 :
+      selectedPackage === "advanced" ? 180000 : 0;
+
+    const price = itemPrice + pkgPriceAdjustment;
+
+    const pkgLabel = selectedPackage === "standard" ? "Gói tiêu chuẩn" :
+                     selectedPackage === "advanced" ? "Gói nâng cao" : "Gói cơ bản";
+
     addItem({
       productId: product.id,
       productName: product.name,
       productImage: product.images[0] || "",
       price,
-      quantity: 1,
-      variants: {},
+      quantity,
+      variants: { "Phân loại": pkgLabel },
     });
     showToast.success(`Đã thêm "${product.name}" vào giỏ hàng 🛒`);
   };
@@ -330,7 +340,7 @@ export function ExploreClient({ featured, pinned, topVoted, newArrivals, weeklyF
                       saleEndDate={product.saleEndDate ?? null}
                       images={product.images}
                       category={product.category}
-                      onAddToCart={() => addToCart(product)}
+                      onAddToCart={(pkg, qty) => addToCart(product, pkg, qty)}
                       wished={isWished(product.id)}
                       onToggleWishlist={() => toggleWishlist(product.id, product.name)}
                     />
@@ -362,7 +372,7 @@ export function ExploreClient({ featured, pinned, topVoted, newArrivals, weeklyF
                     saleEndDate={product.saleEndDate ?? null}
                     images={product.images}
                     category={product.category}
-                    onAddToCart={() => addToCart(product)}
+                    onAddToCart={(pkg, qty) => addToCart(product, pkg, qty)}
                     wished={isWished(product.id)}
                     onToggleWishlist={() => toggleWishlist(product.id, product.name)}
                   />
@@ -394,7 +404,7 @@ export function ExploreClient({ featured, pinned, topVoted, newArrivals, weeklyF
                     images={product.images}
                     category={product.category}
                     isNew
-                    onAddToCart={() => addToCart(product)}
+                    onAddToCart={(pkg, qty) => addToCart(product, pkg, qty)}
                     wished={isWished(product.id)}
                     onToggleWishlist={() => toggleWishlist(product.id, product.name)}
                   />

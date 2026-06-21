@@ -102,9 +102,7 @@ export function ProductDetailClient({
   const [loading] = useState(false);
   const { isWished, toggleWishlist } = useWishlist();
 
-  const isBểProduct = initialProduct?.category?.name?.toLowerCase().includes("bể") || 
-                       initialProduct?.category?.slug?.toLowerCase().includes("be") ||
-                       initialProduct?.name?.toLowerCase().includes("bể");
+  const isBểProduct = true; // Enabled for all products to show standard package variants
 
   // 3-tier package selection (replaces old 2-button lamp selector)
   const [selectedPackage, setSelectedPackage] = useState<string>("basic");
@@ -390,7 +388,11 @@ export function ProductDetailClient({
     if (!product) return;
     if (!session) { showToast.warning("Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng"); router.push(`/login?callbackUrl=/products/${product.slug}`); return; }
     const { price } = getPriceWithVariants();
-    addItem({ productId: product.id, productName: product.name, productImage: product.images[0] || "", price, quantity, variants: selectedVariants });
+    const pkgLabel = selectedPackage === "standard" ? "Gói tiêu chuẩn" :
+                     selectedPackage === "advanced" ? "Gói nâng cao" : "Gói cơ bản";
+    const cartVariants = { ...selectedVariants, "Phân loại": pkgLabel };
+    delete cartVariants[LAMP_VARIANT_TYPE];
+    addItem({ productId: product.id, productName: product.name, productImage: product.images[0] || "", price, quantity, variants: cartVariants });
     setCartOpen(true);
   };
 
@@ -398,7 +400,11 @@ export function ProductDetailClient({
     if (!product) return;
     if (!session) { showToast.error("Vui lòng đăng nhập để mua hàng"); router.push(`/login?callbackUrl=/products/${product.slug}`); return; }
     const { price } = getPriceWithVariants();
-    addItem({ productId: product.id, productName: product.name, productImage: product.images[0] || "", price, quantity, variants: selectedVariants });
+    const pkgLabel = selectedPackage === "standard" ? "Gói tiêu chuẩn" :
+                     selectedPackage === "advanced" ? "Gói nâng cao" : "Gói cơ bản";
+    const cartVariants = { ...selectedVariants, "Phân loại": pkgLabel };
+    delete cartVariants[LAMP_VARIANT_TYPE];
+    addItem({ productId: product.id, productName: product.name, productImage: product.images[0] || "", price, quantity, variants: cartVariants });
     if (items.length === 0) { router.push("/checkout"); } else { setCartOpen(true); }
   };
 
@@ -1218,6 +1224,25 @@ export function ProductDetailClient({
                   images={rel.images}
                   category={rel.category}
                   reviewCount={rel._count?.reviews ?? 0}
+                  onAddToCart={(pkg, qty) => {
+                    if (!session) {
+                      showToast.warning("Vui lòng đăng nhập để thêm sản phẩm");
+                      router.push(`/login?callbackUrl=/products/${rel.slug}`);
+                      return;
+                    }
+                    const base = rel.salePrice ? parseFloat(rel.salePrice.toString()) : parseFloat(rel.basePrice.toString());
+                    const price = base + (pkg === "standard" ? 150000 : pkg === "advanced" ? 180000 : 0);
+                    const pkgLabel = pkg === "standard" ? "Gói tiêu chuẩn" : pkg === "advanced" ? "Gói nâng cao" : "Gói cơ bản";
+                    addItem({
+                      productId: rel.id,
+                      productName: rel.name,
+                      productImage: rel.images[0] || "",
+                      price,
+                      quantity: qty,
+                      variants: { "Phân loại": pkgLabel },
+                    });
+                    showToast.success(`Đã thêm "${rel.name}" vào giỏ hàng 🛒`);
+                  }}
                   wished={isWished(rel.id)}
                   onToggleWishlist={() => toggleWishlist(rel.id, rel.name)}
                 />

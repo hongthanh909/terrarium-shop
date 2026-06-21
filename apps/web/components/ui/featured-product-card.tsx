@@ -24,16 +24,27 @@ export function FeaturedProductCard(props: FeaturedProductCardProps) {
   const { addItem } = useCartStore();
   const { isWished, toggleWishlist } = useWishlist();
 
-  const handleAddToCart = () => {
-    const price = props.salePrice != null && props.salePrice < props.basePrice
+  const handleAddToCart = (selectedPackage = "basic", quantity = 1) => {
+    const base = props.salePrice != null && props.salePrice < props.basePrice
       ? props.salePrice
       : props.basePrice;
+
+    const pkgPriceAdjustment =
+      selectedPackage === "standard" ? 150000 :
+      selectedPackage === "advanced" ? 180000 : 0;
+
+    const price = base + pkgPriceAdjustment;
+
+    const pkgLabel = selectedPackage === "standard" ? "Gói tiêu chuẩn" :
+                     selectedPackage === "advanced" ? "Gói nâng cao" : "Gói cơ bản";
+
     addItem({
       productId: props.id,
       productName: props.name,
       productImage: props.images[0] || "",
       price,
-      quantity: 1,
+      quantity,
+      variants: { "Phân loại": pkgLabel },
     });
     showToast.success(`Đã thêm "${props.name}" vào giỏ hàng 🛒`);
   };

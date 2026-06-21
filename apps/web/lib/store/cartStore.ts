@@ -14,6 +14,7 @@ export interface CartItem {
     TYPE?: string;
     DECOR?: string;
     ACCESSORY?: string;
+    [key: string]: string | undefined;
   };
   customOptions?: {
     hasLight?: boolean;

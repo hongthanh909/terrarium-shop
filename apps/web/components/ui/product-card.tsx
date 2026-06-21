@@ -1,10 +1,11 @@
 // src: apps/web/components/ui/product-card.tsx
 "use client";
 
+import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { useReducedMotion } from "framer-motion";
 import Link from "next/link";
-import { Heart, Star, Package } from "lucide-react";
+import { Heart, Star, Package, Minus, Plus } from "lucide-react";
 import { SaleCountdown } from "@/components/ui/sale-countdown";
 import { ImageWrapper } from "@/components/ui/ImageWrapper";
 import { GlassCard } from "@/components/ui/glass-card";
@@ -23,7 +24,7 @@ export interface ProductCardProps {
   isNew?: boolean;
   isBestseller?: boolean;
   className?: string;
-  onAddToCart?: () => void;
+  onAddToCart?: (selectedPackage: string, quantity: number) => void;
   onToggleWishlist?: () => void;
   wished?: boolean;
 }
@@ -45,6 +46,9 @@ export function ProductCard({
   onToggleWishlist,
   wished = false,
 }: ProductCardProps) {
+  const [selectedPackage, setSelectedPackage] = useState<"basic" | "standard" | "advanced">("basic");
+  const [quantity, setQuantity] = useState(1);
+
   const isOnSale =
     salePrice != null &&
     salePrice < basePrice &&
@@ -54,7 +58,11 @@ export function ProductCard({
     ? Math.round(((basePrice - salePrice!) / basePrice) * 100)
     : 0;
 
-  const displayPrice = isOnSale ? salePrice! : basePrice;
+  const pkgPriceAdjustment =
+    selectedPackage === "standard" ? 150000 :
+    selectedPackage === "advanced" ? 180000 : 0;
+
+  const displayPrice = (isOnSale ? salePrice! : basePrice) + pkgPriceAdjustment;
 
   const prefersReducedMotion = useReducedMotion();
 
@@ -62,7 +70,7 @@ export function ProductCard({
     <GlassCard
       variant="solid"
       className={cn(
-        "group relative flex flex-col p-4 h-full",
+        "group relative flex flex-col p-4 h-full transition-all duration-300 hover:shadow-lg border border-[#eaefeb]/40",
         className
       )}
     >
@@ -112,54 +120,121 @@ export function ProductCard({
       {/* Info section */}
       <div className="flex flex-col flex-1">
         {/* Category */}
-        <span className="text-gray-400 text-[11px] font-semibold uppercase tracking-wider mb-1 block">
+        <span className="text-gray-400 text-[10px] font-semibold uppercase tracking-wider mb-1 block">
           {category?.name || "SẢN PHẨM"}
         </span>
 
-        {/* Product name */}
-        <Link href={`/products/${slug}`} className="block mb-2">
-          <h3 className="font-bold text-gray-900 line-clamp-2 group-hover:text-[#425733] transition-colors leading-snug text-base">
-            {name}
-          </h3>
-        </Link>
+        {/* Name & Price Row */}
+        <div className="flex justify-between items-start gap-2 mb-1.5">
+          <Link href={`/products/${slug}`} className="flex-1 min-w-0">
+            <h3 className="font-bold text-gray-900 line-clamp-2 group-hover:text-[#425733] transition-colors leading-snug text-[15px] sm:text-base">
+              {name}
+            </h3>
+          </Link>
+          <div className="flex flex-col items-end flex-shrink-0 pl-1">
+            <span className="text-base font-bold text-[#2d3d23]">
+              {displayPrice.toLocaleString("vi-VN")}₫
+            </span>
+            {isOnSale && (
+              <span className="text-xs text-gray-400 line-through">
+                {(basePrice + pkgPriceAdjustment).toLocaleString("vi-VN")}₫
+              </span>
+            )}
+            {isOnSale && saleEndDate && (
+              <SaleCountdown saleEndDate={saleEndDate} className="mt-1" />
+            )}
+          </div>
+        </div>
 
         {/* Rating */}
-        <div className="flex items-center gap-1.5 mb-3">
+        <div className="flex items-center gap-1 mb-2.5">
           {rating > 0 || reviewCount > 0 ? (
             <>
-              <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
-              <span className="text-sm font-medium text-gray-700">
+              <Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
+              <span className="text-xs font-semibold text-gray-700">
                 {rating > 0 ? rating.toFixed(1) : ""}
               </span>
-              <span className="text-xs text-gray-400">({reviewCount})</span>
+              <span className="text-[10px] text-gray-400">({reviewCount})</span>
             </>
           ) : (
-            <span className="text-xs text-gray-400 italic">Chưa có đánh giá</span>
+            <span className="text-[10px] text-gray-400 italic">Chưa có đánh giá</span>
           )}
         </div>
 
-        {/* Price row */}
-        <div className="flex items-center gap-2 mb-4 mt-auto">
-          <span className="text-lg font-bold text-[#2d3d23]">
-            {displayPrice.toLocaleString("vi-VN")}₫
-          </span>
-          {isOnSale && (
-            <span className="text-sm text-gray-400 line-through">
-              {basePrice.toLocaleString("vi-VN")}₫
+        {/* Variant Selector */}
+        <div className="mb-4">
+          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">Chọn phiên bản</p>
+          <div className="grid grid-cols-3 gap-1">
+            {(["basic", "standard", "advanced"] as const).map((key) => {
+              const label = key === "basic" ? "Cơ bản" : key === "standard" ? "Tiêu chuẩn" : "Nâng cao";
+              const isSelected = selectedPackage === key;
+              return (
+                <button
+                  key={key}
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setSelectedPackage(key);
+                  }}
+                  className={cn(
+                    "py-1.5 px-0.5 rounded-lg font-bold text-[10px] transition-all duration-200 border-2 text-center leading-tight",
+                    isSelected
+                      ? "border-[#425733] bg-[#425733] text-white shadow-sm"
+                      : "border-gray-200 bg-white text-gray-600 hover:border-[#425733]/50 hover:bg-[#f8faf6]"
+                  )}
+                >
+                  {label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Quantity & Add to Cart Row */}
+        <div className="flex items-center justify-between gap-2 mt-auto">
+          {/* Quantity Selector */}
+          <div className="flex items-center bg-[#f3f7ef] rounded-lg border border-[#e3ebdd] overflow-hidden p-0.5 flex-shrink-0">
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                setQuantity((q) => Math.max(1, q - 1));
+              }}
+              className="w-7 h-7 flex items-center justify-center text-[#425733] hover:bg-[#d4dec9] rounded transition-colors"
+            >
+              <Minus className="w-3.5 h-3.5" />
+            </button>
+            <span className="w-6 text-center text-xs font-bold text-gray-800 select-none">
+              {quantity}
             </span>
-          )}
-          {isOnSale && saleEndDate && (
-            <SaleCountdown saleEndDate={saleEndDate} className="ml-2" />
-          )}
-        </div>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                setQuantity((q) => q + 1);
+              }}
+              className="w-7 h-7 flex items-center justify-center text-[#425733] hover:bg-[#d4dec9] rounded transition-colors"
+            >
+              <Plus className="w-3.5 h-3.5" />
+            </button>
+          </div>
 
-        {/* Add to cart button */}
-        <button
-          onClick={(e) => { e.preventDefault(); onAddToCart?.(); }}
-          className="w-full py-2.5 rounded-lg bg-gradient-to-r from-[#3a5229] to-[#4a6a35] text-white text-sm font-semibold hover:from-[#2d3d23] hover:to-[#3a5229] transition-all active:scale-[0.98] shadow-[0_4px_14px_rgba(58,82,41,0.25)] hover:shadow-[0_6px_20px_rgba(58,82,41,0.35)]"
-        >
-          Thêm vào giỏ
-        </button>
+          {/* Add to Cart button */}
+          <button
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              onAddToCart?.(selectedPackage, quantity);
+            }}
+            className={cn(
+              "flex-1 py-2 px-3 rounded-lg text-white text-xs font-bold transition-all flex items-center justify-center gap-1.5",
+              "bg-gradient-to-r from-[#3a5229] to-[#4a6a35] hover:from-[#2d3d23] hover:to-[#3a5229] active:scale-[0.97]",
+              "shadow-[0_2px_8px_rgba(58,82,41,0.15)] hover:shadow-[0_4px_12px_rgba(58,82,41,0.25)]"
+            )}
+          >
+            Thêm vào giỏ
+          </button>
+        </div>
       </div>
     </GlassCard>
   );

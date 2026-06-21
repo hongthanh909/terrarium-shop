@@ -52,7 +52,7 @@ export function ProductsClient({
   const { isWished, toggleWishlist } = useWishlist();
   const prefersReducedMotion = useReducedMotion();
 
-  const handleAddToCart = (product: Product) => {
+  const handleAddToCart = (product: Product, selectedPackage = "basic", quantity = 1) => {
     // Yêu cầu đăng nhập trước khi thêm vào giỏ hàng
     if (!session) {
       showToast.warning("Đăng nhập để thêm sản phẩm vào giỏ hàng!");
@@ -61,14 +61,24 @@ export function ProductsClient({
     }
     const basePrice = parseFloat(product.basePrice.toString());
     const salePrice = product.salePrice ? parseFloat(product.salePrice.toString()) : null;
-    const price = salePrice != null && salePrice < basePrice ? salePrice : basePrice;
+    const base = salePrice != null && salePrice < basePrice ? salePrice : basePrice;
+
+    const pkgPriceAdjustment =
+      selectedPackage === "standard" ? 150000 :
+      selectedPackage === "advanced" ? 180000 : 0;
+
+    const price = base + pkgPriceAdjustment;
+
+    const pkgLabel = selectedPackage === "standard" ? "Gói tiêu chuẩn" :
+                     selectedPackage === "advanced" ? "Gói nâng cao" : "Gói cơ bản";
+
     addItem({
       productId: product.id,
       productName: product.name,
       productImage: product.images[0] || "",
       price,
-      quantity: 1,
-      variants: {},
+      quantity,
+      variants: { "Phân loại": pkgLabel },
     });
     showToast.success(`Đã thêm "${product.name}" vào giỏ hàng 🛒`);
   };
@@ -192,7 +202,7 @@ export function ProductsClient({
                   images={product.images}
                   category={product.category}
                   reviewCount={product._count?.reviews ?? 0}
-                  onAddToCart={() => handleAddToCart(product)}
+                  onAddToCart={(pkg, qty) => handleAddToCart(product, pkg, qty)}
                   wished={isWished(product.id)}
                   onToggleWishlist={() => toggleWishlist(product.id, product.name)}
                 />
