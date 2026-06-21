@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { ImageWrapper } from "@/components/ui/ImageWrapper";
 import {
   ImageIcon, Plus, Trash2, Eye, EyeOff, ArrowUp, ArrowDown,
-  Loader2, Save, ExternalLink, LayoutDashboard, Sparkles, Bot, Truck, Gift, Upload, X,
+  Loader2, Save, ExternalLink, LayoutDashboard, Upload, X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,17 +12,6 @@ import { showToast } from "@/components/ui/custom-toast";
 import Link from "next/link";
 import { compressImage } from "@/lib/image";
 
-interface FeatureCard {
-  id: string;
-  bgImage: string;
-}
-
-const FEATURE_CARD_META = [
-  { id: "01", title: "Tác Phẩm Độc Bản & Cá Nhân Hóa", icon: Sparkles },
-  { id: "02", title: "Bảo Hành Thực Vật & Trợ Lý Rêu 24/7", icon: Bot },
-  { id: "03", title: "Vận Chuyển An Toàn", icon: Truck },
-  { id: "04", title: "Quà Tặng Tinh Tế", icon: Gift },
-];
 
 interface HomeBanner {
   id: string;
