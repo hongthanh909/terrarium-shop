@@ -11,9 +11,6 @@ import { Input } from "@/components/ui/input";
 import { showToast } from "@/components/ui/custom-toast";
 import Link from "next/link";
 import { compressImage } from "@/lib/image";
-import { ImageCropModal } from "@/components/ui/image-crop-modal";
-
-
 
 interface FeatureCard {
   id: string;
@@ -62,46 +59,20 @@ export default function AdminHomepagePage() {
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Feature Cards bg state
-  const [featureCards, setFeatureCards] = useState<FeatureCard[]>([
-    { id: "01", bgImage: "" },
-    { id: "02", bgImage: "" },
-    { id: "03", bgImage: "" },
-    { id: "04", bgImage: "" },
-  ]);
-  const [savingCards, setSavingCards] = useState(false);
-  const [uploadingCardId, setUploadingCardId] = useState<string | null>(null);
-  const cardFileInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
-
   // Gallery state
   const [gallery, setGallery] = useState<GalleryImage[]>([]);
   const [savingGallery, setSavingGallery] = useState(false);
   const [uploadingGallery, setUploadingGallery] = useState(false);
   const galleryFileInputRef = useRef<HTMLInputElement>(null);
 
-  // Hero Background state
-  const [heroBgUrl, setHeroBgUrl] = useState("");
-  const [heroBgOverlay, setHeroBgOverlay] = useState(40);
-  const [savingHeroBg, setSavingHeroBg] = useState(false);
-  const [uploadingHeroBg, setUploadingHeroBg] = useState(false);
-  const heroBgFileInputRef = useRef<HTMLInputElement>(null);
-
-  // ── Crop modal state ────────────────────────────────────────────────────────
-  // Hero BG crop
-  const [heroBgCropSrc, setHeroBgCropSrc] = useState<string | null>(null);
-  // Feature Card crop: { cardId, src }
-  const [cardCropState, setCardCropState] = useState<{ cardId: string; src: string } | null>(null);
-
-  // Load existing banners, products & feature cards
+  // Load existing banners, products & gallery
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [bannerRes, prodRes, cardsRes, galleryRes, heroBgRes] = await Promise.all([
+        const [bannerRes, prodRes, galleryRes] = await Promise.all([
           fetch("/api/admin/homepage"),
           fetch("/api/products?limit=100&status=all"),
-          fetch("/api/admin/feature-cards"),
           fetch("/api/admin/gallery"),
-          fetch("/api/admin/hero-bg"),
         ]);
 
         const bannerData = await bannerRes.json();
@@ -112,13 +83,6 @@ export default function AdminHomepagePage() {
           setProducts(prodData.products ?? []);
         }
 
-        if (cardsRes.ok) {
-          const cardsData = await cardsRes.json();
-          if (cardsData.cards?.length === 4) {
-            setFeatureCards(cardsData.cards);
-          }
-        }
-
         if (galleryRes.ok) {
           const galleryData = await galleryRes.json();
           setGallery(
@@ -126,12 +90,6 @@ export default function AdminHomepagePage() {
               (a: GalleryImage, b: GalleryImage) => a.order - b.order
             )
           );
-        }
-
-        if (heroBgRes.ok) {
-          const heroBgData = await heroBgRes.json();
-          setHeroBgUrl(heroBgData.heroBg?.imageUrl ?? "");
-          setHeroBgOverlay(heroBgData.heroBg?.overlayOpacity ?? 40);
         }
       } catch (err) {
         showToast.error("Không thể tải danh sách dữ liệu");
@@ -254,20 +212,6 @@ export default function AdminHomepagePage() {
     }
   };
 
-  // ── Feature Cards handlers ─────────────────────────────────────────────
-  const handleCardImageUpload = async (cardId: string, file: File) => {
-    if (!file.type.startsWith("image/")) {
-      showToast.error("Chỉ chấp nhận file ảnh");
-      return;
-    }
-    // Open crop modal
-    const objectUrl = URL.createObjectURL(file);
-    setCardCropState({ cardId, src: objectUrl });
-    // Reset file input
-    const ref = cardFileInputRefs.current[cardId];
-    if (ref) ref.value = "";
-  };
-
   const uploadBlob = useCallback(async (blob: Blob, bucket: string): Promise<string | null> => {
     const compressed = await compressImage(new File([blob], "crop.jpg", { type: blob.type || "image/jpeg" }));
     const fd = new FormData();
@@ -278,49 +222,6 @@ export default function AdminHomepagePage() {
     const data = await res.json();
     return data.url;
   }, []);
-
-  const handleCardCropConfirm = useCallback(async (blob: Blob) => {
-    if (!cardCropState) return;
-    const { cardId } = cardCropState;
-    setCardCropState(null);
-    setUploadingCardId(cardId);
-    try {
-      const url = await uploadBlob(blob, "banners");
-      if (!url) throw new Error();
-      setFeatureCards((prev) =>
-        prev.map((c) => (c.id === cardId ? { ...c, bgImage: url } : c))
-      );
-      showToast.success(`Đã cắt và tải ảnh nền cho card ${cardId}!`);
-    } catch {
-      showToast.error("Upload ảnh thất bại. Vui lòng thử lại.");
-    } finally {
-      setUploadingCardId(null);
-    }
-  }, [cardCropState, uploadBlob]);
-
-  const handleCardImageRemove = (cardId: string) => {
-    setFeatureCards((prev) =>
-      prev.map((c) => (c.id === cardId ? { ...c, bgImage: "" } : c))
-    );
-    showToast.info(`Đã xóa ảnh nền card ${cardId}. Nhấn Lưu để xác nhận.`);
-  };
-
-  const handleSaveCards = async () => {
-    setSavingCards(true);
-    try {
-      const res = await fetch("/api/admin/feature-cards", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ cards: featureCards }),
-      });
-      if (!res.ok) throw new Error("Lưu thất bại");
-      showToast.success("Đã lưu ảnh nền feature cards thành công!");
-    } catch {
-      showToast.error("Không thể lưu. Vui lòng thử lại.");
-    } finally {
-      setSavingCards(false);
-    }
-  };
 
   // ── Gallery handlers ────────────────────────────────────────────────────────
   const handleGalleryUpload = async (files: FileList | null) => {
@@ -414,48 +315,7 @@ export default function AdminHomepagePage() {
     }
   };
 
-  // ── Hero Background handlers ──────────────────────────────────────────────────
-  const handleHeroBgUpload = async (file: File) => {
-    if (!file.type.startsWith("image/")) { showToast.error("Chỉ chấp nhận file ảnh"); return; }
-    if (file.size > 5 * 1024 * 1024) { showToast.error("Ảnh tối đa 5MB"); return; }
-    // Open crop modal instead of uploading directly
-    const objectUrl = URL.createObjectURL(file);
-    setHeroBgCropSrc(objectUrl);
-  };
 
-
-  const handleHeroBgCropConfirm = useCallback(async (blob: Blob) => {
-    setHeroBgCropSrc(null);
-    setUploadingHeroBg(true);
-    try {
-      const url = await uploadBlob(blob, "banners");
-      if (!url) throw new Error();
-      setHeroBgUrl(url);
-      showToast.success("Đã cắt và tải ảnh nền Hero lên! Nhấn Lưu để áp dụng.");
-    } catch {
-      showToast.error("Upload thất bại. Vui lòng thử lại.");
-    } finally {
-      setUploadingHeroBg(false);
-      if (heroBgFileInputRef.current) heroBgFileInputRef.current.value = "";
-    }
-  }, [uploadBlob]);
-
-  const handleSaveHeroBg = async () => {
-    setSavingHeroBg(true);
-    try {
-      const res = await fetch("/api/admin/hero-bg", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ imageUrl: heroBgUrl, overlayOpacity: heroBgOverlay }),
-      });
-      if (!res.ok) throw new Error();
-      showToast.success("Đã lưu ảnh nền Hero thành công!");
-    } catch {
-      showToast.error("Không thể lưu. Vui lòng thử lại.");
-    } finally {
-      setSavingHeroBg(false);
-    }
-  };
 
   if (loading) {
     return (
@@ -511,97 +371,6 @@ export default function AdminHomepagePage() {
         </div>
       </div>
 
-      {/* ── Hero Background Section ─────────────────────────────────────────── */}
-      <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
-        <div className="p-5 border-b border-gray-100 flex items-center justify-between gap-4 flex-wrap">
-          <div>
-            <h3 className="font-bold text-gray-800 flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-[#425733] inline-block" />
-              Ảnh Nền Hero Section
-            </h3>
-            <p className="text-xs text-gray-500 mt-0.5">Thay thế màu xanh nhạt mặc định bằng ảnh tùy chỉnh</p>
-          </div>
-          <Button
-            onClick={handleSaveHeroBg}
-            disabled={savingHeroBg}
-            size="sm"
-            className="bg-[#425733] hover:bg-[#364a29] text-white gap-2"
-          >
-            {savingHeroBg
-              ? <><Loader2 className="w-4 h-4 animate-spin" />Đang lưu...</>
-              : <><Save className="w-4 h-4" />Lưu nền Hero</>
-            }
-          </Button>
-        </div>
-
-        <div className="p-5 flex flex-col sm:flex-row gap-5">
-          {/* Preview */}
-          <div className="relative w-full sm:w-56 h-32 rounded-xl overflow-hidden bg-gradient-to-br from-[#f0f4ec] to-[#e3ebdd] flex-shrink-0">
-            {heroBgUrl && (
-              <>
-                <ImageWrapper src={heroBgUrl} alt="Hero background preview" fill noRound className="object-cover" sizes="224px" />
-                <div className="absolute inset-0" style={{ background: `rgba(240,244,236,${heroBgOverlay / 100})` }} />
-              </>
-            )}
-            <div className="absolute inset-0 flex items-end p-3">
-              <div className="text-[#425733] font-bold text-sm leading-tight">
-                <div>Một chút rêu</div>
-                <div>Một chút xanh</div>
-              </div>
-            </div>
-            {heroBgUrl && (
-              <button
-                onClick={() => setHeroBgUrl("")}
-                className="absolute top-2 right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors"
-              >
-                <X className="w-3.5 h-3.5" />
-              </button>
-            )}
-          </div>
-
-          {/* Controls */}
-          <div className="flex-1 space-y-4">
-            {/* Upload button */}
-            <div>
-              <label className="block text-xs font-medium text-gray-600 mb-2">Chọn ảnh nền</label>
-              <button
-                onClick={() => !uploadingHeroBg && heroBgFileInputRef.current?.click()}
-                disabled={uploadingHeroBg}
-                className="flex items-center gap-2 border-2 border-dashed border-[#c2d6b0] rounded-xl px-4 py-3 text-sm font-medium text-[#425733] hover:bg-[#f0f4ec] transition-colors disabled:opacity-50 w-full justify-center"
-              >
-                {uploadingHeroBg
-                  ? <><Loader2 className="w-4 h-4 animate-spin" />Đang tải lên...</>
-                  : <><Upload className="w-4 h-4" />{heroBgUrl ? "Thay ảnh nền" : "Tải ảnh nền lên"}</>
-                }
-              </button>
-              <input
-                ref={heroBgFileInputRef}
-                type="file" accept="image/*" className="hidden"
-                onChange={(e) => { const f = e.target.files?.[0]; if (f) handleHeroBgUpload(f); }}
-              />
-              <p className="text-xs text-gray-400 mt-1.5">JPG, PNG, WebP • Tối đa 5MB • Khuyến nghị: 1920×1080px</p>
-            </div>
-
-            {/* Overlay opacity slider */}
-            <div>
-              <div className="flex items-center justify-between mb-1.5">
-                <label className="text-xs font-medium text-gray-600">Overlay (che phủ để text rõ)</label>
-                <span className="text-xs font-semibold text-[#425733]">{heroBgOverlay}%</span>
-              </div>
-              <input
-                type="range" min="0" max="80" step="5"
-                value={heroBgOverlay}
-                onChange={(e) => setHeroBgOverlay(Number(e.target.value))}
-                className="w-full accent-[#425733]"
-              />
-              <div className="flex justify-between text-[10px] text-gray-400 mt-0.5">
-                <span>Trong suốt (thấy ảnh rõ)</span>
-                <span>Mờ (text dễ đọc)</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
 
       {/* Add Banner Section (2 Options) */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -896,118 +665,6 @@ export default function AdminHomepagePage() {
 
 
 
-      {/* ── Feature Cards Background ─────────────────────────────────────── */}
-      <div className="border-t border-gray-100 pt-8">
-        <div className="flex items-center justify-between flex-wrap gap-4 mb-6">
-          <div>
-            <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
-              <Sparkles className="w-5 h-5 text-[#425733]" />
-              Ảnh Nền Feature Cards
-            </h3>
-            <p className="text-gray-500 text-sm mt-1">
-              Tuỳ chỉnh ảnh nền cho 4 mục &ldquo;Tại Sao Chọn Chúng Tôi&rdquo; trên trang chủ
-            </p>
-          </div>
-          <Button
-            onClick={handleSaveCards}
-            disabled={savingCards}
-            className="bg-[#425733] hover:bg-[#364a29] text-white gap-2"
-          >
-            {savingCards ? (
-              <><Loader2 className="w-4 h-4 animate-spin" />Đang lưu...</>
-            ) : (
-              <><Save className="w-4 h-4" />Lưu ảnh nền</>              
-            )}
-          </Button>
-        </div>
-
-
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {FEATURE_CARD_META.map(({ id, title, icon: Icon }) => {
-            const card = featureCards.find((c) => c.id === id);
-            const bgImage = card?.bgImage || "";
-            const isUploading = uploadingCardId === id;
-
-            return (
-              <div
-                key={id}
-                className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm"
-              >
-                {/* Preview area */}
-                <div className="relative h-36 bg-[#f0f4ec] overflow-hidden">
-                  {bgImage ? (
-                    <ImageWrapper
-                      src={bgImage}
-                      alt={`Ảnh nền card ${id}`}
-                      fill
-                      noRound
-                      className="object-cover"
-                      sizes="(max-width: 640px) 100vw, 50vw"
-                    />
-                  ) : (
-                    <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-[#a8c098]">
-                      <ImageIcon className="w-8 h-8" />
-                      <span className="text-xs">Chưa có ảnh nền</span>
-                    </div>
-                  )}
-                  {/* Overlay preview */}
-                  {bgImage && (
-                    <div className="absolute inset-0 bg-white/60" />
-                  )}
-                  {/* Card number badge */}
-                  <div className="absolute top-2 left-2 bg-[#425733] text-white text-xs font-bold px-2 py-0.5 rounded-md">
-                    {id}
-                  </div>
-                  {/* Remove button */}
-                  {bgImage && (
-                    <button
-                      onClick={() => handleCardImageRemove(id)}
-                      className="absolute top-2 right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors"
-                      title="Xóa ảnh nền"
-                    >
-                      <X className="w-3.5 h-3.5" />
-                    </button>
-                  )}
-                </div>
-
-                {/* Card info + upload */}
-                <div className="p-4">
-                  <div className="flex items-center gap-2 mb-3">
-                    <div className="w-7 h-7 rounded-lg bg-[#e3ebdd] flex items-center justify-center text-[#425733]">
-                      <Icon className="w-4 h-4" />
-                    </div>
-                    <p className="text-sm font-semibold text-gray-800 line-clamp-1">{title}</p>
-                  </div>
-
-                  <button
-                    onClick={() => !isUploading && cardFileInputRefs.current[id]?.click()}
-                    disabled={isUploading}
-                    className="w-full flex items-center justify-center gap-2 border-2 border-dashed border-[#c2d6b0] rounded-xl py-2.5 text-sm font-medium text-[#425733] hover:bg-[#f0f4ec] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {isUploading ? (
-                      <><Loader2 className="w-4 h-4 animate-spin" />Đang tải lên...</>
-                    ) : (
-                      <><Upload className="w-4 h-4" />{bgImage ? "Thay ảnh nền" : "Tải ảnh nền lên"}</>
-                    )}
-                  </button>
-
-                  <input
-                    ref={(el) => { cardFileInputRefs.current[id] = el; }}
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) handleCardImageUpload(id, file);
-                    }}
-                  />
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
 
       {/* ── Brand Gallery ──────────────────────────────────────────────────── */}
       <div className="border-t border-gray-100 pt-8">
@@ -1169,30 +826,6 @@ export default function AdminHomepagePage() {
       </div>
     </div>
 
-      {/* Crop Modals */}
-      {heroBgCropSrc && (
-        <ImageCropModal
-          src={heroBgCropSrc}
-          title="Ảnh Nền Hero — Cắt tự do"
-          onConfirm={handleHeroBgCropConfirm}
-          onCancel={() => {
-            URL.revokeObjectURL(heroBgCropSrc);
-            setHeroBgCropSrc(null);
-            if (heroBgFileInputRef.current) heroBgFileInputRef.current.value = "";
-          }}
-        />
-      )}
-      {cardCropState && (
-        <ImageCropModal
-          src={cardCropState.src}
-          title={`Card ${cardCropState.cardId} — Cắt ảnh nền`}
-          onConfirm={handleCardCropConfirm}
-          onCancel={() => {
-            URL.revokeObjectURL(cardCropState.src);
-            setCardCropState(null);
-          }}
-        />
-      )}
     </>
   );
 }

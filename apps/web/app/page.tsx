@@ -2,7 +2,7 @@ import { Metadata } from "next";
 import Link from "next/link";
 import { ImageWrapper } from "@/components/ui/ImageWrapper";
 import { Suspense } from "react";
-import { Sprout, Truck, ArrowRight, Shield, FileText, Calendar, Gift, Sparkles, Bot, Gauge, Leaf } from "lucide-react";
+import { Sprout, Truck, ArrowRight, FileText, Calendar, Gift, Sparkles, Bot, Leaf } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -10,31 +10,13 @@ import { ScrollReveal } from "@/components/ui/scroll-reveal";
 import { ReviewMarquee } from "@/components/ui/review-marquee";
 import { prisma } from "@/lib/prisma";
 import { FeaturedProductCard } from "@/components/ui/featured-product-card";
-import { HeroCarousel } from "@/components/ui/hero-carousel";
 import { BrandGallery } from "@/components/ui/brand-gallery";
 
 // ISR: Cache page for 60 seconds, revalidate in background
 // This makes the page INSTANT for most requests instead of waiting for DB every time
 export const revalidate = 60;
 
-// ─── Fetch feature card background images ─────────────────────────────────────
-async function getFeatureCardsBg(): Promise<Record<string, string>> {
-  try {
-    const setting = await prisma.siteSetting.findUnique({
-      where: { key: "feature_cards" },
-    });
-    if (setting && Array.isArray(setting.value)) {
-      const map: Record<string, string> = {};
-      (setting.value as any[]).forEach((c: any) => {
-        if (c.id && c.bgImage) map[c.id] = c.bgImage;
-      });
-      return map;
-    }
-  } catch (e) {
-    console.error("getFeatureCardsBg error", e);
-  }
-  return {};
-}
+
 
 export const metadata: Metadata = {
   title: "Tiệm Rêu Décor | Một Chút Rêu, Một Chút Xanh",
@@ -49,120 +31,7 @@ export const metadata: Metadata = {
 
 // ─── Async streaming sub-components ───────────────────────────────────────────
 
-async function HeroCarouselSection() {
-  // 1. Ưu tiên banner custom từ Admin → SiteSetting "hero_banners"
-  try {
-    const bannerSetting = await prisma.siteSetting.findUnique({
-      where: { key: "hero_banners" },
-    });
 
-    if (bannerSetting && Array.isArray(bannerSetting.value)) {
-      const activeBanners = (bannerSetting.value as any[])
-        .filter((b: any) => b.isActive !== false)
-        .sort((a: any, b: any) => (a.order ?? 0) - (b.order ?? 0));
-
-      if (activeBanners.length > 0) {
-        // Fetch linked products from DB if any banner has a productId
-        const productIds = activeBanners
-          .map((b: any) => b.productId)
-          .filter((id): id is string => typeof id === "string" && id !== "");
-
-        const productsMap = new Map<string, any>();
-        if (productIds.length > 0) {
-          const dbProducts = await prisma.product.findMany({
-            where: { id: { in: productIds } },
-            include: { category: { select: { name: true } } },
-          });
-          dbProducts.forEach((p) => {
-            productsMap.set(p.id, p);
-          });
-        }
-
-        // Convert banner → Product format cho HeroCarousel
-        const bannerProducts = activeBanners.map((b: any, index: number) => {
-          const linkedProduct = b.productId ? productsMap.get(b.productId) : null;
-          return {
-            id: b.id ?? `banner-${index}`,
-            slug: linkedProduct ? linkedProduct.slug : (b.link ? b.link : "#"),
-            name: b.title || linkedProduct?.name || "Khám Phá Tiệm Rêu Décor",
-            basePrice: linkedProduct ? Number(linkedProduct.basePrice) : 0,
-            salePrice: linkedProduct && linkedProduct.salePrice != null ? Number(linkedProduct.salePrice) : null,
-            images: [b.imageUrl || linkedProduct?.images?.[0] || ""],
-            category: b.subtitle ? { name: b.subtitle } : (linkedProduct?.category ? { name: linkedProduct.category.name } : undefined),
-            isBanner: true, // flag để HeroCarousel biết đây là banner
-          };
-        });
-
-        return <HeroCarousel products={bannerProducts as any} />;
-      }
-    }
-  } catch (e) {
-    console.error("HeroCarouselSection: Failed to load banners from DB", e);
-  }
-
-  // 2. Fallback: sản phẩm nổi bật từ DB
-  let rawProducts: any[] = [];
-  try {
-    rawProducts = await prisma.product.findMany({
-      where: { featured: true, status: "ACTIVE" },
-      take: 4,
-      include: {
-        category: { select: { name: true } },
-        reviews: { where: { approved: true }, select: { rating: true } },
-      },
-      orderBy: { createdAt: "desc" },
-    });
-
-    if (rawProducts.length === 0) {
-      rawProducts = await prisma.product.findMany({
-        where: { status: "ACTIVE" },
-        take: 4,
-        include: {
-          category: { select: { name: true } },
-          reviews: { where: { approved: true }, select: { rating: true } },
-        },
-        orderBy: { createdAt: "desc" },
-      });
-    }
-  } catch (e) {
-    console.error("HeroCarouselSection: DB error", e);
-  }
-
-  // Serialize Decimal → Number và tính rating
-  const products = rawProducts.length > 0
-    ? rawProducts.map((p: any) => {
-        const reviews = p.reviews || [];
-        const avgRating = reviews.length > 0
-          ? reviews.reduce((sum: number, r: any) => sum + r.rating, 0) / reviews.length
-          : 0;
-        return {
-          id: p.id,
-          slug: p.slug,
-          name: p.name,
-          basePrice: Number(p.basePrice),
-          salePrice: p.salePrice != null ? Number(p.salePrice) : null,
-          images: p.images,
-          category: p.category ? { name: p.category.name } : undefined,
-          rating: Math.round(avgRating * 10) / 10,
-          reviewCount: reviews.length,
-        };
-      })
-    : [
-        {
-          id: "mock-1",
-          slug: "mini-forest-moss-terrarium",
-          name: "Rừng Rêu Thu Nhỏ - Hệ Kín Cao Cấp",
-          basePrice: 450000,
-          salePrice: 380000,
-          images: ["https://images.unsplash.com/photo-1545241047-6083a3684587?w=800&auto=format&fit=crop&q=80"],
-          category: { name: "Terrarium Hệ Kín" },
-          rating: 5.0,
-          reviewCount: 5,
-        },
-      ];
-
-  return <HeroCarousel products={products as any} />;
-}
 
 // ─── Brand Gallery Section ─────────────────────────────────────────────────
 async function BrandGallerySection() {
@@ -358,20 +227,7 @@ async function LatestBlogSection() {
 
 // ─── Skeleton Fallbacks ────────────────────────────────────────────────────────
 
-function HeroCarouselSkeleton() {
-  return (
-    <div className="relative w-full max-w-lg mx-auto bg-white rounded-3xl shadow-xl overflow-hidden border border-white/40">
-      <div className="aspect-[4/3] w-full bg-gradient-to-br from-[#e3ebdd] to-[#c8d5be] animate-pulse flex items-center justify-center">
-        <Sprout className="w-16 h-16 text-[#425733]/30" />
-      </div>
-      <div className="p-6 space-y-3">
-        <div className="h-6 w-3/4 bg-[#f0f4ec] rounded animate-pulse" />
-        <div className="h-4 w-1/2 bg-[#f0f4ec] rounded animate-pulse" />
-        <div className="h-7 w-1/3 bg-[#e3ebdd] rounded animate-pulse" />
-      </div>
-    </div>
-  );
-}
+
 
 function ProductsSkeleton() {
   return (
@@ -421,103 +277,93 @@ function BlogSkeleton() {
 // ─── Main Page (SYNC — no DB fetches here) ────────────────────────────────────
 
 export default async function Home() {
-  const [featureCardsBg, heroBg] = await Promise.all([
-    getFeatureCardsBg(),
-    prisma.siteSetting.findUnique({ where: { key: "hero_bg" } }).then((s) =>
-      s ? (s.value as any) : { imageUrl: "", overlayOpacity: 40 }
-    ).catch(() => ({ imageUrl: "", overlayOpacity: 40 })),
-  ]);
   return (
     <main className="min-h-screen">
-      {/* Hero Section — renders INSTANTLY, carousel streams in */}
+      {/* Hero / About Section (Static Background) */}
       <section
-        className="relative overflow-hidden min-h-[85vh] flex items-center"
-        style={heroBg?.imageUrl ? {
-          backgroundImage: `url(${heroBg.imageUrl})`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-        } : {}}
+        id="about"
+        className="relative pt-36 pb-48 px-6 overflow-hidden bg-cover bg-center min-h-[75vh] flex items-center"
+        style={{
+          backgroundImage: "url('/about_us_bg.png')",
+        }}
       >
-        {/* Base gradient (shows when no image OR as tint over image) */}
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={heroBg?.imageUrl
-            ? { background: `rgba(240,244,236,${(heroBg.overlayOpacity ?? 40) / 100})` }
-            : { background: "linear-gradient(135deg, #f0f4ec 0%, #e3ebdd 100%)" }
-          }
-        />
-        {/* Soft decorative blobs */}
-        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[rgba(66,87,51,0.05)] rounded-full -translate-y-1/3 translate-x-1/3 blur-3xl pointer-events-none" />
-        <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-[rgba(66,87,51,0.05)] rounded-full translate-y-1/2 -translate-x-1/4 blur-2xl pointer-events-none" />
+        <div className="absolute inset-0 bg-[#1c2c16]/75 z-0 pointer-events-none" />
+        <div className="relative z-10 max-w-3xl mx-auto text-center text-white py-12">
+          <ScrollReveal direction="up">
+            <p className="text-[11px] font-extrabold tracking-[0.2em] text-[#c3d3ba] uppercase mb-4">VỀ CHÚNG TÔI</p>
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold mb-6 leading-tight tracking-tight">
+              Tạo nên những thiết kế terrarium mang dấu ấn riêng
+            </h1>
+            <p className="text-base md:text-lg text-white/85 max-w-2xl mx-auto mb-10 leading-relaxed font-medium">
+              Mỗi terrarium được tạo hình tỉ mỉ, kết hợp thiết kế thủy tinh đẹp mắt với hệ thực vật được chọn lọc để mang thiên nhiên thanh tao vào không gian sống của bạn.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+              <Button
+                size="lg"
+                className="bg-[#5f7454] text-white hover:bg-[#4d6043] px-8 font-semibold rounded-full hover:-translate-y-0.5 transition-all shadow-lg w-full sm:w-auto"
+                asChild
+              >
+                <Link href="/products">
+                  Khám Phá Cửa Hàng
+                  <ArrowRight className="ml-2 w-4 h-4" />
+                </Link>
+              </Button>
+              <Button
+                size="lg"
+                variant="outline"
+                className="border-2 border-white/30 bg-transparent text-white hover:bg-white/10 hover:border-white font-semibold rounded-full px-8 hover:-translate-y-0.5 transition-all w-full sm:w-auto"
+                asChild
+              >
+                <Link href="/consult">Nhận Tư Vấn Ngay</Link>
+              </Button>
+            </div>
+          </ScrollReveal>
+        </div>
+      </section>
 
-        <div className="relative max-w-7xl mx-auto px-6 py-24 w-full grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
-          {/* Left Column: Text & CTA */}
-          <div className="order-2 lg:order-1">
-            <ScrollReveal direction="up" delay={0.2}>
-              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold mb-6 leading-tight tracking-tight text-gray-900" style={{ textWrap: 'balance' }}>
-                <span className="block">Một chút rêu</span>
-                <span className="block pl-12 md:pl-16 lg:pl-20">Một chút xanh</span>
-              </h1>
-            </ScrollReveal>
-
-            <ScrollReveal direction="up" delay={0.3}>
-              <p className="text-base md:text-lg mb-10 text-gray-600 max-w-xl leading-relaxed">
-                Khám phá bộ sưu tập terrarium thủ công, những hệ sinh thái thu nhỏ biến không gian của bạn thành thiên nhiên trong trẻo.
-              </p>
-            </ScrollReveal>
-
-            <ScrollReveal direction="up" delay={0.4}>
-              <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center w-full">
-                <Button
-                  size="lg"
-                  className="bg-[#425733] text-white hover:bg-[#364a29] font-semibold rounded-full text-lg px-8 py-3 shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5 w-full sm:w-auto"
-                  asChild
-                >
-                  <Link href="/products">
-                    Khám Phá Ngay
-                  </Link>
-                </Button>
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className="border-2 border-[#425733]/30 text-[#425733] rounded-full hover:bg-[#e3ebdd] font-medium text-lg px-8 py-3 transition-all w-full sm:w-auto"
-                  asChild
-                >
-                  <Link href="#about">Tìm Hiểu Thêm</Link>
-                </Button>
+      {/* About Overlapping Cards Section */}
+      <section className="relative z-20 max-w-6xl mx-auto px-6 -mt-24 pb-20">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <ScrollReveal direction="up" delay={0.1} className="h-full">
+            <div className="bg-white rounded-2xl p-6 md:p-8 shadow-[0_8px_30px_rgba(41,58,32,0.08)] border border-[#daebd0] flex items-start gap-4 hover:shadow-[0_15px_40px_rgba(41,58,32,0.15)] hover:-translate-y-1 transition-all duration-300 h-full">
+              <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-[#f4f7f2] border border-[#daebd0] flex items-center justify-center text-[#425733]">
+                <Sprout className="w-6 h-6 stroke-[1.5]" />
               </div>
-            </ScrollReveal>
-
-            {/* Feature Icons */}
-            <ScrollReveal direction="up" delay={0.5}>
-              <div className="mt-12 flex gap-6 sm:gap-8">
-                <div className="flex flex-col items-center text-center gap-2.5 group">
-                  <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm border border-[#425733]/10 flex items-center justify-center text-[#425733] group-hover:scale-110 transition-transform duration-300 shadow-sm">
-                    <Gauge className="w-5 h-5" />
-                  </div>
-                  <span className="text-xs sm:text-sm text-gray-700 font-semibold">Cấp ẩm tự động</span>
-                </div>
-                <div className="flex flex-col items-center text-center gap-2.5 group">
-                  <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm border border-[#425733]/10 flex items-center justify-center text-[#425733] group-hover:scale-110 transition-transform duration-300 shadow-sm">
-                    <Sprout className="w-5 h-5" />
-                  </div>
-                  <span className="text-xs sm:text-sm text-gray-700 font-semibold">Dễ chăm sóc</span>
-                </div>
-                <div className="flex flex-col items-center text-center gap-2.5 group">
-                  <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm border border-[#425733]/10 flex items-center justify-center text-[#425733] group-hover:scale-110 transition-transform duration-300 shadow-sm">
-                    <Gift className="w-5 h-5" />
-                  </div>
-                  <span className="text-xs sm:text-sm text-gray-700 font-semibold">Quà tặng ý nghĩa</span>
-                </div>
+              <div>
+                <h3 className="text-base font-bold text-[#293a20] mb-2">Thiết kế theo cá nhân</h3>
+                <p className="text-sm text-gray-500 leading-relaxed font-medium">
+                  Terrarium được tạo riêng theo phong cách và nhu cầu của bạn.
+                </p>
               </div>
-            </ScrollReveal>
-          </div>
+            </div>
+          </ScrollReveal>
 
-          {/* Right Column: Product Slider — streams in via Suspense */}
-          <ScrollReveal direction="left" delay={0.3} className="order-1 lg:order-2">
-            <Suspense fallback={<HeroCarouselSkeleton />}>
-              <HeroCarouselSection />
-            </Suspense>
+          <ScrollReveal direction="up" delay={0.2} className="h-full">
+            <div className="bg-white rounded-2xl p-6 md:p-8 shadow-[0_8px_30px_rgba(41,58,32,0.08)] border border-[#daebd0] flex items-start gap-4 hover:shadow-[0_15px_40px_rgba(41,58,32,0.15)] hover:-translate-y-1 transition-all duration-300 h-full">
+              <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-[#f4f7f2] border border-[#daebd0] flex items-center justify-center text-[#425733]">
+                <Leaf className="w-6 h-6 stroke-[1.5]" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-[#293a20] mb-2">Thủ công tỉ mỉ</h3>
+                <p className="text-sm text-gray-500 leading-relaxed font-medium">
+                  Mỗi sản phẩm handmade được chăm chút trong từng chi tiết.
+                </p>
+              </div>
+            </div>
+          </ScrollReveal>
+
+          <ScrollReveal direction="up" delay={0.3} className="h-full">
+            <div className="bg-white rounded-2xl p-6 md:p-8 shadow-[0_8px_30px_rgba(41,58,32,0.08)] border border-[#daebd0] flex items-start gap-4 hover:shadow-[0_15px_40px_rgba(41,58,32,0.15)] hover:-translate-y-1 transition-all duration-300 h-full">
+              <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-[#f4f7f2] border border-[#daebd0] flex items-center justify-center text-[#425733]">
+                <Gift className="w-6 h-6 stroke-[1.5]" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-[#293a20] mb-2">Quà tặng & trang trí</h3>
+                <p className="text-sm text-gray-500 leading-relaxed font-medium">
+                  Phù hợp cho bàn làm việc, phòng khách hoặc những món quà tinh tế.
+                </p>
+              </div>
+            </div>
           </ScrollReveal>
         </div>
       </section>
@@ -569,9 +415,6 @@ export default async function Home() {
             .wi-card.active {
               flex: 1 1 auto;
               border-color: #c8d5be;
-            }
-            /* Background khi KHÔNG có ảnh nền */
-            .wi-card:not([style*="background-image"]).active {
               background: #e3ebdd;
             }
 
@@ -579,9 +422,6 @@ export default async function Home() {
               flex: 1 1 auto !important;
               border-color: #c8d5be !important;
               box-shadow: 0 15px 35px rgba(66, 87, 51, 0.1) !important;
-            }
-            /* Background hover khi KHÔNG có ảnh nền */
-            .wi-card:not([style*="background-image"]):hover {
               background: #e3ebdd !important;
             }
 
@@ -589,30 +429,7 @@ export default async function Home() {
               flex: 0 0 12rem;
               border-color: #daebd0;
               box-shadow: 0 8px 24px rgba(66, 87, 51, 0.04);
-            }
-            .wi-timeline-wrapper:hover .wi-card.active:not(:hover):not([style*="background-image"]) {
               background: #ffffff;
-            }
-
-            /* ── Overlay cho ảnh nền ──────────────────────────────────── */
-            .wi-overlay {
-              position: absolute;
-              inset: 0;
-              pointer-events: none;
-              background: rgba(255,255,255,0.85);
-              transition: background 0.55s cubic-bezier(0.16, 1, 0.3, 1);
-            }
-            /* Khi card hover → ảnh lộ rõ hơn */
-            .wi-card:hover .wi-overlay {
-              background: rgba(240,244,236,0.35);
-            }
-            /* Khi card là active mặc định → ảnh hiển thị vừa phải */
-            .wi-card.active .wi-overlay {
-              background: rgba(255,255,255,0.55);
-            }
-            /* Khi wrapper hover, card active không được hover → mờ lại */
-            .wi-timeline-wrapper:hover .wi-card.active:not(:hover) .wi-overlay {
-              background: rgba(255,255,255,0.85);
             }
 
             /* Header row: icon + number + title inline */
@@ -842,21 +659,11 @@ export default async function Home() {
                 desc: "Tiệm Rêu còn hỗ trợ chuẩn bị bao bì cao cấp, thay bạn trao gửi những thông điệp thiên nhiên ý nghĩa đến người trân quý.",
               },
             ].map((item) => {
-              const bgImage = featureCardsBg[item.id] || "";
               return (
                 <div
                   key={item.id}
                   className={`wi-card ${item.isActive ? "active" : ""}`}
-                  style={bgImage ? {
-                    backgroundImage: `url(${bgImage})`,
-                    backgroundSize: "cover",
-                    backgroundPosition: "center",
-                  } : undefined}
                 >
-                  {/* Overlay — animate opacity on hover via .wi-overlay CSS class */}
-                  {bgImage && (
-                    <div className="wi-overlay" />
-                  )}
                   {/* Header: Icon + Number + Title (inline) */}
                   <div className="wi-header" style={{ position: "relative" }}>
                     <div className="wi-icon-wrapper">
@@ -894,116 +701,7 @@ export default async function Home() {
 
 
 
-      {/* About Section (static) */}
-      <section
-        id="about"
-        className="relative pt-32 pb-44 px-6 overflow-hidden bg-cover bg-center"
-        style={{
-          backgroundImage: "url('/about_us_bg.png')",
-        }}
-      >
-        <div className="absolute inset-0 bg-[#1c2c16]/75 z-0 pointer-events-none" />
-        <div className="relative z-10 max-w-3xl mx-auto text-center text-white">
-          <ScrollReveal direction="up">
-            <p className="text-[11px] font-extrabold tracking-[0.2em] text-[#c3d3ba] uppercase mb-4">VỀ CHÚNG TÔI</p>
-            <h2 className="text-3xl md:text-5xl font-extrabold mb-6 leading-tight tracking-tight">
-              Tạo nên những thiết kế terrarium mang dấu ấn riêng
-            </h2>
-            <p className="text-base md:text-lg text-white/85 max-w-2xl mx-auto mb-10 leading-relaxed font-medium">
-              Mỗi terrarium được tạo hình tỉ mỉ, kết hợp thiết kế thủy tinh đẹp mắt với hệ thực vật được chọn lọc để mang thiên nhiên thanh tao vào không gian sống của bạn.
-            </p>
-            <Button
-              size="lg"
-              className="bg-[#5f7454] text-white hover:bg-[#4d6043] px-8 font-semibold rounded-full hover:-translate-y-0.5 transition-all shadow-lg"
-              asChild
-            >
-              <Link href="/products">
-                Khám Phá Cửa Hàng
-                <ArrowRight className="ml-2 w-4 h-4" />
-              </Link>
-            </Button>
-          </ScrollReveal>
-        </div>
-      </section>
 
-      {/* About Overlapping Cards Section */}
-      <section className="relative z-20 max-w-6xl mx-auto px-6 -mt-24 pb-20">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <ScrollReveal direction="up" delay={0.1} className="h-full">
-            <div className="bg-white rounded-2xl p-6 md:p-8 shadow-[0_8px_30px_rgba(41,58,32,0.08)] border border-[#daebd0] flex items-start gap-4 hover:shadow-[0_15px_40px_rgba(41,58,32,0.15)] hover:-translate-y-1 transition-all duration-300 h-full">
-              <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-[#f4f7f2] border border-[#daebd0] flex items-center justify-center text-[#425733]">
-                <Sprout className="w-6 h-6 stroke-[1.5]" />
-              </div>
-              <div>
-                <h3 className="text-base font-bold text-[#293a20] mb-2">Thiết kế theo cá nhân</h3>
-                <p className="text-sm text-gray-500 leading-relaxed font-medium">
-                  Terrarium được tạo riêng theo phong cách và nhu cầu của bạn.
-                </p>
-              </div>
-            </div>
-          </ScrollReveal>
-
-          <ScrollReveal direction="up" delay={0.2} className="h-full">
-            <div className="bg-white rounded-2xl p-6 md:p-8 shadow-[0_8px_30px_rgba(41,58,32,0.08)] border border-[#daebd0] flex items-start gap-4 hover:shadow-[0_15px_40px_rgba(41,58,32,0.15)] hover:-translate-y-1 transition-all duration-300 h-full">
-              <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-[#f4f7f2] border border-[#daebd0] flex items-center justify-center text-[#425733]">
-                <Leaf className="w-6 h-6 stroke-[1.5]" />
-              </div>
-              <div>
-                <h3 className="text-base font-bold text-[#293a20] mb-2">Thủ công tỉ mỉ</h3>
-                <p className="text-sm text-gray-500 leading-relaxed font-medium">
-                  Mỗi sản phẩm handmade được chăm chút trong từng chi tiết.
-                </p>
-              </div>
-            </div>
-          </ScrollReveal>
-
-          <ScrollReveal direction="up" delay={0.3} className="h-full">
-            <div className="bg-white rounded-2xl p-6 md:p-8 shadow-[0_8px_30px_rgba(41,58,32,0.08)] border border-[#daebd0] flex items-start gap-4 hover:shadow-[0_15px_40px_rgba(41,58,32,0.15)] hover:-translate-y-1 transition-all duration-300 h-full">
-              <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-[#f4f7f2] border border-[#daebd0] flex items-center justify-center text-[#425733]">
-                <Gift className="w-6 h-6 stroke-[1.5]" />
-              </div>
-              <div>
-                <h3 className="text-base font-bold text-[#293a20] mb-2">Quà tặng & trang trí</h3>
-                <p className="text-sm text-gray-500 leading-relaxed font-medium">
-                  Phù hợp cho bàn làm việc, phòng khách hoặc những món quà tinh tế.
-                </p>
-              </div>
-            </div>
-          </ScrollReveal>
-        </div>
-      </section>
-
-      {/* Final CTA Section */}
-      <section className="py-24 px-6 bg-gradient-to-br from-[#425733] to-[#364a29] text-white">
-        <div className="max-w-4xl mx-auto text-center">
-          <ScrollReveal direction="up">
-            <h2 className="text-4xl font-bold mb-6">Sẵn Sàng Mang Cả Khu Rừng Về Nhà?</h2>
-            <p className="text-xl mb-10 text-white/90 leading-relaxed max-w-2xl mx-auto">
-              Chỉ với vài cú click, bạn đã có ngay một hệ sinh thái thu nhỏ tự duy trì, mang lại năng lượng tích cực cho không gian sống.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button
-                size="lg"
-                className="bg-white text-[#425733] hover:bg-[#f0f4ec] font-bold text-base px-8 shadow-[0_8px_30px_rgba(255,255,255,0.3)] hover:shadow-[0_12px_40px_rgba(255,255,255,0.4)] hover:-translate-y-1 transition-all duration-300"
-                asChild
-              >
-                <Link href="/products">
-                  Mua Ngay
-                  <ArrowRight className="ml-2 w-4 h-4" />
-                </Link>
-              </Button>
-              <Button
-                size="lg"
-                variant="outline"
-                className="border-2 border-white/50 bg-transparent text-white hover:bg-white/10 hover:border-white backdrop-blur-sm font-bold text-base px-8 hover:-translate-y-1 transition-all duration-300"
-                asChild
-              >
-                <Link href="/consult">Nhận Tư Vấn Cây Trồng</Link>
-              </Button>
-            </div>
-          </ScrollReveal>
-        </div>
-      </section>
     </main>
   );
 }
