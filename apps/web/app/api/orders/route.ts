@@ -71,8 +71,9 @@ export async function POST(request: NextRequest) {
     } = validated.data;
 
 
-    // Generate order number
-    const orderNumber = `ORD-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
+    // Generate order number with guaranteed 9-character random suffix
+    const randomSuffix = Math.random().toString(36).substring(2, 11).padEnd(9, "0").toUpperCase();
+    const orderNumber = `ORD-${Date.now()}-${randomSuffix}`;
 
     const order = await prisma.$transaction(async (tx) => {
       // Create order

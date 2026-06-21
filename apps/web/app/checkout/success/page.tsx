@@ -10,11 +10,11 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-// ─── SePay / KienLongBank ───────────────────────────────────────────────────
-const BANK_NAME    = "KienLongBank";
-const BANK_ACCOUNT = "101499100004612299";
-const BANK_OWNER   = "NGUYEN THANH HONG";
-const BANK_BIN     = "970452";
+// ─── SePay / Bank Info ──────────────────────────────────────────────────────
+const BANK_NAME    = process.env.NEXT_PUBLIC_BANK_NAME || "KienLongBank";
+const BANK_ACCOUNT = process.env.NEXT_PUBLIC_BANK_ACCOUNT_NUMBER || "101499100004612299";
+const BANK_OWNER   = process.env.NEXT_PUBLIC_BANK_ACCOUNT_NAME || "NGUYEN THANH HONG";
+const BANK_BIN     = process.env.NEXT_PUBLIC_BANK_BIN || "970452";
 const TOTAL_SECONDS = 30 * 60; // 30 phút
 
 type PayStatus = "PENDING" | "PAID" | "EXPIRED";
