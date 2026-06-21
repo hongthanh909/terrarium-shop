@@ -102,7 +102,9 @@ export function ProductDetailClient({
   const [loading] = useState(false);
   const { isWished, toggleWishlist } = useWishlist();
 
-  const isBểProduct = true; // Enabled for all products to show standard package variants
+  const isBểProduct = initialProduct?.category?.name?.toLowerCase().includes("bể") || 
+                       initialProduct?.category?.slug?.toLowerCase().includes("be") ||
+                       initialProduct?.name?.toLowerCase().includes("bể");
 
   // 3-tier package selection (replaces old 2-button lamp selector)
   const [selectedPackage, setSelectedPackage] = useState<string>("basic");
@@ -388,9 +390,12 @@ export function ProductDetailClient({
     if (!product) return;
     if (!session) { showToast.warning("Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng"); router.push(`/login?callbackUrl=/products/${product.slug}`); return; }
     const { price } = getPriceWithVariants();
-    const pkgLabel = selectedPackage === "standard" ? "Gói tiêu chuẩn" :
-                     selectedPackage === "advanced" ? "Gói nâng cao" : "Gói cơ bản";
-    const cartVariants = { ...selectedVariants, "Phân loại": pkgLabel };
+    const cartVariants = { ...selectedVariants };
+    if (isBểProduct) {
+      const pkgLabel = selectedPackage === "standard" ? "Gói tiêu chuẩn" :
+                       selectedPackage === "advanced" ? "Gói nâng cao" : "Gói cơ bản";
+      cartVariants["Phân loại"] = pkgLabel;
+    }
     delete cartVariants[LAMP_VARIANT_TYPE];
     addItem({ productId: product.id, productName: product.name, productImage: product.images[0] || "", price, quantity, variants: cartVariants });
     setCartOpen(true);
@@ -400,9 +405,12 @@ export function ProductDetailClient({
     if (!product) return;
     if (!session) { showToast.error("Vui lòng đăng nhập để mua hàng"); router.push(`/login?callbackUrl=/products/${product.slug}`); return; }
     const { price } = getPriceWithVariants();
-    const pkgLabel = selectedPackage === "standard" ? "Gói tiêu chuẩn" :
-                     selectedPackage === "advanced" ? "Gói nâng cao" : "Gói cơ bản";
-    const cartVariants = { ...selectedVariants, "Phân loại": pkgLabel };
+    const cartVariants = { ...selectedVariants };
+    if (isBểProduct) {
+      const pkgLabel = selectedPackage === "standard" ? "Gói tiêu chuẩn" :
+                       selectedPackage === "advanced" ? "Gói nâng cao" : "Gói cơ bản";
+      cartVariants["Phân loại"] = pkgLabel;
+    }
     delete cartVariants[LAMP_VARIANT_TYPE];
     addItem({ productId: product.id, productName: product.name, productImage: product.images[0] || "", price, quantity, variants: cartVariants });
     if (items.length === 0) { router.push("/checkout"); } else { setCartOpen(true); }

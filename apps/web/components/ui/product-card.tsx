@@ -49,6 +49,11 @@ export function ProductCard({
   const [selectedPackage, setSelectedPackage] = useState<"basic" | "standard" | "advanced">("basic");
   const [quantity, setQuantity] = useState(1);
 
+  const isBểProduct =
+    category?.name?.toLowerCase().includes("bể") ||
+    name?.toLowerCase().includes("bể") ||
+    slug?.toLowerCase().includes("be");
+
   const isOnSale =
     salePrice != null &&
     salePrice < basePrice &&
@@ -58,9 +63,9 @@ export function ProductCard({
     ? Math.round(((basePrice - salePrice!) / basePrice) * 100)
     : 0;
 
-  const pkgPriceAdjustment =
-    selectedPackage === "standard" ? 150000 :
-    selectedPackage === "advanced" ? 180000 : 0;
+  const pkgPriceAdjustment = isBểProduct
+    ? (selectedPackage === "standard" ? 150000 : selectedPackage === "advanced" ? 180000 : 0)
+    : 0;
 
   const displayPrice = (isOnSale ? salePrice! : basePrice) + pkgPriceAdjustment;
 
@@ -162,33 +167,35 @@ export function ProductCard({
         </div>
 
         {/* Variant Selector */}
-        <div className="mb-4">
-          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">Chọn phiên bản</p>
-          <div className="grid grid-cols-3 gap-1">
-            {(["basic", "standard", "advanced"] as const).map((key) => {
-              const label = key === "basic" ? "Cơ bản" : key === "standard" ? "Tiêu chuẩn" : "Nâng cao";
-              const isSelected = selectedPackage === key;
-              return (
-                <button
-                  key={key}
-                  type="button"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setSelectedPackage(key);
-                  }}
-                  className={cn(
-                    "py-1.5 px-0.5 rounded-lg font-bold text-[10px] transition-all duration-200 border-2 text-center leading-tight",
-                    isSelected
-                      ? "border-[#425733] bg-[#425733] text-white shadow-sm"
-                      : "border-gray-200 bg-white text-gray-600 hover:border-[#425733]/50 hover:bg-[#f8faf6]"
-                  )}
-                >
-                  {label}
-                </button>
-              );
-            })}
+        {isBểProduct && (
+          <div className="mb-4">
+            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">Chọn phiên bản</p>
+            <div className="grid grid-cols-3 gap-1">
+              {(["basic", "standard", "advanced"] as const).map((key) => {
+                const label = key === "basic" ? "Cơ bản" : key === "standard" ? "Tiêu chuẩn" : "Nâng cao";
+                const isSelected = selectedPackage === key;
+                return (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setSelectedPackage(key);
+                    }}
+                    className={cn(
+                      "py-1.5 px-0.5 rounded-lg font-bold text-[10px] transition-all duration-200 border-2 text-center leading-tight",
+                      isSelected
+                        ? "border-[#425733] bg-[#425733] text-white shadow-sm"
+                        : "border-gray-200 bg-white text-gray-600 hover:border-[#425733]/50 hover:bg-[#f8faf6]"
+                    )}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Quantity & Add to Cart Row */}
         <div className="flex items-center justify-between gap-2 mt-auto">
@@ -224,7 +231,7 @@ export function ProductCard({
             type="button"
             onClick={(e) => {
               e.preventDefault();
-              onAddToCart?.(selectedPackage, quantity);
+              onAddToCart?.(isBểProduct ? selectedPackage : "basic", quantity);
             }}
             className={cn(
               "flex-1 py-2 px-3 rounded-lg text-white text-xs font-bold transition-all flex items-center justify-center gap-1.5",

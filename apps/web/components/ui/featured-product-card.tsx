@@ -29,14 +29,22 @@ export function FeaturedProductCard(props: FeaturedProductCardProps) {
       ? props.salePrice
       : props.basePrice;
 
-    const pkgPriceAdjustment =
-      selectedPackage === "standard" ? 150000 :
-      selectedPackage === "advanced" ? 180000 : 0;
+    const isBể = 
+      props.category?.name?.toLowerCase().includes("bể") ||
+      props.name?.toLowerCase().includes("bể") ||
+      props.slug?.toLowerCase().includes("be");
+
+    const pkgPriceAdjustment = isBể
+      ? (selectedPackage === "standard" ? 150000 : selectedPackage === "advanced" ? 180000 : 0)
+      : 0;
 
     const price = base + pkgPriceAdjustment;
 
-    const pkgLabel = selectedPackage === "standard" ? "Gói tiêu chuẩn" :
-                     selectedPackage === "advanced" ? "Gói nâng cao" : "Gói cơ bản";
+    const variants: Record<string, string> = {};
+    if (isBể) {
+      variants["Phân loại"] = selectedPackage === "standard" ? "Gói tiêu chuẩn" :
+                              selectedPackage === "advanced" ? "Gói nâng cao" : "Gói cơ bản";
+    }
 
     addItem({
       productId: props.id,
@@ -44,7 +52,7 @@ export function FeaturedProductCard(props: FeaturedProductCardProps) {
       productImage: props.images[0] || "",
       price,
       quantity,
-      variants: { "Phân loại": pkgLabel },
+      variants,
     });
     showToast.success(`Đã thêm "${props.name}" vào giỏ hàng 🛒`);
   };
