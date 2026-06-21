@@ -93,7 +93,7 @@ async function FeaturedProductsSection() {
     <section className="py-24 px-6 bg-white">
       <div className="max-w-7xl mx-auto">
         <ScrollReveal direction="up">
-          <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-4">
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4">
             <div>
               <p className="text-[#425733] font-bold text-sm uppercase tracking-wide mb-3">Được Lựa Chọn Cho Bạn</p>
               <h2 className="text-3xl md:text-4xl font-bold" style={{ background: 'linear-gradient(135deg, #1a2e12, #425733)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Sản Phẩm Nổi Bật</h2>
@@ -105,6 +105,7 @@ async function FeaturedProductsSection() {
               </Link>
             </Button>
           </div>
+          <div className="w-full h-[1.5px] bg-gradient-to-r from-[#daebd0] via-[#a8c098]/40 to-transparent mb-12" />
         </ScrollReveal>
         {products.length === 0 ? (
           <ScrollReveal direction="up">
@@ -170,7 +171,7 @@ async function LatestBlogSection() {
     <section className="py-24 px-6 bg-white">
       <div className="max-w-7xl mx-auto">
         <ScrollReveal direction="up">
-          <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-4">
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4">
             <div>
 
               <h2 className="text-3xl md:text-4xl font-bold" style={{ background: 'linear-gradient(135deg, #1a2e12, #425733)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Góc Chia Sẻ</h2>
@@ -182,6 +183,7 @@ async function LatestBlogSection() {
               </Link>
             </Button>
           </div>
+          <div className="w-full h-[1.5px] bg-gradient-to-r from-[#daebd0] via-[#a8c098]/40 to-transparent mb-12" />
         </ScrollReveal>
         {latestPosts.length === 0 ? (
           <ScrollReveal direction="up">

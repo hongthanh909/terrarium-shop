@@ -214,7 +214,7 @@ export function ReviewMarquee({ className }: { className?: string }) {
 
               {/* Smartphone Mockup in the Center (col-span-6) */}
               <div className="col-span-12 md:col-span-6 flex justify-center relative order-1 md:order-2 select-none">
-                <div className="relative w-[320px] h-auto drop-shadow-[0_25px_50px_rgba(26,46,18,0.22)]">
+                <div className="relative w-[380px] h-auto drop-shadow-[0_25px_50px_rgba(26,46,18,0.22)]">
                   <img
                     src="/fb.svg"
                     alt="Facebook profile mockup"
