@@ -194,23 +194,12 @@ export function ReviewMarquee({ className }: { className?: string }) {
               </div>
 
               {/* Smartphone Mockup in the Center (col-span-6) */}
-              <div className="col-span-12 md:col-span-6 flex justify-center relative order-1 md:order-2">
-                {/* Smartphone Outer Shell */}
-                <div className="w-[300px] h-[590px] bg-black rounded-[44px] p-2.5 shadow-[0_25px_60px_-15px_rgba(26,46,18,0.25)] border-4 border-gray-800 relative overflow-hidden flex flex-col">
-                  {/* Dynamic Island Notch */}
-                  <div className="w-24 h-5.5 bg-black rounded-full absolute top-2.5 left-1/2 -translate-x-1/2 z-30 flex items-center justify-center">
-                    <span className="w-2 h-2 bg-gray-900 rounded-full ml-auto mr-3" />
-                  </div>
-
-                  {/* Phone Content Screen - Using high-resolution static screenshot image */}
-                  <div className="flex-1 bg-[#18191a] rounded-[34px] overflow-hidden relative select-none">
-                    <img
-                      src="/fb.svg"
-                      alt="Facebook profile mockup"
-                      className="w-full h-full object-cover rounded-[34px]"
-                    />
-                  </div>
-                </div>
+              <div className="col-span-12 md:col-span-6 flex justify-center relative order-1 md:order-2 select-none">
+                <img
+                  src="/fb.svg"
+                  alt="Facebook profile mockup"
+                  className="w-[285px] h-auto drop-shadow-[0_25px_50px_rgba(26,46,18,0.2)]"
+                />
               </div>
 
               {/* Right Stats Cards (col-span-3) */}
