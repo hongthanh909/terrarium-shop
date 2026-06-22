@@ -64,8 +64,21 @@ export async function POST(request: NextRequest) {
     }
 
     // ─── Xóa products trong DB ────────────────────────────────────────────────
-    await client.product.deleteMany({
-      where: { id: { in: ids } },
+    await client.$transaction(async (tx) => {
+      // Xóa các liên kết trước để tránh lỗi Foreign Key Constraint
+      const condition = { productId: { in: ids } };
+      await tx.review.deleteMany({ where: condition });
+      await tx.productVote.deleteMany({ where: condition });
+      await tx.wishlist.deleteMany({ where: condition });
+      await tx.weeklyFeatured.deleteMany({ where: condition });
+      await tx.seoMeta.deleteMany({ where: condition });
+      await tx.careGuide.deleteMany({ where: condition });
+      await tx.productVariantOption.deleteMany({ where: condition });
+      await tx.productVariant.deleteMany({ where: condition });
+
+      await tx.product.deleteMany({
+        where: { id: { in: ids } },
+      });
     });
 
     await logAdminAction(admin.id, "BULK_DELETE", "Product", "multiple", {

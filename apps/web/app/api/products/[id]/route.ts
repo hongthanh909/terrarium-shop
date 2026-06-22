@@ -99,8 +99,8 @@ export async function PUT(
       status,
       images,
       inventory,
-      variants = [],
-      variantOptions = [],
+      variants,
+      variantOptions,
       careGuideData,
       isFeatured,
     } = validatedData;
@@ -130,38 +130,42 @@ export async function PUT(
         } as any,
       });
 
-      // Delete existing variants and recreate
-      await tx.productVariant.deleteMany({
-        where: { productId: id },
-      });
-
-      if (variants.length > 0) {
-        await tx.productVariant.createMany({
-          data: variants.map((v: any) => ({
-            productId: id,
-            variantType: v.variantType,
-            value: v.value,
-            priceAdjustment: parseFloat(v.priceAdjustment) || 0,
-            inventory: v.inventory || 0,
-            sku: v.sku || null,
-          })),
+      // Delete and recreate variants ONLY if variants is explicitly passed in the request
+      if (variants !== undefined) {
+        await tx.productVariant.deleteMany({
+          where: { productId: id },
         });
+
+        if (variants.length > 0) {
+          await tx.productVariant.createMany({
+            data: variants.map((v: any) => ({
+              productId: id,
+              variantType: v.variantType,
+              value: v.value,
+              priceAdjustment: parseFloat(v.priceAdjustment) || 0,
+              inventory: v.inventory || 0,
+              sku: v.sku || null,
+            })),
+          });
+        }
       }
 
-      // Delete existing variant options and recreate
-      await tx.productVariantOption.deleteMany({
-        where: { productId: id },
-      });
-
-      if (variantOptions.length > 0) {
-        await tx.productVariantOption.createMany({
-          data: variantOptions.map((o: any) => ({
-            productId: id,
-            variantType: o.variantType,
-            options: o.options,
-            image: o.image || null,
-          })),
+      // Delete and recreate variant options ONLY if variantOptions is explicitly passed in the request
+      if (variantOptions !== undefined) {
+        await tx.productVariantOption.deleteMany({
+          where: { productId: id },
         });
+
+        if (variantOptions.length > 0) {
+          await tx.productVariantOption.createMany({
+            data: variantOptions.map((o: any) => ({
+              productId: id,
+              variantType: o.variantType,
+              options: o.options,
+              image: o.image || null,
+            })),
+          });
+        }
       }
 
       // Update or create care guide
@@ -272,8 +276,20 @@ export async function DELETE(
       }
     }
 
-    // ─── Xóa product (cascade xóa variants, reviews, v.v.) ───────────────────
-    await client.product.delete({ where: { id } });
+    // ─── Xóa product và các liên kết ─────────────────────────────────
+    await client.$transaction(async (tx) => {
+      const condition = { productId: id };
+      await tx.review.deleteMany({ where: condition });
+      await tx.productVote.deleteMany({ where: condition });
+      await tx.wishlist.deleteMany({ where: condition });
+      await tx.weeklyFeatured.deleteMany({ where: condition });
+      await tx.seoMeta.deleteMany({ where: condition });
+      await tx.careGuide.deleteMany({ where: condition });
+      await tx.productVariantOption.deleteMany({ where: condition });
+      await tx.productVariant.deleteMany({ where: condition });
+
+      await tx.product.delete({ where: { id } });
+    });
 
     await logAdminAction(admin.id, "DELETE", "Product", id, {
       name: product.name,

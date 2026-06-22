@@ -240,7 +240,6 @@ export default function EditProductPage() {
           ? new Date(formData.saleEndDate + ":00+07:00").toISOString()
           : null,
         images: allImages,
-        variantOptions: [],
         careGuideData: {
           watering: careGuide.watering,
           sunlight: careGuide.sunlight,
