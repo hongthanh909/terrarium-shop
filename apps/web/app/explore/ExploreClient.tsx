@@ -94,7 +94,7 @@ function PriceTag({ product, className = "" }: { product: Product; className?: s
       )}
       <span className="font-bold">{displayPrice.toLocaleString("vi-VN")}₫</span>
       {isOnSale && (
-        <span className="text-sm line-through opacity-50">{base.toLocaleString("vi-VN")}₫</span>
+        <span className="text-sm text-red-500 font-medium line-through">{base.toLocaleString("vi-VN")}₫</span>
       )}
     </div>
   );
@@ -495,61 +495,47 @@ function BentoCard({
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.4 }}
-      className={`group relative rounded-2xl overflow-hidden bg-gray-100 ${className}`}
+      className={`group relative rounded-2xl overflow-hidden bg-white border border-gray-100 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 flex flex-col h-full ${className}`}
     >
-      {/* Image */}
-      {product.images[0] ? (
-        <ImageWrapper src={product.images[0]} alt={product.name} fill className="object-cover" />
-      ) : (
-        <div className="absolute inset-0 flex items-center justify-center">
-          <Package className="w-12 h-12 text-gray-300" />
-        </div>
-      )}
+      {/* Image Container */}
+      <div className="relative w-full flex-1 bg-white overflow-hidden min-h-[110px]">
+        {product.images[0] ? (
+          <ImageWrapper src={product.images[0]} alt={product.name} fill className="object-contain p-2 bg-[#f8faf6]" />
+        ) : (
+          <div className="absolute inset-0 flex items-center justify-center text-gray-400">
+            <Package className="w-10 h-10" />
+          </div>
+        )}
+      </div>
 
-      {/* Gradient overlay — lighter on small cards so image breathes */}
-      <div className={`absolute inset-0 bg-gradient-to-t to-transparent transition-opacity ${
-        showDetails
-          ? "from-black/65 via-black/15 opacity-80 group-hover:opacity-90"
-          : "from-black/55 via-black/5 opacity-70 group-hover:opacity-80"
-      }`} />
-
-      {/* Content */}
-      <div className="absolute inset-0 p-4 sm:p-5 flex flex-col justify-end">
-        {/* Category eyebrow only on large card — taste-skill: max 1 eyebrow per 3 sections */}
+      {/* Content Section */}
+      <div className="p-3 sm:p-4 bg-white border-t border-gray-100 flex flex-col flex-shrink-0">
         {showDetails && (
-          <span className="text-white/60 text-[11px] font-semibold uppercase tracking-wider mb-1">
+          <span className="text-gray-400 text-[10px] font-semibold uppercase tracking-wider mb-1 block">
             {product.category?.name || "Terrarium"}
           </span>
         )}
-        <Link href={`/products/${product.slug}`}>
-          <h3 className={`font-bold text-white group-hover:text-white/90 transition-colors leading-snug ${showDetails ? "text-lg sm:text-xl" : "text-sm"} line-clamp-2`}>
+        <Link href={`/products/${product.slug}`} className="block mb-1">
+          <h3 className={`font-bold text-gray-900 group-hover:text-[#425733] transition-colors leading-snug line-clamp-2 ${showDetails ? "text-base sm:text-lg" : "text-xs sm:text-sm"}`}>
             {product.name}
           </h3>
         </Link>
-        <PriceTag product={product} className={`text-white mt-1.5 ${showDetails ? "text-lg" : "text-sm"}`} />
-
-        {/* Add to cart — only on large card or hover */}
-        {showDetails ? (
+        
+        <PriceTag product={product} className={`text-[#2d3d23] mt-0.5 ${showDetails ? "text-base" : "text-xs"}`} />
+        
+        {showDetails && (
           <div className="flex gap-2 mt-3">
-            <Button asChild size="sm" className="bg-white text-[#1a2e12] hover:bg-white/90 font-semibold rounded-lg shadow-md text-xs">
+            <Button asChild size="sm" className="bg-[#425733] text-white hover:bg-[#364a29] font-semibold rounded-xl text-xs h-8 px-4">
               <Link href={`/products/${product.slug}`}>Xem chi tiết</Link>
             </Button>
             <button
               onClick={(e) => { e.preventDefault(); onAddToCart(); }}
-              className="flex items-center gap-1.5 bg-white/15 backdrop-blur-sm border border-white/30 text-white px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-white/25 transition-all"
+              className="flex items-center gap-1.5 bg-gray-100 hover:bg-gray-200 text-[#425733] px-3 py-1.5 rounded-xl text-xs font-semibold transition-all h-8"
             >
               <ShoppingBasket className="w-3.5 h-3.5" />
-              Thêm
+              Thêm vào giỏ
             </button>
           </div>
-        ) : (
-          <button
-            onClick={(e) => { e.preventDefault(); onAddToCart(); }}
-            className="mt-2 opacity-0 group-hover:opacity-100 flex items-center gap-1.5 bg-white/20 backdrop-blur-sm border border-white/30 text-white px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-white/30 transition-all w-fit"
-          >
-            <ShoppingBasket className="w-3.5 h-3.5" />
-            Thêm vào giỏ
-          </button>
         )}
       </div>
     </motion.div>

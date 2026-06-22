@@ -141,7 +141,7 @@ export function ProductCard({
               {displayPrice.toLocaleString("vi-VN")}₫
             </span>
             {isOnSale && (
-              <span className="text-xs text-gray-400 line-through">
+              <span className="text-xs text-red-500 font-medium line-through">
                 {(basePrice + pkgPriceAdjustment).toLocaleString("vi-VN")}₫
               </span>
             )}

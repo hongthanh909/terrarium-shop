@@ -359,7 +359,7 @@ export function ProductDetailClient({
   const getPriceWithVariants = () => {
     if (!product) return { price: 0, base: 0, isSale: false };
     let base = parseFloat(product.basePrice.toString());
-    const hasSale = product.salePrice && product.salePrice !== null;
+    const hasSale = product.salePrice && product.salePrice !== null && parseFloat(product.salePrice.toString()) < base;
     const isSaleValid = hasSale && (!product.saleEndDate || new Date(product.saleEndDate) > new Date());
     let isSale = false;
     let currentBase = base;
@@ -713,7 +713,7 @@ export function ProductDetailClient({
             <div className="flex flex-wrap items-baseline gap-3 mb-6 p-4 bg-[#f8faf6]/80 border border-[#eaefeb] rounded-2xl">
               {/* Old price */}
               {(isSale || (appliedVoucher && appliedVoucher.type !== "FREE_SHIPPING")) && (
-                <span className="text-base text-gray-400 font-medium line-through">
+                <span className="text-base text-red-500 font-semibold line-through">
                   {(isSale ? originalPrice : finalPrice).toLocaleString("vi-VN")}₫
                 </span>
               )}
