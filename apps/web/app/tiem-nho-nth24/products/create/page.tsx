@@ -52,6 +52,11 @@ export default function CreateProductPage() {
     status: "DRAFT",
     inventory: 0,
     isFeatured: false,
+    size: "",
+    soil: "",
+    moss: "",
+    driftwood: "",
+    accessories: "",
   });
 
   const [careGuide, setCareGuide] = useState({
@@ -72,10 +77,20 @@ export default function CreateProductPage() {
     watering: string[];
     sunlight: string[];
     commonIssues: string[];
+    size: string[];
+    soil: string[];
+    moss: string[];
+    driftwood: string[];
+    accessories: string[];
   }>({
     watering: [],
     sunlight: [],
     commonIssues: [],
+    size: [],
+    soil: [],
+    moss: [],
+    driftwood: [],
+    accessories: [],
   });
 
   useEffect(() => {
@@ -170,6 +185,11 @@ export default function CreateProductPage() {
           : null,
         images: allImages,
         variantOptions: [],
+        size: formData.size || null,
+        soil: formData.soil || null,
+        moss: formData.moss || null,
+        driftwood: formData.driftwood || null,
+        accessories: formData.accessories || null,
         careGuideData: {
           watering: careGuide.watering,
           sunlight: careGuide.sunlight,
@@ -416,6 +436,61 @@ export default function CreateProductPage() {
           {/* Hidden inputs */}
           <input ref={mainImageInputRef} type="file" accept="image/*" onChange={handleMainImageUpload} className="hidden" />
           <input ref={subImageInputRef} type="file" accept="image/*" multiple onChange={handleSubImageUpload} className="hidden" />
+        </div>
+
+        {/* ── Thông số chi tiết ───────────────────────────── */}
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+          <div className="flex items-center gap-2 mb-5">
+            <div className="w-7 h-7 rounded-lg bg-[#e3ebdd] flex items-center justify-center">
+              <span className="text-sm">📐</span>
+            </div>
+            <h3 className="text-base font-semibold text-gray-800">Thông Số Chi Tiết</h3>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <SuggestionInput 
+              label="Size bể" 
+              value={formData.size} 
+              onChange={(val) => setFormData({ ...formData, size: val })} 
+              placeholder="VD: 15x15x20cm, D18cm" 
+              suggestions={suggestions.size}
+            />
+
+            <SuggestionInput 
+              label="Loại đất" 
+              value={formData.soil} 
+              onChange={(val) => setFormData({ ...formData, soil: val })} 
+              placeholder="VD: Đất bán cạn chuyên dụng, Akadama" 
+              suggestions={suggestions.soil}
+            />
+
+            <SuggestionInput 
+              label="Dùng rêu gì" 
+              value={formData.moss} 
+              onChange={(val) => setFormData({ ...formData, moss: val })} 
+              placeholder="VD: Rêu đầu trắng, rêu cỏ, rêu nhung" 
+              suggestions={suggestions.moss}
+            />
+
+            <SuggestionInput 
+              label="Bố cục lũa" 
+              value={formData.driftwood} 
+              onChange={(val) => setFormData({ ...formData, driftwood: val })} 
+              placeholder="VD: Lũa linh sam, lũa đỗ quyên" 
+              suggestions={suggestions.driftwood}
+            />
+
+            <div className="md:col-span-2">
+              <SuggestionInput 
+                label="Phụ kiện kèm theo" 
+                multiline 
+                rows={2}
+                value={formData.accessories} 
+                onChange={(val) => setFormData({ ...formData, accessories: val })} 
+                placeholder="VD: Đèn LED, tượng trang trí, nhíp gắp" 
+                suggestions={suggestions.accessories}
+              />
+            </div>
+          </div>
         </div>
 
         {/* ── Hướng dẫn chăm sóc ───────────────────────────── */}

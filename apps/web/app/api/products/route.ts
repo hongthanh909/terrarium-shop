@@ -185,6 +185,11 @@ export async function POST(request: NextRequest) {
       salePrice: salePriceRaw,
       saleEndDate: saleEndDateRaw,
       isFeatured,
+      size,
+      soil,
+      moss,
+      driftwood,
+      accessories,
     } = validatedData;
 
     // Resolve sale fields
@@ -209,6 +214,11 @@ export async function POST(request: NextRequest) {
           images,
           featured: !!isFeatured,
           inventory: validatedData.inventory ?? 0,
+          size: size ?? null,
+          soil: soil ?? null,
+          moss: moss ?? null,
+          driftwood: driftwood ?? null,
+          accessories: accessories ?? null,
         } as any,
       });
 

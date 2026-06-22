@@ -177,6 +177,11 @@ model Product {
   categoryId    String
   status        ProductStatus  @default(DRAFT)
   images        String[]
+  size          String?        // Kích thước bể
+  soil          String?        // Loại đất
+  moss          String?        // Loại rêu
+  driftwood     String?        // Bố cục lũa
+  accessories   String?        // Phụ kiện
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
 

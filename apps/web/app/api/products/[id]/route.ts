@@ -103,6 +103,11 @@ export async function PUT(
       variantOptions,
       careGuideData,
       isFeatured,
+      size,
+      soil,
+      moss,
+      driftwood,
+      accessories,
     } = validatedData;
 
     // Extract sale fields from body
@@ -127,6 +132,11 @@ export async function PUT(
           ...(inventory !== undefined && { inventory }),
           ...(isFeatured !== undefined && { featured: isFeatured }),
           ...(createdAt !== undefined && { createdAt }),
+          size: size !== undefined ? size : undefined,
+          soil: soil !== undefined ? soil : undefined,
+          moss: moss !== undefined ? moss : undefined,
+          driftwood: driftwood !== undefined ? driftwood : undefined,
+          accessories: accessories !== undefined ? accessories : undefined,
         } as any,
       });
 
@@ -178,12 +188,16 @@ export async function PUT(
             sunlight: careGuideData.sunlight || "",
             temperature: careGuideData.temperature || "",
             humidity: careGuideData.humidity || "",
+            commonIssues: careGuideData.commonIssues ?? null,
+            videoUrl: careGuideData.videoUrl ?? null,
           },
           update: {
             watering: careGuideData.watering || "",
             sunlight: careGuideData.sunlight || "",
             temperature: careGuideData.temperature || "",
             humidity: careGuideData.humidity || "",
+            commonIssues: careGuideData.commonIssues ?? null,
+            videoUrl: careGuideData.videoUrl ?? null,
           },
         });
       }

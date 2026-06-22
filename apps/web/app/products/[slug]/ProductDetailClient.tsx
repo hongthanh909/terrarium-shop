@@ -1060,12 +1060,61 @@ export function ProductDetailClient({
             {/* Details tab */}
             {activeTab === "details" && (
               <div className="bg-white rounded-b-2xl rounded-tr-2xl border border-t-0 border-border p-6 sm:p-8">
-                <p className="text-muted-foreground mb-5 leading-relaxed">{product.name} là sản phẩm terrarium được chế tác thủ công, mang vẻ đẹp thiên nhiên thu nhỏ vào không gian sống của bạn.</p>
-                <ul className="space-y-2 text-muted-foreground">
-                  {["Bình thủy tinh chất lượng cao", "Đất trồng và lớp thoát nước cao cấp", "Cây được chọn lọc kỹ càng", "Phụ kiện trang trí (đá, rêu, v.v.)", "Hướng dẫn chăm sóc kèm theo"].map((item) => (
-                    <li key={item} className="flex items-center gap-2"><span className="text-primary font-bold">✓</span> {item}</li>
-                  ))}
-                </ul>
+                <p className="text-muted-foreground mb-5 leading-relaxed">
+                  {product.name} là sản phẩm terrarium được chế tác thủ công, mang vẻ đẹp thiên nhiên thu nhỏ vào không gian sống của bạn.
+                </p>
+                {(product.size || product.soil || product.moss || product.driftwood || product.accessories) ? (
+                  <ul className="space-y-3 text-sm text-muted-foreground">
+                    {product.size && (
+                      <li className="flex items-start gap-2.5">
+                        <span className="text-primary font-bold mt-0.5">✓</span>
+                        <div>
+                          <strong className="text-gray-700 font-semibold">Kích thước bể:</strong> {product.size}
+                        </div>
+                      </li>
+                    )}
+                    {product.soil && (
+                      <li className="flex items-start gap-2.5">
+                        <span className="text-primary font-bold mt-0.5">✓</span>
+                        <div>
+                          <strong className="text-gray-700 font-semibold">Loại đất sử dụng:</strong> {product.soil}
+                        </div>
+                      </li>
+                    )}
+                    {product.moss && (
+                      <li className="flex items-start gap-2.5">
+                        <span className="text-primary font-bold mt-0.5">✓</span>
+                        <div>
+                          <strong className="text-gray-700 font-semibold">Loại rêu sử dụng:</strong> {product.moss}
+                        </div>
+                      </li>
+                    )}
+                    {product.driftwood && (
+                      <li className="flex items-start gap-2.5">
+                        <span className="text-primary font-bold mt-0.5">✓</span>
+                        <div>
+                          <strong className="text-gray-700 font-semibold">Bố cục lũa:</strong> {product.driftwood}
+                        </div>
+                      </li>
+                    )}
+                    {product.accessories && (
+                      <li className="flex items-start gap-2.5">
+                        <span className="text-primary font-bold mt-0.5">✓</span>
+                        <div>
+                          <strong className="text-gray-700 font-semibold">Phụ kiện đi kèm:</strong> {product.accessories}
+                        </div>
+                      </li>
+                    )}
+                  </ul>
+                ) : (
+                  <ul className="space-y-2 text-muted-foreground">
+                    {["Bình thủy tinh chất lượng cao", "Đất trồng và lớp thoát nước cao cấp", "Cây được chọn lọc kỹ càng", "Phụ kiện trang trí (đá, rêu, v.v.)", "Hướng dẫn chăm sóc kèm theo"].map((item) => (
+                      <li key={item} className="flex items-center gap-2">
+                        <span className="text-primary font-bold">✓</span> {item}
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </div>
             )}
 

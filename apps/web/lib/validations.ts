@@ -51,6 +51,11 @@ export const createProductSchema = z.object({
   variants: z.array(z.any()).optional(),
   variantOptions: z.array(variantOptionSchema).optional(),
   careGuideData: careGuideSchema.optional().nullable(),
+  size: z.string().optional().nullable(),
+  soil: z.string().optional().nullable(),
+  moss: z.string().optional().nullable(),
+  driftwood: z.string().optional().nullable(),
+  accessories: z.string().optional().nullable(),
 });
 
 export const updateProductSchema = createProductSchema.partial();
