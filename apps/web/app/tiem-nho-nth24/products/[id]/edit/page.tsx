@@ -81,11 +81,49 @@ export default function EditProductPage() {
     videoUrl: "",
   });
 
+  const [tempMin, setTempMin] = useState(18);
+  const [tempMax, setTempMax] = useState(25);
+  const [humidityMin, setHumidityMin] = useState(60);
+  const [humidityMax, setHumidityMax] = useState(80);
+
+  const [suggestions, setSuggestions] = useState<{
+    watering: string[];
+    sunlight: string[];
+    commonIssues: string[];
+  }>({
+    watering: [],
+    sunlight: [],
+    commonIssues: [],
+  });
+
+  const parseRange = (val: string | null | undefined, defaultMin: number, defaultMax: number): [number, number] => {
+    if (!val) return [defaultMin, defaultMax];
+    const match = val.match(/(\d+)\s*[-–~to]\s*(\d+)/i);
+    if (match) {
+      return [parseInt(match[1]) || defaultMin, parseInt(match[2]) || defaultMax];
+    }
+    const singleMatch = val.match(/(\d+)/);
+    if (singleMatch) {
+      const num = parseInt(singleMatch[1]) || defaultMin;
+      return [num, num];
+    }
+    return [defaultMin, defaultMax];
+  };
+
   // Fetch categories
   useEffect(() => {
     fetch("/api/categories?nocache=true")
       .then((r) => r.json())
       .then((data) => setCategories(Array.isArray(data) ? data : (data.categories ?? [])))
+      .catch(() => {});
+
+    fetch("/api/admin/care-guides/suggestions")
+      .then((r) => r.json())
+      .then((data) => {
+        if (data && !data.error) {
+          setSuggestions(data);
+        }
+      })
       .catch(() => {});
   }, []);
 
@@ -121,14 +159,30 @@ export default function EditProductPage() {
 
         // Pre-fill care guide
         if (product.careGuide) {
+          const watering = product.careGuide.watering || "";
+          const sunlight = product.careGuide.sunlight || "";
+          const temperature = product.careGuide.temperature || "";
+          const humidity = product.careGuide.humidity || "";
+          const commonIssues = product.careGuide.commonIssues || "";
+          const videoUrl = product.careGuide.videoUrl || "";
+
           setCareGuide({
-            watering: product.careGuide.watering || "",
-            sunlight: product.careGuide.sunlight || "",
-            temperature: product.careGuide.temperature || "",
-            humidity: product.careGuide.humidity || "",
-            commonIssues: product.careGuide.commonIssues || "",
-            videoUrl: product.careGuide.videoUrl || "",
+            watering,
+            sunlight,
+            temperature,
+            humidity,
+            commonIssues,
+            videoUrl,
           });
+
+          // Parse range values
+          const [tMin, tMax] = parseRange(temperature, 18, 25);
+          setTempMin(tMin);
+          setTempMax(tMax);
+
+          const [hMin, hMax] = parseRange(humidity, 60, 80);
+          setHumidityMin(hMin);
+          setHumidityMax(hMax);
         }
       })
       .catch(() => {
@@ -510,16 +564,182 @@ export default function EditProductPage() {
             </div>
             <h3 className="text-base font-semibold text-gray-800">Hướng Dẫn Chăm Sóc</h3>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <FormField label="Tưới nước" type="text" value={careGuide.watering} onChange={(e) => setCareGuide({ ...careGuide, watering: e.target.value })} placeholder="VD: Tưới 2-3 lần/tuần" />
-            <FormField label="Ánh sáng" type="text" value={careGuide.sunlight} onChange={(e) => setCareGuide({ ...careGuide, sunlight: e.target.value })} placeholder="VD: Ánh sáng gián tiếp" />
-            <FormField label="Nhiệt độ" type="text" value={careGuide.temperature} onChange={(e) => setCareGuide({ ...careGuide, temperature: e.target.value })} placeholder="VD: 18–25°C" />
-            <FormField label="Độ ẩm" type="text" value={careGuide.humidity} onChange={(e) => setCareGuide({ ...careGuide, humidity: e.target.value })} placeholder="VD: 60–80%" />
-            <div className="md:col-span-2">
-              <FormField label="Vấn đề thường gặp &amp; cách xử lý" multiline rows={3} value={careGuide.commonIssues} onChange={(e) => setCareGuide({ ...careGuide, commonIssues: e.target.value })} placeholder="VD: Lá vàng → giảm tưới; Mốc trắng → tăng thông thoáng" />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="flex flex-col gap-1 w-full">
+              <FormField 
+                label="Tưới nước" 
+                type="text" 
+                value={careGuide.watering} 
+                onChange={(e) => setCareGuide({ ...careGuide, watering: e.target.value })} 
+                placeholder="VD: Tưới 2-3 lần/tuần" 
+              />
+              {suggestions.watering.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 mt-1">
+                  <span className="text-[11px] text-gray-400 self-center">Đã dùng:</span>
+                  {suggestions.watering.slice(0, 6).map((s, i) => (
+                    <button
+                      key={i}
+                      type="button"
+                      onClick={() => setCareGuide(prev => ({ ...prev, watering: s }))}
+                      className="text-[11px] bg-[#f0f4ee] hover:bg-[#e3ebdd] text-[#425733] px-2 py-0.5 rounded-full transition-colors font-medium"
+                    >
+                      {s}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
+
+            <div className="flex flex-col gap-1 w-full">
+              <FormField 
+                label="Ánh sáng" 
+                type="text" 
+                value={careGuide.sunlight} 
+                onChange={(e) => setCareGuide({ ...careGuide, sunlight: e.target.value })} 
+                placeholder="VD: Ánh sáng gián tiếp" 
+              />
+              {suggestions.sunlight.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 mt-1">
+                  <span className="text-[11px] text-gray-400 self-center">Đã dùng:</span>
+                  {suggestions.sunlight.slice(0, 6).map((s, i) => (
+                    <button
+                      key={i}
+                      type="button"
+                      onClick={() => setCareGuide(prev => ({ ...prev, sunlight: s }))}
+                      className="text-[11px] bg-[#f0f4ee] hover:bg-[#e3ebdd] text-[#425733] px-2 py-0.5 rounded-full transition-colors font-medium"
+                    >
+                      {s}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Range slider for Temperature */}
+            <div className="flex flex-col gap-1 w-full bg-gray-50/50 p-4 rounded-xl border border-gray-100">
+              <label className="block text-sm font-semibold text-gray-700">
+                Nhiệt độ thích hợp: <span className="text-[#425733] font-bold text-base">{tempMin}°C - {tempMax}°C</span>
+              </label>
+              <div className="flex gap-4 mt-2">
+                <div className="flex-1">
+                  <div className="flex justify-between text-[11px] text-gray-500 mb-1">
+                    <span>Tối thiểu</span>
+                    <span className="font-semibold">{tempMin}°C</span>
+                  </div>
+                  <input 
+                    type="range" 
+                    min="0" 
+                    max="50" 
+                    value={tempMin} 
+                    onChange={(e) => {
+                      const minVal = Math.min(parseInt(e.target.value) || 0, tempMax);
+                      setTempMin(minVal);
+                      setCareGuide(prev => ({ ...prev, temperature: `${minVal}-${tempMax}°C` }));
+                    }}
+                    className="w-full accent-[#425733] cursor-pointer h-1.5 bg-gray-200 rounded-lg appearance-none" 
+                  />
+                </div>
+                <div className="flex-1">
+                  <div className="flex justify-between text-[11px] text-gray-500 mb-1">
+                    <span>Tối đa</span>
+                    <span className="font-semibold">{tempMax}°C</span>
+                  </div>
+                  <input 
+                    type="range" 
+                    min="0" 
+                    max="50" 
+                    value={tempMax} 
+                    onChange={(e) => {
+                      const maxVal = Math.max(parseInt(e.target.value) || 0, tempMin);
+                      setTempMax(maxVal);
+                      setCareGuide(prev => ({ ...prev, temperature: `${tempMin}-${maxVal}°C` }));
+                    }}
+                    className="w-full accent-[#425733] cursor-pointer h-1.5 bg-gray-200 rounded-lg appearance-none" 
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Range slider for Humidity */}
+            <div className="flex flex-col gap-1 w-full bg-gray-50/50 p-4 rounded-xl border border-gray-100">
+              <label className="block text-sm font-semibold text-gray-700">
+                Độ ẩm thích hợp: <span className="text-[#425733] font-bold text-base">{humidityMin}% - {humidityMax}%</span>
+              </label>
+              <div className="flex gap-4 mt-2">
+                <div className="flex-1">
+                  <div className="flex justify-between text-[11px] text-gray-500 mb-1">
+                    <span>Tối thiểu</span>
+                    <span className="font-semibold">{humidityMin}%</span>
+                  </div>
+                  <input 
+                    type="range" 
+                    min="0" 
+                    max="100" 
+                    value={humidityMin} 
+                    onChange={(e) => {
+                      const minVal = Math.min(parseInt(e.target.value) || 0, humidityMax);
+                      setHumidityMin(minVal);
+                      setCareGuide(prev => ({ ...prev, humidity: `${minVal}-${humidityMax}%` }));
+                    }}
+                    className="w-full accent-[#425733] cursor-pointer h-1.5 bg-gray-200 rounded-lg appearance-none" 
+                  />
+                </div>
+                <div className="flex-1">
+                  <div className="flex justify-between text-[11px] text-gray-500 mb-1">
+                    <span>Tối đa</span>
+                    <span className="font-semibold">{humidityMax}%</span>
+                  </div>
+                  <input 
+                    type="range" 
+                    min="0" 
+                    max="100" 
+                    value={humidityMax} 
+                    onChange={(e) => {
+                      const maxVal = Math.max(parseInt(e.target.value) || 0, humidityMin);
+                      setHumidityMax(maxVal);
+                      setCareGuide(prev => ({ ...prev, humidity: `${humidityMin}-${maxVal}%` }));
+                    }}
+                    className="w-full accent-[#425733] cursor-pointer h-1.5 bg-gray-200 rounded-lg appearance-none" 
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="md:col-span-2 flex flex-col gap-1 w-full">
+              <FormField 
+                label="Vấn đề thường gặp & cách xử lý" 
+                multiline 
+                rows={3} 
+                value={careGuide.commonIssues} 
+                onChange={(e) => setCareGuide({ ...careGuide, commonIssues: e.target.value })} 
+                placeholder="VD: Lá vàng → giảm tưới; Mốc trắng → tăng thông thoáng" 
+              />
+              {suggestions.commonIssues.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 mt-1">
+                  <span className="text-[11px] text-gray-400 self-center">Đã dùng:</span>
+                  {suggestions.commonIssues.slice(0, 6).map((s, i) => (
+                    <button
+                      key={i}
+                      type="button"
+                      onClick={() => setCareGuide(prev => ({ ...prev, commonIssues: s }))}
+                      className="text-[11px] bg-[#f0f4ee] hover:bg-[#e3ebdd] text-[#425733] px-2 py-0.5 rounded-full transition-colors font-medium text-left max-w-full truncate"
+                      title={s}
+                    >
+                      {s}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
             <div className="md:col-span-2">
-              <FormField label="Video hướng dẫn (URL)" type="url" value={careGuide.videoUrl} onChange={(e) => setCareGuide({ ...careGuide, videoUrl: e.target.value })} placeholder="https://youtube.com/..." />
+              <FormField 
+                label="Video hướng dẫn (URL)" 
+                type="url" 
+                value={careGuide.videoUrl} 
+                onChange={(e) => setCareGuide({ ...careGuide, videoUrl: e.target.value })} 
+                placeholder="https://youtube.com/..." 
+              />
             </div>
           </div>
         </div>
