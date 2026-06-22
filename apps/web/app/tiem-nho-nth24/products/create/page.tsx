@@ -10,6 +10,7 @@ import {
 import { showToast } from "@/components/ui/custom-toast";
 import { FormField } from "@/components/admin/ui/FormField";
 import { FormSelect } from "@/components/admin/ui/FormSelect";
+import { SuggestionInput } from "@/components/admin/ui/SuggestionInput";
 import { compressImage } from "@/lib/image";
 
 interface Category {
@@ -426,55 +427,21 @@ export default function CreateProductPage() {
             <h3 className="text-base font-semibold text-gray-800">Hướng Dẫn Chăm Sóc</h3>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="flex flex-col gap-1 w-full">
-              <FormField 
-                label="Tưới nước" 
-                type="text" 
-                value={careGuide.watering} 
-                onChange={(e) => setCareGuide({ ...careGuide, watering: e.target.value })} 
-                placeholder="VD: Tưới 2-3 lần/tuần" 
-              />
-              {suggestions.watering.length > 0 && (
-                <div className="flex flex-wrap gap-1.5 mt-1">
-                  <span className="text-[11px] text-gray-400 self-center">Đã dùng:</span>
-                  {suggestions.watering.slice(0, 6).map((s, i) => (
-                    <button
-                      key={i}
-                      type="button"
-                      onClick={() => setCareGuide(prev => ({ ...prev, watering: s }))}
-                      className="text-[11px] bg-[#f0f4ee] hover:bg-[#e3ebdd] text-[#425733] px-2 py-0.5 rounded-full transition-colors font-medium"
-                    >
-                      {s}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
+            <SuggestionInput 
+              label="Tưới nước" 
+              value={careGuide.watering} 
+              onChange={(val) => setCareGuide({ ...careGuide, watering: val })} 
+              placeholder="VD: Tưới 2-3 lần/tuần" 
+              suggestions={suggestions.watering}
+            />
 
-            <div className="flex flex-col gap-1 w-full">
-              <FormField 
-                label="Ánh sáng" 
-                type="text" 
-                value={careGuide.sunlight} 
-                onChange={(e) => setCareGuide({ ...careGuide, sunlight: e.target.value })} 
-                placeholder="VD: Ánh sáng gián tiếp" 
-              />
-              {suggestions.sunlight.length > 0 && (
-                <div className="flex flex-wrap gap-1.5 mt-1">
-                  <span className="text-[11px] text-gray-400 self-center">Đã dùng:</span>
-                  {suggestions.sunlight.slice(0, 6).map((s, i) => (
-                    <button
-                      key={i}
-                      type="button"
-                      onClick={() => setCareGuide(prev => ({ ...prev, sunlight: s }))}
-                      className="text-[11px] bg-[#f0f4ee] hover:bg-[#e3ebdd] text-[#425733] px-2 py-0.5 rounded-full transition-colors font-medium"
-                    >
-                      {s}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
+            <SuggestionInput 
+              label="Ánh sáng" 
+              value={careGuide.sunlight} 
+              onChange={(val) => setCareGuide({ ...careGuide, sunlight: val })} 
+              placeholder="VD: Ánh sáng gián tiếp" 
+              suggestions={suggestions.sunlight}
+            />
 
             {/* Range slider for Temperature */}
             <div className="flex flex-col gap-1 w-full bg-gray-50/50 p-4 rounded-xl border border-gray-100">
@@ -566,31 +533,16 @@ export default function CreateProductPage() {
               </div>
             </div>
 
-            <div className="md:col-span-2 flex flex-col gap-1 w-full">
-              <FormField 
+            <div className="md:col-span-2">
+              <SuggestionInput 
                 label="Vấn đề thường gặp & cách xử lý" 
                 multiline 
-                rows={3} 
+                rows={3}
                 value={careGuide.commonIssues} 
-                onChange={(e) => setCareGuide({ ...careGuide, commonIssues: e.target.value })} 
+                onChange={(val) => setCareGuide({ ...careGuide, commonIssues: val })} 
                 placeholder="VD: Lá vàng → giảm tưới; Mốc trắng → tăng thông thoáng" 
+                suggestions={suggestions.commonIssues}
               />
-              {suggestions.commonIssues.length > 0 && (
-                <div className="flex flex-wrap gap-1.5 mt-1">
-                  <span className="text-[11px] text-gray-400 self-center">Đã dùng:</span>
-                  {suggestions.commonIssues.slice(0, 6).map((s, i) => (
-                    <button
-                      key={i}
-                      type="button"
-                      onClick={() => setCareGuide(prev => ({ ...prev, commonIssues: s }))}
-                      className="text-[11px] bg-[#f0f4ee] hover:bg-[#e3ebdd] text-[#425733] px-2 py-0.5 rounded-full transition-colors font-medium text-left max-w-full truncate"
-                      title={s}
-                    >
-                      {s}
-                    </button>
-                  ))}
-                </div>
-              )}
             </div>
 
             <div className="md:col-span-2">
