@@ -303,7 +303,7 @@ function ProductCardHero({
             {displayPrice.toLocaleString("vi-VN")}₫
           </span>
           {isOnSale && (
-            <span className="text-sm text-gray-400 line-through">
+            <span className="text-sm text-red-500 line-through">
               {basePrice.toLocaleString("vi-VN")}₫
             </span>
           )}

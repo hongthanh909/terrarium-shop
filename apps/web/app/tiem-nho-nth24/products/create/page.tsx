@@ -174,6 +174,14 @@ export default function CreateProductPage() {
         return parseFloat(val.replace(/\./g, "")) || 0;
       };
 
+      const base = cleanPrice(formData.basePrice);
+      const sale = formData.salePrice ? cleanPrice(formData.salePrice) : null;
+      if (sale !== null && sale >= base) {
+        showToast.error("Giá khuyến mãi phải nhỏ hơn giá gốc");
+        setLoading(false);
+        return;
+      }
+
       const productData: Record<string, unknown> = {
         ...formData,
         basePrice: cleanPrice(formData.basePrice),

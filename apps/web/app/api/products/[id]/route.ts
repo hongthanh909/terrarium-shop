@@ -115,6 +115,25 @@ export async function PUT(
     const saleEndDate = body.saleEndDate ? new Date(body.saleEndDate) : null;
     const createdAt = body.createdAt ? new Date(body.createdAt) : undefined;
 
+    if (salePrice !== null) {
+      let finalBasePrice = basePrice;
+      if (finalBasePrice === undefined) {
+        const existing = await client.product.findUnique({
+          where: { id },
+          select: { basePrice: true },
+        });
+        if (existing) {
+          finalBasePrice = Number(existing.basePrice);
+        }
+      }
+      if (finalBasePrice !== undefined && salePrice >= finalBasePrice) {
+        return NextResponse.json(
+          { error: "Giá khuyến mãi phải nhỏ hơn giá gốc" },
+          { status: 400 }
+        );
+      }
+    }
+
     const product = await client.$transaction(async (tx) => {
       // Update product
       const updatedProduct = await tx.product.update({

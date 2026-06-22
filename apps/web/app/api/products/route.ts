@@ -199,6 +199,13 @@ export async function POST(request: NextRequest) {
     const finalSalePrice = salePrice ?? (body.salePrice != null ? parseFloat(body.salePrice) : null);
     const finalSaleEndDate = saleEndDate ?? (body.saleEndDate ? new Date(body.saleEndDate) : null);
 
+    if (finalSalePrice !== null && finalSalePrice >= basePrice) {
+      return NextResponse.json(
+        { error: "Giá khuyến mãi phải nhỏ hơn giá gốc" },
+        { status: 400 }
+      );
+    }
+
     const product = await prisma.$transaction(async (tx) => {
       // Create product
       const newProduct = await tx.product.create({

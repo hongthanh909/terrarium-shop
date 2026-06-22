@@ -304,6 +304,14 @@ export default function EditProductPage() {
         return parseFloat(val.replace(/\./g, "")) || 0;
       };
 
+      const base = cleanPrice(formData.basePrice);
+      const sale = formData.salePrice ? cleanPrice(formData.salePrice) : null;
+      if (sale !== null && sale >= base) {
+        showToast.error("Giá khuyến mãi phải nhỏ hơn giá gốc");
+        setLoading(false);
+        return;
+      }
+
       const inventoryVal = formData.inventory === "" ? 0 : parseInt(formData.inventory) || 0;
 
       const productData: Record<string, unknown> = {

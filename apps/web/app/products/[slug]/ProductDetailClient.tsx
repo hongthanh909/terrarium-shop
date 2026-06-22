@@ -744,12 +744,6 @@ export function ProductDetailClient({
                   -{discountPercent}% Ưu đãi giới hạn
                 </span>
               )}
-              
-              {!isSale && !appliedVoucher && (
-                <span className="bg-red-50 border border-red-200 text-red-600 text-xs font-bold px-2.5 py-1 rounded-full">
-                  -0% Ưu đãi giới hạn
-                </span>
-              )}
 
               {appliedVoucher && appliedVoucher.type === "FREE_SHIPPING" && (
                 <span className="bg-blue-50 border border-blue-200 text-blue-700 text-xs font-bold px-2.5 py-1 rounded-full">

@@ -628,7 +628,7 @@ export default function ChatWidget() {
                             <div className="flex items-center gap-1.5 mt-0.5">
                               <span className="text-[12px] font-bold" style={{ color: "#425733" }}>{p.price}</span>
                               {p.originalPrice && (
-                                <span className="text-[10px] line-through" style={{ color: "#b0b0b0" }}>{p.originalPrice}</span>
+                                <span className="text-[10px] line-through" style={{ color: "#ef4444" }}>{p.originalPrice}</span>
                               )}
                             </div>
                           </div>
