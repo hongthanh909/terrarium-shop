@@ -19,7 +19,7 @@ import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
   DropdownMenuSeparator, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { SearchPalette, SearchTrigger } from "@/components/ui/search-palette";
+import { SearchPalette } from "@/components/ui/search-palette";
 import { Search } from "lucide-react";
 import { usePathname } from "next/navigation";
 
@@ -30,9 +30,7 @@ const NAV_LINKS = [
   { href: "/blog", label: "Blog" },
 ];
 
-
-
-/** ─── Animated NavLink — expanding circle effect ─────────────────────────── */
+/** ─── Animated NavLink — light theme underline effect ─────────────────────── */
 function NavLink({ href, label }: { href: string; label: string }) {
   const pathname = usePathname();
   const isActive = pathname === href || (href !== "/" && pathname?.startsWith(href));
@@ -42,22 +40,24 @@ function NavLink({ href, label }: { href: string; label: string }) {
       href={href}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      style={{ position: "relative", display: "inline-block", overflow: "hidden" }}
-      className="px-4 py-1.5 rounded-full text-sm font-medium select-none"
+      style={{ position: "relative", display: "inline-block" }}
+      className="px-3 py-1.5 text-sm select-none"
     >
-      {/* Expanding circle background — hidden by default, expands on hover */}
+      {/* Underline indicator */}
       <span
         aria-hidden
         style={{
           position: "absolute",
-          top: "50%",
-          left: "0.25rem",
-          transform: "translateY(-50%)",
-          width: (isActive || hovered) ? "calc(100% - 0.5rem)" : "0",
-          height: "1.75rem",
-          background: "rgba(255,255,255,0.18)",
-          borderRadius: "1rem",
-          transition: "width 0.42s cubic-bezier(0.65, 0, 0.076, 1)",
+          bottom: 0,
+          left: "0.75rem",
+          right: "0.75rem",
+          height: "2px",
+          background: "#3d5a2a",
+          borderRadius: "2px",
+          opacity: (isActive || hovered) ? 1 : 0,
+          transform: (isActive || hovered) ? "scaleX(1)" : "scaleX(0)",
+          transition: "opacity 0.25s ease, transform 0.3s cubic-bezier(0.65, 0, 0.076, 1)",
+          transformOrigin: "left",
           pointerEvents: "none",
         }}
       />
@@ -66,8 +66,9 @@ function NavLink({ href, label }: { href: string; label: string }) {
         style={{
           position: "relative",
           zIndex: 1,
-          color: (isActive || hovered) ? "#ffffff" : "rgba(255,255,255,0.72)",
-          transition: "color 0.3s ease",
+          color: isActive ? "#2d4520" : hovered ? "#3d5a2a" : "#4a5e38",
+          fontWeight: isActive ? 600 : 500,
+          transition: "color 0.25s ease",
           display: "block",
           whiteSpace: "nowrap",
         }}
@@ -135,12 +136,12 @@ export default function Header() {
         }
       `}</style>
 
-      {/* ─── Full-Width Navbar — GREEN ────────────────────────────────────── */}
+      {/* ─── Full-Width Navbar — LIGHT CREAM ──────────────────────────────── */}
       <motion.header
         className={`sticky top-0 z-40 w-full transition-all duration-300 ${
           scrolled
-            ? "bg-[#293a20]/95 backdrop-blur-xl shadow-[0_2px_20px_rgba(0,0,0,0.25)] border-b border-[#425733]/50"
-            : "bg-[#36492c] backdrop-blur-md border-b border-[#425733]/30"
+            ? "bg-white/96 backdrop-blur-xl shadow-[0_1px_16px_rgba(61,90,42,0.08)] border-b border-[#dde5d3]/80"
+            : "bg-[#faf9f7]/95 backdrop-blur-md border-b border-[#e8ede0]/60"
         }`}
       >
         <div className="flex items-center justify-between px-6 py-3 max-w-7xl mx-auto">
@@ -148,7 +149,7 @@ export default function Header() {
           <div className="flex items-center gap-0.5 flex-1 min-w-0">
             {/* Hamburger — chỉ hiện trên mobile */}
             <button
-              className="md:hidden w-9 h-9 flex items-center justify-center rounded-full text-white/70 hover:text-white hover:bg-white/15 transition-colors flex-shrink-0"
+              className="md:hidden w-9 h-9 flex items-center justify-center rounded-full text-[#425733]/70 hover:text-[#293a20] hover:bg-[#eceee5] transition-colors flex-shrink-0"
               onClick={() => setMobileMenuOpen(true)}
               aria-label="Mở menu"
             >
@@ -167,31 +168,37 @@ export default function Header() {
           {/* Center section: Logo */}
           <Link href="/" className="flex flex-col items-center group flex-shrink-0 mx-4">
             <span
-              className="text-xl text-white group-hover:text-[#e3ebdd] transition-colors leading-tight"
+              className="text-xl text-[#2d4520] group-hover:text-[#3d5a2a] transition-colors leading-tight"
               style={{ fontFamily: "'Dancing Script', cursive", fontWeight: 600 }}
             >
               tiệm Rêu Décor
             </span>
             <div className="flex items-center gap-1 mt-0.5 w-full">
-              <div className="flex-1 h-px bg-white/30" />
+              <div className="flex-1 h-px bg-[#c5d4b5]/60" />
               <span
-                className="text-[9px] tracking-wider text-white/50 whitespace-nowrap px-1"
+                className="text-[9px] tracking-wider text-[#5a7a48]/60 whitespace-nowrap px-1"
                 style={{ fontFamily: "'Dancing Script', cursive" }}
               >
-                Terrarium &amp; Moss Art
+                Terrarium &amp; Decor
               </span>
-              <div className="flex-1 h-px bg-white/30" />
+              <div className="flex-1 h-px bg-[#c5d4b5]/60" />
             </div>
           </Link>
 
           {/* Right section: Icons */}
-          <div className="flex items-center justify-end gap-1.5 flex-1">
+          <div className="flex items-center justify-end gap-1 flex-1">
             {/* Search trigger — desktop */}
-            <SearchTrigger onClick={() => setSearchOpen(true)} light />
+            <button
+              className="hidden md:flex w-9 h-9 items-center justify-center rounded-full text-[#4a5e38]/70 hover:text-[#293a20] hover:bg-[#eceee5] transition-colors"
+              onClick={() => setSearchOpen(true)}
+              aria-label="Tìm kiếm"
+            >
+              <Search className="w-4 h-4" />
+            </button>
 
             {/* Search — mobile */}
             <button
-              className="md:hidden w-9 h-9 flex items-center justify-center rounded-full text-white/70 hover:text-white hover:bg-white/15 transition-colors"
+              className="md:hidden w-9 h-9 flex items-center justify-center rounded-full text-[#4a5e38]/70 hover:text-[#293a20] hover:bg-[#eceee5] transition-colors"
               onClick={() => setSearchOpen(true)}
               aria-label="Mở tìm kiếm"
             >
@@ -199,11 +206,11 @@ export default function Header() {
             </button>
 
             {/* Separator 1 — desktop only */}
-            <div className="hidden md:block w-px h-5 bg-white/20 mx-1" />
+            <div className="hidden md:block w-px h-5 bg-[#c5d4b5]/80 mx-1" />
 
             {/* Cart */}
             <button
-              className="relative w-9 h-9 flex items-center justify-center rounded-full text-white/75 hover:text-white hover:bg-white/15 transition-colors"
+              className="relative w-9 h-9 flex items-center justify-center rounded-full text-[#4a5e38]/70 hover:text-[#293a20] hover:bg-[#eceee5] transition-colors"
               onClick={() => {
                 if (!session) {
                   window.location.href = "/login?callbackUrl=/";
@@ -223,7 +230,7 @@ export default function Header() {
                     animate={{ scale: 1 }}
                     exit={{ scale: 0 }}
                     transition={{ type: "spring", stiffness: 500, damping: 15 }}
-                    className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] bg-[#8fba6f] text-[#1a2c12] text-[10px] font-bold rounded-full flex items-center justify-center shadow px-0.5"
+                    className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] bg-[#5f7a45] text-white text-[10px] font-bold rounded-full flex items-center justify-center shadow px-0.5"
                   >
                     {cartCount}
                   </motion.span>
@@ -232,28 +239,28 @@ export default function Header() {
             </button>
 
             {/* Separator 2 — desktop only */}
-            <div className="hidden md:block w-px h-5 bg-white/20 mx-1" />
+            <div className="hidden md:block w-px h-5 bg-[#c5d4b5]/80 mx-1" />
 
             {/* User */}
             {session ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <button
-                    className="flex items-center gap-1.5 hover:bg-white/10 transition-all focus:outline-none py-1 px-2.5 rounded-full flex-shrink-0 text-white border border-white/20"
+                    className="flex items-center gap-1.5 hover:bg-[#eceee5] transition-all focus:outline-none py-1 px-2.5 rounded-full flex-shrink-0 text-[#293a20] border border-[#c5d4b5]/60"
                     aria-label="Mở menu tài khoản"
                     title={session.user?.name || "Tài khoản"}
                   >
-                    <div className="w-6 h-6 rounded-full overflow-hidden bg-white/20 flex items-center justify-center relative flex-shrink-0 text-white font-bold text-xs">
+                    <div className="w-6 h-6 rounded-full overflow-hidden bg-[#dde8d0] flex items-center justify-center relative flex-shrink-0 text-[#2d4520] font-bold text-xs">
                       {session.user?.image ? (
                         <img src={session.user.image} alt={session.user.name || "Avatar"} className="w-full h-full object-cover" />
                       ) : (
                         <span>{(session.user?.name || "U").substring(0, 1).toUpperCase()}</span>
                       )}
                     </div>
-                    <span className="hidden sm:inline-block text-xs font-semibold max-w-[100px] truncate text-white leading-none">
+                    <span className="hidden sm:inline-block text-xs font-semibold max-w-[100px] truncate text-[#293a20] leading-none">
                       {session.user?.name}
                     </span>
-                    <ChevronDown className="w-3.5 h-3.5 text-white/70 flex-shrink-0" />
+                    <ChevronDown className="w-3.5 h-3.5 text-[#4a5e38]/70 flex-shrink-0" />
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="rounded-xl shadow-lg border border-[#e3ebdd] bg-white min-w-[185px]">
@@ -295,7 +302,7 @@ export default function Header() {
             ) : (
               <Link href="/login">
                 <button
-                  className="w-9 h-9 flex items-center justify-center rounded-full text-white/75 hover:text-white hover:bg-white/15 transition-colors flex-shrink-0"
+                  className="w-9 h-9 flex items-center justify-center rounded-full text-[#4a5e38]/70 hover:text-[#293a20] hover:bg-[#eceee5] transition-colors flex-shrink-0"
                   aria-label="Đăng nhập"
                   title="Đăng nhập"
                 >
@@ -306,45 +313,44 @@ export default function Header() {
           </div>
         </div>
 
-        {/* ── Marquee contact bar ─────────────────────────────────────────── */}
+        {/* ── Marquee contact bar — light #ECEEE5 ──────────────────────────── */}
         <div
           className="w-full overflow-hidden"
           style={{
-            background: "#e3ebdd",
-            borderTop: "1px solid rgba(66, 87, 51, 0.12)",
-            borderBottom: scrolled ? "1px solid rgba(66, 87, 51, 0.15)" : "none",
+            background: "#ECEEE5",
+            borderTop: "1px solid rgba(61, 90, 42, 0.10)",
           }}
         >
-          <div className="cw-marquee-track py-2">
+          <div className="cw-marquee-track py-1.5">
             {[0, 1].map((dup) => (
               <span
                 key={dup}
-                className="flex items-center gap-8 text-[11px] text-[#425733]/85 whitespace-nowrap px-8 font-medium"
+                className="flex items-center gap-8 text-[11px] text-[#3d5a2a]/80 whitespace-nowrap px-8 font-medium"
                 style={{ fontFamily: "inherit" }}
                 aria-hidden={dup === 1}
               >
                 <span className="inline-flex items-center gap-1.5">
-                  <Phone className="w-3.5 h-3.5 text-[#425733]/80" />
-                  <span>Liên hệ: <strong className="text-[#1a2e12] font-semibold">0706 668 296</strong></span>
+                  <Phone className="w-3 h-3 text-[#3d5a2a]/70" />
+                  <span>Liên hệ: <strong className="text-[#2d4520] font-semibold">0706 668 296</strong></span>
                 </span>
-                <span className="text-[#425733]/25">|</span>
+                <span className="text-[#3d5a2a]/20">·</span>
                 <span className="inline-flex items-center gap-1.5">
-                  <MapPin className="w-3.5 h-3.5 text-[#425733]/80" />
+                  <MapPin className="w-3 h-3 text-[#3d5a2a]/70" />
                   <span>32/16 Tam Đa, TP. Hồ Chí Minh</span>
                 </span>
-                <span className="text-[#425733]/25">|</span>
+                <span className="text-[#3d5a2a]/20">·</span>
                 <span className="inline-flex items-center gap-1.5">
-                  <Sprout className="w-3.5 h-3.5 text-[#425733]/80" />
+                  <Sprout className="w-3 h-3 text-[#3d5a2a]/70" />
                   <span>Thiết kế Terrarium theo yêu cầu</span>
                 </span>
-                <span className="text-[#425733]/25">|</span>
+                <span className="text-[#3d5a2a]/20">·</span>
                 <span className="inline-flex items-center gap-1.5">
-                  <Truck className="w-3.5 h-3.5 text-[#425733]/80" />
+                  <Truck className="w-3 h-3 text-[#3d5a2a]/70" />
                   <span>Giao hàng toàn quốc</span>
                 </span>
-                <span className="text-[#425733]/25">|</span>
+                <span className="text-[#3d5a2a]/20">·</span>
                 <span className="inline-flex items-center gap-1.5">
-                  <ShieldCheck className="w-3.5 h-3.5 text-[#425733]/80" />
+                  <ShieldCheck className="w-3 h-3 text-[#3d5a2a]/70" />
                   <span>Bảo hành thực vật miễn phí</span>
                 </span>
               </span>
@@ -358,26 +364,26 @@ export default function Header() {
 
       {/* ─── Mobile Menu Drawer ────────────────────────────────────────────── */}
       <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-        <SheetContent side="left" className="w-[280px] sm:w-[320px] p-0 border-0 backdrop-blur-md">
-          <div className="flex flex-col h-full bg-gradient-to-b from-[#36492c] to-[#293a20]">
+        <SheetContent side="left" className="w-[280px] sm:w-[320px] p-0 border-0">
+          <div className="flex flex-col h-full bg-[#faf9f7]">
             {/* Header */}
-            <SheetHeader className="px-6 pt-6 pb-4 border-b border-white/10">
+            <SheetHeader className="px-6 pt-6 pb-4 border-b border-[#e0e8d5]">
               <SheetTitle className="text-left">
                 <span
-                  className="text-xl text-white"
+                  className="text-xl text-[#2d4520]"
                   style={{ fontFamily: "'Dancing Script', cursive", fontWeight: 600 }}
                 >
                   tiệm Rêu Décor
                 </span>
               </SheetTitle>
-              <SheetDescription className="text-white/50 text-xs text-left">
-                Terrarium & Moss Art
+              <SheetDescription className="text-[#5a7a48]/60 text-xs text-left">
+                Terrarium & Decor
               </SheetDescription>
             </SheetHeader>
 
             {/* Navigation Links */}
             <nav className="flex-1 overflow-y-auto px-4 py-4">
-              <p className="text-[10px] uppercase tracking-wider text-white/40 font-semibold px-3 mb-2">Điều hướng</p>
+              <p className="text-[10px] uppercase tracking-wider text-[#3d5a2a]/40 font-semibold px-3 mb-2">Điều hướng</p>
               {NAV_LINKS.map((link) => {
                 const isActive = pathname === link.href || (link.href !== "/" && pathname?.startsWith(link.href));
                 return (
@@ -386,8 +392,8 @@ export default function Header() {
                     href={link.href}
                     className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
                       isActive
-                        ? "bg-white/15 text-white"
-                        : "text-white/70 hover:text-white hover:bg-white/10"
+                        ? "bg-[#eceee5] text-[#2d4520]"
+                        : "text-[#4a5e38]/80 hover:text-[#2d4520] hover:bg-[#eceee5]"
                     }`}
                   >
                     {link.label}
@@ -395,33 +401,33 @@ export default function Header() {
                 );
               })}
 
-              <div className="my-4 h-px bg-white/10" />
+              <div className="my-4 h-px bg-[#e0e8d5]" />
 
               <Link
                 href="/policies"
-                className="flex items-center gap-3 px-3 py-2 rounded-xl text-sm text-white/60 hover:text-white hover:bg-white/10 transition-all duration-200"
+                className="flex items-center gap-3 px-3 py-2 rounded-xl text-sm text-[#4a5e38]/60 hover:text-[#2d4520] hover:bg-[#eceee5] transition-all duration-200"
               >
                 Chính sách
               </Link>
             </nav>
 
             {/* Bottom actions */}
-            <div className="px-4 py-4 border-t border-white/10 space-y-2">
+            <div className="px-4 py-4 border-t border-[#e0e8d5] space-y-2">
               {session ? (
                 <>
                   <div className="px-3 py-2">
-                    <p className="text-sm font-semibold text-white truncate">{session.user?.name}</p>
-                    <p className="text-xs text-white/50 truncate">{session.user?.email}</p>
+                    <p className="text-sm font-semibold text-[#2d4520] truncate">{session.user?.name}</p>
+                    <p className="text-xs text-[#5a7a48]/60 truncate">{session.user?.email}</p>
                   </div>
                   <Link
                     href="/profile/favorites"
-                    className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm text-white/70 hover:text-white hover:bg-white/10 transition-all duration-200"
+                    className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm text-[#4a5e38]/80 hover:text-[#2d4520] hover:bg-[#eceee5] transition-all duration-200"
                   >
                     <Heart className="w-4 h-4 fill-red-400 text-red-400" /> Sản phẩm yêu thích
                   </Link>
                   <button
                     onClick={() => { useCartStore.getState().clearCart(); signOut({ callbackUrl: "/" }); }}
-                    className="w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm text-red-300 hover:bg-red-500/20 transition-colors"
+                    className="w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm text-red-500 hover:bg-red-50 transition-colors"
                   >
                     <LogOut className="w-4 h-4" /> Đăng xuất
                   </button>
@@ -429,7 +435,7 @@ export default function Header() {
               ) : (
                 <Link
                   href="/login"
-                  className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-sm font-semibold bg-white/15 text-white hover:bg-white/25 transition-colors"
+                  className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-sm font-semibold bg-[#3d5a2a] text-white hover:bg-[#2d4520] transition-colors"
                 >
                   <User className="w-4 h-4" /> Đăng nhập
                 </Link>

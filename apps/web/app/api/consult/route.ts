@@ -495,17 +495,61 @@ async function queryProducts(message: string): Promise<{ text: string; products:
     if (/rẻ|tiết kiệm|bình dân|giá thấp/i.test(q)) orderBy = [{ basePrice: "asc" }];
     else if (/đắt|cao cấp|premium|sang|luxury/i.test(q)) orderBy = [{ basePrice: "desc" }];
 
+    // ── Parse giới hạn giá từ message ─────────────────────────────
+    // Hỗ trợ: "dưới 400k", "dưới 500.000", "tầm 300k", "khoảng 200k"
+    //           "đưới 1 triệu", "1.5 triệu", "dưới 1tr"
+    let maxPriceFilter: number | null = null;
+
+    const priceMaxMatch = q.match(
+      /(?:dưới|tầm|khoảng|tối đa|không quá)[\s<≤]*([\d.,]+)\s*(k|nghìn|ng|triệu|tr⁠|\btr\b)?/i
+    );
+
+    const parsePrice = (raw: string, unit?: string): number => {
+      const num = parseFloat(raw.replace(/\./g, "").replace(/,/, "."));
+      const u = (unit || "").toLowerCase().trim();
+      if (u === "triệu" || u === "tr⁠" || u === "tr") return num * 1_000_000;
+      if (u === "k" || u === "nghìn" || u === "ng") return num * 1_000;
+      // Không có đơn vị: số < 1000 → hiểu là "k"
+      if (num < 1_000) return num * 1_000;
+      return num;
+    };
+
+    if (priceMaxMatch) {
+      maxPriceFilter = parsePrice(priceMaxMatch[1], priceMaxMatch[2]);
+    }
+
+    // Luôn sắp theo giá tăng dần khi user hỏi dưới tầm giá
+    if (maxPriceFilter !== null) orderBy = [{ basePrice: "asc" }];
+
+    // Build where: lọc giá theo salePrice (nếu có) hoặc basePrice
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const baseWhere: any = { status: "ACTIVE", inventory: { gt: 0 } };
+    if (maxPriceFilter !== null) {
+      baseWhere.OR = [
+        { salePrice: { not: null, lte: maxPriceFilter } },
+        { salePrice: null, basePrice: { lte: maxPriceFilter } },
+      ];
+    }
+
     const products = await prisma.product.findMany({
-      where: { status: "ACTIVE", inventory: { gt: 0 } },
+      where: baseWhere,
       select: {
         name: true, slug: true, basePrice: true, salePrice: true,
         images: true, category: { select: { name: true } }, featured: true,
       },
-      take: 5,
+      take: 6,
       orderBy,
     });
 
-    if (products.length === 0) return null;
+    if (products.length === 0) {
+      if (maxPriceFilter !== null) {
+        return {
+          text: `🌿 Dạ, hiện Tiệm Rêu chưa có sản phẩm dưới **${maxPriceFilter.toLocaleString("vi-VN")}₫** đang còn hàng.\n\nAnh/chị có thể nâng ngân sách lên chút hoặc xem toàn bộ sản phẩm tại đây nhé!`,
+          products: [],
+        };
+      }
+      return null;
+    }
 
     const productCards: ProductCard[] = products.map((p) => ({
       name: p.name,
@@ -522,9 +566,15 @@ async function queryProducts(message: string): Promise<{ text: string; products:
     }));
 
     let intro = "🌿 Dạ, đây là một số sản phẩm nổi bật tại Tiệm Rêu:";
-    if (/rẻ|tiết kiệm|bình dân/i.test(q)) intro = "🌿 Dạ, đây là các sản phẩm giá tốt nhất:";
-    if (/đắt|cao cấp|premium/i.test(q)) intro = "🌿 Dạ, đây là các sản phẩm cao cấp:";
-    if (/đẹp|xinh|cute/i.test(q)) intro = "🌿 Dạ, đây là các sản phẩm đẹp nhất tại Tiệm Rêu:";
+    if (maxPriceFilter !== null) {
+      intro = `🌿 Dạ, đây là các sản phẩm trong tầm **${maxPriceFilter.toLocaleString("vi-VN")}₫** tại Tiệm Rêu:`;
+    } else if (/rẻ|tiết kiệm|bình dân/i.test(q)) {
+      intro = "🌿 Dạ, đây là các sản phẩm giá tốt nhất:";
+    } else if (/đắt|cao cấp|premium/i.test(q)) {
+      intro = "🌿 Dạ, đây là các sản phẩm cao cấp:";
+    } else if (/đẹp|xinh|cute/i.test(q)) {
+      intro = "🌿 Dạ, đây là các sản phẩm đẹp nhất tại Tiệm Rêu:";
+    }
 
     return {
       text: `${intro}\n\n💡 Bấm vào sản phẩm để xem chi tiết. Freeship đơn từ 500.000₫ ạ!`,
