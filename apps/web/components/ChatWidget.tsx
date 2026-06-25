@@ -36,31 +36,54 @@ interface PageContext {
 }
 
 // ── Quick Questions per page ─────────────────────────
-const QUICK_QUESTIONS: Record<string, string[]> = {
+const QUICK_QUESTIONS: Record<string, { icon: string; text: string }[]> = {
   product: [
-    "Cách chăm sóc sản phẩm này?",
-    "Có sản phẩm tương tự không?",
-    "Mua kèm phụ kiện gì?",
+    { icon: "🌿", text: "Cách chăm sóc cây này?" },
+    { icon: "📐", text: "Size bể phù hợp?" },
+    { icon: "💧", text: "Tưới nước bao lâu 1 lần?" },
+    { icon: "🪴", text: "Cây nào tương tự?" },
+    { icon: "🔆", text: "Cần ánh sáng thế nào?" },
+    { icon: "📦", text: "Giao hàng bao lâu?" },
   ],
   blog: [
-    "Hướng dẫn chăm sóc Rêu Nhung",
-    "Terrarium hệ kín",
-    "Thiết kế theo yêu cầu",
+    { icon: "🌿", text: "Cách chăm sóc terrarium?" },
+    { icon: "🏺", text: "Bể kín hay bể mở?" },
+    { icon: "💧", text: "Tưới nước đúng cách?" },
+    { icon: "🪴", text: "Cây phù hợp cho người mới?" },
+    { icon: "🛠️", text: "Tự làm DIY terrarium?" },
+    { icon: "🎁", text: "Mua quà tặng nào đẹp?" },
   ],
   explore: [
-    "Sản phẩm nào đang hot?",
-    "Gợi ý quà tặng dưới 500k?",
-    "Terrarium cho người mới?",
+    { icon: "🔥", text: "Sản phẩm đang hot?" },
+    { icon: "💰", text: "Gợi ý dưới 500k?" },
+    { icon: "🌱", text: "Terrarium cho người mới?" },
+    { icon: "🎁", text: "Ý tưởng quà tặng?" },
+    { icon: "🏺", text: "Bể kín hay bể mở?" },
+    { icon: "🌿", text: "Cây nào dễ chăm nhất?" },
   ],
   checkout: [
-    "Chính sách vận chuyển?",
-    "Bao lâu thì nhận hàng?",
-    "Đổi trả thế nào?",
+    { icon: "🚚", text: "Ship bao lâu tới nơi?" },
+    { icon: "💳", text: "Thanh toán kiểu nào?" },
+    { icon: "🔄", text: "Đổi trả thế nào?" },
+    { icon: "🎁", text: "Có freeship không?" },
+    { icon: "📦", text: "Đóng gói có an toàn?" },
+    { icon: "📍", text: "Ship tới tỉnh tôi không?" },
+  ],
+  home: [
+    { icon: "🌿", text: "Cách chăm sóc terrarium?" },
+    { icon: "🏺", text: "Bể kín hay bể mở?" },
+    { icon: "💰", text: "Gợi ý dưới 500k?" },
+    { icon: "💧", text: "Cây bị vàng lá xử lý sao?" },
+    { icon: "📦", text: "Chính sách giao hàng?" },
+    { icon: "🎁", text: "Mua quà tặng nào đẹp?" },
   ],
   general: [
-    "Hướng dẫn chăm sóc Rêu Nhung",
-    "Terrarium hệ kín",
-    "Thiết kế theo yêu cầu",
+    { icon: "🌿", text: "Cách chăm sóc terrarium?" },
+    { icon: "🏺", text: "Bể kín hay bể mở?" },
+    { icon: "💰", text: "Gợi ý dưới 500k?" },
+    { icon: "💧", text: "Cây bị vàng lá xử lý sao?" },
+    { icon: "📦", text: "Chính sách giao hàng?" },
+    { icon: "🎁", text: "Mua quà tặng nào đẹp?" },
   ],
 };
 
@@ -386,28 +409,29 @@ export default function ChatWidget() {
           width: calc(100vw - 32px);
           max-width: 400px;
           height: calc(100dvh - 120px);
-          max-height: 560px;
+          max-height: 580px;
         }
         .cw-panel.cw-expanded {
           max-width: 520px;
-          max-height: 700px;
+          max-height: 720px;
         }
         @media (min-width: 640px) {
-          .cw-panel { width: 400px; height: 540px; max-height: 540px; }
-          .cw-panel.cw-expanded { width: 520px; height: 700px; max-height: 700px; }
+          .cw-panel { width: 400px; height: 560px; max-height: 560px; }
+          .cw-panel.cw-expanded { width: 520px; height: 720px; max-height: 720px; }
         }
         .cw-scroll::-webkit-scrollbar { width: 3px; }
         .cw-scroll::-webkit-scrollbar-track { background: transparent; }
-        .cw-scroll::-webkit-scrollbar-thumb { background: rgba(66,87,51,0.12); border-radius: 99px; }
-        .cw-input::placeholder { color: #9aab93; }
+        .cw-scroll::-webkit-scrollbar-thumb { background: rgba(66,87,51,0.15); border-radius: 99px; }
+        .cw-input::placeholder { color: #8a9e84; }
         .cw-chip {
-          transition: all 0.2s cubic-bezier(0.4,0,0.2,1);
+          transition: all 0.18s cubic-bezier(0.4,0,0.2,1);
         }
         .cw-chip:hover {
-          background: #425733 !important;
+          background: #2d4a22 !important;
           color: white !important;
-          border-color: #425733 !important;
+          border-color: #2d4a22 !important;
           transform: translateY(-1px);
+          box-shadow: 0 4px 12px rgba(45,74,34,0.2);
         }
         .cw-chip:active { transform: translateY(0) scale(0.97); }
         .cw-product-card {
@@ -419,21 +443,32 @@ export default function ChatWidget() {
           border-color: #b8d8b8;
         }
         @keyframes cw-typing {
-          0%, 80%, 100% { transform: translateY(0); opacity: 0.4; }
-          40% { transform: translateY(-4px); opacity: 1; }
+          0%, 80%, 100% { transform: translateY(0); opacity: 0.35; }
+          40% { transform: translateY(-5px); opacity: 1; }
         }
         @keyframes cw-nudge {
           0%, 85%, 100% { transform: translateY(0); }
           90% { transform: translateY(-8px); }
           95% { transform: translateY(0); }
         }
+        @keyframes cw-pulse-ring {
+          0% { box-shadow: 0 0 0 0 rgba(66,87,51,0.4), 0 4px 20px rgba(66,87,51,0.35); }
+          70% { box-shadow: 0 0 0 10px rgba(66,87,51,0), 0 4px 20px rgba(66,87,51,0.35); }
+          100% { box-shadow: 0 0 0 0 rgba(66,87,51,0), 0 4px 20px rgba(66,87,51,0.35); }
+        }
         .cw-bubble-idle {
-          animation: cw-nudge 3s ease-in-out infinite;
+          animation: cw-nudge 3.5s ease-in-out infinite, cw-pulse-ring 2.5s ease-out infinite;
         }
         .cw-bubble-idle:hover {
           animation: none;
-          transform: scale(1.08);
+          transform: scale(1.1);
+          box-shadow: 0 8px 28px rgba(45,74,34,0.45) !important;
         }
+        @keyframes cw-status-pulse {
+          0%, 100% { opacity: 1; transform: scale(1); }
+          50% { opacity: 0.6; transform: scale(0.85); }
+        }
+        .cw-status-dot { animation: cw-status-pulse 2s ease-in-out infinite; }
       `}</style>
 
       {/* ═══ CHAT PANEL ═══════════════════════════ */}
@@ -493,11 +528,17 @@ export default function ChatWidget() {
           >
             {/* ── HEADER ──────────────────────────── */}
             <div
-              className="flex-shrink-0 flex items-center gap-3 px-4 py-3"
-              style={{ background: "#ffffff", borderBottom: "1px solid #e3ebdd" }}
+              className="flex-shrink-0 flex items-center gap-3 px-4 py-3.5"
+              style={{
+                background: "linear-gradient(135deg, #1a2f18 0%, #243d20 100%)",
+                borderBottom: "1px solid rgba(255,255,255,0.06)",
+              }}
             >
-              {/* Avatar circle */}
-              <div className="w-10 h-10 rounded-full overflow-hidden bg-white border border-[#2d3d23]/10 flex-shrink-0">
+              {/* Avatar circle — logo trên nền tối */}
+              <div
+                className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0"
+                style={{ border: "1.5px solid rgba(255,255,255,0.25)", background: "rgba(255,255,255,0.08)" }}
+              >
                 <img
                   src="/logo.png"
                   alt="Tiệm Rêu Décor Logo"
@@ -507,13 +548,16 @@ export default function ChatWidget() {
 
               {/* Name + status */}
               <div className="flex-1 min-w-0">
-                <span className="block text-sm font-semibold" style={{ color: "#2d3d23" }}>
-                  Tiệm Rêu Decor
+                <span className="block text-sm font-semibold" style={{ color: "#f0f7ee" }}>
+                  Tiệm Rêu Décor
                 </span>
                 <div className="flex items-center gap-1.5 mt-0.5">
-                  <span className="w-1.5 h-1.5 rounded-full" style={{ background: "#8fba6f" }} />
-                  <span className="text-[11px]" style={{ color: "#8aa480" }}>
-                    Trợ lý cảnh quan AI
+                  <span
+                    className="cw-status-dot w-1.5 h-1.5 rounded-full flex-shrink-0"
+                    style={{ background: "#7dba5f" }}
+                  />
+                  <span className="text-[11px]" style={{ color: "rgba(255,255,255,0.55)" }}>
+                    Trợ lý AI · Trực tuyến
                   </span>
                 </div>
               </div>
@@ -523,16 +567,20 @@ export default function ChatWidget() {
                 <button
                   onClick={() => setExpanded(!expanded)}
                   title={expanded ? "Thu nhỏ" : "Mở rộng"}
-                  className="w-8 h-8 rounded-lg flex items-center justify-center transition-colors hover:bg-[#f2f8f2]"
-                  style={{ border: "none", cursor: "pointer", color: "#8aa480" }}
+                  className="w-8 h-8 rounded-lg flex items-center justify-center transition-all"
+                  style={{ border: "none", cursor: "pointer", color: "rgba(255,255,255,0.6)" }}
+                  onMouseEnter={e => (e.currentTarget.style.background = "rgba(255,255,255,0.1)")}
+                  onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
                 >
                   {expanded ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
                 </button>
                 <button
                   onClick={() => setOpen(false)}
                   title="Đóng"
-                  className="w-8 h-8 rounded-lg flex items-center justify-center transition-colors hover:bg-[#f2f8f2]"
-                  style={{ border: "none", cursor: "pointer", color: "#8aa480" }}
+                  className="w-8 h-8 rounded-lg flex items-center justify-center transition-all"
+                  style={{ border: "none", cursor: "pointer", color: "rgba(255,255,255,0.6)" }}
+                  onMouseEnter={e => (e.currentTarget.style.background = "rgba(255,255,255,0.1)")}
+                  onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
                 >
                   <X size={14} />
                 </button>
@@ -556,30 +604,43 @@ export default function ChatWidget() {
                       <div
                         className="max-w-[78%] text-[13px] leading-relaxed"
                         style={{
-                          background: "#e3ebdd",
-                          color: "#2d3d23",
+                          background: "linear-gradient(135deg, #2d4a22, #3a5e2c)",
+                          color: "#f0f7ee",
                           borderRadius: "16px 16px 4px 16px",
                           padding: "10px 14px",
+                          boxShadow: "0 2px 8px rgba(45,74,34,0.2)",
                         }}
                       >
                         {renderContent(msg.content)}
                       </div>
                     </div>
                   ) : (
-                    <div className="flex items-start gap-0">
+                    <div className="flex items-start gap-2">
+                      {/* Bot avatar mini */}
                       <div
-                        className="max-w-[90%] text-[13px] leading-[1.7]"
-                        style={{ color: "#2c3e24", padding: "2px 4px" }}
+                        className="w-6 h-6 rounded-full overflow-hidden flex-shrink-0 mt-0.5"
+                        style={{ border: "1px solid rgba(66,87,51,0.15)", background: "#f0f5ee" }}
+                      >
+                        <img src="/logo.png" alt="" className="w-full h-full object-cover" />
+                      </div>
+                      <div
+                        className="max-w-[85%] text-[13px] leading-[1.7] rounded-[4px_16px_16px_16px]"
+                        style={{
+                          color: "#1e3319",
+                          background: "#eef4ea",
+                          padding: "10px 13px",
+                          border: "1px solid rgba(66,87,51,0.08)",
+                        }}
                       >
                         {msg.isStreaming && msg.content === "" ? (
-                          <div className="flex gap-1.5 items-center py-2">
+                          <div className="flex gap-1.5 items-center py-1">
                             {[0, 1, 2].map((d) => (
                               <span
                                 key={d}
                                 className="w-[5px] h-[5px] rounded-full"
                                 style={{
-                                  background: "#8fba6f",
-                                  animation: `cw-typing 1.4s ${d * 0.16}s ease-in-out infinite`,
+                                  background: "#5a8f4a",
+                                  animation: `cw-typing 1.4s ${d * 0.18}s ease-in-out infinite`,
                                 }}
                               />
                             ))}
@@ -588,7 +649,7 @@ export default function ChatWidget() {
                           <>
                             {renderContent(msg.content)}
                             {msg.isStreaming && (
-                              <span className="inline-block w-[2px] h-3.5 ml-0.5 align-middle rounded-full animate-pulse" style={{ background: "#8fba6f" }} />
+                              <span className="inline-block w-[2px] h-3.5 ml-0.5 align-middle rounded-full animate-pulse" style={{ background: "#5a8f4a" }} />
                             )}
                           </>
                         )}
@@ -677,26 +738,28 @@ export default function ChatWidget() {
                     </div>
                   )}
 
-                  {/* Quick chips */}
+                  {/* Quick chips — 2-column grid */}
                   {i === 0 && msg.role === "assistant" && !isSending && messages.length === 1 && (
-                    <div className="mt-3 flex flex-wrap gap-2">
+                    <div className="mt-3 grid grid-cols-2 gap-1.5">
                       {quickQs.map((q, qi) => (
                         <motion.button
-                          key={q}
-                          initial={{ opacity: 0, y: 6 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.1 + qi * 0.06, type: "spring", stiffness: 400, damping: 28 }}
-                          onClick={() => sendMessage(q)}
-                          className="cw-chip text-[12px] font-medium cursor-pointer"
+                          key={q.text}
+                          initial={{ opacity: 0, y: 8, scale: 0.95 }}
+                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                          transition={{ delay: 0.08 + qi * 0.055, type: "spring", stiffness: 420, damping: 28 }}
+                          onClick={() => sendMessage(q.text)}
+                          className="cw-chip text-left text-[11.5px] font-medium cursor-pointer flex items-center gap-1.5"
                           style={{
-                            padding: "7px 14px",
+                            padding: "8px 11px",
                             background: "#ffffff",
-                            border: "1px solid #e3ebdd",
-                            borderRadius: 99,
-                            color: "#425733",
+                            border: "1px solid #dde8d7",
+                            borderRadius: 12,
+                            color: "#2d4a22",
+                            lineHeight: 1.35,
                           }}
                         >
-                          {q}
+                          <span className="text-base leading-none flex-shrink-0" style={{ fontSize: 13 }}>{q.icon}</span>
+                          <span className="flex-1 min-w-0 truncate">{q.text}</span>
                         </motion.button>
                       ))}
                     </div>
@@ -721,7 +784,7 @@ export default function ChatWidget() {
                     }}
                     onKeyDown={handleKey}
                     disabled={isSending || isCooldown || userMsgCount >= MAX_MESSAGES}
-                    placeholder={isCooldown ? "Đợi chút..." : userMsgCount >= MAX_MESSAGES ? "Đã đạt giới hạn" : "Nhắn tin đến Tiệm Rêu..."}
+                    placeholder={isCooldown ? "Đợi chút..." : userMsgCount >= MAX_MESSAGES ? "Đã đạt giới hạn" : "Hỏi em về terrarium..."}
                     rows={1}
                     className="cw-input w-full resize-none border-none outline-none bg-transparent text-[13px] leading-relaxed font-[inherit]"
                     style={{ minHeight: 32, maxHeight: 80, boxShadow: "none", color: "#2c3e24" }}
@@ -748,13 +811,15 @@ export default function ChatWidget() {
                   <Send size={14} color="white" />
                 </button>
               </div>
-              <div className="text-center pt-2 pb-0.5">
+              <div className="text-center pt-1.5 pb-0.5">
                 <Link
                   href="/products"
-                  className="inline-flex items-center gap-1 text-[11px] font-medium no-underline transition-colors hover:text-[#425733]"
-                  style={{ color: "#8aa480" }}
+                  className="inline-flex items-center gap-1 text-[11px] font-medium no-underline transition-colors"
+                  style={{ color: "#8a9e84" }}
+                  onMouseEnter={e => (e.currentTarget.style.color = "#2d4a22")}
+                  onMouseLeave={e => (e.currentTarget.style.color = "#8a9e84")}
                 >
-                  <ExternalLink size={10} /> Xem sản phẩm
+                  <ExternalLink size={10} /> Khám phá bộ sưu tập
                 </Link>
               </div>
             </div>
@@ -779,36 +844,38 @@ export default function ChatWidget() {
           >
             <div className="flex items-center gap-2">
               {/* Tooltip */}
-              <div
-                className="text-[11px] font-medium px-3 py-1.5 rounded-full cursor-pointer whitespace-nowrap"
+              <motion.div
+                initial={{ opacity: 0, x: 8 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.3, type: "spring", stiffness: 400, damping: 28 }}
+                className="text-[11.5px] font-medium px-3.5 py-1.5 rounded-full cursor-pointer whitespace-nowrap"
                 style={{
                   background: "#ffffff",
-                  color: "#425733",
-                  boxShadow: "0 2px 12px rgba(66,87,51,0.12), 0 0 0 1px rgba(227,235,221,0.6)",
+                  color: "#2d4a22",
+                  boxShadow: "0 2px 14px rgba(45,74,34,0.14), 0 0 0 1px rgba(220,235,215,0.8)",
                 }}
               >
-                Tư vấn 24/7
-              </div>
+                Hỏi em nhé! 🌿
+              </motion.div>
 
-              {/* Bubble */}
+              {/* Bubble — forest gradient */}
               <div
-                className="cw-bubble-idle relative w-14 h-14 flex items-center justify-center cursor-pointer"
+                className="cw-bubble-idle relative w-14 h-14 flex items-center justify-center cursor-pointer rounded-full"
                 style={{
-                  boxShadow: "0 4px 20px rgba(66,87,51,0.35)",
-                  transition: "transform 0.2s ease, box-shadow 0.2s ease",
+                  background: "linear-gradient(135deg, #2d4a22 0%, #3d6b2e 60%, #4a7a38 100%)",
+                  transition: "transform 0.2s ease",
                 }}
               >
-                <div className="w-full h-full rounded-full overflow-hidden bg-white border border-[#2d3d23]/10">
-                  <img
-                    src="/logo.png"
-                    alt="Tiệm Rêu Décor Logo"
-                    className="w-full h-full object-cover select-none pointer-events-none"
-                  />
-                </div>
+                {/* Leaf icon */}
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M12 2C6.5 2 4 6 4 10C4 14.5 7.5 18 12 20C16.5 18 20 14.5 20 10C20 6 17.5 2 12 2Z" fill="rgba(255,255,255,0.9)" />
+                  <path d="M12 20V22" stroke="rgba(255,255,255,0.7)" strokeWidth="1.5" strokeLinecap="round" />
+                  <path d="M12 10C10 12 9 14 9 16" stroke="rgba(45,74,34,0.5)" strokeWidth="1" strokeLinecap="round" />
+                </svg>
                 {/* Status dot */}
                 <span
-                  className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 rounded-full"
-                  style={{ background: "#8fba6f", border: "2.5px solid white", zIndex: 10 }}
+                  className="cw-status-dot absolute -top-0.5 -right-0.5 w-3.5 h-3.5 rounded-full"
+                  style={{ background: "#7dba5f", border: "2.5px solid white", zIndex: 10 }}
                 />
               </div>
             </div>
