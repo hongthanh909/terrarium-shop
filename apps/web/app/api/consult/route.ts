@@ -1,4 +1,4 @@
-/**
+﻿/**
  * AI Consultation API Route — v11 (Ollama-first + Guardrails + Deep Knowledge)
  *
  * THIẾT KẾ MỚI:
@@ -509,7 +509,6 @@ async function queryProducts(message: string): Promise<{ text: string; products:
       const u = (unit || "").toLowerCase().trim();
       if (u === "triệu" || u === "tr⁠" || u === "tr") return num * 1_000_000;
       if (u === "k" || u === "nghìn" || u === "ng") return num * 1_000;
-      // Không có đơn vị: số < 1000 → hiểu là "k"
       if (num < 1_000) return num * 1_000;
       return num;
     };
@@ -518,12 +517,31 @@ async function queryProducts(message: string): Promise<{ text: string; products:
       maxPriceFilter = parsePrice(priceMaxMatch[1], priceMaxMatch[2]);
     }
 
-    // Luôn sắp theo giá tăng dần khi user hỏi dưới tầm giá
     if (maxPriceFilter !== null) orderBy = [{ basePrice: "asc" }];
+
+    // ── Phát hiện danh mục từ tin nhắn ────────────────────────────────
+    let categoryKeyword: string | null = null;
+
+    if (/\bbể\b|terrarium|bình\s*thủy\s*tinh|hủ|bình\s*cây|vườn\s*thủy\s*tinh/i.test(q)) {
+      categoryKeyword = "bể";
+    } else if (/\bcây\b|rêu|cỏ|fitonia|fittonia|cây\s*xanh|cây\s*cảnh|thực\s*vật/i.test(q)) {
+      categoryKeyword = "cây";
+    } else if (/phụ\s*kiện|dụng\s*cụ|nhíp|xẻ|phễu|sỏi|than\s*hoạt|substrate|tool/i.test(q)) {
+      categoryKeyword = "phụ kiện";
+    } else if (/quà|combo|giỏ\s*quà|set/i.test(q)) {
+      categoryKeyword = "combo";
+    }
 
     // Build where: lọc giá theo salePrice (nếu có) hoặc basePrice
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const baseWhere: any = { status: "ACTIVE", inventory: { gt: 0 } };
+
+    // Lọc theo danh mục nếu phát hiện keyword
+    if (categoryKeyword) {
+      baseWhere.category = { name: { contains: categoryKeyword, mode: "insensitive" } };
+    }
+
+    // Lọc giá: (salePrice <= max) OR (salePrice=null AND basePrice <= max)
     if (maxPriceFilter !== null) {
       baseWhere.OR = [
         { salePrice: { not: null, lte: maxPriceFilter } },
@@ -542,9 +560,11 @@ async function queryProducts(message: string): Promise<{ text: string; products:
     });
 
     if (products.length === 0) {
-      if (maxPriceFilter !== null) {
+      const catLabel = categoryKeyword ? ` loại **${categoryKeyword}**` : "";
+      const priceLabel = maxPriceFilter !== null ? ` dưới **${maxPriceFilter.toLocaleString("vi-VN")}₫**` : "";
+      if (catLabel || priceLabel) {
         return {
-          text: `🌿 Dạ, hiện Tiệm Rêu chưa có sản phẩm dưới **${maxPriceFilter.toLocaleString("vi-VN")}₫** đang còn hàng.\n\nAnh/chị có thể nâng ngân sách lên chút hoặc xem toàn bộ sản phẩm tại đây nhé!`,
+          text: `🌿 Dạ, hiện Tiệm Rêu chưa có sản phẩm${catLabel}${priceLabel} đang còn hàng.\n\nAnh/chị có thể xem thêm các sản phẩm khác hoặc nâng ngân sách nhé!`,
           products: [],
         };
       }
@@ -565,9 +585,13 @@ async function queryProducts(message: string): Promise<{ text: string; products:
       inStock: true,
     }));
 
-    let intro = "🌿 Dạ, đây là một số sản phẩm nổi bật tại Tiệm Rêu:";
-    if (maxPriceFilter !== null) {
-      intro = `🌿 Dạ, đây là các sản phẩm trong tầm **${maxPriceFilter.toLocaleString("vi-VN")}₫** tại Tiệm Rêu:`;
+    let intro = "\u{1F33F} D\u1EA1, \u0111\u00e2y l\u00e0 m\u1ed9t s\u1ed1 s\u1ea3n ph\u1ea9m n\u1ed5i b\u1eadt t\u1ea1i Ti\u1ec7m R\u00eau:";
+    if (categoryKeyword && maxPriceFilter !== null) {
+      intro = `\u{1F33F} D\u1EA1, \u0111\u00e2y l\u00e0 c\u00e1c **${categoryKeyword}** trong t\u1ea7m **${maxPriceFilter.toLocaleString("vi-VN")}\u20ab**:`;
+    } else if (categoryKeyword) {
+      intro = `\u{1F33F} D\u1EA1, \u0111\u00e2y l\u00e0 c\u00e1c s\u1ea3n ph\u1ea9m **${categoryKeyword}** t\u1ea1i Ti\u1ec7m R\u00eau:`;
+    } else if (maxPriceFilter !== null) {
+      intro = `\u{1F33F} D\u1EA1, \u0111\u00e2y l\u00e0 c\u00e1c s\u1ea3n ph\u1ea9m trong t\u1ea7m **${maxPriceFilter.toLocaleString("vi-VN")}\u20ab** t\u1ea1i Ti\u1ec7m R\u00eau:`;
     } else if (/rẻ|tiết kiệm|bình dân/i.test(q)) {
       intro = "🌿 Dạ, đây là các sản phẩm giá tốt nhất:";
     } else if (/đắt|cao cấp|premium/i.test(q)) {
@@ -731,3 +755,4 @@ export async function POST(request: Request) {
     );
   }
 }
+

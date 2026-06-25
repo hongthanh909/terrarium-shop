@@ -114,32 +114,6 @@ export default function FavoritesPage() {
             <Link href="/products">Khám phá sản phẩm</Link>
           </Button>
         </div>
-      )}
-
-      {/* Product grid */}
-      {!loading && products.length > 0 && (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
-          {products.map((product) => (
-            <div
-              key={product.id}
-              className="group bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-md hover:-translate-y-0.5 transition-all duration-200"
-            >
-              {/* Image */}
-              <Link href={`/products/${product.slug}`} className="block relative aspect-square bg-[#f6faf4]">
-                {product.images[0] ? (
-                  <ImageWrapper
-                    src={product.images[0]}
-                    alt={product.name}
-                    fill
-                    noRound
-                    sizes="(max-width: 768px) 50vw, 25vw"
-                    className="object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <Package className="w-10 h-10 text-[#6d8c5a]" />
-                  </div>
-                )}
                 {/* Unvote button */}
                 <button
                   onClick={(e) => { e.preventDefault(); handleUnvote(product.id); }}

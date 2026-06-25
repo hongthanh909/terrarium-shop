@@ -283,9 +283,9 @@ export function ExploreClient({ featured, pinned, topVoted, newArrivals, weeklyF
                     href={`/products/${item.product.slug}`}
                     className="group flex-shrink-0 w-64 snap-start"
                   >
-                    <div className="relative aspect-square rounded-2xl overflow-hidden bg-gray-100 mb-3">
+                    <div className="relative aspect-square rounded-2xl overflow-hidden bg-[#dfe8da] mb-3">
                        {item.product.images[0] ? (
-                         <ImageWrapper src={item.product.images[0]} alt={item.product.name} fill className="object-contain bg-[#f8faf6] p-2" />
+                         <ImageWrapper src={item.product.images[0]} alt={item.product.name} fill className="object-contain bg-[#dfe8da] p-2 group-hover:scale-105 transition-transform duration-500" />
                        ) : (
                         <div className="w-full h-full flex items-center justify-center">
                           <Package className="w-8 h-8 text-gray-300" />
@@ -495,12 +495,12 @@ function BentoCard({
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.4 }}
-      className={`group relative rounded-2xl overflow-hidden bg-white border border-gray-100 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 flex flex-col h-full ${className}`}
+      className={`group relative rounded-2xl overflow-hidden bg-white border border-[#e4eeda] shadow-sm hover:shadow-xl hover:scale-[1.02] transition-all duration-300 flex flex-col h-full ${className}`}
     >
       {/* Image Container */}
-      <div className="relative w-full flex-1 bg-white overflow-hidden min-h-[110px]">
+      <div className="relative w-full flex-1 bg-[#dfe8da] overflow-hidden min-h-[110px]">
         {product.images[0] ? (
-          <ImageWrapper src={product.images[0]} alt={product.name} fill className="object-contain p-2 bg-[#f8faf6]" />
+          <ImageWrapper src={product.images[0]} alt={product.name} fill className="object-contain p-2 group-hover:scale-105 transition-transform duration-500" />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center text-gray-400">
             <Package className="w-10 h-10" />

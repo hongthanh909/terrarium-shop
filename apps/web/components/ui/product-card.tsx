@@ -78,14 +78,14 @@ export function ProductCard({
     <GlassCard
       variant="solid"
       className={cn(
-        "group relative flex flex-col p-4 h-full transition-all duration-300 hover:shadow-lg border border-[#eaefeb]/40",
+        "group relative flex flex-col p-4 h-full transition-all duration-300 hover:shadow-xl hover:scale-[1.02] border border-[#eaefeb]/40 cursor-pointer",
         className
       )}
     >
       {/* Image area */}
-      <Link href={`/products/${slug}`} className="block relative overflow-hidden rounded-2xl bg-white mb-4 aspect-square flex-shrink-0">
+      <Link href={`/products/${slug}`} className="block relative overflow-hidden rounded-2xl bg-[#dfe8da] mb-4 aspect-square flex-shrink-0">
         {images[0] ? (
-          <ImageWrapper src={images[0]} alt={name} fill className="object-cover transition-transform duration-500 group-hover:scale-105" />
+          <ImageWrapper src={images[0]} alt={name} fill className="object-cover transition-transform duration-500 group-hover:scale-110" />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center text-gray-400">
             <Package className="w-12 h-12" />
