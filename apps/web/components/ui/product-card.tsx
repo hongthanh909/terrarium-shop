@@ -85,7 +85,7 @@ export function ProductCard({
       {/* Image area */}
       <Link href={`/products/${slug}`} className="block relative overflow-hidden rounded-2xl bg-white mb-4 aspect-square flex-shrink-0">
         {images[0] ? (
-          <ImageWrapper src={images[0]} alt={name} fill className="object-contain bg-[#f8faf6] p-2" />
+          <ImageWrapper src={images[0]} alt={name} fill className="object-cover transition-transform duration-500 group-hover:scale-105" />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center text-gray-400">
             <Package className="w-12 h-12" />

@@ -6,6 +6,7 @@ import Link from "next/link";
 import { ImageWrapper } from "@/components/ui/ImageWrapper";
 import {
   ArrowLeft, X, Save, Upload, Image as ImageIcon, Star, Plus, Loader2,
+  Crop, Video,
 } from "lucide-react";
 import { showToast } from "@/components/ui/custom-toast";
 import { FormField } from "@/components/admin/ui/FormField";
@@ -13,6 +14,8 @@ import { FormSelect } from "@/components/admin/ui/FormSelect";
 import { SuggestionInput } from "@/components/admin/ui/SuggestionInput";
 import { compressImage } from "@/lib/image";
 import { ImageCropModal } from "@/components/ui/image-crop-modal";
+
+const MAX_VIDEO_MB = 50;
 
 interface Category {
   id: string;
@@ -43,22 +46,26 @@ export default function EditProductPage() {
   const productId = params.id as string;
 
   const mainImageInputRef = useRef<HTMLInputElement>(null);
-  const subImageInputRef = useRef<HTMLInputElement>(null);
+  const subImageInputRef  = useRef<HTMLInputElement>(null);
+  const videoInputRef     = useRef<HTMLInputElement>(null);
 
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [fetching, setFetching] = useState(true);
+  const [categories, setCategories]       = useState<Category[]>([]);
+  const [loading, setLoading]             = useState(false);
+  const [fetching, setFetching]           = useState(true);
   const [uploadingMain, setUploadingMain] = useState(false);
-  const [uploadingSub, setUploadingSub] = useState(false);
+  const [uploadingSub, setUploadingSub]   = useState(false);
+  const [uploadingVideo, setUploadingVideo] = useState(false);
 
-  // Crop modal state
-  const [mainCropSrc, setMainCropSrc] = useState<string | null>(null);
-  const [subCropSrc, setSubCropSrc] = useState<string | null>(null);
+  // Crop state
+  const [mainCropSrc, setMainCropSrc]   = useState<string | null>(null);
+  const [subCropQueue, setSubCropQueue] = useState<string[]>([]);
+  const [reCropIdx, setReCropIdx]       = useState<number | null>(null);
 
-  // Main image (1 only)
+  // Images
   const [mainImage, setMainImage] = useState<string>("");
-  // Sub images (max 10)
   const [subImages, setSubImages] = useState<string[]>([]);
+  // Video
+  const [productVideo, setProductVideo] = useState<string>("");
 
   const [formData, setFormData] = useState({
     slug: "",
@@ -177,6 +184,14 @@ export default function EditProductPage() {
           setMainImage(product.images[0]);
           setSubImages(product.images.slice(1));
         }
+        // Pre-fill video
+        if (product.careGuide?.videoUrl) {
+          const url = product.careGuide.videoUrl;
+          // If it looks like an uploaded file URL (not YouTube/TikTok), show as productVideo
+          if (!url.includes("youtube") && !url.includes("youtu.be") && !url.includes("tiktok")) {
+            setProductVideo(url);
+          }
+        }
 
         // Pre-fill care guide
         if (product.careGuide) {
@@ -255,41 +270,75 @@ export default function EditProductPage() {
     setUploadingMain(false);
   };
 
-  const handleSubImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleSubImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
-    if (subImages.length + files.length > 10) {
-      showToast.error("Tối đa 10 ảnh phụ");
-      return;
-    }
-    if (files.length === 1) {
-      // Single: open crop
-      const objectUrl = URL.createObjectURL(files[0]);
-      setSubCropSrc(objectUrl);
-    } else {
-      // Multi: upload directly without crop
-      setUploadingSub(true);
-      const urls: string[] = [];
-      for (const file of files) {
-        const url = await uploadImage(file);
-        if (url) urls.push(url);
-      }
-      setSubImages((prev) => [...prev, ...urls]);
-      if (urls.length) showToast.success(`Đã tải ${urls.length} ảnh phụ`);
-      setUploadingSub(false);
-    }
+    if (!files.length) return;
+    if (subImages.length + files.length > 10) { showToast.error("Tối đa 10 ảnh phụ"); return; }
+    // Build crop queue — crop lần lượt từng ảnh
+    const queue = files.map((f) => URL.createObjectURL(f));
+    setSubCropQueue(queue);
     if (subImageInputRef.current) subImageInputRef.current.value = "";
   };
 
   const handleSubCropConfirm = async (blob: Blob) => {
-    setSubCropSrc(null);
-    if (subImages.length >= 10) { showToast.error("Tối đa 10 ảnh phụ"); return; }
+    setUploadingSub(true);
+    const url = await uploadImage(new File([blob], "sub.jpg", { type: "image/jpeg" }));
+    if (url) setSubImages((prev) => [...prev, url]);
+    setSubCropQueue((prev) => prev.slice(1));
+    setUploadingSub(false);
+  };
+
+  const handleSubCropCancel = () => {
+    subCropQueue.forEach((u) => URL.revokeObjectURL(u));
+    setSubCropQueue([]);
+  };
+
+  // Re-crop ảnh phụ đã upload
+  const handleReCropSelect = (e: React.ChangeEvent<HTMLInputElement>, idx: number) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setReCropIdx(idx);
+    setSubCropQueue([URL.createObjectURL(file)]);
+    e.target.value = "";
+  };
+
+  const handleReCropConfirm = async (blob: Blob) => {
+    if (reCropIdx === null) return;
     setUploadingSub(true);
     const url = await uploadImage(new File([blob], "sub.jpg", { type: "image/jpeg" }));
     if (url) {
-      setSubImages((prev) => [...prev, url]);
-      showToast.success("Đã cắt và tải ảnh phụ");
+      setSubImages((prev) => prev.map((img, i) => (i === reCropIdx ? url : img)));
+      showToast.success("Đã cập nhật ảnh phụ");
     }
+    setReCropIdx(null);
+    setSubCropQueue([]);
     setUploadingSub(false);
+  };
+
+  // Video upload
+  const handleVideoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > MAX_VIDEO_MB * 1024 * 1024) {
+      showToast.error(`Video quá lớn! Tối đa ${MAX_VIDEO_MB}MB`);
+      if (videoInputRef.current) videoInputRef.current.value = "";
+      return;
+    }
+    setUploadingVideo(true);
+    const fd = new FormData();
+    fd.append("file", file);
+    fd.append("bucket", "products");
+    const res = await fetch("/api/upload", { method: "POST", body: fd });
+    if (res.ok) {
+      const data = await res.json();
+      setProductVideo(data.url);
+      setCareGuide((prev) => ({ ...prev, videoUrl: data.url }));
+      showToast.success("Đã tải video lên thành công!");
+    } else {
+      showToast.error("Upload video thất bại");
+    }
+    setUploadingVideo(false);
+    if (videoInputRef.current) videoInputRef.current.value = "";
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -470,7 +519,7 @@ export default function EditProductPage() {
 
         {/* ── Ảnh sản phẩm ──────────────────────────────────── */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-          <h3 className="text-base font-semibold text-gray-800 mb-5">Ảnh sản phẩm</h3>
+          <h3 className="text-base font-semibold text-gray-800 mb-5">Ảnh & Video Sản Phẩm</h3>
 
           {/* Ảnh chính */}
           <div className="mb-6">
@@ -492,8 +541,9 @@ export default function EditProductPage() {
                 {mainImage ? (
                   <>
                     <ImageWrapper src={mainImage} alt="Ảnh chính" fill noRound className="object-cover" />
-                    <div className="absolute inset-0 bg-black/0 hover:bg-black/20 transition-colors flex items-center justify-center">
-                      <span className="text-white text-xs font-medium opacity-0 hover:opacity-100">Đổi ảnh</span>
+                    <div className="absolute inset-0 bg-black/0 hover:bg-black/30 transition-colors flex flex-col items-center justify-center gap-1">
+                      <Crop className="w-5 h-5 text-white opacity-0 hover:opacity-100" />
+                      <span className="text-white text-xs font-medium opacity-0 hover:opacity-100">Đổi & cắt ảnh</span>
                     </div>
                     <div className="absolute top-2 left-2 bg-amber-400 text-white text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
                       <Star className="w-2.5 h-2.5 fill-white" /> Chính
@@ -502,7 +552,7 @@ export default function EditProductPage() {
                 ) : (
                   <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-gray-400">
                     {uploadingMain ? (
-                      <div className="w-6 h-6 border-2 border-[#425733] border-t-transparent rounded-full animate-spin" />
+                      <Loader2 className="w-6 h-6 animate-spin text-[#425733]" />
                     ) : (
                       <>
                         <ImageIcon className="w-8 h-8" />
@@ -513,26 +563,26 @@ export default function EditProductPage() {
                 )}
               </div>
               <div className="flex-1">
-                <p className="text-xs text-gray-500 mb-2">Ảnh chính hiển thị trong danh sách sản phẩm và trang chi tiết. Khuyến nghị: tỷ lệ 1:1, tối thiểu 600×600px.</p>
+                <p className="text-xs text-gray-500 mb-2">Ảnh chính hiển thị trong danh sách sản phẩm và trang chi tiết. Khuyến nghị: tỷ lệ 1:1, tối thiểu 600×600px. <strong>Sẽ mở crop để căn chỉnh.</strong></p>
                 <button
                   type="button"
                   onClick={() => mainImageInputRef.current?.click()}
                   disabled={uploadingMain}
                   className="flex items-center gap-2 bg-[#425733] text-white px-4 py-2 rounded-full text-sm font-semibold hover:bg-[#364a29] disabled:opacity-50 transition-colors"
                 >
-                  <Upload className="w-4 h-4" />
-                  {uploadingMain ? "Đang tải..." : mainImage ? "Thay ảnh chính" : "Tải ảnh chính"}
+                  <Crop className="w-4 h-4" />
+                  {uploadingMain ? "Đang tải..." : mainImage ? "Thay & cắt ảnh chính" : "Tải & cắt ảnh chính"}
                 </button>
               </div>
             </div>
           </div>
 
           {/* Ảnh phụ */}
-          <div>
+          <div className="mb-6">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
                 <span className="text-sm font-medium text-gray-700">Ảnh phụ</span>
-                <span className="text-xs text-gray-400">(tùy chọn · tối đa 10 ảnh)</span>
+                <span className="text-xs text-gray-400">(tùy chọn · tối đa 10 ảnh · click ✏️ để crop lại)</span>
               </div>
               <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
                 subImages.length >= 10 ? "bg-red-100 text-red-600" : "bg-gray-100 text-gray-500"
@@ -545,49 +595,59 @@ export default function EditProductPage() {
               {subImages.map((img, idx) => (
                 <div key={idx} className="relative aspect-square rounded-xl overflow-hidden border border-gray-200 group">
                   <ImageWrapper src={img} alt={`Ảnh phụ ${idx + 1}`} fill noRound className="object-cover" />
-                  <button
-                    type="button"
-                    onClick={() => setSubImages((prev) => prev.filter((_, i) => i !== idx))}
-                    className="absolute top-1 right-1 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center gap-2">
+                    <label className="opacity-0 group-hover:opacity-100 cursor-pointer w-7 h-7 rounded-full bg-white/90 flex items-center justify-center shadow hover:bg-white transition-all" title="Crop lại ảnh này">
+                      <Crop className="w-3.5 h-3.5 text-[#425733]" />
+                      <input type="file" accept="image/*" className="hidden" onChange={(e) => handleReCropSelect(e, idx)} />
+                    </label>
+                    <button type="button" onClick={() => setSubImages((prev) => prev.filter((_, i) => i !== idx))} className="opacity-0 group-hover:opacity-100 w-7 h-7 bg-red-500 text-white rounded-full flex items-center justify-center shadow transition-all" title="Xóa ảnh này">
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
                 </div>
               ))}
 
               {subImages.length < 10 && (
-                <button
-                  type="button"
-                  onClick={() => subImageInputRef.current?.click()}
-                  disabled={uploadingSub}
-                  className="aspect-square rounded-xl border-2 border-dashed border-gray-300 hover:border-[#425733] bg-gray-50 hover:bg-[#f5f7f4] transition-all flex flex-col items-center justify-center gap-1 text-gray-400 hover:text-[#425733]"
-                >
-                  {uploadingSub ? (
-                    <div className="w-5 h-5 border-2 border-[#425733] border-t-transparent rounded-full animate-spin" />
-                  ) : (
-                    <>
-                      <Plus className="w-5 h-5" />
-                      <span className="text-[10px]">Thêm</span>
-                    </>
-                  )}
+                <button type="button" onClick={() => subImageInputRef.current?.click()} disabled={uploadingSub} className="aspect-square rounded-xl border-2 border-dashed border-gray-300 hover:border-[#425733] bg-gray-50 hover:bg-[#f5f7f4] transition-all flex flex-col items-center justify-center gap-1 text-gray-400 hover:text-[#425733]">
+                  {uploadingSub ? <Loader2 className="w-5 h-5 animate-spin text-[#425733]" /> : <><Plus className="w-5 h-5" /><span className="text-[10px]">Thêm</span></>}
                 </button>
               )}
             </div>
 
-            <button
-              type="button"
-              onClick={() => subImageInputRef.current?.click()}
-              disabled={uploadingSub || subImages.length >= 10}
-              className="flex items-center gap-2 text-sm text-[#425733] hover:text-[#364a29] font-medium disabled:opacity-40 transition-colors"
-            >
+            <button type="button" onClick={() => subImageInputRef.current?.click()} disabled={uploadingSub || subImages.length >= 10} className="flex items-center gap-2 text-sm text-[#425733] hover:text-[#364a29] font-medium disabled:opacity-40 transition-colors">
               <Upload className="w-4 h-4" />
-              {uploadingSub ? "Đang tải ảnh phụ..." : "Tải nhiều ảnh phụ cùng lúc"}
+              {uploadingSub ? `Đang crop & tải (còn ${subCropQueue.length} ảnh)...` : "Tải nhiều ảnh phụ cùng lúc (sẽ crop từng ảnh)"}
             </button>
+          </div>
+
+          {/* Video sản phẩm */}
+          <div className="border-t border-gray-100 pt-5">
+            <div className="flex items-center gap-2 mb-3">
+              <Video className="w-4 h-4 text-[#425733]" />
+              <span className="text-sm font-medium text-gray-700">Video sản phẩm</span>
+              <span className="text-xs text-gray-400">(tùy chọn · tối đa {MAX_VIDEO_MB}MB · MP4/WebM/MOV)</span>
+            </div>
+            {productVideo && (
+              <div className="relative mb-3 rounded-xl overflow-hidden border border-[#425733]/30 bg-black aspect-video max-w-sm">
+                <video src={productVideo} controls className="w-full h-full object-contain" />
+                <button type="button" onClick={() => { setProductVideo(""); setCareGuide((p) => ({ ...p, videoUrl: careGuide.videoUrl === productVideo ? "" : careGuide.videoUrl })); }} className="absolute top-2 right-2 w-7 h-7 bg-red-500 text-white rounded-full flex items-center justify-center shadow hover:bg-red-600 transition-colors" title="Xóa video">
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            )}
+            <div className="flex items-center gap-3 flex-wrap">
+              <button type="button" onClick={() => videoInputRef.current?.click()} disabled={uploadingVideo} className="flex items-center gap-2 px-4 py-2 border-2 border-[#425733] text-[#425733] rounded-full text-sm font-semibold hover:bg-[#f0f4ee] disabled:opacity-50 transition-colors">
+                {uploadingVideo ? <><Loader2 className="w-4 h-4 animate-spin" /> Đang tải video...</> : <><Upload className="w-4 h-4" /> {productVideo ? "Thay video" : "Upload video"}</>}
+              </button>
+              {!productVideo && <span className="text-xs text-gray-400">hoặc dán URL YouTube</span>}
+            </div>
+            <p className="text-xs text-gray-400 mt-1.5">Upload video trực tiếp ≤{MAX_VIDEO_MB}MB (MP4/WebM/MOV). URL YouTube đặt ở mục Chăm Sóc bên dưới.</p>
           </div>
 
           {/* Hidden inputs */}
           <input ref={mainImageInputRef} type="file" accept="image/*" onChange={handleMainImageUpload} className="hidden" />
           <input ref={subImageInputRef} type="file" accept="image/*" multiple onChange={handleSubImageUpload} className="hidden" />
+          <input ref={videoInputRef} type="file" accept="video/mp4,video/webm,video/quicktime,video/mov" onChange={handleVideoUpload} className="hidden" />
         </div>
 
         {/* ── Thông số chi tiết ───────────────────────────── */}
@@ -801,31 +861,26 @@ export default function EditProductPage() {
       </form>
     </div>
 
-      {/* Crop Modal: Ảnh chính sản phẩm (1:1) */}
+      {/* Crop Modal: Ảnh chính (1:1) */}
       {mainCropSrc && (
-        <ImageCropModal
-          src={mainCropSrc}
-          aspect={1}
-          title="Ảnh Chính Sản Phẩm — Cắt theo tỉ lệ 1:1"
+        <ImageCropModal src={mainCropSrc} aspect={1} title="Ảnh Chính — Cắt theo tỉ lệ 1:1"
           onConfirm={handleMainCropConfirm}
-          onCancel={() => {
-            URL.revokeObjectURL(mainCropSrc);
-            setMainCropSrc(null);
-          }}
-        />
+          onCancel={() => { URL.revokeObjectURL(mainCropSrc); setMainCropSrc(null); }} />
       )}
 
-      {/* Crop Modal: Ảnh phụ (tự do) */}
-      {subCropSrc && (
-        <ImageCropModal
-          src={subCropSrc}
-          title="Ảnh Phụ Sản Phẩm — Kéo để chọn vùng cắt"
+      {/* Crop Modal: Ảnh phụ queue */}
+      {subCropQueue[0] && reCropIdx === null && (
+        <ImageCropModal src={subCropQueue[0]}
+          title={`Ảnh Phụ — Kéo để cắt ${subCropQueue.length > 1 ? `(còn ${subCropQueue.length} ảnh)` : ""}`}
           onConfirm={handleSubCropConfirm}
-          onCancel={() => {
-            URL.revokeObjectURL(subCropSrc);
-            setSubCropSrc(null);
-          }}
-        />
+          onCancel={handleSubCropCancel} />
+      )}
+
+      {/* Crop Modal: Re-crop ảnh phụ đã upload */}
+      {subCropQueue[0] && reCropIdx !== null && (
+        <ImageCropModal src={subCropQueue[0]} title={`Cắt lại Ảnh Phụ #${reCropIdx + 1}`}
+          onConfirm={handleReCropConfirm}
+          onCancel={() => { URL.revokeObjectURL(subCropQueue[0]); setSubCropQueue([]); setReCropIdx(null); }} />
       )}
     </>
   );
