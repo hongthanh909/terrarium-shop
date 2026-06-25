@@ -260,7 +260,7 @@ export function ProductDetailClient({
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [lightboxOpen, product?.images?.length, resetZoom]);
+  }, [lightboxOpen, product.images, resetZoom]);
 
   const handleWheel = useCallback((e: React.WheelEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -322,7 +322,7 @@ export function ProductDetailClient({
       .finally(() => setReviewsLoading(false));
     const customerId = (session?.user as any)?.id;
     if (customerId) {
-      fetch(`/api/reviews/can-review?productId=${product.id}&customerId=${customerId}`)
+      fetch(`/api/reviews/can-review?productId=${product.id}`)
         .then((r) => r.json())
         .then((d) => { setCanReview(d.canReview ?? false); setAlreadyReviewed(d.alreadyReviewed ?? false); })
         .catch(() => setCanReview(false));
@@ -341,7 +341,7 @@ export function ProductDetailClient({
       const res = await fetch("/api/reviews", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ productId: product.id, customerId, rating: reviewForm.rating, title: reviewForm.title, content: reviewForm.content }),
+        body: JSON.stringify({ productId: product.id, rating: reviewForm.rating, title: reviewForm.title, content: reviewForm.content }),
       });
       const data = await res.json();
       if (res.ok) {
@@ -1281,7 +1281,13 @@ export function ProductDetailClient({
                       router.push(`/login?callbackUrl=/products/${rel.slug}`);
                       return;
                     }
-                    const base = rel.salePrice ? parseFloat(rel.salePrice.toString()) : parseFloat(rel.basePrice.toString());
+                    const relBasePrice = parseFloat(rel.basePrice.toString());
+                    const relSalePrice = rel.salePrice ? parseFloat(rel.salePrice.toString()) : null;
+                    const relSaleValid =
+                      relSalePrice != null &&
+                      relSalePrice < relBasePrice &&
+                      (!rel.saleEndDate || new Date(rel.saleEndDate) > new Date());
+                    const base = relSaleValid ? relSalePrice : relBasePrice;
                     const price = base + (pkg === "standard" ? 150000 : pkg === "advanced" ? 180000 : 0);
                     const pkgLabel = pkg === "standard" ? "Gói tiêu chuẩn" : pkg === "advanced" ? "Gói nâng cao" : "Gói cơ bản";
                     addItem({

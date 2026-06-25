@@ -5,40 +5,12 @@ import { useRouter, useParams } from "next/navigation";
 import { ArrowLeft, Save, Eye, EyeOff, Upload, X, Image as ImageIcon, Clock, ImagePlus, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { showToast } from "@/components/ui/custom-toast";
-import dynamic from "next/dynamic";
-
-const ReactQuill = dynamic(
-  () => import("react-quill").then((mod) => {
-    require("react-quill/dist/quill.snow.css");
-    return mod;
-  }),
-  { ssr: false, loading: () => <div className="h-48 bg-gray-50 rounded border animate-pulse" /> }
-) as any;
+import { BlogHtmlEditor } from "@/components/admin/BlogHtmlEditor";
 
 interface BlogCategory {
   id: string;
   name: string;
 }
-
-const QUILL_MODULES_BASIC = {
-  toolbar: [
-    ["bold", "italic", "underline", "strike"],
-    [{ list: "ordered" }, { list: "bullet" }],
-    ["link"],
-    ["clean"],
-  ],
-};
-
-const QUILL_MODULES_FULL = {
-  toolbar: [
-    [{ header: [1, 2, 3, false] }],
-    ["bold", "italic", "underline", "strike", "blockquote"],
-    [{ list: "ordered" }, { list: "bullet" }],
-    [{ align: [] }],
-    ["link"],
-    ["clean"],
-  ],
-};
 
 export default function EditBlogPostPage() {
   const router = useRouter();
@@ -349,11 +321,11 @@ export default function EditBlogPostPage() {
                   {uploadingSection === "intro" ? "Đang tải..." : "📷 Chèn ảnh"}
                 </button>
               </div>
-              <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-                <ReactQuill theme="snow" value={formData.intro}
-                  onChange={(intro: string) => setFormData((prev) => ({ ...prev, intro }))}
-                  className="h-44 mb-12" modules={QUILL_MODULES_BASIC} />
-              </div>
+              <BlogHtmlEditor
+                value={formData.intro}
+                onChange={(intro) => setFormData((prev) => ({ ...prev, intro }))}
+                minHeightClass="h-44"
+              />
             </div>
 
             {/* 2. Thân bài */}
@@ -367,11 +339,11 @@ export default function EditBlogPostPage() {
                   {uploadingSection === "body" ? "Đang tải..." : "📷 Chèn ảnh"}
                 </button>
               </div>
-              <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-                <ReactQuill theme="snow" value={formData.body}
-                  onChange={(body: string) => setFormData((prev) => ({ ...prev, body }))}
-                  className="h-64 mb-12" modules={QUILL_MODULES_FULL} />
-              </div>
+              <BlogHtmlEditor
+                value={formData.body}
+                onChange={(body) => setFormData((prev) => ({ ...prev, body }))}
+                minHeightClass="h-64"
+              />
             </div>
 
             {/* 3. Kết bài */}
@@ -385,11 +357,11 @@ export default function EditBlogPostPage() {
                   {uploadingSection === "conclusion" ? "Đang tải..." : "📷 Chèn ảnh"}
                 </button>
               </div>
-              <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-                <ReactQuill theme="snow" value={formData.conclusion}
-                  onChange={(conclusion: string) => setFormData((prev) => ({ ...prev, conclusion }))}
-                  className="h-44 mb-12" modules={QUILL_MODULES_BASIC} />
-              </div>
+              <BlogHtmlEditor
+                value={formData.conclusion}
+                onChange={(conclusion) => setFormData((prev) => ({ ...prev, conclusion }))}
+                minHeightClass="h-44"
+              />
             </div>
           </div>
 
@@ -430,16 +402,6 @@ export default function EditBlogPostPage() {
           </button>
         </div>
       </form>
-
-      <style dangerouslySetInnerHTML={{ __html: `
-        .ql-editor img {
-          max-width: 100%;
-          height: auto;
-          border-radius: 12px;
-          margin: 8px 0;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-        }
-      `}} />
     </div>
   );
 }

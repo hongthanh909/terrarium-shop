@@ -6,11 +6,11 @@ export const dynamic = "force-dynamic";
 export async function generateMetadata({
   params,
 }: {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   try {
     const post = await prisma.blogPost.findUnique({
-      where: { slug: params.slug },
+      where: { slug: (await params).slug },
       select: {
         title: true,
         content: true,

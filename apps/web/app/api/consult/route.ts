@@ -226,7 +226,7 @@ function getInstantResponse(message: string): string | null {
     return "🔄 **Chính sách đổi trả & bảo hành:**\n\n• **Đổi trả trong 3 ngày** nếu sản phẩm lỗi do vận chuyển.\n• **Bảo hành 7 ngày** cho cây bị hư hại không do người dùng.\n• Cần quay video khi mở hàng để làm bằng chứng.\n• Liên hệ Zalo/Facebook để được hỗ trợ đổi trả.\n• Không áp dụng cho trường hợp chăm sóc sai cách.";
 
   if (/thanh toán|trả tiền|chuyển khoản|cod|payment|momo/i.test(q))
-    return "💳 **Phương thức thanh toán:**\n\n• **Chuyển khoản ngân hàng** (TPBank) — xác nhận tự động\n• **COD** (thanh toán khi nhận hàng)\n• Thông tin chuyển khoản sẽ hiển thị khi đặt hàng.\n\n💡 Đặt hàng trên website → chọn sản phẩm → thêm vào giỏ → thanh toán!";
+    return "💳 **Phương thức thanh toán:**\n\n• **COD** (thanh toán khi nhận hàng) — an toàn, tiện lợi\n\n💡 Đặt hàng trên website → chọn sản phẩm → thêm vào giỏ → thanh toán!";
 
   if (/khuyến mãi|voucher|mã giảm|discount|sale|giảm giá/i.test(q))
     return "🎉 **Khuyến mãi tại Tiệm Rêu:**\n\n• **Freeship** đơn từ 500.000₫\n• Theo dõi Tiệm Rêu trên Facebook/Zalo để nhận mã giảm giá.\n• Các chương trình khuyến mãi được cập nhật thường xuyên trên website.\n\nAnh/chị muốn xem sản phẩm đang giảm giá không ạ?";
@@ -368,7 +368,7 @@ CHÍNH SÁCH SHOP (trả lời chính xác)
 - Freeship đơn từ 500.000₫
 - Ship tiêu chuẩn: 25.000₫-40.000₫ (HCM 1-2 ngày, tỉnh khác 3-5 ngày)
 - Đổi trả 3 ngày (lỗi do vận chuyển), bảo hành 7 ngày
-- Thanh toán: Chuyển khoản (TPBank) hoặc COD
+- Thanh toán: COD (thu tiền khi giao hàng)
 - Liên hệ: Facebook "Tiệm Rêu Décor", Zalo "Tiệm Rêu"
 ${catalog ? `\n═══════════════════════════════════════\nDANH SÁCH SẢN PHẨM HIỆN CÓ\n═══════════════════════════════════════\n${catalog}\n\nQuy tắc: Gợi ý TỐI ĐA 3 SP phù hợp nhất, kèm giá + link. Ưu tiên ⭐ featured và còn hàng.` : ""}
 ${pageContext?.type === "product" && pageContext.productName ? `\nKhách đang xem: "${pageContext.productName}"${pageContext.productPrice ? ` — ${pageContext.productPrice}` : ""}. Ưu tiên trả lời về SP này.` : ""}`;

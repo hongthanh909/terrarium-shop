@@ -5,7 +5,7 @@ import { logAdminAction } from "@/lib/audit";
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const client = new PrismaClient({
     datasources: {
@@ -20,7 +20,7 @@ export async function POST(
     const admin = await verifyAdminRequest(request);
     if (!admin) return unauthorizedResponse();
 
-    const { id } = params;
+    const { id } = await params;
     const body = await request.json();
     
     // pinnedUntil có thể là ISO string hoặc null để unpin

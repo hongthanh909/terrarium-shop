@@ -12,9 +12,9 @@ export async function generateStaticParams() {
   return [];
 }
 
-export default async function ProductPage({ params }: { params: { slug: string } }) {
+export default async function ProductPage({ params }: { params: Promise<{ slug: string }> }) {
   // decode URL-encoded slug (hỗ trợ tiếng Việt trong URL)
-  const slug = decodeURIComponent(params.slug);
+  const slug = decodeURIComponent((await params).slug);
 
   // ✅ Parallel: session + product cùng lúc thay vì tuần tự
   const [session, product] = await Promise.all([

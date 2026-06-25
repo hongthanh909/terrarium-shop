@@ -1,39 +1,23 @@
 import { prisma } from "@/lib/prisma";
 import { NextRequest } from "next/server";
 import { errorResponse, successResponse } from "@/lib/api-helpers";
+import { canAccessOrder, getPayOSClient } from "@/lib/order-security";
 
 export const dynamic = "force-dynamic";
 
-async function getPayOS() {
-  // @payos/node uses NAMED export { PayOS }, not default export!
-  const { PayOS } = await import("@payos/node");
-  // Cast to any: @payos/node type definitions are wrong (claims 0-1 args, actually needs 3)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const PayOSClass = PayOS as any;
-  return new PayOSClass(
-    process.env.PAYOS_CLIENT_ID as string,
-    process.env.PAYOS_API_KEY as string,
-    process.env.PAYOS_CHECKSUM_KEY as string
-  );
-}
-
 export async function POST(req: NextRequest) {
   try {
-    const { orderId } = await req.json();
+    const { orderId, orderNumber } = await req.json();
 
     if (!orderId) {
       return errorResponse("Missing orderId", 400);
     }
 
-    // Kiểm tra env vars
-    console.log("[PayOS] CLIENT_ID:", process.env.PAYOS_CLIENT_ID ? "✅ có" : "❌ thiếu");
-    console.log("[PayOS] API_KEY:", process.env.PAYOS_API_KEY ? "✅ có" : "❌ thiếu");
-    console.log("[PayOS] CHECKSUM_KEY:", process.env.PAYOS_CHECKSUM_KEY ? "✅ có" : "❌ thiếu");
-
     const order = await prisma.order.findUnique({
       where: { id: orderId },
       include: {
         items: true,
+        shippingInfo: true,
       },
     });
 
@@ -41,53 +25,59 @@ export async function POST(req: NextRequest) {
       return errorResponse("Order not found", 404);
     }
 
+    const access = await canAccessOrder(req, order, orderNumber);
+    if (!access.allowed) {
+      return errorResponse("Forbidden", 403);
+    }
+
+    if (order.paymentMethod !== "BANK_TRANSFER") {
+      return errorResponse("Order is not a bank-transfer order", 400);
+    }
+
     if (order.paymentStatus === "PAID") {
       return errorResponse("Order is already paid", 400);
     }
 
     const domain = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
-    
-    const orderCode = Number(String(new Date().getTime()).slice(-6) + String(Math.floor(Math.random() * 100)).padStart(3, "0"));
+    const orderCode = Number(
+      `${Date.now().toString().slice(-8)}${Math.floor(Math.random() * 100).toString().padStart(2, "0")}`
+    );
 
     const body = {
       orderCode,
-      amount: Math.round(Number(order.total)), // Đảm bảo là số nguyên
-      description: `Thanh toan ${order.orderNumber}`.substring(0, 25).replace(/[^\x00-\x7F]/g, ""), // Chỉ ASCII
-      items: order.items.map((item: any) => ({
+      amount: Math.round(Number(order.total)),
+      description: `Thanh toan ${order.orderNumber}`.substring(0, 25).replace(/[^\x00-\x7F]/g, ""),
+      items: order.items.map((item) => ({
         name: item.productName.substring(0, 50),
         quantity: item.quantity,
         price: Math.round(Number(item.price)),
       })),
-      returnUrl: `${domain}/checkout/success?order=${order.orderNumber}`,
+      returnUrl: `${domain}/checkout/success?orderId=${order.id}&orderNumber=${order.orderNumber}&method=BANK_TRANSFER`,
       cancelUrl: `${domain}/checkout/payment?order=${order.orderNumber}`,
-      // ✅ FIX: webhookUrl phải được gửi kèm mỗi payment link
-      // PayOS sẽ POST về URL này khi thanh toán thành công
-      webhookUrl: `${domain}/api/payment/webhook`,
+      buyerName: order.shippingInfo?.name ?? undefined,
+      buyerEmail: order.shippingInfo?.email ?? undefined,
+      buyerPhone: order.shippingInfo?.phone ?? undefined,
+      buyerAddress: order.shippingInfo?.fullAddress ?? undefined,
     };
 
-    console.log("[PayOS] Request body:", JSON.stringify(body, null, 2));
-
-    // Save the orderCode to the DB so the webhook can map it back to the Order
     await prisma.orderStatusLog.create({
       data: {
         orderId: order.id,
         status: order.status,
-        note: `PayOS OrderCode: ${orderCode}`
-      }
+        note: `PayOS OrderCode: ${orderCode}`,
+      },
     });
 
-    const payos = await getPayOS();
-    const paymentLinkRes = await payos.createPaymentLink(body);
-
-    console.log("[PayOS] Success:", paymentLinkRes.checkoutUrl);
+    const payos = await getPayOSClient();
+    const paymentLinkRes = await payos.paymentRequests.create(body);
 
     return successResponse({
       checkoutUrl: paymentLinkRes.checkoutUrl,
       paymentLinkId: paymentLinkRes.paymentLinkId,
+      orderCode: paymentLinkRes.orderCode,
     });
   } catch (error: any) {
     console.error("[PayOS] Create Link Error:", error?.message || error);
-    console.error("[PayOS] Error detail:", JSON.stringify(error, null, 2));
     return errorResponse(error.message || "Lỗi tạo link thanh toán");
   }
 }

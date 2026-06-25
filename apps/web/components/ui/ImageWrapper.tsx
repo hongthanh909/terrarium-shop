@@ -34,6 +34,7 @@ export function ImageWrapper({
       <div className={cn("relative w-full h-full", wrapperClassName)}>
         <Image
           {...props}
+          alt={props.alt ?? ""}
           className={cn(
             "object-cover transition-transform duration-500",
             roundedClass,
@@ -47,6 +48,7 @@ export function ImageWrapper({
   return (
     <Image
       {...props}
+      alt={props.alt ?? ""}
       className={cn(
         "transition-transform duration-500",
         roundedClass,

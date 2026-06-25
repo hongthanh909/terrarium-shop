@@ -6,13 +6,13 @@ import { logAdminAction } from "@/lib/audit";
 // PUT - Update a blog category
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const admin = await verifyAdminRequest(request);
     if (!admin) return unauthorizedResponse();
 
-    const { id } = params;
+    const { id } = await params;
     const body = await request.json();
     const { name, slug } = body;
 
@@ -53,13 +53,13 @@ export async function PUT(
 // DELETE - Delete a blog category
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const admin = await verifyAdminRequest(request);
     if (!admin) return unauthorizedResponse();
 
-    const { id } = params;
+    const { id } = await params;
 
     const category = await prisma.blogCategory.findUnique({ where: { id }});
     if (!category) {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { ImageWrapper } from "@/components/ui/ImageWrapper";
@@ -92,11 +92,7 @@ export default function AdminOrderDetailPage() {
     return dots[status] || "bg-gray-500";
   };
 
-  useEffect(() => {
-    fetchOrder();
-  }, [orderId]);
-
-  const fetchOrder = async () => {
+  const fetchOrder = useCallback(async () => {
     try {
       const response = await fetch(`/api/orders?id=${orderId}`);
       if (response.ok) {
@@ -110,9 +106,13 @@ export default function AdminOrderDetailPage() {
       console.error("Error fetching order:", error);
       showToast.error("Lỗi khi tải thông tin đơn hàng");
     } finally {
-      loading && setLoading(false);
+      setLoading(false);
     }
-  };
+  }, [orderId, router]);
+
+  useEffect(() => {
+    fetchOrder();
+  }, [fetchOrder]);
 
   const handleUpdateStatus = async (newStatus: string) => {
     setUpdating(true);

@@ -12,6 +12,7 @@ interface FeaturedProductCardProps {
   basePrice: number;
   salePrice?: number | null;
   saleEndDate?: string | null;
+  inventory?: number;
   images: string[];
   category?: { name: string };
   rating?: number;
@@ -25,7 +26,17 @@ export function FeaturedProductCard(props: FeaturedProductCardProps) {
   const { isWished, toggleWishlist } = useWishlist();
 
   const handleAddToCart = (selectedPackage = "basic", quantity = 1) => {
-    const base = props.salePrice != null && props.salePrice < props.basePrice
+    if (props.inventory !== undefined && props.inventory <= 0) {
+      showToast.error("Sản phẩm hiện đã hết hàng");
+      return;
+    }
+
+    const saleIsValid =
+      props.salePrice != null &&
+      props.salePrice < props.basePrice &&
+      (!props.saleEndDate || new Date(props.saleEndDate) > new Date());
+
+    const base = saleIsValid && props.salePrice != null
       ? props.salePrice
       : props.basePrice;
 

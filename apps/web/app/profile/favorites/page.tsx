@@ -35,7 +35,7 @@ export default function FavoritesPage() {
     if (status === "authenticated") {
       fetchFavorites();
     }
-  }, [status]);
+  }, [status, router]);
 
   const fetchFavorites = async () => {
     try {

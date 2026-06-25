@@ -50,6 +50,9 @@ jobs:
             # ── Vào thư mục app ──────────────────────────────────────────────
             cd /home/deploy/terrarium-shop
 
+            echo "🔎 Checking Node.js version..."
+            node -e "const [major, minor] = process.versions.node.split('.').map(Number); if (major < 20 || (major === 20 && minor < 9)) { console.error('Node.js >=20.9.0 is required for Next.js 16. Current: ' + process.versions.node); process.exit(1); } console.log('Node.js OK: ' + process.versions.node);"
+
             # ── Pull code mới nhất từ GitHub ─────────────────────────────────
             echo "📦 Pulling latest code..."
             git fetch origin main

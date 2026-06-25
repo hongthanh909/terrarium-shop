@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { Heart, MessageSquare, CornerDownRight, ShieldCheck, Send, Loader2 } from "lucide-react";
@@ -51,11 +51,39 @@ export default function BlogInteraction({ postId, slug }: BlogInteractionProps) 
   const [replyContent, setReplyContent] = useState("");
   const [submittingReply, setSubmittingReply] = useState(false);
 
+  const fetchLikes = useCallback(async () => {
+    try {
+      const res = await fetch(`/api/blog/${slug}/like`);
+      if (res.ok) {
+        const data = await res.json();
+        setLikesCount(data.likesCount);
+        setLiked(data.liked);
+      }
+    } catch (err) {
+      console.error("Error fetching likes:", err);
+    }
+  }, [slug]);
+
+  const fetchComments = useCallback(async () => {
+    setLoadingComments(true);
+    try {
+      const res = await fetch(`/api/blog/${slug}/comments`);
+      if (res.ok) {
+        const data = await res.json();
+        setComments(data);
+      }
+    } catch (err) {
+      console.error("Error fetching comments:", err);
+    } finally {
+      setLoadingComments(false);
+    }
+  }, [slug]);
+
   // Fetch likes data
   useEffect(() => {
     fetchLikes();
     fetchComments();
-  }, [slug, currentCustomerId]);
+  }, [fetchLikes, fetchComments, currentCustomerId]);
 
   // Real-time reply listener
   useEffect(() => {
@@ -98,35 +126,7 @@ export default function BlogInteraction({ postId, slug }: BlogInteractionProps) 
     return () => {
       supabaseClient.removeChannel(channel);
     };
-  }, [currentCustomerId]);
-
-  const fetchLikes = async () => {
-    try {
-      const res = await fetch(`/api/blog/${slug}/like`);
-      if (res.ok) {
-        const data = await res.json();
-        setLikesCount(data.likesCount);
-        setLiked(data.liked);
-      }
-    } catch (err) {
-      console.error("Error fetching likes:", err);
-    }
-  };
-
-  const fetchComments = async () => {
-    setLoadingComments(true);
-    try {
-      const res = await fetch(`/api/blog/${slug}/comments`);
-      if (res.ok) {
-        const data = await res.json();
-        setComments(data);
-      }
-    } catch (err) {
-      console.error("Error fetching comments:", err);
-    } finally {
-      setLoadingComments(false);
-    }
-  };
+  }, [currentCustomerId, fetchComments]);
 
   const handleLikeToggle = async () => {
     if (!session?.user) {

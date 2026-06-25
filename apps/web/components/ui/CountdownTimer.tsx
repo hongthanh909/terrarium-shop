@@ -12,16 +12,16 @@ interface CountdownTimerProps {
  * Otherwise shows "MM:SS" or just seconds.
  */
 export const CountdownTimer: React.FC<CountdownTimerProps> = ({ endsAt, className }) => {
-  const calculateRemaining = () => {
-    const diff = new Date(endsAt).getTime() - Date.now();
+  const calculateRemaining = (endTime: string) => {
+    const diff = new Date(endTime).getTime() - Date.now();
     return Math.max(diff, 0);
   };
 
-  const [remaining, setRemaining] = useState<number>(calculateRemaining());
+  const [remaining, setRemaining] = useState<number>(() => calculateRemaining(endsAt));
 
   useEffect(() => {
     const id = setInterval(() => {
-      setRemaining(calculateRemaining());
+      setRemaining(calculateRemaining(endsAt));
     }, 1000);
     return () => clearInterval(id);
   }, [endsAt]);

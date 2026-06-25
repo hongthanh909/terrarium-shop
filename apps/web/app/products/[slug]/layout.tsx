@@ -5,11 +5,11 @@ import { prisma } from "@/lib/prisma";
 export async function generateMetadata({
   params,
 }: {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   try {
     const product = await prisma.product.findUnique({
-      where: { slug: params.slug },
+      where: { slug: (await params).slug },
       select: {
         name: true,
         images: true,

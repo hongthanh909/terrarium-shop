@@ -111,7 +111,7 @@ function ReviewCard({ rev }: { rev: typeof reviews[0] }) {
           </div>
         </div>
         <p className="text-xs md:text-sm text-gray-600 leading-relaxed font-semibold group-hover:text-gray-900 group-hover:font-extrabold transition-all duration-300">
-          "{rev.text}"
+          &ldquo;{rev.text}&rdquo;
         </p>
       </div>
     </div>
@@ -222,9 +222,12 @@ export function ReviewMarquee({ className }: { className?: string }) {
                   />
 
                   {/* Hotspot 1: Bottom Bar Notification Bell */}
-                  <div
+                  <button
+                    type="button"
                     onClick={() => setIsNotificationOn(!isNotificationOn)}
-                    className="absolute bottom-[4.8%] left-[69.5%] w-[12%] h-[6.5%] cursor-pointer rounded-full hover:bg-black/5 active:bg-black/10 transition-colors z-30"
+                    className="absolute bottom-[4.8%] left-[69.5%] w-[12%] h-[6.5%] cursor-pointer rounded-full hover:bg-black/5 active:bg-black/10 transition-colors z-30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#425733]"
+                    aria-pressed={isNotificationOn}
+                    aria-label="Bật tắt thông báo"
                     title="Bấm để bật/tắt Thông báo"
                   />
 
@@ -234,9 +237,12 @@ export function ReviewMarquee({ className }: { className?: string }) {
                   )}
 
                   {/* Hotspot 2: "Đang mở cửa" status info line */}
-                  <div
+                  <button
+                    type="button"
                     onClick={() => setIsOpenStatus(!isOpenStatus)}
-                    className="absolute top-[43.8%] left-[10%] w-[38%] h-[3%] cursor-pointer rounded hover:bg-black/5 active:bg-black/10 transition-colors z-30"
+                    className="absolute top-[43.8%] left-[10%] w-[38%] h-[3%] cursor-pointer rounded hover:bg-black/5 active:bg-black/10 transition-colors z-30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#425733]"
+                    aria-pressed={isOpenStatus}
+                    aria-label="Bật tắt trạng thái mở cửa"
                     title="Bấm để đóng/mở cửa Tiệm Rêu"
                   />
 
@@ -251,9 +257,12 @@ export function ReviewMarquee({ className }: { className?: string }) {
                   )}
 
                   {/* Hotspot 3: "Công cụ chuyên nghiệp" blue button */}
-                  <div
+                  <button
+                    type="button"
                     onClick={() => setIsDashboardActive(!isDashboardActive)}
-                    className="absolute top-[32%] left-[11%] w-[41%] h-[4%] cursor-pointer rounded-lg hover:bg-white/10 active:bg-white/20 transition-colors z-30"
+                    className="absolute top-[32%] left-[11%] w-[41%] h-[4%] cursor-pointer rounded-lg hover:bg-white/10 active:bg-white/20 transition-colors z-30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#425733]"
+                    aria-pressed={isDashboardActive}
+                    aria-label="Bật tắt trạng thái dashboard"
                     title="Bấm để bật/tắt trạng thái Dashboard"
                   />
 

@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
-export async function GET(request: Request, { params }: { params: { id: string } }) {
+export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await getServerSession(authOptions);
     if (!session || session.user.role !== "ADMIN") {
@@ -11,7 +11,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
     }
 
     const policy = await prisma.policy.findUnique({
-      where: { id: params.id },
+      where: { id: (await params).id },
     });
 
     if (!policy) {
@@ -25,7 +25,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
   }
 }
 
-export async function PUT(request: Request, { params }: { params: { id: string } }) {
+export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await getServerSession(authOptions);
     if (!session || session.user.role !== "ADMIN") {
@@ -36,7 +36,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
     const { title, slug, content, type, order, isActive } = data;
 
     const policy = await prisma.policy.update({
-      where: { id: params.id },
+      where: { id: (await params).id },
       data: {
         title,
         slug,
@@ -57,7 +57,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
   }
 }
 
-export async function DELETE(request: Request, { params }: { params: { id: string } }) {
+export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await getServerSession(authOptions);
     if (!session || session.user.role !== "ADMIN") {
@@ -65,7 +65,7 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
     }
 
     await prisma.policy.delete({
-      where: { id: params.id },
+      where: { id: (await params).id },
     });
 
     return NextResponse.json({ success: true });

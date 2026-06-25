@@ -41,7 +41,7 @@ export default function CheckoutPendingPage() {
   const checkStatus = useCallback(async () => {
     if (!orderId) return;
     try {
-      const res = await fetch(`/api/orders/${orderId}/status`);
+      const res = await fetch(`/api/orders/${orderId}/status?orderNumber=${encodeURIComponent(orderNumber)}`);
       const data = await res.json();
 
       // Always use server total

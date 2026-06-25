@@ -4,53 +4,67 @@ import { prisma } from "@/lib/prisma";
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://tiemreudecor.com";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  // ─── Static routes ────────────────────────────────────────────────────────
+  const now = new Date();
+
   const staticRoutes: MetadataRoute.Sitemap = [
-    { url: BASE_URL,                        lastModified: new Date(), changeFrequency: "weekly",  priority: 1.0 },
-    { url: `${BASE_URL}/products`,          lastModified: new Date(), changeFrequency: "daily",   priority: 0.9 },
-    { url: `${BASE_URL}/blog`,              lastModified: new Date(), changeFrequency: "weekly",  priority: 0.7 },
-    { url: `${BASE_URL}/login`,             lastModified: new Date(), changeFrequency: "monthly", priority: 0.3 },
-    { url: `${BASE_URL}/register`,          lastModified: new Date(), changeFrequency: "monthly", priority: 0.3 },
-    { url: `${BASE_URL}/policies/warranty`, lastModified: new Date(), changeFrequency: "monthly", priority: 0.4 },
-    { url: `${BASE_URL}/policies/shipping`, lastModified: new Date(), changeFrequency: "monthly", priority: 0.4 },
-    { url: `${BASE_URL}/policies/returns`,  lastModified: new Date(), changeFrequency: "monthly", priority: 0.4 },
-    { url: `${BASE_URL}/policies/privacy`,  lastModified: new Date(), changeFrequency: "monthly", priority: 0.3 },
-    { url: `${BASE_URL}/policies/faq`,      lastModified: new Date(), changeFrequency: "monthly", priority: 0.5 },
+    { url: BASE_URL, lastModified: now, changeFrequency: "weekly", priority: 1.0 },
+    { url: `${BASE_URL}/products`, lastModified: now, changeFrequency: "daily", priority: 0.9 },
+    { url: `${BASE_URL}/explore`, lastModified: now, changeFrequency: "weekly", priority: 0.7 },
+    { url: `${BASE_URL}/consult`, lastModified: now, changeFrequency: "monthly", priority: 0.6 },
+    { url: `${BASE_URL}/contact`, lastModified: now, changeFrequency: "monthly", priority: 0.5 },
+    { url: `${BASE_URL}/policies`, lastModified: now, changeFrequency: "monthly", priority: 0.5 },
+    { url: `${BASE_URL}/blog`, lastModified: now, changeFrequency: "weekly", priority: 0.7 },
+    { url: `${BASE_URL}/login`, lastModified: now, changeFrequency: "monthly", priority: 0.3 },
   ];
 
-  // ─── Dynamic: Products ───────────────────────────────────────────────────
   let productRoutes: MetadataRoute.Sitemap = [];
   try {
     const products = await prisma.product.findMany({
-      where: { status: "ACTIVE" },
+      where: { status: "ACTIVE", inventory: { gt: 0 } },
       select: { slug: true, updatedAt: true },
     });
-    productRoutes = products.map((p) => ({
-      url: `${BASE_URL}/products/${p.slug}`,
-      lastModified: p.updatedAt,
+    productRoutes = products.map((product) => ({
+      url: `${BASE_URL}/products/${product.slug}`,
+      lastModified: product.updatedAt,
       changeFrequency: "weekly" as const,
       priority: 0.8,
     }));
-  } catch (e) {
-    console.error("Sitemap: error fetching products", e);
+  } catch (error) {
+    console.error("Sitemap: error fetching products", error);
   }
 
-  // ─── Dynamic: Blog posts ─────────────────────────────────────────────────
   let blogRoutes: MetadataRoute.Sitemap = [];
   try {
     const posts = await prisma.blogPost.findMany({
       where: { published: true },
       select: { slug: true, updatedAt: true },
     });
-    blogRoutes = posts.map((p) => ({
-      url: `${BASE_URL}/blog/${p.slug}`,
-      lastModified: p.updatedAt,
+    blogRoutes = posts.map((post) => ({
+      url: `${BASE_URL}/blog/${post.slug}`,
+      lastModified: post.updatedAt,
       changeFrequency: "monthly" as const,
       priority: 0.6,
     }));
-  } catch (e) {
-    console.error("Sitemap: error fetching blog posts", e);
+  } catch (error) {
+    console.error("Sitemap: error fetching blog posts", error);
   }
 
-  return [...staticRoutes, ...productRoutes, ...blogRoutes];
+  let policyRoutes: MetadataRoute.Sitemap = [];
+  try {
+    const policies = await prisma.policy.findMany({
+      where: { isActive: true },
+      select: { slug: true, updatedAt: true, type: true },
+      orderBy: { order: "asc" },
+    });
+    policyRoutes = policies.map((policy) => ({
+      url: `${BASE_URL}/policies/${policy.slug}`,
+      lastModified: policy.updatedAt,
+      changeFrequency: "monthly" as const,
+      priority: policy.type === "faq" ? 0.5 : 0.4,
+    }));
+  } catch (error) {
+    console.error("Sitemap: error fetching policies", error);
+  }
+
+  return [...staticRoutes, ...productRoutes, ...blogRoutes, ...policyRoutes];
 }

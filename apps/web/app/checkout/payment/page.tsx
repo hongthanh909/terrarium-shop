@@ -32,7 +32,7 @@ export default function CheckoutPaymentPage() {
             )}
 
             <p className="text-sm text-muted-foreground">
-              Bạn có thể vào mục "Đơn Hàng" để xem lại và liên hệ shop nếu cần hỗ trợ thanh toán.
+              Bạn có thể vào mục &ldquo;Đơn Hàng&rdquo; để xem lại và liên hệ shop nếu cần hỗ trợ thanh toán.
             </p>
 
             <div className="pt-4 space-y-3">

@@ -16,7 +16,7 @@ async function ProductsData({
   page: number;
 }) {
   const limit = 12;
-  const where: any = { status: "ACTIVE" };
+  const where: any = { status: "ACTIVE", inventory: { gt: 0 } };
   if (categoryId) where.categoryId = categoryId;
   if (search) {
     where.OR = [

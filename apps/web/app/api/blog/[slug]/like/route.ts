@@ -6,10 +6,10 @@ import { authOptions } from "@/lib/auth";
 // GET - Retrieve likes count and check if current customer liked it
 export async function GET(
   request: NextRequest,
-  { params }: { params: { slug: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
-    const { slug } = params;
+    const { slug } = await params;
     const session = await getServerSession(authOptions);
     const customerId = (session?.user as any)?.id;
 
@@ -49,10 +49,10 @@ export async function GET(
 // POST - Toggle like status for the blog post
 export async function POST(
   request: NextRequest,
-  { params }: { params: { slug: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
-    const { slug } = params;
+    const { slug } = await params;
     const session = await getServerSession(authOptions);
     
     if (!session?.user) {

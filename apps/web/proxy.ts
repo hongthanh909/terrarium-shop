@@ -1,12 +1,11 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
+import { ADMIN_LOGIN_PATH, ADMIN_SECRET_PATH } from "@/lib/admin-path";
 
 // ─── 🔐 SECRET ADMIN PATH — không dùng /admin nữa ────────────────────────────
 //   Thay đổi giá trị này nếu muốn đổi URL admin.
-//   Đặt biến env ADMIN_SECRET_PATH trong Vercel để override.
-const ADMIN_SECRET_PATH = process.env.ADMIN_SECRET_PATH || "/tiem-nho-nth24";
-const ADMIN_LOGIN_PATH = `${ADMIN_SECRET_PATH}/login`;
+//   Admin path cố định ở lib/admin-path.ts vì Next middleware matcher là static.
 
 // API admin path vẫn giữ /api/admin vì chỉ gọi server-to-server
 const API_ADMIN_PATH = "/api/admin";
@@ -61,7 +60,7 @@ function checkLoginRateLimit(ip: string): { allowed: boolean; retryAfter?: numbe
   return { allowed: true };
 }
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
   const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
 
@@ -86,7 +85,15 @@ export async function middleware(request: NextRequest) {
   }
 
   // ─── 3. Rate limit cho API auth (đặc biệt login) ─────────────────────────────
-  if (pathname === "/api/auth/callback/admin-login" || pathname === "/api/auth/signin") {
+  const shouldRateLimitAuth =
+    pathname === "/api/auth/callback/admin-login" ||
+    pathname === "/api/auth/signin" ||
+    pathname === "/api/auth/login" ||
+    pathname === "/api/auth/register" ||
+    pathname === "/api/auth/forgot-password" ||
+    pathname === "/api/auth/reset-password";
+
+  if (shouldRateLimitAuth) {
     const rateCheck = checkLoginRateLimit(ip);
     if (!rateCheck.allowed) {
       const response = new NextResponse(
@@ -177,8 +184,7 @@ export async function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     // ⚠️  Matcher là STATIC — không đọc được env var.
-    // /tiem-nho-nth24 là default path; thay đổi ADMIN_SECRET_PATH trên Vercel
-    // thì CẦN cập nhật dòng dưới đây tương ứng.
+    // Admin path is fixed in code; keep this matcher aligned with lib/admin-path.ts.
     "/admin/:path*",
     "/tiem-nho-nth24/:path*",
     "/api/admin/:path*",

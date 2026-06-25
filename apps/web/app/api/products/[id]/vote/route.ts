@@ -4,7 +4,7 @@ import { getToken } from "next-auth/jwt";
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const token = await getToken({
@@ -17,7 +17,7 @@ export async function POST(
     }
 
     const customerId = token.id as string;
-    const productId = params.id;
+    const productId = (await params).id;
 
     // Check if vote exists
     const existingVote = await prisma.productVote.findUnique({

@@ -20,6 +20,7 @@ interface Product {
   basePrice: { toString: () => string };
   salePrice?: { toString: () => string } | null;
   saleEndDate?: string | null;
+  inventory: number;
   images: string[];
   category: { id: string; name: string };
   _count?: { reviews: number };
@@ -59,9 +60,17 @@ export function ProductsClient({
       router.push(`/login?callbackUrl=/products`);
       return;
     }
+    if (product.inventory <= 0) {
+      showToast.error("Sản phẩm hiện đã hết hàng");
+      return;
+    }
     const basePrice = parseFloat(product.basePrice.toString());
     const salePrice = product.salePrice ? parseFloat(product.salePrice.toString()) : null;
-    const base = salePrice != null && salePrice < basePrice ? salePrice : basePrice;
+    const saleIsValid =
+      salePrice != null &&
+      salePrice < basePrice &&
+      (!product.saleEndDate || new Date(product.saleEndDate) > new Date());
+    const base = saleIsValid ? salePrice : basePrice;
 
     const isBể = 
       product.category?.name?.toLowerCase().includes("bể") ||
@@ -207,6 +216,7 @@ export function ProductsClient({
                   basePrice={parseFloat(product.basePrice.toString())}
                   salePrice={product.salePrice ? parseFloat(product.salePrice.toString()) : null}
                   saleEndDate={product.saleEndDate ?? null}
+                  inventory={product.inventory}
                   images={product.images}
                   category={product.category}
                   reviewCount={product._count?.reviews ?? 0}

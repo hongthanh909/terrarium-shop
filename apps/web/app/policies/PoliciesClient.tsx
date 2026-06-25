@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { MessageCircle, ChevronDown } from "lucide-react";
 import { useState } from "react";
 import { useReducedMotion } from "framer-motion";
+import { sanitizeHtml } from "@/lib/sanitize-html";
 
 interface Policy {
   id: string;
@@ -51,7 +52,7 @@ function AccordionItem({ policy, index }: { policy: Policy; index: number }) {
       >
         <div
           className="px-6 pb-6 pt-1 text-gray-600 text-sm leading-relaxed prose prose-sm max-w-none"
-          dangerouslySetInnerHTML={{ __html: policy.content.replace(/\n/g, "<br/>") }}
+          dangerouslySetInnerHTML={{ __html: sanitizeHtml(policy.content.replace(/\n/g, "<br/>")) }}
         />
       </motion.div>
     </motion.div>

@@ -57,9 +57,8 @@ const PAYMENT_STATUS_LABELS: Record<string, string> = {
 };
 
 const PAYMENT_METHOD_LABELS: Record<string, string> = {
-  COD:           "Thanh toán khi nhận hàng",
-  BANK_TRANSFER: "Chuyển khoản ngân hàng",
-  MOMO:          "Ví MoMo",
+  COD:  "Thanh toán khi nhận hàng",
+  MOMO: "Ví MoMo",
 };
 
 export default function MyOrdersPage() {
@@ -379,45 +378,8 @@ export default function MyOrdersPage() {
                         </div>
                       </div>
 
-                      {/* BANK_TRANSFER + PENDING payment → hiện nút Tiếp tục thanh toán + Hủy đơn */}
-                      {order.status === "PENDING" && order.paymentMethod === "BANK_TRANSFER" && order.paymentStatus === "PENDING" && (
-                        <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-xl space-y-3">
-                          <div className="flex items-start gap-3">
-                            <CreditCard className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-                            <div className="flex-1">
-                              <p className="text-sm font-semibold text-blue-800">Chưa thanh toán</p>
-                              <p className="text-xs text-blue-600 mt-0.5">Đơn hàng đang chờ chuyển khoản. Quét QR để thanh toán ngay hoặc hủy đơn nếu không muốn tiếp tục.</p>
-                            </div>
-                          </div>
-                          <div className="flex gap-2">
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                const params = new URLSearchParams({
-                                  orderId: order.id,
-                                  orderNumber: order.orderNumber,
-                                  total: String(order.total),
-                                });
-                                router.push(`/checkout/pending?${params.toString()}`);
-                              }}
-                              className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-[#425733] rounded-lg hover:bg-[#364a29] transition-colors"
-                            >
-                              <CreditCard className="w-4 h-4" />
-                              Tiếp tục thanh toán (QR)
-                            </button>
-                            <button
-                              onClick={(e) => handleCancelOrder(order.id, e)}
-                              disabled={cancellingId === order.id}
-                              className="px-4 py-2.5 text-sm font-semibold text-red-600 border border-red-300 rounded-lg hover:bg-red-50 transition-colors disabled:opacity-50"
-                            >
-                              {cancellingId === order.id ? "Đang hủy..." : "Hủy đơn"}
-                            </button>
-                          </div>
-                        </div>
-                      )}
-
-                      {/* COD + PENDING → chỉ hiện nút hủy */}
-                      {order.status === "PENDING" && order.paymentMethod !== "BANK_TRANSFER" && (
+                      {/* COD + PENDING → hiện nút hủy */}
+                      {order.status === "PENDING" && (
                         <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-xl flex items-start gap-3">
                           <AlertTriangle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
                           <div className="flex-1">

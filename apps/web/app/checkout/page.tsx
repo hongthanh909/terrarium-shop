@@ -316,13 +316,7 @@ export default function CheckoutPage() {
                     <p className="text-sm text-muted-foreground">Thanh toán khi nhận được đơn hàng</p>
                   </div>
                 </label>
-                <label className="flex items-start p-4 border rounded-lg cursor-pointer hover:bg-muted/50">
-                  <input type="radio" name="paymentMethod" value="BANK_TRANSFER" checked={formData.paymentMethod === "BANK_TRANSFER"} onChange={handleInputChange} className="mt-1 mr-3 h-4 w-4" />
-                  <div>
-                    <p className="font-semibold">Chuyển Khoản Ngân Hàng</p>
-                    <p className="text-sm text-muted-foreground">Chuyển khoản trước khi giao hàng — QR tự động xác nhận</p>
-                  </div>
-                </label>
+
               </CardContent>
             </Card>
 

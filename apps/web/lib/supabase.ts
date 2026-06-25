@@ -27,7 +27,8 @@ export const supabaseAdmin = new Proxy({} as SupabaseClient, {
  * @returns Public URL of the uploaded image
  */
 export async function uploadImage(file: File, bucket: string = 'products'): Promise<string> {
-  const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}-${file.name}`;
+  const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_').slice(-120);
+  const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}-${safeName}`;
 
   const { data, error } = await supabaseAdmin.storage
     .from(bucket)

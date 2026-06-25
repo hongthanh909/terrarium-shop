@@ -2,18 +2,19 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, FileText } from "lucide-react";
 import { prisma } from "@/lib/prisma";
+import { sanitizeHtml } from "@/lib/sanitize-html";
 
 export const dynamic = "force-dynamic";
 
 interface Props {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }
 
 export async function generateMetadata({ params }: Props) {
   let policy: any = null;
   try {
     policy = await prisma.policy.findUnique({
-      where: { slug: params.slug },
+      where: { slug: (await params).slug },
       select: { title: true },
     });
   } catch {}
@@ -28,7 +29,7 @@ export default async function PolicyDetailPage({ params }: Props) {
 
   try {
     policy = await prisma.policy.findUnique({
-      where: { slug: params.slug, isActive: true },
+      where: { slug: (await params).slug, isActive: true },
     });
   } catch (error) {
     console.error("[PolicyDetail] DB error:", error);
@@ -37,6 +38,8 @@ export default async function PolicyDetailPage({ params }: Props) {
   if (!policy) {
     notFound();
   }
+
+  const safeContent = sanitizeHtml(policy.content);
 
   return (
     <main className="min-h-screen bg-[hsl(0,0%,100%)] py-8 px-6">
@@ -75,7 +78,7 @@ export default async function PolicyDetailPage({ params }: Props) {
 
           <div
             className="prose prose-emerald max-w-none text-gray-600 leading-relaxed"
-            dangerouslySetInnerHTML={{ __html: policy.content }}
+            dangerouslySetInnerHTML={{ __html: safeContent }}
           />
         </article>
 

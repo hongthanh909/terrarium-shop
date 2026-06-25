@@ -9,6 +9,7 @@ interface ScrollRevealProps {
   direction?: "up" | "down" | "left" | "right" | "none";
   className?: string;
   width?: "fit-content" | "100%";
+  initiallyVisible?: boolean;
 }
 
 const variants = {
@@ -25,6 +26,7 @@ export const ScrollReveal = memo(function ScrollReveal({
   direction = "up",
   className = "",
   width = "100%",
+  initiallyVisible = false,
 }: ScrollRevealProps) {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-5% 0px" });
@@ -47,8 +49,8 @@ export const ScrollReveal = memo(function ScrollReveal({
     <div ref={ref} style={{ width }} className={className}>
       <motion.div
         variants={variants[direction]}
-        initial="hidden"
-        animate={isInView ? "visible" : "hidden"}
+        initial={initiallyVisible ? "visible" : "hidden"}
+        animate={initiallyVisible || isInView ? "visible" : "hidden"}
         transition={{ duration: 0.45, delay, ease: [0.25, 0.1, 0.25, 1] }}
         style={{ willChange: "opacity, transform" }}
         className={isFullHeight ? "h-full" : undefined}

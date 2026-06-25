@@ -1,44 +1,39 @@
 import { prisma } from "@/lib/prisma";
+import { verifyAdminRequest } from "@/lib/admin-auth";
+import { authOptions } from "@/lib/auth";
+import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
-
+import { z } from "zod";
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const productId = searchParams.get("productId");
     const status = searchParams.get("status");
+    const admin = await verifyAdminRequest(request);
 
-    // Build where clause based on status filter
-    type WhereClause = {
-      productId?: string;
-      approved?: boolean;
-      status?: string;
-    };
-    const where: WhereClause = {};
+    if (status && status !== "APPROVED" && !admin) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
+    const where: any = {};
     if (productId) where.productId = productId;
 
     if (!status || status === "APPROVED") {
-      // Default: only approved reviews (for public product pages)
       where.approved = true;
     } else if (status === "PENDING") {
-      // Pending = not yet approved, not rejected
       where.approved = false;
-      where.status = "PENDING";
     } else if (status === "REJECTED") {
       where.approved = false;
-      where.status = "REJECTED";
     }
-    // status === "all" → no filter, show everything
 
     const reviews = await prisma.review.findMany({
       where,
       include: {
         customer: {
-          select: {
-            name: true,
-            email: true,
-          },
+          select: admin
+            ? { name: true, email: true }
+            : { name: true },
         },
         product: {
           select: {
@@ -47,9 +42,7 @@ export async function GET(request: NextRequest) {
           },
         },
       },
-      orderBy: {
-        createdAt: "desc",
-      },
+      orderBy: { createdAt: "desc" },
     });
 
     return NextResponse.json(reviews);
@@ -62,22 +55,24 @@ export async function GET(request: NextRequest) {
   }
 }
 
-import { z } from "zod";
-
 const createReviewSchema = z.object({
   productId: z.string().min(1, "Missing product ID"),
-  customerId: z.string().min(1, "Missing customer ID"),
   rating: z.number().min(1).max(5, "Rating must be between 1 and 5"),
-  title: z.string().optional().nullable(),
-  content: z.string().min(3, "Review content is too short"),
-  images: z.array(z.string()).optional().default([]),
-  verified: z.boolean().optional().default(false),
+  title: z.string().trim().max(120).optional().nullable(),
+  content: z.string().trim().min(3, "Review content is too short").max(3000),
+  images: z.array(z.string().url()).max(6).optional().default([]),
 });
 
 export async function POST(request: NextRequest) {
   try {
+    const session = await getServerSession(authOptions);
+    const customerId = (session?.user as any)?.id as string | undefined;
+
+    if (!customerId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const body = await request.json();
-    
     const validated = createReviewSchema.safeParse(body);
     if (!validated.success) {
       return NextResponse.json(
@@ -86,15 +81,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { productId, customerId, rating, title, content, images } = validated.data;
+    const { productId, rating, title, content, images } = validated.data;
 
-    // Kiểm tra user đã mua sản phẩm này chưa
     const hasPurchased = await prisma.orderItem.findFirst({
       where: {
         productId,
         order: {
           customerId,
-          status: { in: ["DELIVERED", "CONFIRMED", "PROCESSING", "SHIPPING"] },
+          status: "DELIVERED",
         },
       },
     });
@@ -106,7 +100,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check if customer already reviewed this product
     const existingReview = await prisma.review.findFirst({
       where: { productId, customerId },
     });
@@ -125,9 +118,9 @@ export async function POST(request: NextRequest) {
         rating,
         title,
         content,
-        images: images || [],
-        verified: true, // Đã xác minh mua hàng
-        approved: false, // Chờ admin duyệt
+        images,
+        verified: true,
+        approved: false,
       },
     });
 

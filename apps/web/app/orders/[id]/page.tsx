@@ -33,8 +33,8 @@ const PAYMENT_STATUS_LABELS: Record<string, string> = {
 };
 
 const PAYMENT_METHOD_LABELS: Record<string, string> = {
-  COD:           "Thanh toán khi nhận hàng",
-  BANK_TRANSFER: "Chuyển khoản ngân hàng",
+  COD:  "Thanh toán khi nhận hàng",
+  MOMO: "Ví MoMo",
 };
 
 export default function OrderDetailPage() {
@@ -281,32 +281,7 @@ export default function OrderDetailPage() {
           </div>
         )}
 
-        {/* BANK_TRANSFER pending → pay button */}
-        {order.status === "PENDING" && order.paymentMethod === "BANK_TRANSFER" && order.paymentStatus === "PENDING" && (
-          <div className="bg-blue-50 border border-blue-200 rounded-2xl p-6">
-            <div className="flex items-start gap-3 mb-4">
-              <CreditCard className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-              <div>
-                <p className="text-sm font-semibold text-blue-800">Chưa thanh toán</p>
-                <p className="text-xs text-blue-600 mt-0.5">Đơn hàng đang chờ chuyển khoản.</p>
-              </div>
-            </div>
-            <button
-              onClick={() => {
-                const qp = new URLSearchParams({
-                  orderId: order.id,
-                  orderNumber: order.orderNumber,
-                  total: String(order.total),
-                });
-                router.push(`/checkout/pending?${qp.toString()}`);
-              }}
-              className="w-full flex items-center justify-center gap-2 px-4 py-3 text-sm font-semibold text-white bg-[#425733] rounded-lg hover:bg-[#364a29] transition-colors"
-            >
-              <CreditCard className="w-4 h-4" />
-              Tiếp tục thanh toán (QR)
-            </button>
-          </div>
-        )}
+
       </div>
     </main>
   );

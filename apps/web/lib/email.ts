@@ -9,6 +9,15 @@ const DEFAULT_FROM = 'Tiệm Rêu Decor <no-reply@tiemreudecor.com>';
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://tiemreudecor.com';
 
+function escapeEmailHtml(value: string) {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
 function getPasswordResetEmailHTML(resetLink: string): string {
   return `
 <!DOCTYPE html>
@@ -181,6 +190,56 @@ export async function sendPasswordResetEmail(email: string, token: string) {
     return { success: true, data };
   } catch (err) {
     console.error("Failed to send email:", err);
+    return { success: false, error: "Lỗi nội bộ khi gửi email" };
+  }
+}
+
+export async function sendContactNotification(input: {
+  name: string;
+  email: string;
+  subject?: string;
+  message: string;
+}) {
+  if (!resend) {
+    return { success: false, error: "RESEND_API_KEY is not configured" };
+  }
+
+  const to =
+    process.env.CONTACT_RECEIVER_EMAIL ||
+    process.env.ADMIN_EMAIL ||
+    "tiemreudecor@gmail.com";
+
+  const plainSubject = (input.subject?.trim() || "Tin nhắn liên hệ mới").replace(/[\r\n]/g, " ").slice(0, 160);
+  const safeSubject = escapeEmailHtml(plainSubject);
+  const safeName = escapeEmailHtml(input.name);
+  const safeEmail = escapeEmailHtml(input.email);
+  const safeMessage = escapeEmailHtml(input.message);
+  const html = `
+    <div style="font-family:Arial,sans-serif;line-height:1.6;color:#1f2937">
+      <h2>Tiệm Rêu Décor nhận được tin nhắn mới</h2>
+      <p><strong>Họ tên:</strong> ${safeName}</p>
+      <p><strong>Email:</strong> ${safeEmail}</p>
+      <p><strong>Tiêu đề:</strong> ${safeSubject}</p>
+      <div style="margin-top:16px;padding:14px;border:1px solid #d8e3d1;border-radius:12px;background:#f8faf6;white-space:pre-wrap">${safeMessage}</div>
+    </div>
+  `;
+
+  try {
+    const { data, error } = await resend.emails.send({
+      from: DEFAULT_FROM,
+      to,
+      replyTo: input.email,
+      subject: `[Contact] ${plainSubject}`,
+      html,
+    });
+
+    if (error) {
+      return { success: false, error: error.message };
+    }
+
+    return { success: true, data };
+  } catch (err) {
+    console.error("Failed to send contact notification:", err);
     return { success: false, error: "Lỗi nội bộ khi gửi email" };
   }
 }

@@ -77,7 +77,7 @@ async function FeaturedProductsSection() {
   let products: any[] = [];
   try {
     products = await prisma.product.findMany({
-      where: { featured: true, status: "ACTIVE" },
+      where: { featured: true, status: "ACTIVE", inventory: { gt: 0 } },
       take: 4,
       include: {
         category: true,
@@ -108,7 +108,7 @@ async function FeaturedProductsSection() {
           <div className="w-full h-[1.5px] bg-gradient-to-r from-[#daebd0] via-[#a8c098]/40 to-transparent mb-12" />
         </ScrollReveal>
         {products.length === 0 ? (
-          <ScrollReveal direction="up">
+          <ScrollReveal direction="up" initiallyVisible>
             <div className="text-center py-24 bg-[#f0f4ec] rounded-3xl">
               <Sprout className="w-16 h-16 mx-auto text-[#5a7a48] mb-4" />
               <p className="text-[hsl(220,14%,45%)] font-semibold text-lg mb-1">Chưa có sản phẩm nổi bật</p>
@@ -131,6 +131,7 @@ async function FeaturedProductsSection() {
                     basePrice={Number(product.basePrice.toString())}
                     salePrice={product.salePrice != null ? Number(product.salePrice.toString()) : null}
                     saleEndDate={product.saleEndDate ? product.saleEndDate.toISOString() : null}
+                    inventory={product.inventory}
                     images={product.images}
                     category={product.category ? { name: product.category.name } : undefined}
                     rating={Math.round(avgRating * 10) / 10}
@@ -280,7 +281,7 @@ function BlogSkeleton() {
 
 export default async function Home() {
   return (
-    <main className="min-h-screen">
+    <main className="min-h-[100dvh]">
       {/* Hero / About Section (Static Background) */}
       <section
         id="about"
@@ -291,7 +292,7 @@ export default async function Home() {
       >
         <div className="absolute inset-0 bg-[#1c2c16]/75 z-0 pointer-events-none" />
         <div className="relative z-10 max-w-3xl mx-auto text-center text-white py-12">
-          <ScrollReveal direction="up">
+          <ScrollReveal direction="up" initiallyVisible>
             <p className="text-[11px] font-extrabold tracking-[0.2em] text-[#c3d3ba] uppercase mb-4">VỀ CHÚNG TÔI</p>
             <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold mb-6 leading-tight tracking-tight">
               Tạo nên những thiết kế terrarium mang dấu ấn riêng

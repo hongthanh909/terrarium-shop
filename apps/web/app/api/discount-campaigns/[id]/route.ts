@@ -5,11 +5,11 @@ import { logAdminAction } from "@/lib/audit";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const campaign = await prisma.discountCampaign.findUnique({
-      where: { id: params.id },
+      where: { id: (await params).id },
       include: {
         applicables: true,
       },
@@ -34,7 +34,7 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const admin = await verifyAdminRequest(request);
@@ -59,7 +59,7 @@ export async function PUT(
 
     // Check if campaign exists
     const existing = await prisma.discountCampaign.findUnique({
-      where: { id: params.id },
+      where: { id: (await params).id },
     });
 
     if (!existing) {
@@ -85,7 +85,7 @@ export async function PUT(
 
     // Update campaign with applicable items
     const campaign = await prisma.discountCampaign.update({
-      where: { id: params.id },
+      where: { id: (await params).id },
       data: {
         code,
         type,
@@ -117,7 +117,7 @@ export async function PUT(
       },
     });
 
-    await logAdminAction(admin.id, "UPDATE", "DiscountCampaign", params.id, {
+    await logAdminAction(admin.id, "UPDATE", "DiscountCampaign", (await params).id, {
       code: campaign.code,
       type: campaign.type,
       value: campaign.value,
@@ -135,17 +135,17 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const admin = await verifyAdminRequest(request);
     if (!admin) return unauthorizedResponse();
 
     const campaign = await prisma.discountCampaign.delete({
-      where: { id: params.id },
+      where: { id: (await params).id },
     });
 
-    await logAdminAction(admin.id, "DELETE", "DiscountCampaign", params.id, {
+    await logAdminAction(admin.id, "DELETE", "DiscountCampaign", (await params).id, {
       code: campaign.code,
     });
 

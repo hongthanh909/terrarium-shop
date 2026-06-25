@@ -3,20 +3,14 @@ import { Inter, Dancing_Script } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import nextDynamic from "next/dynamic";
 import AuthProvider from "@/components/AuthProvider";
 import QueryProvider from "@/lib/query-provider";
 import ShopLayout from "./ShopLayout";
 import { CustomToastContainer } from "@/components/ui/custom-toast";
 import { NavigationProgress } from "@/components/ui/navigation-progress";
+import { ChatWidgetClient } from "@/components/ChatWidgetClient";
 
 export const dynamic = "force-dynamic";
-
-// ChatWidget lazy-loaded để tránh SSR issues
-const ChatWidget = nextDynamic(() => import("@/components/ChatWidget"), {
-  ssr: false,
-  loading: () => null,
-});
 
 const inter = Inter({
   subsets: ["latin", "latin-ext"],
@@ -106,7 +100,7 @@ export default function RootLayout({
             <ShopLayout
               header={<Header />}
               footer={<Footer />}
-              chat={<ChatWidget />}
+              chat={<ChatWidgetClient />}
             >
               {children}
             </ShopLayout>

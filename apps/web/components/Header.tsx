@@ -193,6 +193,7 @@ export default function Header() {
             <button
               className="md:hidden w-9 h-9 flex items-center justify-center rounded-full text-white/70 hover:text-white hover:bg-white/15 transition-colors"
               onClick={() => setSearchOpen(true)}
+              aria-label="Mở tìm kiếm"
             >
               <Search className="w-4 h-4" />
             </button>
@@ -210,6 +211,7 @@ export default function Header() {
                 }
                 setCartOpen(true);
               }}
+              aria-label={`Giỏ hàng${cartCount > 0 ? `, ${cartCount} sản phẩm` : ""}`}
               title="Giỏ hàng"
             >
               <ShoppingBag className="w-5 h-5" />
@@ -238,6 +240,7 @@ export default function Header() {
                 <DropdownMenuTrigger asChild>
                   <button
                     className="flex items-center gap-1.5 hover:bg-white/10 transition-all focus:outline-none py-1 px-2.5 rounded-full flex-shrink-0 text-white border border-white/20"
+                    aria-label="Mở menu tài khoản"
                     title={session.user?.name || "Tài khoản"}
                   >
                     <div className="w-6 h-6 rounded-full overflow-hidden bg-white/20 flex items-center justify-center relative flex-shrink-0 text-white font-bold text-xs">
@@ -293,6 +296,7 @@ export default function Header() {
               <Link href="/login">
                 <button
                   className="w-9 h-9 flex items-center justify-center rounded-full text-white/75 hover:text-white hover:bg-white/15 transition-colors flex-shrink-0"
+                  aria-label="Đăng nhập"
                   title="Đăng nhập"
                 >
                   <User className="w-5 h-5" />
@@ -317,6 +321,7 @@ export default function Header() {
                 key={dup}
                 className="flex items-center gap-8 text-[11px] text-[#425733]/85 whitespace-nowrap px-8 font-medium"
                 style={{ fontFamily: "inherit" }}
+                aria-hidden={dup === 1}
               >
                 <span className="inline-flex items-center gap-1.5">
                   <Phone className="w-3.5 h-3.5 text-[#425733]/80" />
@@ -503,14 +508,14 @@ export default function Header() {
                       )}
                       <p className="text-sm font-bold text-[#425733] mt-1">{item.price.toLocaleString("vi-VN")}₫</p>
                       <div className="flex items-center gap-2 mt-2">
-                        <button onClick={() => updateQuantity(item.productId, item.quantity - 1, item.variants)} className="w-6 h-6 rounded-full bg-white border border-gray-200 flex items-center justify-center hover:border-[#425733] transition-colors">
+                        <button onClick={() => updateQuantity(item.productId, item.quantity - 1, item.variants)} className="w-6 h-6 rounded-full bg-white border border-gray-200 flex items-center justify-center hover:border-[#425733] transition-colors" aria-label={`Giảm số lượng ${item.productName}`}>
                           <Minus className="w-3 h-3" />
                         </button>
                         <span className="text-sm font-semibold w-6 text-center">{item.quantity}</span>
-                        <button onClick={() => updateQuantity(item.productId, item.quantity + 1, item.variants)} className="w-6 h-6 rounded-full bg-white border border-gray-200 flex items-center justify-center hover:border-[#425733] transition-colors">
+                        <button onClick={() => updateQuantity(item.productId, item.quantity + 1, item.variants)} className="w-6 h-6 rounded-full bg-white border border-gray-200 flex items-center justify-center hover:border-[#425733] transition-colors" aria-label={`Tăng số lượng ${item.productName}`}>
                           <Plus className="w-3 h-3" />
                         </button>
-                        <button onClick={() => removeItem(item.productId, item.variants)} className="ml-auto w-6 h-6 rounded-full bg-white border border-gray-200 flex items-center justify-center hover:border-red-300 hover:text-red-500 transition-colors text-gray-400">
+                        <button onClick={() => removeItem(item.productId, item.variants)} className="ml-auto w-6 h-6 rounded-full bg-white border border-gray-200 flex items-center justify-center hover:border-red-300 hover:text-red-500 transition-colors text-gray-400" aria-label={`Xóa ${item.productName} khỏi giỏ hàng`}>
                           <X className="w-3 h-3" />
                         </button>
                       </div>

@@ -6,10 +6,10 @@ import { authOptions } from "@/lib/auth";
 // POST - Post a reply to a specific comment
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const commentId = params.id;
+    const commentId = (await params).id;
     const session = await getServerSession(authOptions);
 
     if (!session?.user) {

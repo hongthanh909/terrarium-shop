@@ -6,17 +6,15 @@ import { logAdminAction } from "@/lib/audit";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const admin = await verifyAdminRequest(request);
     const review = await prisma.review.findUnique({
-      where: { id: params.id },
+      where: { id: (await params).id },
       include: {
         customer: {
-          select: {
-            name: true,
-            email: true,
-          },
+          select: admin ? { name: true, email: true } : { name: true },
         },
         product: {
           select: {
@@ -34,6 +32,10 @@ export async function GET(
       );
     }
 
+    if (!admin && !review.approved) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     return NextResponse.json(review);
   } catch (error) {
     console.error("Error fetching review:", error);
@@ -46,29 +48,24 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const admin = await verifyAdminRequest(request);
     if (!admin) return unauthorizedResponse();
 
     const body = await request.json();
-    const { approved, status } = body;
-
-    // Derive status from approved flag if status not provided explicitly
-    const resolvedStatus = status ?? (approved ? "APPROVED" : "REJECTED");
+    const { approved } = body;
 
     const review = await prisma.review.update({
-      where: { id: params.id },
+      where: { id: (await params).id },
       data: {
         ...(approved !== undefined && { approved }),
-        ...(resolvedStatus && { status: resolvedStatus } as any),
       },
     });
 
-    await logAdminAction(admin.id, "UPDATE", "Review", params.id, {
+    await logAdminAction(admin.id, "UPDATE", "Review", (await params).id, {
       approved,
-      status: resolvedStatus,
       action: approved ? "APPROVE" : "REJECT",
     });
 
@@ -84,22 +81,22 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const admin = await verifyAdminRequest(request);
     if (!admin) return unauthorizedResponse();
 
     const review = await prisma.review.findUnique({
-      where: { id: params.id },
+      where: { id: (await params).id },
       select: { productId: true, customerId: true, rating: true },
     });
 
     await prisma.review.delete({
-      where: { id: params.id },
+      where: { id: (await params).id },
     });
 
-    await logAdminAction(admin.id, "DELETE", "Review", params.id, {
+    await logAdminAction(admin.id, "DELETE", "Review", (await params).id, {
       productId: review?.productId,
       customerId: review?.customerId,
       rating: review?.rating,

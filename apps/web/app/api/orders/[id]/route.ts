@@ -2,26 +2,33 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { verifyAdminRequest, unauthorizedResponse } from "@/lib/admin-auth";
 import { logAdminAction } from "@/lib/audit";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { canAccessOrder } from "@/lib/order-security";
+import { z } from "zod";
+
+const updateOrderSchema = z.object({
+  status: z.enum(["PENDING", "CONFIRMED", "PROCESSING", "SHIPPING", "SHIPPED", "DELIVERED", "CANCELLED", "REFUNDED"]).optional(),
+  paymentStatus: z.enum(["PENDING", "PAID", "FAILED", "REFUNDED"]).optional(),
+});
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-    const customerId = (session.user as any).id;
+    const orderNumberProof = request.nextUrl.searchParams.get("orderNumber");
 
     const order = await prisma.order.findUnique({
-      where: { id: params.id },
+      where: { id: (await params).id },
       include: {
+        customer: {
+          select: { id: true, name: true, email: true, phone: true },
+        },
         items: true,
         shippingInfo: true,
         statusLogs: { orderBy: { createdAt: "desc" } },
+        discounts: {
+          include: { campaign: true },
+        },
       },
     });
 
@@ -29,8 +36,8 @@ export async function GET(
       return NextResponse.json({ error: "Order not found" }, { status: 404 });
     }
 
-    // Ensure customer owns this order
-    if (order.customerId !== customerId) {
+    const access = await canAccessOrder(request, order, orderNumberProof);
+    if (!access.allowed) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
@@ -53,15 +60,22 @@ export async function GET(
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const admin = await verifyAdminRequest(request);
     if (!admin) return unauthorizedResponse();
 
-    const { id } = params;
+    const { id } = await params;
     const body = await request.json();
-    const { status, paymentStatus } = body;
+    const validated = updateOrderSchema.safeParse(body);
+    if (!validated.success) {
+      return NextResponse.json(
+        { error: validated.error.errors[0].message },
+        { status: 400 }
+      );
+    }
+    const { status, paymentStatus } = validated.data;
 
     const updateData: any = {};
     if (status) updateData.status = status;

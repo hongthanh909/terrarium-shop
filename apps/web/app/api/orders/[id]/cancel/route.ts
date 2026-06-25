@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic";
 // PATCH /api/orders/[id]/cancel — User tự hủy đơn hàng (chỉ khi PENDING)
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const token = await getToken({ req: request as any, secret: process.env.NEXTAUTH_SECRET });
@@ -15,7 +15,7 @@ export async function PATCH(
       return NextResponse.json({ error: "Chưa đăng nhập" }, { status: 401 });
     }
 
-    const orderId = params.id;
+    const orderId = (await params).id;
 
     // Lấy đơn hàng + thông tin voucher đã dùng
     const order = await prisma.order.findUnique({

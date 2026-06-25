@@ -8,11 +8,11 @@ import { revalidatePath } from "next/cache";
 
 export async function GET(
   _request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const category = await prisma.category.findUnique({
-      where: { id: params.id },
+      where: { id: (await params).id },
       include: { parent: true },
     });
 
@@ -29,13 +29,13 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const admin = await verifyAdminRequest(request);
     if (!admin) return unauthorizedResponse();
 
-    const { id } = params;
+    const { id } = await params;
     const body = await request.json();
     
     // Validate request body
@@ -89,13 +89,13 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const admin = await verifyAdminRequest(request);
     if (!admin) return unauthorizedResponse();
 
-    const { id } = params;
+    const { id } = await params;
 
     const category = await prisma.category.findUnique({ where: { id }});
     if (!category) {

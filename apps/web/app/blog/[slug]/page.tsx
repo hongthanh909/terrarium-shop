@@ -3,13 +3,14 @@ import Link from "next/link";
 import { ArrowLeft, Calendar, Tag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { prisma } from "@/lib/prisma";
+import { sanitizeHtml } from "@/lib/sanitize-html";
 import BlogInteraction from "./BlogInteraction";
 
 // force-dynamic to avoid ISR/cache issues in standalone mode
 export const dynamic = "force-dynamic";
 
 interface Props {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }
 
 // NOTE: generateMetadata is in layout.tsx — do NOT duplicate here
@@ -19,7 +20,7 @@ export default async function BlogPostPage({ params }: Props) {
 
   try {
     post = await prisma.blogPost.findUnique({
-      where: { slug: params.slug, published: true },
+      where: { slug: (await params).slug, published: true },
       include: { category: true },
     });
   } catch (error) {
@@ -31,6 +32,10 @@ export default async function BlogPostPage({ params }: Props) {
   }
 
   const hasStructuredContent = post.intro || post.body || post.conclusion;
+  const safeIntro = sanitizeHtml(post.intro);
+  const safeBody = sanitizeHtml(post.body);
+  const safeConclusion = sanitizeHtml(post.conclusion);
+  const safeContent = sanitizeHtml(post.content);
 
   return (
     <main className="min-h-screen bg-[#fafbf8] py-8 px-6">
@@ -87,7 +92,7 @@ export default async function BlogPostPage({ params }: Props) {
                 {post.intro && (
                   <div
                     className="text-gray-700 leading-relaxed font-medium text-lg border-l-4 border-[#425733] pl-4 italic mb-8"
-                    dangerouslySetInnerHTML={{ __html: post.intro }}
+                    dangerouslySetInnerHTML={{ __html: safeIntro }}
                   />
                 )}
 
@@ -95,7 +100,7 @@ export default async function BlogPostPage({ params }: Props) {
                 {post.body && (
                   <div
                     className="text-gray-600 leading-relaxed text-base space-y-4"
-                    dangerouslySetInnerHTML={{ __html: post.body }}
+                    dangerouslySetInnerHTML={{ __html: safeBody }}
                   />
                 )}
 
@@ -118,7 +123,7 @@ export default async function BlogPostPage({ params }: Props) {
                 {post.conclusion && (
                   <div
                     className="text-gray-600 leading-relaxed text-base pt-6 border-t border-dashed border-gray-150"
-                    dangerouslySetInnerHTML={{ __html: post.conclusion }}
+                    dangerouslySetInnerHTML={{ __html: safeConclusion }}
                   />
                 )}
               </div>
@@ -127,7 +132,7 @@ export default async function BlogPostPage({ params }: Props) {
               post.content && (
                 <div
                   className="text-gray-600 leading-relaxed text-base"
-                  dangerouslySetInnerHTML={{ __html: post.content }}
+                  dangerouslySetInnerHTML={{ __html: safeContent }}
                 />
               )
             )}

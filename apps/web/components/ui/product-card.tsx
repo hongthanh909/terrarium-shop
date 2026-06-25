@@ -17,6 +17,7 @@ export interface ProductCardProps {
   basePrice: number;
   salePrice?: number | null;
   saleEndDate?: string | null;
+  inventory?: number;
   images: string[];
   category?: { name: string };
   rating?: number;
@@ -35,6 +36,7 @@ export function ProductCard({
   basePrice,
   salePrice,
   saleEndDate,
+  inventory,
   images,
   category,
   rating = 0,
@@ -48,6 +50,7 @@ export function ProductCard({
 }: ProductCardProps) {
   const [selectedPackage, setSelectedPackage] = useState<"basic" | "standard" | "advanced">("basic");
   const [quantity, setQuantity] = useState(1);
+  const isOutOfStock = inventory !== undefined && inventory <= 0;
 
   const isBểProduct =
     category?.name?.toLowerCase().includes("bể") ||
@@ -207,6 +210,8 @@ export function ProductCard({
                 e.preventDefault();
                 setQuantity((q) => Math.max(1, q - 1));
               }}
+              disabled={isOutOfStock}
+              aria-label="Giảm số lượng"
               className="w-7 h-7 flex items-center justify-center text-[#425733] hover:bg-[#d4dec9] rounded transition-colors"
             >
               <Minus className="w-3.5 h-3.5" />
@@ -218,8 +223,10 @@ export function ProductCard({
               type="button"
               onClick={(e) => {
                 e.preventDefault();
-                setQuantity((q) => q + 1);
+                setQuantity((q) => inventory ? Math.min(inventory, q + 1) : q + 1);
               }}
+              disabled={isOutOfStock || (inventory !== undefined && quantity >= inventory)}
+              aria-label="Tăng số lượng"
               className="w-7 h-7 flex items-center justify-center text-[#425733] hover:bg-[#d4dec9] rounded transition-colors"
             >
               <Plus className="w-3.5 h-3.5" />
@@ -231,15 +238,19 @@ export function ProductCard({
             type="button"
             onClick={(e) => {
               e.preventDefault();
+              if (isOutOfStock) return;
               onAddToCart?.(isBểProduct ? selectedPackage : "basic", quantity);
             }}
+            disabled={isOutOfStock}
             className={cn(
               "flex-1 py-2 px-3 rounded-lg text-white text-xs font-bold transition-all flex items-center justify-center gap-1.5",
-              "bg-gradient-to-r from-[#3a5229] to-[#4a6a35] hover:from-[#2d3d23] hover:to-[#3a5229] active:scale-[0.97]",
+              isOutOfStock
+                ? "bg-gray-300 text-gray-600 cursor-not-allowed"
+                : "bg-gradient-to-r from-[#3a5229] to-[#4a6a35] hover:from-[#2d3d23] hover:to-[#3a5229] active:scale-[0.97]",
               "shadow-[0_2px_8px_rgba(58,82,41,0.15)] hover:shadow-[0_4px_12px_rgba(58,82,41,0.25)]"
             )}
           >
-            Thêm vào giỏ
+            {isOutOfStock ? "Hết hàng" : "Thêm vào giỏ"}
           </button>
         </div>
       </div>

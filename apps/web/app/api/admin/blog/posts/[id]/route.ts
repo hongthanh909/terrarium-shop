@@ -8,13 +8,13 @@ import { revalidatePath } from "next/cache";
 // GET - Fetch a single blog post
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const admin = await verifyAdminRequest(request);
     if (!admin) return unauthorizedResponse();
 
-    const { id } = params;
+    const { id } = await params;
 
     const post = await prisma.blogPost.findUnique({
       where: { id },
@@ -43,13 +43,13 @@ export async function GET(
 // PUT - Update a blog post
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const admin = await verifyAdminRequest(request);
     if (!admin) return unauthorizedResponse();
 
-    const { id } = params;
+    const { id } = await params;
     const reqData = await request.json();
     const { title, slug, content, thumbnail, images, intro, body, conclusion, categoryId, published } = reqData;
 
@@ -123,13 +123,13 @@ export async function PUT(
 // DELETE - Delete a blog post
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const admin = await verifyAdminRequest(request);
     if (!admin) return unauthorizedResponse();
 
-    const { id } = params;
+    const { id } = await params;
 
     const post = await prisma.blogPost.findUnique({ where: { id }});
     if (!post) {

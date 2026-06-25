@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, useMemo, useCallback } from "react";
 import { usePathname } from "next/navigation";
+import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { Send, X, Maximize2, Minimize2, ExternalLink } from "lucide-react";
 
@@ -748,13 +749,13 @@ export default function ChatWidget() {
                 </button>
               </div>
               <div className="text-center pt-2 pb-0.5">
-                <a
+                <Link
                   href="/products"
                   className="inline-flex items-center gap-1 text-[11px] font-medium no-underline transition-colors hover:text-[#425733]"
                   style={{ color: "#8aa480" }}
                 >
                   <ExternalLink size={10} /> Xem sản phẩm
-                </a>
+                </Link>
               </div>
             </div>
           </motion.div>

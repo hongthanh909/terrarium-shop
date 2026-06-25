@@ -1,25 +1,42 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
 import { uploadFile } from "@/lib/storage";
+import { verifyAdminRequest } from "@/lib/admin-auth";
+import { authOptions } from "@/lib/auth";
+
+const ADMIN_BUCKETS = new Set(["products", "banners", "blog", "homepage", "policies", "gallery", "avatars"]);
+const CUSTOMER_BUCKETS = new Set(["avatars"]);
+const ALLOWED_IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
 
 export async function POST(request: NextRequest) {
   try {
+    const admin = await verifyAdminRequest(request);
+    const session = await getServerSession(authOptions);
+
+    if (!admin && !session?.user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const formData = await request.formData();
-    const file = formData.get("file") as File;
+    const file = formData.get("file") as File | null;
     const bucket = (formData.get("bucket") as string) || "products";
 
     if (!file) {
       return NextResponse.json({ error: "No file provided" }, { status: 400 });
     }
 
-    // Validate file type (chỉ nhận ảnh)
-    if (!file.type.startsWith("image/")) {
+    const bucketAllowed = admin ? ADMIN_BUCKETS.has(bucket) : CUSTOMER_BUCKETS.has(bucket);
+    if (!bucketAllowed) {
+      return NextResponse.json({ error: "Bucket is not allowed" }, { status: 400 });
+    }
+
+    if (!ALLOWED_IMAGE_TYPES.has(file.type)) {
       return NextResponse.json(
-        { error: "Only image files are allowed" },
+        { error: "Only JPG, PNG, WEBP or GIF images are allowed" },
         { status: 400 }
       );
     }
 
-    // Validate file size (tối đa 5MB)
     const maxSize = 5 * 1024 * 1024;
     if (file.size > maxSize) {
       return NextResponse.json(
@@ -28,8 +45,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Upload qua Storage abstraction layer
-    // Tự động dùng Supabase hoặc MinIO tùy STORAGE_PROVIDER env
     const publicUrl = await uploadFile(file, bucket);
 
     return NextResponse.json({

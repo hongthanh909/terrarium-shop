@@ -2,9 +2,8 @@ import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
+import { ADMIN_SECRET_PATH } from "@/lib/admin-path";
 
-const ADMIN_SECRET_PATH = process.env.ADMIN_SECRET_PATH || "/tiem-nho-nth24";
-const ADMIN_LOGIN_PATH = `${ADMIN_SECRET_PATH}/login`;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Helper: create a dedicated, short-lived PrismaClient for auth queries.

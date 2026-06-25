@@ -64,7 +64,7 @@ export default async function Footer() {
               </div>
             </Link>
             <p className="text-[hsl(220,14%,45%)] text-sm leading-relaxed">
-              Terrarium thủ công mang thiên nhiên vào không gian sống của bạn. Mỗi sản phẩm là một hệ sinh thái thu nhỏ, được tạo tình tỉ mỉ.
+              Terrarium thủ công mang thiên nhiên vào không gian sống của bạn. Mỗi sản phẩm là một hệ sinh thái thu nhỏ, được tạo hình tỉ mỉ.
             </p>
             {/* Social Links */}
             <div className="flex gap-3 pt-2">
