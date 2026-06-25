@@ -226,7 +226,7 @@ function getInstantResponse(message: string): string | null {
     return "🔄 **Chính sách đổi trả & bảo hành:**\n\n• **Đổi trả trong 3 ngày** nếu sản phẩm lỗi do vận chuyển.\n• **Bảo hành 7 ngày** cho cây bị hư hại không do người dùng.\n• Cần quay video khi mở hàng để làm bằng chứng.\n• Liên hệ Zalo/Facebook để được hỗ trợ đổi trả.\n• Không áp dụng cho trường hợp chăm sóc sai cách.";
 
   if (/thanh toán|trả tiền|chuyển khoản|cod|payment|momo/i.test(q))
-    return "💳 **Phương thức thanh toán:**\n\n• **COD** (thanh toán khi nhận hàng) — an toàn, tiện lợi\n\n💡 Đặt hàng trên website → chọn sản phẩm → thêm vào giỏ → thanh toán!";
+    return "💳 **Phương thức thanh toán:**\n\n• **COD** (thanh toán khi nhận hàng) — nhận hàng mới trả tiền, hoàn toàn an toàn ✅\n\n💡 Đặt hàng trên website → chọn sản phẩm → thêm vào giỏ → thanh toán COD khi nhận hàng!";
 
   if (/khuyến mãi|voucher|mã giảm|discount|sale|giảm giá/i.test(q))
     return "🎉 **Khuyến mãi tại Tiệm Rêu:**\n\n• **Freeship** đơn từ 500.000₫\n• Theo dõi Tiệm Rêu trên Facebook/Zalo để nhận mã giảm giá.\n• Các chương trình khuyến mãi được cập nhật thường xuyên trên website.\n\nAnh/chị muốn xem sản phẩm đang giảm giá không ạ?";
@@ -635,11 +635,8 @@ export async function POST(request: Request) {
       }
     }
 
-    // ── 4. ON-TOPIC CHECK (benefit of doubt cho câu ngắn) ─
-    if (!isOnTopic(trimmed)) {
-      console.log(`[CONSULT] ⚠️ Possibly off-topic: "${trimmed.slice(0, 40)}"`);
-      return NextResponse.json({ response: OFF_TOPIC_RESPONSE, source: "guardrail" });
-    }
+    // ── 4. SKIP isOnTopic — Để Ollama tự xử lý câu hỏi không rõ ─
+    // (isOnTopic() quá strict → chặn nhầm câu hỏi hợp lệ)
 
     // ── 5. OLLAMA AI — Xử lý mọi câu hỏi terrarium ──────
     console.log(`[CONSULT] 🧠 Sending to Ollama...`);
