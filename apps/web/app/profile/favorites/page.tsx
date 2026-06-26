@@ -103,7 +103,7 @@ export default function FavoritesPage() {
       {/* Empty state */}
       {!loading && products.length === 0 && (
         <div className="text-center py-20 flex flex-col items-center gap-4">
-          <div className="w-20 h-20 rounded-2xl bg-[#f0f4ec] flex items-center justify-center">
+          <div className="w-20 h-20 rounded-2xl bg-[#dfe8da] flex items-center justify-center">
             <Heart className="w-10 h-10 text-[#6d8c5a]" />
           </div>
           <p className="font-bold text-gray-700 text-lg">Chưa có sản phẩm yêu thích</p>
@@ -114,6 +114,32 @@ export default function FavoritesPage() {
             <Link href="/products">Khám phá sản phẩm</Link>
           </Button>
         </div>
+      )}
+
+      {/* Product grid */}
+      {!loading && products.length > 0 && (
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+          {products.map((product) => (
+            <div
+              key={product.id}
+              className="group bg-white rounded-2xl border border-[#e4eeda] overflow-hidden hover:shadow-xl hover:scale-[1.03] transition-all duration-300"
+            >
+              {/* Image */}
+              <Link href={`/products/${product.slug}`} className="block relative aspect-square bg-[#dfe8da]">
+                {product.images[0] ? (
+                  <ImageWrapper
+                    src={product.images[0]}
+                    alt={product.name}
+                    fill
+                    noRound
+                    sizes="(max-width: 768px) 50vw, 25vw"
+                    className="object-cover group-hover:scale-110 transition-transform duration-500"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <Package className="w-10 h-10 text-[#6d8c5a]" />
+                  </div>
+                )}
                 {/* Unvote button */}
                 <button
                   onClick={(e) => { e.preventDefault(); handleUnvote(product.id); }}
