@@ -43,12 +43,12 @@ interface TopProduct {
 }
 
 const STATUS_STYLES: Record<string, string> = {
-  PENDING:    "bg-yellow-100 text-yellow-800",
-  CONFIRMED:  "bg-blue-100 text-blue-800",
-  PROCESSING: "bg-purple-100 text-purple-800",
-  SHIPPING:   "bg-indigo-100 text-indigo-800",
-  DELIVERED:  "bg-[#e3ebdd] text-[#364a29]",
-  CANCELLED:  "bg-red-100 text-red-800",
+  PENDING:    "bg-yellow-50 text-yellow-700 border border-yellow-200",
+  CONFIRMED:  "bg-blue-50 text-blue-700 border border-blue-200",
+  PROCESSING: "bg-purple-50 text-purple-700 border border-purple-200",
+  SHIPPING:   "bg-indigo-50 text-indigo-700 border border-indigo-200",
+  DELIVERED:  "bg-emerald-50 text-emerald-700 border border-emerald-200",
+  CANCELLED:  "bg-red-50 text-red-700 border border-red-200",
 };
 
 const STATUS_LABELS: Record<string, string> = {
@@ -66,6 +66,7 @@ function formatCurrency(value: number) {
   return `${value.toLocaleString("vi-VN")} ₫`;
 }
 
+/* ── Stat Card — đồng bộ size, icon nhẹ nhàng hơn ── */
 function StatCard({
   label,
   value,
@@ -73,6 +74,8 @@ function StatCard({
   sub,
   change,
   href,
+  iconBg = "#eef3e8",
+  iconColor = "#4a6d38",
 }: {
   label: string;
   value: string | number;
@@ -80,32 +83,38 @@ function StatCard({
   sub?: string;
   change?: number;
   href?: string;
+  iconBg?: string;
+  iconColor?: string;
 }) {
   const card = (
-    <div className="bg-white rounded-2xl shadow-[0_2px_12px_rgba(66,87,51,0.06)] border border-[#e3ebdd] p-6 flex flex-col gap-4 hover:shadow-[0_8px_24px_rgba(66,87,51,0.1)] transition-shadow">
-      <div className="flex items-start justify-between">
-        <div>
-          <p className="text-sm text-gray-500 mb-1">{label}</p>
-          <p className="text-3xl font-bold text-gray-800">{value}</p>
-        </div>
-        <div className="bg-[#e3ebdd] p-3 rounded-full">
-          <Icon className="w-6 h-6 text-[#425733]" />
-        </div>
+    <div className="bg-white rounded-2xl border border-gray-100 p-5 flex items-start gap-4 min-h-[120px] hover:shadow-[0_4px_20px_rgba(0,0,0,0.04)] transition-all duration-200 group">
+      {/* Icon circle */}
+      <div
+        className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 transition-transform duration-200 group-hover:scale-105"
+        style={{ background: iconBg }}
+      >
+        <Icon className="w-5 h-5" style={{ color: iconColor }} />
       </div>
-      {(sub || change !== undefined) && (
-        <div className="flex items-center gap-1 text-sm">
-          {change !== undefined ? (
-            change >= 0 ? (
-              <ArrowUpRight className="w-4 h-4 text-[#425733]" />
-            ) : (
-              <ArrowDownRight className="w-4 h-4 text-red-500" />
-            )
-          ) : null}
-          <span className={change !== undefined && change < 0 ? "text-red-500" : "text-[#425733] font-medium"}>
-            {change !== undefined ? `${change > 0 ? "+" : ""}${change}% so với tháng trước` : sub}
-          </span>
-        </div>
-      )}
+
+      {/* Content */}
+      <div className="flex-1 min-w-0">
+        <p className="text-[13px] text-gray-400 font-medium mb-1 truncate">{label}</p>
+        <p className="text-2xl font-bold text-gray-800 leading-tight">{value}</p>
+        {(sub || change !== undefined) && (
+          <div className="flex items-center gap-1 mt-1.5">
+            {change !== undefined ? (
+              change >= 0 ? (
+                <ArrowUpRight className="w-3.5 h-3.5 text-emerald-500" />
+              ) : (
+                <ArrowDownRight className="w-3.5 h-3.5 text-red-500" />
+              )
+            ) : null}
+            <span className={`text-[12px] font-medium ${change !== undefined && change < 0 ? "text-red-500" : "text-emerald-600"}`}>
+              {change !== undefined ? `${change > 0 ? "+" : ""}${change}% so với tháng trước` : sub}
+            </span>
+          </div>
+        )}
+      </div>
     </div>
   );
 
@@ -144,20 +153,24 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="space-y-8">
-      {/* Header */}
-      <div>
-        <h2 className="text-3xl font-bold mb-1" style={{ background: 'linear-gradient(135deg, #1a2e12, #425733)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Bảng Điều Khiển</h2>
-        <p className="text-gray-500">Tổng quan hoạt động của Tiệm Rêu Décor</p>
+    <div className="space-y-6 max-w-[1200px]">
+      {/* ── Header ── */}
+      <div className="flex items-start justify-between">
+        <div>
+          <h2 className="text-2xl font-bold text-gray-800">Bảng Điều Khiển</h2>
+          <p className="text-sm text-gray-400 mt-0.5">Tổng quan hoạt động của Tiệm Rêu Décor</p>
+        </div>
       </div>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+      {/* ── Stats Grid — 4 cards đồng bộ size ── */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
           label="Doanh Thu Tháng Này"
           value={formatCurrency(stats?.thisMonthRevenue || 0)}
           icon={TrendingUp}
           change={stats?.revenueChange}
+          iconBg="#eef3e8"
+          iconColor="#4a6d38"
         />
         <StatCard
           label="Tổng Đơn Hàng"
@@ -165,77 +178,87 @@ export default function AdminDashboard() {
           icon={ShoppingCart}
           sub={`${stats?.pendingOrders || 0} đơn chờ xử lý`}
           href="/tiem-nho-nth24/orders"
+          iconBg="#edf5ff"
+          iconColor="#3b7dd8"
         />
         <StatCard
           label="Sản Phẩm Hoạt Động"
           value={stats?.totalProducts || 0}
           icon={Package}
           href="/tiem-nho-nth24/products"
+          iconBg="#fef5e7"
+          iconColor="#c28b2d"
         />
         <StatCard
           label="Khách Hàng"
           value={stats?.totalCustomers || 0}
           icon={Users}
+          iconBg="#f0eef8"
+          iconColor="#6b5eaa"
         />
       </div>
 
-      {/* Alerts row */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      {/* ── Alert banners ── */}
+      <div className="flex flex-col sm:flex-row gap-3">
         {(stats?.pendingOrders || 0) > 0 && (
           <Link
             href="/tiem-nho-nth24/orders"
-            className="flex items-center gap-3 p-4 bg-yellow-50 border border-yellow-200 rounded-xl hover:bg-yellow-100 transition-colors"
+            className="flex-1 flex items-center gap-3 px-4 py-3 bg-amber-50 border border-amber-200/60 rounded-xl hover:bg-amber-100/60 transition-colors"
           >
-            <Clock className="w-5 h-5 text-yellow-600 shrink-0" />
-            <span className="text-yellow-800 font-medium text-sm">
+            <div className="w-8 h-8 rounded-lg bg-amber-100 flex items-center justify-center flex-shrink-0">
+              <Clock className="w-4 h-4 text-amber-600" />
+            </div>
+            <span className="text-amber-800 font-medium text-sm flex-1">
               {stats?.pendingOrders} đơn hàng đang chờ xác nhận
             </span>
-            <ArrowUpRight className="w-4 h-4 text-yellow-600 ml-auto shrink-0" />
+            <ArrowUpRight className="w-4 h-4 text-amber-500 shrink-0" />
           </Link>
         )}
         {(stats?.pendingReviews || 0) > 0 && (
           <Link
             href="/tiem-nho-nth24/reviews"
-            className="flex items-center gap-3 p-4 bg-blue-50 border border-blue-200 rounded-xl hover:bg-blue-100 transition-colors"
+            className="flex-1 flex items-center gap-3 px-4 py-3 bg-blue-50 border border-blue-200/60 rounded-xl hover:bg-blue-100/60 transition-colors"
           >
-            <Star className="w-5 h-5 text-blue-600 shrink-0" />
-            <span className="text-blue-800 font-medium text-sm">
+            <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0">
+              <Star className="w-4 h-4 text-blue-600" />
+            </div>
+            <span className="text-blue-800 font-medium text-sm flex-1">
               {stats?.pendingReviews} đánh giá chờ duyệt
             </span>
-            <ArrowUpRight className="w-4 h-4 text-blue-600 ml-auto shrink-0" />
+            <ArrowUpRight className="w-4 h-4 text-blue-500 ml-auto shrink-0" />
           </Link>
         )}
       </div>
 
-      {/* Tables row */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Recent Orders */}
-        <div className="lg:col-span-2 bg-white rounded-2xl shadow-[0_2px_12px_rgba(66,87,51,0.06)] border border-[#e3ebdd] overflow-hidden">
-          <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-            <h3 className="font-semibold text-gray-800">Đơn Hàng Gần Đây</h3>
-            <Link href="/tiem-nho-nth24/orders" className="text-sm text-[#425733] hover:underline font-medium">
+      {/* ── Tables row — Orders + Top Products ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
+        {/* Recent Orders — 3/5 width */}
+        <div className="lg:col-span-3 bg-white rounded-2xl border border-gray-100 overflow-hidden">
+          <div className="flex items-center justify-between px-5 py-4 border-b border-gray-50">
+            <h3 className="font-semibold text-gray-800 text-[15px]">Đơn Hàng Gần Đây</h3>
+            <Link href="/tiem-nho-nth24/orders" className="text-[13px] text-[#4a6d38] hover:text-[#2d4a22] font-medium transition-colors">
               Xem tất cả →
             </Link>
           </div>
           {recentOrders.length === 0 ? (
-            <div className="p-10 text-center text-gray-400 text-sm">Chưa có đơn hàng nào</div>
+            <div className="p-10 text-center text-gray-300 text-sm">Chưa có đơn hàng nào</div>
           ) : (
             <div className="divide-y divide-gray-50">
               {recentOrders.map((order: any) => (
                 <Link
                   key={order.id}
                   href={`/tiem-nho-nth24/orders/${order.id}`}
-                  className="flex items-center justify-between px-6 py-4 hover:bg-gray-50 transition-colors"
+                  className="flex items-center justify-between px-5 py-3.5 hover:bg-gray-50/60 transition-colors"
                 >
-                  <div className="min-w-0">
-                    <p className="font-medium text-gray-800 text-sm truncate">{order.orderNumber}</p>
-                    <p className="text-xs text-gray-400 truncate">{order.customer?.name || order.customer?.email}</p>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-medium text-gray-700 text-[13px] truncate">{order.orderNumber}</p>
+                    <p className="text-[11px] text-gray-400 truncate mt-0.5">{order.customer?.name || order.customer?.email}</p>
                   </div>
-                  <div className="flex items-center gap-3 ml-4 shrink-0">
-                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_STYLES[order.status] || "bg-gray-100 text-gray-700"}`}>
+                  <div className="flex items-center gap-2.5 ml-4 shrink-0">
+                    <span className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold ${STATUS_STYLES[order.status] || "bg-gray-100 text-gray-600"}`}>
                       {STATUS_LABELS[order.status] || order.status}
                     </span>
-                    <span className="text-sm font-semibold text-gray-800">
+                    <span className="text-[13px] font-bold text-gray-800 tabular-nums min-w-[80px] text-right">
                       {Number(order.total).toLocaleString("vi-VN")}₫
                     </span>
                   </div>
@@ -245,25 +268,30 @@ export default function AdminDashboard() {
           )}
         </div>
 
-        {/* Top Products */}
-        <div className="bg-white rounded-2xl shadow-[0_2px_12px_rgba(66,87,51,0.06)] border border-[#e3ebdd] overflow-hidden">
-          <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-            <h3 className="font-semibold text-gray-800">Bán Chạy Nhất</h3>
-            <Link href="/tiem-nho-nth24/products" className="text-sm text-[#425733] hover:underline font-medium">
+        {/* Top Products — 2/5 width */}
+        <div className="lg:col-span-2 bg-white rounded-2xl border border-gray-100 overflow-hidden">
+          <div className="flex items-center justify-between px-5 py-4 border-b border-gray-50">
+            <h3 className="font-semibold text-gray-800 text-[15px]">Bán Chạy Nhất</h3>
+            <Link href="/tiem-nho-nth24/products" className="text-[13px] text-[#4a6d38] hover:text-[#2d4a22] font-medium transition-colors">
               Xem tất cả →
             </Link>
           </div>
           {topProducts.length === 0 ? (
-            <div className="p-10 text-center text-gray-400 text-sm">Chưa có dữ liệu</div>
+            <div className="p-10 text-center text-gray-300 text-sm">Chưa có dữ liệu</div>
           ) : (
             <div className="divide-y divide-gray-50">
               {topProducts.map((product: any, index: number) => (
-                <div key={product.slug} className="flex items-center gap-3 px-6 py-4">
-                  <span className="w-6 h-6 rounded-full bg-[#e3ebdd] text-[#425733] text-xs font-bold flex items-center justify-center shrink-0">
+                <div key={product.slug} className="flex items-center gap-3 px-5 py-3.5 hover:bg-gray-50/60 transition-colors">
+                  <span className={`w-7 h-7 rounded-lg text-xs font-bold flex items-center justify-center shrink-0 ${
+                    index === 0 ? "bg-amber-50 text-amber-600 border border-amber-200/50" :
+                    index === 1 ? "bg-gray-100 text-gray-500" :
+                    index === 2 ? "bg-orange-50 text-orange-500" :
+                    "bg-gray-50 text-gray-400"
+                  }`}>
                     {index + 1}
                   </span>
-                  <p className="text-sm text-gray-700 flex-1 min-w-0 truncate">{product.name}</p>
-                  <span className="text-sm font-semibold text-[#425733] shrink-0">{product.totalSold} đã bán</span>
+                  <p className="text-[13px] text-gray-700 flex-1 min-w-0 truncate font-medium">{product.name}</p>
+                  <span className="text-[12px] font-semibold text-gray-400 shrink-0">{product.totalSold} đã bán</span>
                 </div>
               ))}
             </div>
@@ -271,25 +299,30 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      {/* Quick Actions */}
-      <div className="bg-white rounded-2xl shadow-[0_2px_12px_rgba(66,87,51,0.06)] border border-[#e3ebdd] p-6">
-        <h3 className="font-semibold text-gray-800 mb-4">Hành Động Nhanh</h3>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+      {/* ── Quick Actions — soft cards ── */}
+      <div className="bg-white rounded-2xl border border-gray-100 p-5">
+        <h3 className="font-semibold text-gray-700 text-[15px] mb-4">Hành Động Nhanh</h3>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
           {[
-            { href: "/tiem-nho-nth24/homepage",        icon: LayoutDashboard, label: "Giao Diện" },
-            { href: "/tiem-nho-nth24/products/create", icon: Package,         label: "Thêm Sản Phẩm" },
-            { href: "/tiem-nho-nth24/orders",          icon: ShoppingCart,    label: "Đơn Hàng" },
-            { href: "/tiem-nho-nth24/categories",      icon: LayoutGrid,      label: "Danh Mục" },
-            { href: "/tiem-nho-nth24/discounts",       icon: Tag,             label: "Giảm Giá" },
-            { href: "/tiem-nho-nth24/reviews",         icon: MessageSquare,   label: "Đánh Giá" },
-          ].map(({ href, icon: Icon, label }) => (
+            { href: "/tiem-nho-nth24/homepage",        icon: LayoutDashboard, label: "Giao Diện",      bg: "#eef3e8", color: "#4a6d38" },
+            { href: "/tiem-nho-nth24/products/create", icon: Package,         label: "Thêm Sản Phẩm",  bg: "#fef5e7", color: "#c28b2d" },
+            { href: "/tiem-nho-nth24/orders",          icon: ShoppingCart,    label: "Đơn Hàng",        bg: "#edf5ff", color: "#3b7dd8" },
+            { href: "/tiem-nho-nth24/categories",      icon: LayoutGrid,      label: "Danh Mục",        bg: "#f0eef8", color: "#6b5eaa" },
+            { href: "/tiem-nho-nth24/discounts",       icon: Tag,             label: "Giảm Giá",        bg: "#fef0f0", color: "#d35050" },
+            { href: "/tiem-nho-nth24/reviews",         icon: MessageSquare,   label: "Đánh Giá",        bg: "#fff8e6", color: "#b68a1d" },
+          ].map(({ href, icon: Icon, label, bg, color }) => (
             <Link
               key={href}
               href={href}
-              className="flex flex-col items-center gap-2 p-4 rounded-xl border-2 border-dashed border-gray-200 hover:border-[#6d8c5a] hover:bg-[#f0f4ec] transition-all group"
+              className="flex flex-col items-center gap-2.5 p-4 rounded-xl border border-gray-100 hover:border-gray-200 hover:shadow-sm transition-all group"
             >
-              <Icon className="w-7 h-7 text-gray-400 group-hover:text-[#425733] transition-colors" />
-              <span className="text-xs font-medium text-gray-500 group-hover:text-[#425733] text-center transition-colors">{label}</span>
+              <div
+                className="w-10 h-10 rounded-xl flex items-center justify-center transition-transform duration-200 group-hover:scale-110"
+                style={{ background: bg }}
+              >
+                <Icon className="w-5 h-5" style={{ color }} />
+              </div>
+              <span className="text-[12px] font-medium text-gray-500 group-hover:text-gray-700 text-center transition-colors">{label}</span>
             </Link>
           ))}
         </div>

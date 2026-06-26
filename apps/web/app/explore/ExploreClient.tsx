@@ -152,7 +152,7 @@ export function ExploreClient({ featured, pinned, topVoted, newArrivals, weeklyF
                   alt={currentHero.product.name}
                   fill
                   noRound
-                  className="object-cover object-[center_15%]"
+                  className="object-contain"
                   sizes="100vw"
                   priority
                 />
@@ -422,31 +422,7 @@ export function ExploreClient({ featured, pinned, topVoted, newArrivals, weeklyF
           </section>
         )}
 
-        {/* ═══ CTA ═══════════════════════════════════════════════════════ */}
-        <section className="py-16 px-6 bg-gradient-to-br from-[#2d3d23] to-[#1a2e12]">
-          <div className="max-w-3xl mx-auto text-center">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-            >
-              <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">Chưa tìm thấy sản phẩm ưng ý?</h2>
-              <p className="text-white/70 mb-8 max-w-lg mx-auto">
-                Xem toàn bộ bộ sưu tập của chúng tôi hoặc liên hệ để được tư vấn thiết kế terrarium riêng.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                <Button asChild size="lg" className="bg-white text-[#1a2e12] hover:bg-white/90 font-bold px-8 rounded-xl shadow-[0_8px_30px_rgba(0,0,0,0.2)]">
-                  <Link href="/products">
-                    Xem Tất Cả <ArrowRight className="ml-2 w-4 h-4" />
-                  </Link>
-                </Button>
-                <Button asChild size="lg" variant="outline" className="border-2 border-white/40 text-white hover:bg-white/10 hover:border-white backdrop-blur-sm font-bold px-8 rounded-xl">
-                  <Link href="/consult">Nhận Tư Vấn</Link>
-                </Button>
-              </div>
-            </motion.div>
-          </div>
-        </section>
+
 
       </main>
     </PageTransition>
