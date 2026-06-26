@@ -8,7 +8,7 @@
   "scripts": {
     "dev": "next dev",
     "dev:clean": "Remove-Item -Recurse -Force .next -ErrorAction SilentlyContinue; next dev",
-    "build": "prisma generate && next build",
+    "build": "prisma generate && node -e \"const fs=require('fs');fs.mkdirSync('.next/server',{recursive:true});const p='.next/server/pages-manifest.json';if(!fs.existsSync(p))fs.writeFileSync(p,JSON.stringify({'/500':'pages/500.html'}));\" && next build",
     "postinstall": "prisma generate",
     "start": "next start",
     "lint": "eslint .",
