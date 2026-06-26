@@ -287,7 +287,8 @@ function tokenizeForKnowledge(str: string): string[] {
   const stopWords = new Set([
     "toi", "minh", "em", "anh", "chi", "ban", "shop", "co", "khong", "ko",
     "la", "gi", "ve", "cho", "hoi", "hoi", "nhe", "a", "ạ", "duoc", "duoc",
-    "sao", "the", "nao", "bao", "nhieu", "may", "cai",
+    "sao", "the", "nao", "bao", "nhieu", "may", "cai", "bi", "thi",
+    "cay", "reu", "la", "be", "binh", "terrarium",
   ]);
 
   return normalizeVN(str)
@@ -309,20 +310,28 @@ function scoreKnowledgeEntry(messageTokens: string[], messageNorm: string, entry
     .split(/[,;|/]+/)
     .map((part) => part.trim())
     .filter(Boolean);
+  const keywordTokens = new Set(tokenizeForKnowledge(entry.keyword));
 
   let score = Math.min(entry.priority, 100) / 100;
+  let hasKeywordMatch = false;
 
   for (const part of keywordParts) {
-    if (part.length >= 2 && messageNorm.includes(part)) score += 6;
+    if (part.length >= 3 && messageNorm.includes(part)) {
+      score += 8;
+      hasKeywordMatch = true;
+    }
   }
 
   for (const token of messageTokens) {
-    if (keywordNorm.includes(token)) score += 2.5;
-    if (categoryNorm.includes(token)) score += 1.5;
-    if (responseNorm.includes(token)) score += 0.75;
+    if (keywordTokens.has(token)) {
+      score += 4;
+      hasKeywordMatch = true;
+    }
+    if (categoryNorm.includes(token)) score += 0.75;
+    if (responseNorm.includes(token)) score += 0.25;
   }
 
-  return score;
+  return hasKeywordMatch ? score : 0;
 }
 
 async function searchOfficialKnowledge(message: string): Promise<KnowledgeHit[]> {
@@ -349,7 +358,7 @@ async function searchOfficialKnowledge(message: string): Promise<KnowledgeHit[]>
         ...entry,
         score: scoreKnowledgeEntry(messageTokens, messageNorm, entry),
       }))
-      .filter((entry) => entry.score >= 2.5)
+      .filter((entry) => entry.score >= 4)
       .sort((a, b) => b.score - a.score || b.priority - a.priority)
       .slice(0, 4);
   } catch (error) {
@@ -370,12 +379,7 @@ function buildKnowledgeFallback(hits: KnowledgeHit[]): string {
   const top = hits[0];
   if (!top) return "";
 
-  if (hits.length === 1) return top.response;
-
-  return hits
-    .slice(0, 3)
-    .map((hit) => hit.response)
-    .join("\n\n");
+  return top.response;
 }
 
 // =============================================
