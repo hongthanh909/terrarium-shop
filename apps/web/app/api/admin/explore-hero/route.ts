@@ -10,15 +10,18 @@ const KEY = "explore_hero_bg";
 export interface ExploreHeroBg {
   imageUrl: string;  // URL ảnh nền blur
   blur: number;      // 0-20 (px), mặc định 12
+  opacity: number;   // 0-100 (%), độ mờ overlay tối, mặc định 50
 }
 
-const DEFAULT: ExploreHeroBg = { imageUrl: "", blur: 12 };
+const DEFAULT: ExploreHeroBg = { imageUrl: "", blur: 12, opacity: 50 };
 
 // GET — public (dùng cho server component)
 export async function GET() {
   try {
     const setting = await prisma.siteSetting.findUnique({ where: { key: KEY } });
     const data: ExploreHeroBg = setting ? (setting.value as any) : DEFAULT;
+    // backfill opacity if missing from old records
+    if (data.opacity === undefined) data.opacity = 50;
     return NextResponse.json({ heroBg: data });
   } catch {
     return NextResponse.json({ heroBg: DEFAULT });
@@ -34,6 +37,7 @@ export async function PUT(request: NextRequest) {
   const data: ExploreHeroBg = {
     imageUrl: typeof body.imageUrl === "string" ? body.imageUrl.trim() : "",
     blur: Math.max(0, Math.min(20, Number(body.blur ?? 12))),
+    opacity: Math.max(0, Math.min(100, Number(body.opacity ?? 50))),
   };
 
   await prisma.siteSetting.upsert({

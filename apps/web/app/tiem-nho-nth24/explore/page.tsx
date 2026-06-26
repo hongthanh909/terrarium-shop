@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { showToast } from "@/components/ui/custom-toast";
 import {
-  Star, StarOff, Search, Trash2, Plus, RefreshCw, ExternalLink, ImageIcon, Save,
+  Star, StarOff, Search, Trash2, Plus, RefreshCw, ExternalLink, ImageIcon, Save, Upload, X,
 } from "lucide-react";
 import { ImageWrapper } from "@/components/ui/ImageWrapper";
 import Link from "next/link";
@@ -39,7 +39,10 @@ export default function AdminExplorePage() {
   // Hero background settings
   const [heroBgUrl, setHeroBgUrl] = useState("");
   const [heroBgBlur, setHeroBgBlur] = useState(12);
+  const [heroBgOpacity, setHeroBgOpacity] = useState(50);
   const [bgSaving, setBgSaving] = useState(false);
+  const [bgUploading, setBgUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const fetchFeatured = useCallback(async () => {
     setLoading(true);
@@ -58,6 +61,7 @@ export default function AdminExplorePage() {
         const data = await res.json();
         setHeroBgUrl(data.heroBg?.imageUrl || "");
         setHeroBgBlur(data.heroBg?.blur ?? 12);
+        setHeroBgOpacity(data.heroBg?.opacity ?? 50);
       }
     } catch { /* silent */ }
   }, []);
@@ -69,7 +73,7 @@ export default function AdminExplorePage() {
         method: "PUT",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ imageUrl: heroBgUrl, blur: heroBgBlur }),
+        body: JSON.stringify({ imageUrl: heroBgUrl, blur: heroBgBlur, opacity: heroBgOpacity }),
       });
       if (!res.ok) throw new Error();
       showToast.success("Đã lưu cài đặt ảnh nền hero!");
@@ -77,6 +81,24 @@ export default function AdminExplorePage() {
       showToast.error("Lưu thất bại, vui lòng thử lại.");
     } finally {
       setBgSaving(false);
+    }
+  };
+
+  const uploadBgImage = async (file: File) => {
+    setBgUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      fd.append("bucket", "banners");
+      const res = await fetch("/api/upload", { method: "POST", credentials: "include", body: fd });
+      const data = await res.json();
+      if (!res.ok || !data.url) throw new Error(data.error || "Upload failed");
+      setHeroBgUrl(data.url);
+      showToast.success("Ảnh đã tải lên thành công!");
+    } catch (e: any) {
+      showToast.error(e.message || "Tải ảnh thất bại");
+    } finally {
+      setBgUploading(false);
     }
   };
 
@@ -184,18 +206,56 @@ export default function AdminExplorePage() {
           <h3 className="font-semibold text-gray-700">Cài đặt ảnh nền Hero</h3>
         </div>
         <div className="p-5 space-y-4">
-          {/* URL input */}
+
+          {/* Upload + URL row */}
           <div>
-            <label className="block text-xs font-medium text-gray-500 mb-1.5">
-              URL ảnh nền (để trống = tự dùng ảnh sản phẩm đầu tiên)
-            </label>
-            <input
-              type="text"
-              value={heroBgUrl}
-              onChange={(e) => setHeroBgUrl(e.target.value)}
-              placeholder="https://... hoặc đường dẫn ảnh"
-              className="w-full text-sm border border-gray-200 rounded-xl px-3 py-2 focus:outline-none focus:border-[#425733] transition-colors"
-            />
+            <label className="block text-xs font-medium text-gray-500 mb-2">Ảnh nền</label>
+            <div className="flex gap-2">
+              {/* Upload button */}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  if (f) uploadBgImage(f);
+                  e.target.value = "";
+                }}
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={bgUploading}
+                onClick={() => fileInputRef.current?.click()}
+                className="gap-1.5 shrink-0"
+              >
+                <Upload className="w-3.5 h-3.5" />
+                {bgUploading ? "Đang tải..." : "Chọn từ thiết bị"}
+              </Button>
+
+              {/* URL manual input */}
+              <input
+                type="text"
+                value={heroBgUrl}
+                onChange={(e) => setHeroBgUrl(e.target.value)}
+                placeholder="hoặc dán URL ảnh vào đây"
+                className="flex-1 text-sm border border-gray-200 rounded-xl px-3 py-2 focus:outline-none focus:border-[#425733] transition-colors"
+              />
+
+              {/* Clear */}
+              {heroBgUrl && (
+                <button
+                  onClick={() => setHeroBgUrl("")}
+                  className="p-2 text-gray-400 hover:text-gray-600 transition-colors rounded-lg hover:bg-gray-100"
+                  title="Xoá ảnh nền"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              )}
+            </div>
+            <p className="text-[11px] text-gray-400 mt-1">Để trống → tự dùng ảnh sản phẩm đầu tiên làm nền</p>
           </div>
 
           {/* Blur slider */}
@@ -204,23 +264,35 @@ export default function AdminExplorePage() {
               Độ mờ nền (blur): <span className="font-bold text-[#425733]">{heroBgBlur}px</span>
             </label>
             <input
-              type="range"
-              min={0}
-              max={20}
-              step={1}
+              type="range" min={0} max={20} step={1}
               value={heroBgBlur}
               onChange={(e) => setHeroBgBlur(Number(e.target.value))}
-              className="w-full accent-[#425733] h-2 rounded-full cursor-pointer"
+              className="w-full accent-[#425733] h-1.5 rounded-full cursor-pointer"
             />
             <div className="flex justify-between text-[11px] text-gray-400 mt-1">
-              <span>0 (không mờ)</span>
-              <span>20 (mờ tối đa)</span>
+              <span>0 (sắc nét)</span><span>20 (mờ hoàn toàn)</span>
             </div>
           </div>
 
-          {/* Preview */}
+          {/* Opacity slider */}
+          <div>
+            <label className="block text-xs font-medium text-gray-500 mb-2">
+              Độ tối phủ (overlay): <span className="font-bold text-[#425733]">{heroBgOpacity}%</span>
+            </label>
+            <input
+              type="range" min={0} max={100} step={5}
+              value={heroBgOpacity}
+              onChange={(e) => setHeroBgOpacity(Number(e.target.value))}
+              className="w-full accent-[#425733] h-1.5 rounded-full cursor-pointer"
+            />
+            <div className="flex justify-between text-[11px] text-gray-400 mt-1">
+              <span>0% (trong suốt)</span><span>100% (tối hoàn toàn)</span>
+            </div>
+          </div>
+
+          {/* Live preview */}
           {heroBgUrl && (
-            <div className="rounded-xl overflow-hidden h-28 relative border border-gray-100">
+            <div className="rounded-xl overflow-hidden h-32 relative border border-gray-100">
               <ImageWrapper
                 src={heroBgUrl}
                 alt="Preview"
@@ -229,16 +301,22 @@ export default function AdminExplorePage() {
                 className="object-cover"
                 style={{ filter: `blur(${heroBgBlur}px)`, transform: "scale(1.1)" }}
               />
-              <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
-                <span className="text-white text-xs font-medium">Preview — blur {heroBgBlur}px</span>
+              <div
+                className="absolute inset-0"
+                style={{ background: `rgba(0,0,0,${heroBgOpacity / 100})` }}
+              />
+              <div className="absolute inset-0 flex items-center justify-center">
+                <span className="text-white text-xs font-medium drop-shadow">
+                  Preview — blur {heroBgBlur}px · tối {heroBgOpacity}%
+                </span>
               </div>
             </div>
           )}
 
-          {/* Save button */}
+          {/* Save */}
           <Button
             onClick={saveHeroBg}
-            disabled={bgSaving}
+            disabled={bgSaving || bgUploading}
             className="gap-1.5 bg-[#425733] hover:bg-[#364a29] w-full sm:w-auto"
             size="sm"
           >

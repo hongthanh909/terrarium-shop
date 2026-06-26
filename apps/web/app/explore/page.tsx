@@ -75,7 +75,9 @@ export default async function ExplorePage() {
     // Hero background
     const heroBg = heroBgSetting
       ? (heroBgSetting.value as any)
-      : { imageUrl: "", blur: 12 };
+      : { imageUrl: "", blur: 12, opacity: 50 };
+    // backfill opacity if missing
+    if (heroBg.opacity === undefined) heroBg.opacity = 50;
 
     return (
       <ExploreClient
@@ -96,7 +98,7 @@ export default async function ExplorePage() {
         topVoted={[]}
         newArrivals={[]}
         weeklyFeaturedItems={[]}
-        heroBg={{ imageUrl: "", blur: 12 }}
+        heroBg={{ imageUrl: "", blur: 12, opacity: 50 }}
       />
     );
   }

@@ -34,6 +34,7 @@ interface FeaturedItem {
 interface HeroBg {
   imageUrl: string;
   blur: number;
+  opacity: number; // 0-100
 }
 
 interface ExploreProps {
@@ -124,9 +125,10 @@ export function ExploreClient({ featured, pinned, topVoted, newArrivals, weeklyF
   const heroItems = weeklyFeaturedItems.slice(0, 5);
   const hasHero = heroItems.length > 0;
 
-  // Blur style from admin setting
+  // Blur + opacity from admin setting
   const blurPx = heroBg.blur ?? 12;
   const bgUrl = heroBg.imageUrl || "";
+  const overlayOpacity = (heroBg.opacity ?? 50) / 100;
 
   return (
     <PageTransition>
@@ -149,7 +151,7 @@ export function ExploreClient({ featured, pinned, topVoted, newArrivals, weeklyF
                 priority
                 style={{ filter: `blur(${blurPx}px)`, transform: "scale(1.08)" }}
               />
-              <div className="absolute inset-0 bg-black/40" />
+              <div className="absolute inset-0" style={{ background: `rgba(0,0,0,${overlayOpacity})` }} />
             </div>
           ) : hasHero ? (
             // Fallback: use first featured product image as blurred bg
@@ -164,7 +166,7 @@ export function ExploreClient({ featured, pinned, topVoted, newArrivals, weeklyF
                 priority
                 style={{ filter: `blur(${blurPx}px)`, transform: "scale(1.08)" }}
               />
-              <div className="absolute inset-0 bg-black/50" />
+              <div className="absolute inset-0" style={{ background: `rgba(0,0,0,${overlayOpacity})` }} />
             </div>
           ) : (
             <div className="absolute inset-0 bg-gradient-to-br from-[#2d3d23] to-[#1a2e12]" />
