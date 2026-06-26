@@ -64,3 +64,5 @@ update_checkout.py
 backup/
 *.sql
 *.sql.gz
+# Turbo cache (large binary files)
+.turbo/cache/

@@ -1,9 +1,8 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { ImageWrapper } from "@/components/ui/ImageWrapper";
-import { Package, ArrowRight, ShoppingBasket, ChevronLeft, ChevronRight, Flame, Clock, Star, TrendingUp } from "lucide-react";
+import { Package, ArrowRight, ShoppingBasket, Clock, Star, TrendingUp } from "lucide-react";
 import { showToast } from "@/components/ui/custom-toast";
 import { useCartStore } from "@/lib/store/cartStore";
 import { useWishlist } from "@/lib/hooks/useWishlist";
@@ -32,12 +31,18 @@ interface FeaturedItem {
   reason?: string | null;
 }
 
+interface HeroBg {
+  imageUrl: string;
+  blur: number;
+}
+
 interface ExploreProps {
   featured: Product[];
   pinned: Product[];
   topVoted: Product[];
   newArrivals: Product[];
   weeklyFeaturedItems: FeaturedItem[];
+  heroBg: HeroBg;
 }
 
 /* ── Helper: add to cart ── */
@@ -104,11 +109,9 @@ function PriceTag({ product, className = "" }: { product: Product; className?: s
 /*  MAIN COMPONENT                                                       */
 /* ═══════════════════════════════════════════════════════════════════════ */
 
-export function ExploreClient({ featured, pinned, topVoted, newArrivals, weeklyFeaturedItems }: ExploreProps) {
+export function ExploreClient({ featured, pinned, topVoted, newArrivals, weeklyFeaturedItems, heroBg }: ExploreProps) {
   const addToCart = useAddToCart();
   const { isWished, toggleWishlist } = useWishlist();
-  const [heroIndex, setHeroIndex] = useState(0);
-  const scrollRef = useRef<HTMLDivElement>(null);
 
   // Merge pinned into featured (dedup by id)
   const allFeatured = [...featured];
@@ -117,196 +120,153 @@ export function ExploreClient({ featured, pinned, topVoted, newArrivals, weeklyF
     if (!featuredIds.has(p.id)) allFeatured.push(p);
   });
 
-  // Auto-rotate hero
-  const heroItems = weeklyFeaturedItems.length > 0 ? weeklyFeaturedItems : [];
-  const currentHero = heroItems[heroIndex] || null;
+  // Hero: all pinned weekly featured items (up to 5)
+  const heroItems = weeklyFeaturedItems.slice(0, 5);
+  const hasHero = heroItems.length > 0;
 
-  useEffect(() => {
-    if (heroItems.length <= 1) return;
-    const timer = setInterval(() => setHeroIndex(i => (i + 1) % heroItems.length), 7000);
-    return () => clearInterval(timer);
-  }, [heroItems.length]);
-
-  // Horizontal scroll helpers
-  const scrollLeft = () => scrollRef.current?.scrollBy({ left: -320, behavior: "smooth" });
-  const scrollRight = () => scrollRef.current?.scrollBy({ left: 320, behavior: "smooth" });
+  // Blur style from admin setting
+  const blurPx = heroBg.blur ?? 12;
+  const bgUrl = heroBg.imageUrl || "";
 
   return (
     <PageTransition>
       <main className="min-h-screen bg-[#fafbf8]">
 
-        {/* ═══ 1. EDITORIAL HERO ═══════════════════════════════════════════ */}
-        {currentHero ? (
-          <section className="relative w-full h-[70vh] min-h-[480px] max-h-[720px] overflow-hidden bg-[#1a2e12]">
-            {/* Background image */}
-            {currentHero.product.images[0] && (
-              <motion.div
-                key={heroIndex}
-                initial={{ opacity: 0, scale: 1.05 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.8 }}
-                className="absolute inset-0"
-              >
-                <ImageWrapper
-                  src={currentHero.product.images[0]}
-                  alt={currentHero.product.name}
-                  fill
-                  noRound
-                  className="object-contain"
-                  sizes="100vw"
-                  priority
-                />
-              </motion.div>
-            )}
+        {/* ═══ 1. HERO — Blurred Background + Product Card Gallery ════════ */}
+        <section className="relative w-full min-h-[540px] overflow-hidden bg-[#1a2e12] flex items-center">
 
-            {/* Gradient overlays */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-            <div className="absolute inset-0 bg-gradient-to-r from-black/40 to-transparent" />
-
-            {/* Content */}
-            <div className="relative z-10 h-full max-w-7xl mx-auto px-6 flex flex-col justify-end pb-12 md:pb-16">
-              <motion.div
-                key={`hero-content-${heroIndex}`}
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.2 }}
-                className="max-w-xl"
-              >
-                {/* Badge */}
-                <span className="inline-flex items-center gap-1.5 bg-white/15 backdrop-blur-md border border-white/20 text-white/90 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider mb-4">
-                  <Flame className="w-3.5 h-3.5" />
-                  {currentHero.reason || "Featured của tuần"}
-                </span>
-
-                {/* Category */}
-                <p className="text-white/60 text-sm font-medium mb-1">
-                  {currentHero.product.category?.name || "Terrarium"}
-                </p>
-
-                {/* Title */}
-                <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white mb-3 leading-tight tracking-tight">
-                  {currentHero.product.name}
-                </h1>
-
-                {/* Price */}
-                <PriceTag product={currentHero.product} className="text-white text-xl mb-6" />
-
-                {/* Actions */}
-                <div className="flex flex-wrap gap-3">
-                  <Button asChild size="lg" className="bg-white text-[#1a2e12] hover:bg-white/90 font-bold px-8 rounded-xl shadow-[0_8px_30px_rgba(0,0,0,0.3)]">
-                    <Link href={`/products/${currentHero.product.slug}`}>
-                      Xem chi tiết <ArrowRight className="ml-2 w-4 h-4" />
-                    </Link>
-                  </Button>
-                  <button
-                    onClick={() => addToCart(currentHero.product)}
-                    className="flex items-center gap-2 bg-white/15 backdrop-blur-md border border-white/30 hover:bg-white/25 text-white px-6 py-2.5 rounded-xl text-sm font-semibold transition-all"
-                  >
-                    <ShoppingBasket className="w-4 h-4" />
-                    Thêm vào giỏ
-                  </button>
-                </div>
-              </motion.div>
-
-              {/* Dots */}
-              {heroItems.length > 1 && (
-                <div className="flex gap-2 mt-6">
-                  {heroItems.map((_, i) => (
-                    <button
-                      key={i}
-                      onClick={() => setHeroIndex(i)}
-                      className={`h-1.5 rounded-full transition-all duration-300 ${
-                        i === heroIndex ? "bg-white w-8" : "bg-white/40 w-4 hover:bg-white/60"
-                      }`}
-                    />
-                  ))}
-                </div>
-              )}
+          {/* ── BG Layer: blur fill ── */}
+          {bgUrl ? (
+            // Admin-chosen background image
+            <div className="absolute inset-0">
+              <ImageWrapper
+                src={bgUrl}
+                alt=""
+                fill
+                noRound
+                className="object-cover"
+                sizes="100vw"
+                priority
+                style={{ filter: `blur(${blurPx}px)`, transform: "scale(1.08)" }}
+              />
+              <div className="absolute inset-0 bg-black/40" />
             </div>
-
-            {/* Nav arrows */}
-            {heroItems.length > 1 && (
-              <>
-                <button
-                  onClick={() => setHeroIndex(i => (i === 0 ? heroItems.length - 1 : i - 1))}
-                  className="absolute left-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/20 flex items-center justify-center text-white transition-all"
-                >
-                  <ChevronLeft className="w-5 h-5" />
-                </button>
-                <button
-                  onClick={() => setHeroIndex(i => (i + 1) % heroItems.length)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/20 flex items-center justify-center text-white transition-all"
-                >
-                  <ChevronRight className="w-5 h-5" />
-                </button>
-              </>
-            )}
-          </section>
-        ) : (
-          /* Fallback hero when no weekly featured */
-          <section className="relative bg-gradient-to-br from-[#2d3d23] to-[#1a2e12] py-20 px-6">
-            <div className="max-w-7xl mx-auto text-center">
-              <h1 className="text-4xl md:text-5xl font-extrabold text-white mb-4">Khám Phá</h1>
-              <p className="text-white/70 max-w-xl mx-auto">
-                Khám phá bộ sưu tập terrarium tuyệt đẹp — từ sản phẩm nổi bật đến những thiết kế mới nhất
-              </p>
+          ) : hasHero ? (
+            // Fallback: use first featured product image as blurred bg
+            <div className="absolute inset-0">
+              <ImageWrapper
+                src={heroItems[0].product.images[0] || ""}
+                alt=""
+                fill
+                noRound
+                className="object-cover"
+                sizes="100vw"
+                priority
+                style={{ filter: `blur(${blurPx}px)`, transform: "scale(1.08)" }}
+              />
+              <div className="absolute inset-0 bg-black/50" />
             </div>
-          </section>
-        )}
+          ) : (
+            <div className="absolute inset-0 bg-gradient-to-br from-[#2d3d23] to-[#1a2e12]" />
+          )}
 
-        {/* ═══ 2. HORIZONTAL SCROLL — Other featured items ═══════════════ */}
-        {heroItems.length > 1 && (
-          <section className="py-10 bg-white border-b border-[#e3ebdd]">
-            <div className="max-w-7xl mx-auto px-6">
-              <div className="flex items-center justify-between mb-6">
-                <div>
-                  <h2 className="text-xl font-bold text-[#1a2e12]">Bộ Sưu Tập Nổi Bật</h2>
-                  <p className="text-sm text-gray-500">Được lựa chọn đặc biệt mỗi tuần</p>
-                </div>
-                <div className="hidden sm:flex gap-2">
-                  <button onClick={scrollLeft} className="w-9 h-9 rounded-full border border-[#c8d5be] flex items-center justify-center text-[#425733] hover:bg-[#e3ebdd] transition-colors">
-                    <ChevronLeft className="w-4 h-4" />
-                  </button>
-                  <button onClick={scrollRight} className="w-9 h-9 rounded-full border border-[#c8d5be] flex items-center justify-center text-[#425733] hover:bg-[#e3ebdd] transition-colors">
-                    <ChevronRight className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
+          {/* ── Foreground: cards row ── */}
+          <div className="relative z-10 w-full max-w-7xl mx-auto px-6 py-12 md:py-16">
 
+            {/* Section label */}
+            <motion.div
+              initial={{ opacity: 0, y: -12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="mb-6 text-center"
+            >
+              <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">Sản Phẩm Nổi Bật Tuần Này</h1>
+              <p className="text-white/60 text-sm mt-1">Được ghim đặc biệt bởi Tiệm Rêu Décor</p>
+            </motion.div>
+
+            {hasHero ? (
+              /* ── Card row: 1–5 items ── */
               <div
-                ref={scrollRef}
-                className="flex gap-4 overflow-x-auto scrollbar-none pb-2 -mx-6 px-6 snap-x snap-mandatory"
+                className="flex gap-4 justify-center flex-wrap sm:flex-nowrap"
               >
                 {heroItems.map((item, idx) => (
-                  <Link
+                  <motion.div
                     key={item.product.id}
-                    href={`/products/${item.product.slug}`}
-                    className="group flex-shrink-0 w-64 snap-start"
+                    initial={{ opacity: 0, y: 24 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: idx * 0.07 }}
+                    className="group flex-shrink-0 w-[calc(50%-8px)] sm:flex-1 sm:min-w-0 sm:max-w-[220px]"
                   >
-                    <div className="relative aspect-square rounded-2xl overflow-hidden bg-[#dfe8da] mb-3">
-                       {item.product.images[0] ? (
-                         <ImageWrapper src={item.product.images[0]} alt={item.product.name} fill className="object-contain bg-[#dfe8da] p-2 group-hover:scale-105 transition-transform duration-500" />
-                       ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <Package className="w-8 h-8 text-gray-300" />
+                    {/* Card */}
+                    <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl overflow-hidden hover:bg-white/20 transition-all duration-300 hover:scale-[1.02] shadow-lg">
+                      {/* Image */}
+                      <Link href={`/products/${item.product.slug}`}>
+                        <div className="relative aspect-[4/5] bg-[#dfe8da] overflow-hidden">
+                          {item.product.images[0] ? (
+                            <ImageWrapper
+                              src={item.product.images[0]}
+                              alt={item.product.name}
+                              fill
+                              className="object-contain p-2 group-hover:scale-105 transition-transform duration-500"
+                            />
+                          ) : (
+                            <div className="absolute inset-0 flex items-center justify-center">
+                              <Package className="w-8 h-8 text-gray-400" />
+                            </div>
+                          )}
+                          {/* Badge */}
+                          {item.reason && (
+                            <div className="absolute top-2 left-2 bg-[#425733]/90 text-white text-[10px] font-bold px-2 py-0.5 rounded-full backdrop-blur-sm">
+                              {item.reason}
+                            </div>
+                          )}
                         </div>
-                      )}
-                      {idx === heroIndex && (
-                        <div className="absolute top-2 left-2 bg-[#425733] text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
-                          Đang hiển thị
+                      </Link>
+
+                      {/* Info */}
+                      <div className="p-3">
+                        <p className="text-[10px] text-white/50 uppercase tracking-wider mb-0.5">
+                          {item.product.category?.name || "Terrarium"}
+                        </p>
+                        <Link href={`/products/${item.product.slug}`}>
+                          <h3 className="font-bold text-white text-sm line-clamp-2 leading-snug hover:text-white/80 transition-colors">
+                            {item.product.name}
+                          </h3>
+                        </Link>
+                        <PriceTag product={item.product} className="text-white/90 text-sm mt-1" />
+
+                        {/* Actions */}
+                        <div className="flex gap-1.5 mt-2.5">
+                          <Button
+                            asChild
+                            size="sm"
+                            className="flex-1 bg-white text-[#1a2e12] hover:bg-white/90 font-bold rounded-xl text-xs h-8 px-2"
+                          >
+                            <Link href={`/products/${item.product.slug}`}>
+                              <ArrowRight className="w-3 h-3 mr-1" /> Chi tiết
+                            </Link>
+                          </Button>
+                          <button
+                            onClick={() => addToCart(item.product)}
+                            className="w-8 h-8 rounded-xl bg-white/15 hover:bg-white/30 border border-white/20 flex items-center justify-center text-white transition-all flex-shrink-0"
+                            title="Thêm vào giỏ"
+                          >
+                            <ShoppingBasket className="w-3.5 h-3.5" />
+                          </button>
                         </div>
-                      )}
+                      </div>
                     </div>
-                    <p className="font-semibold text-gray-900 text-sm line-clamp-1 group-hover:text-[#425733] transition-colors">
-                      {item.product.name}
-                    </p>
-                    <PriceTag product={item.product} className="text-sm text-[#2d3d23]" />
-                  </Link>
+                  </motion.div>
                 ))}
               </div>
-            </div>
-          </section>
-        )}
+            ) : (
+              /* Empty state */
+              <p className="text-center text-white/50 text-sm">
+                Chưa có sản phẩm nổi bật nào được ghim.
+              </p>
+            )}
+          </div>
+        </section>
 
         {/* ═══ 3. BENTO GRID — Sản Phẩm Nổi Bật ═════════════════════════ */}
         {allFeatured.length > 0 && (

@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { showToast } from "@/components/ui/custom-toast";
 import {
-  Star, StarOff, Search, Trash2, Plus, RefreshCw, ExternalLink,
+  Star, StarOff, Search, Trash2, Plus, RefreshCw, ExternalLink, ImageIcon, Save,
 } from "lucide-react";
 import { ImageWrapper } from "@/components/ui/ImageWrapper";
 import Link from "next/link";
@@ -36,6 +36,11 @@ export default function AdminExplorePage() {
   const [reason, setReason] = useState("");
   const [showProductPicker, setShowProductPicker] = useState(false);
 
+  // Hero background settings
+  const [heroBgUrl, setHeroBgUrl] = useState("");
+  const [heroBgBlur, setHeroBgBlur] = useState(12);
+  const [bgSaving, setBgSaving] = useState(false);
+
   const fetchFeatured = useCallback(async () => {
     setLoading(true);
     try {
@@ -45,6 +50,35 @@ export default function AdminExplorePage() {
       setLoading(false);
     }
   }, []);
+
+  const fetchHeroBg = useCallback(async () => {
+    try {
+      const res = await fetch("/api/admin/explore-hero");
+      if (res.ok) {
+        const data = await res.json();
+        setHeroBgUrl(data.heroBg?.imageUrl || "");
+        setHeroBgBlur(data.heroBg?.blur ?? 12);
+      }
+    } catch { /* silent */ }
+  }, []);
+
+  const saveHeroBg = async () => {
+    setBgSaving(true);
+    try {
+      const res = await fetch("/api/admin/explore-hero", {
+        method: "PUT",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ imageUrl: heroBgUrl, blur: heroBgBlur }),
+      });
+      if (!res.ok) throw new Error();
+      showToast.success("Đã lưu cài đặt ảnh nền hero!");
+    } catch {
+      showToast.error("Lưu thất bại, vui lòng thử lại.");
+    } finally {
+      setBgSaving(false);
+    }
+  };
 
   const fetchProducts = useCallback(async (q = "") => {
     try {
@@ -59,7 +93,8 @@ export default function AdminExplorePage() {
 
   useEffect(() => {
     fetchFeatured();
-  }, [fetchFeatured]);
+    fetchHeroBg();
+  }, [fetchFeatured, fetchHeroBg]);
 
   useEffect(() => {
     if (showProductPicker) fetchProducts(search);
@@ -138,6 +173,77 @@ export default function AdminExplorePage() {
           >
             <Plus className="w-4 h-4" />
             Ghim sản phẩm
+          </Button>
+        </div>
+      </div>
+
+      {/* ── Hero Background Settings ───────────────────────────── */}
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        <div className="px-5 py-3.5 border-b border-gray-100 flex items-center gap-2">
+          <ImageIcon className="w-4 h-4 text-[#425733]" />
+          <h3 className="font-semibold text-gray-700">Cài đặt ảnh nền Hero</h3>
+        </div>
+        <div className="p-5 space-y-4">
+          {/* URL input */}
+          <div>
+            <label className="block text-xs font-medium text-gray-500 mb-1.5">
+              URL ảnh nền (để trống = tự dùng ảnh sản phẩm đầu tiên)
+            </label>
+            <input
+              type="text"
+              value={heroBgUrl}
+              onChange={(e) => setHeroBgUrl(e.target.value)}
+              placeholder="https://... hoặc đường dẫn ảnh"
+              className="w-full text-sm border border-gray-200 rounded-xl px-3 py-2 focus:outline-none focus:border-[#425733] transition-colors"
+            />
+          </div>
+
+          {/* Blur slider */}
+          <div>
+            <label className="block text-xs font-medium text-gray-500 mb-2">
+              Độ mờ nền (blur): <span className="font-bold text-[#425733]">{heroBgBlur}px</span>
+            </label>
+            <input
+              type="range"
+              min={0}
+              max={20}
+              step={1}
+              value={heroBgBlur}
+              onChange={(e) => setHeroBgBlur(Number(e.target.value))}
+              className="w-full accent-[#425733] h-2 rounded-full cursor-pointer"
+            />
+            <div className="flex justify-between text-[11px] text-gray-400 mt-1">
+              <span>0 (không mờ)</span>
+              <span>20 (mờ tối đa)</span>
+            </div>
+          </div>
+
+          {/* Preview */}
+          {heroBgUrl && (
+            <div className="rounded-xl overflow-hidden h-28 relative border border-gray-100">
+              <ImageWrapper
+                src={heroBgUrl}
+                alt="Preview"
+                fill
+                noRound
+                className="object-cover"
+                style={{ filter: `blur(${heroBgBlur}px)`, transform: "scale(1.1)" }}
+              />
+              <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
+                <span className="text-white text-xs font-medium">Preview — blur {heroBgBlur}px</span>
+              </div>
+            </div>
+          )}
+
+          {/* Save button */}
+          <Button
+            onClick={saveHeroBg}
+            disabled={bgSaving}
+            className="gap-1.5 bg-[#425733] hover:bg-[#364a29] w-full sm:w-auto"
+            size="sm"
+          >
+            <Save className="w-3.5 h-3.5" />
+            {bgSaving ? "Đang lưu..." : "Lưu cài đặt nền"}
           </Button>
         </div>
       </div>

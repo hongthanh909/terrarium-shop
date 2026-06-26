@@ -15,7 +15,7 @@ export default async function ExplorePage() {
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-    let [featured, pinned, topVoted, newArrivals, weeklyFeaturedList] = await Promise.all([
+    let [featured, pinned, topVoted, newArrivals, weeklyFeaturedList, heroBgSetting] = await Promise.all([
       prisma.product.findMany({
         where: { status: "ACTIVE", featured: true },
         include: { category: true, _count: { select: { votes: true } } },
@@ -43,13 +43,17 @@ export default async function ExplorePage() {
         orderBy: { createdAt: "desc" },
         take: 8,
       }),
-      // Fetch ALL active featured products (not just one)
+      // Fetch ALL active weekly featured (up to 5 shown in hero)
       prisma.weeklyFeatured.findMany({
         where: { isActive: true },
         include: { product: { include: { category: true } } },
         orderBy: { weekStart: "desc" },
-        take: 10,
+        take: 5,
       }).catch(() => [] as any[]),
+      // Hero background setting
+      prisma.siteSetting.findUnique({
+        where: { key: "explore_hero_bg" },
+      }).catch(() => null),
     ]);
 
     // Fallback if no new products in the last 30 days
@@ -68,6 +72,11 @@ export default async function ExplorePage() {
       reason: wf.reason,
     }));
 
+    // Hero background
+    const heroBg = heroBgSetting
+      ? (heroBgSetting.value as any)
+      : { imageUrl: "", blur: 12 };
+
     return (
       <ExploreClient
         featured={featured.map(serializeProduct)}
@@ -75,6 +84,7 @@ export default async function ExplorePage() {
         topVoted={topVoted.map(serializeProduct)}
         newArrivals={newArrivals.map(serializeProduct)}
         weeklyFeaturedItems={weeklyFeaturedItems}
+        heroBg={heroBg}
       />
     );
   } catch (error) {
@@ -86,6 +96,7 @@ export default async function ExplorePage() {
         topVoted={[]}
         newArrivals={[]}
         weeklyFeaturedItems={[]}
+        heroBg={{ imageUrl: "", blur: 12 }}
       />
     );
   }
