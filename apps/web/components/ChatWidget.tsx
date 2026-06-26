@@ -4,7 +4,7 @@ import { useState, useRef, useEffect, useMemo, useCallback } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, X, Maximize2, Minimize2, ExternalLink } from "lucide-react";
+import { Send, X, Maximize2, Minimize2, ExternalLink, Package, Truck, ShieldCheck, Sparkles, RotateCcw } from "lucide-react";
 
 // ── Types ────────────────────────────────────────────
 interface ProductCard {
@@ -35,57 +35,20 @@ interface PageContext {
   blogTitle?: string;
 }
 
-// ── Quick Questions per page ─────────────────────────
-const QUICK_QUESTIONS: Record<string, { icon: string; text: string }[]> = {
-  product: [
-    { icon: "🌿", text: "Cách chăm sóc cây này?" },
-    { icon: "📐", text: "Size bể phù hợp?" },
-    { icon: "💧", text: "Tưới nước bao lâu 1 lần?" },
-    { icon: "🪴", text: "Cây nào tương tự?" },
-    { icon: "🔆", text: "Cần ánh sáng thế nào?" },
-    { icon: "📦", text: "Giao hàng bao lâu?" },
-  ],
-  blog: [
-    { icon: "🌿", text: "Cách chăm sóc terrarium?" },
-    { icon: "🏺", text: "Bể kín hay bể mở?" },
-    { icon: "💧", text: "Tưới nước đúng cách?" },
-    { icon: "🪴", text: "Cây phù hợp cho người mới?" },
-    { icon: "🛠️", text: "Tự làm DIY terrarium?" },
-    { icon: "🎁", text: "Mua quà tặng nào đẹp?" },
-  ],
-  explore: [
-    { icon: "🔥", text: "Sản phẩm đang hot?" },
-    { icon: "💰", text: "Gợi ý dưới 500k?" },
-    { icon: "🌱", text: "Terrarium cho người mới?" },
-    { icon: "🎁", text: "Ý tưởng quà tặng?" },
-    { icon: "🏺", text: "Bể kín hay bể mở?" },
-    { icon: "🌿", text: "Cây nào dễ chăm nhất?" },
-  ],
-  checkout: [
-    { icon: "🚚", text: "Ship bao lâu tới nơi?" },
-    { icon: "💳", text: "Thanh toán kiểu nào?" },
-    { icon: "🔄", text: "Đổi trả thế nào?" },
-    { icon: "🎁", text: "Có freeship không?" },
-    { icon: "📦", text: "Đóng gói có an toàn?" },
-    { icon: "📍", text: "Ship tới tỉnh tôi không?" },
-  ],
-  home: [
-    { icon: "🌿", text: "Cách chăm sóc terrarium?" },
-    { icon: "🏺", text: "Bể kín hay bể mở?" },
-    { icon: "💰", text: "Gợi ý dưới 500k?" },
-    { icon: "💧", text: "Cây bị vàng lá xử lý sao?" },
-    { icon: "📦", text: "Chính sách giao hàng?" },
-    { icon: "🎁", text: "Mua quà tặng nào đẹp?" },
-  ],
-  general: [
-    { icon: "🌿", text: "Cách chăm sóc terrarium?" },
-    { icon: "🏺", text: "Bể kín hay bể mở?" },
-    { icon: "💰", text: "Gợi ý dưới 500k?" },
-    { icon: "💧", text: "Cây bị vàng lá xử lý sao?" },
-    { icon: "📦", text: "Chính sách giao hàng?" },
-    { icon: "🎁", text: "Mua quà tặng nào đẹp?" },
-  ],
-};
+// ── Category menu items (Shopee-style 2×2 grid) ─────
+const CATEGORY_ITEMS = [
+  { icon: Package, label: "Tất cả sản phẩm", action: "products" as const, color: "#3d5a2a" },
+  { icon: Truck, label: "Vận chuyển", action: "shipping" as const, color: "#4a7a38" },
+  { icon: ShieldCheck, label: "Bảo hành", action: "warranty" as const, color: "#2d6b4f" },
+  { icon: Sparkles, label: "Custom theo yêu cầu", action: "custom" as const, color: "#7a6830" },
+];
+
+// ── Quick suggestion pills ──────────────────────────
+const SUGGESTION_PILLS = [
+  "Sản phẩm giá rẻ",
+  "Cách chăm sóc bể",
+  "Gợi ý thêm nhiều sản phẩm",
+];
 
 // ── Helpers ──────────────────────────────────────────
 function extractProductLinks(text: string) {
@@ -137,30 +100,12 @@ function getPageContext(pathname: string): PageContext {
   return { type: "general" };
 }
 
-function getWelcomeMessage(ctx: PageContext): string {
-  switch (ctx.type) {
-    case "product":
-      if (ctx.productName) {
-        return `Chào bạn! Bạn đang xem **${ctx.productName}**${ctx.productPrice ? ` (${ctx.productPrice})` : ""}.\nHỏi mình bất cứ điều gì về sản phẩm này nhé.`;
-      }
-      return "Chào bạn! Mình là trợ lý của Tiệm Rêu.\nBạn đang xem chi tiết sản phẩm, hỏi mình nhé!";
-    case "blog":
-      return "Chào bạn! Mình có thể giúp bạn tìm sản phẩm liên quan hoặc tư vấn chăm sóc terrarium.";
-    case "explore":
-      return "Chào bạn! Mình có thể gợi ý sản phẩm phù hợp hoặc so sánh các lựa chọn cho bạn.";
-    case "checkout":
-      return "Chào bạn! Mình hỗ trợ thông tin vận chuyển, mã giảm giá và chính sách đổi trả.";
-    case "orders":
-      return "Chào bạn! Mình hỗ trợ kiểm tra đơn hàng và chính sách đổi trả, bảo hành.";
-    default:
-      return "Cảm ơn Quý khách! Em sẽ hỗ trợ ngay để bạn có một không gian xanh ưng ý nhất.";
-  }
-}
-
 // ── Constants ────────────────────────────────────────
 const MAX_MESSAGES = 30;
 const COOLDOWN_MS = 3000;
 const MAX_INPUT = 400;
+
+const WELCOME_MESSAGE = "Xin chào, Rêu có thể giúp bạn điều gì?";
 
 // ═══════════════════════════════════════════════════
 // COMPONENT
@@ -206,12 +151,11 @@ export default function ChatWidget() {
   const onPointerMove = useCallback((e: React.PointerEvent) => {
     const ds = dragState.current;
     if (!ds || !ds.dragging) return;
-    const dx = ds.startX - e.clientX; // inverted because right-anchored
-    const dy = ds.startY - e.clientY; // inverted because bottom-anchored
+    const dx = ds.startX - e.clientX;
+    const dy = ds.startY - e.clientY;
     if (Math.abs(dx) > 3 || Math.abs(dy) > 3) ds.moved = true;
     if (!ds.moved) return;
 
-    // Clamp to viewport
     const newRight = Math.max(0, Math.min(window.innerWidth - 60, ds.startRight + dx));
     const newBottom = Math.max(0, Math.min(window.innerHeight - 60, ds.startBottom + dy));
     setBubblePos({ right: newRight, bottom: newBottom });
@@ -261,22 +205,13 @@ export default function ChatWidget() {
 
   const initialMessage = useMemo<ChatMessage>(() => ({
     role: "assistant",
-    content: getWelcomeMessage(enrichedCtx),
-  }), [enrichedCtx]);
+    content: WELCOME_MESSAGE,
+  }), []);
 
   const [messages, setMessages] = useState<ChatMessage[]>([initialMessage]);
-  const prevWelcomeRef = useRef(initialMessage.content);
-
-  useEffect(() => {
-    if (initialMessage.content !== prevWelcomeRef.current) {
-      prevWelcomeRef.current = initialMessage.content;
-      setMessages([initialMessage]);
-      setIsAIAvailable(null);
-    }
-  }, [initialMessage]);
 
   const userMsgCount = messages.filter(m => m.role === "user").length;
-  const quickQs = QUICK_QUESTIONS[enrichedCtx.type] || QUICK_QUESTIONS.general;
+  const showWelcomeScreen = messages.length === 1 && !isSending;
 
   useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages]);
   useEffect(() => { if (open) setTimeout(() => textareaRef.current?.focus(), 150); }, [open]);
@@ -289,6 +224,25 @@ export default function ChatWidget() {
     setIsSending(false);
     setIsCooldown(false);
     setIsAIAvailable(null);
+  };
+
+  // ── Handle category click ─────────────────────
+  const handleCategoryClick = (action: string) => {
+    switch (action) {
+      case "products":
+        sendMessage("Tất cả sản phẩm");
+        break;
+      case "shipping":
+        sendMessage("Chính sách vận chuyển");
+        break;
+      case "warranty":
+        sendMessage("Chính sách bảo hành");
+        break;
+      case "custom":
+        // Placeholder — sẽ hiện Zalo/mail trong tương lai
+        sendMessage("Tôi muốn đặt terrarium theo yêu cầu riêng");
+        break;
+    }
   };
 
   // ── Send message ───────────────────────────────
@@ -423,17 +377,30 @@ export default function ChatWidget() {
         .cw-scroll::-webkit-scrollbar-track { background: transparent; }
         .cw-scroll::-webkit-scrollbar-thumb { background: rgba(66,87,51,0.15); border-radius: 99px; }
         .cw-input::placeholder { color: #8a9e84; }
-        .cw-chip {
-          transition: all 0.18s cubic-bezier(0.4,0,0.2,1);
+        .cw-category-card {
+          transition: all 0.2s cubic-bezier(0.4,0,0.2,1);
+          cursor: pointer;
         }
-        .cw-chip:hover {
+        .cw-category-card:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 6px 20px rgba(45,74,34,0.12);
+          border-color: #9ab88a;
+        }
+        .cw-category-card:active {
+          transform: translateY(0) scale(0.97);
+        }
+        .cw-suggestion-pill {
+          transition: all 0.18s cubic-bezier(0.4,0,0.2,1);
+          cursor: pointer;
+        }
+        .cw-suggestion-pill:hover {
           background: #2d4a22 !important;
           color: white !important;
           border-color: #2d4a22 !important;
           transform: translateY(-1px);
           box-shadow: 0 4px 12px rgba(45,74,34,0.2);
         }
-        .cw-chip:active { transform: translateY(0) scale(0.97); }
+        .cw-suggestion-pill:active { transform: translateY(0) scale(0.97); }
         .cw-product-card {
           transition: all 0.25s cubic-bezier(0.4,0,0.2,1);
         }
@@ -441,6 +408,15 @@ export default function ChatWidget() {
           transform: translateY(-2px);
           box-shadow: 0 6px 20px rgba(66,87,51,0.1);
           border-color: #b8d8b8;
+        }
+        .cw-reset-btn {
+          transition: all 0.2s ease;
+          cursor: pointer;
+        }
+        .cw-reset-btn:hover {
+          background: #f0f5ee !important;
+          color: #2d4a22 !important;
+          border-color: #9ab88a !important;
         }
         @keyframes cw-typing {
           0%, 80%, 100% { transform: translateY(0); opacity: 0.35; }
@@ -474,7 +450,6 @@ export default function ChatWidget() {
       {/* ═══ CHAT PANEL ═══════════════════════════ */}
       <AnimatePresence>
         {open && (() => {
-          // ── Smart positioning: panel opens toward side with most space ──
           const BUBBLE_SIZE = 56;
           const GAP = 12;
           const panelW = expanded ? 520 : 400;
@@ -482,32 +457,24 @@ export default function ChatWidget() {
           const safeW = Math.min(panelW, viewport.w - 16);
           const safeH = Math.min(panelH, viewport.h - 16);
 
-          // Bubble center in viewport coords
           const bubbleCX = viewport.w - bubblePos.right - BUBBLE_SIZE / 2;
           const bubbleCY = viewport.h - bubblePos.bottom - BUBBLE_SIZE / 2;
 
-          // Horizontal: open on side with more space
           const pos: React.CSSProperties = {};
           if (bubbleCX > viewport.w / 2) {
-            // Bubble on right half → panel right-aligned
             pos.right = Math.max(8, bubblePos.right);
           } else {
-            // Bubble on left half → panel left-aligned
             const bubbleLeft = viewport.w - bubblePos.right - BUBBLE_SIZE;
             pos.left = Math.max(8, Math.min(bubbleLeft, viewport.w - safeW - 8));
           }
 
-          // Vertical: open above or below bubble based on available space
           const spaceAbove = viewport.h - bubblePos.bottom - BUBBLE_SIZE;
           const spaceBelow = bubblePos.bottom;
           if (spaceAbove >= safeH + GAP) {
-            // Enough space above → open above bubble
             pos.bottom = bubblePos.bottom + BUBBLE_SIZE + GAP;
           } else if (spaceBelow >= safeH + GAP) {
-            // Enough space below → open below bubble
             pos.top = viewport.h - bubblePos.bottom + GAP;
           } else {
-            // Not enough space either way → clamp to viewport, center vertically
             pos.top = Math.max(8, (viewport.h - safeH) / 2);
           }
 
@@ -526,40 +493,31 @@ export default function ChatWidget() {
               boxShadow: "0 12px 48px rgba(26,46,18,0.12), 0 0 0 1px rgba(227,235,221,0.6)",
             }}
           >
-            {/* ── HEADER ──────────────────────────── */}
+            {/* ── HEADER — "Chat với Rêu" ────────── */}
             <div
-              className="flex-shrink-0 flex items-center gap-3 px-4 py-3.5"
+              className="flex-shrink-0 flex items-center gap-3 px-4 py-3"
               style={{
                 background: "linear-gradient(135deg, #1a2f18 0%, #243d20 100%)",
                 borderBottom: "1px solid rgba(255,255,255,0.06)",
               }}
             >
-              {/* Avatar circle — logo trên nền tối */}
+              {/* Avatar */}
               <div
-                className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0"
+                className="w-9 h-9 rounded-full overflow-hidden flex-shrink-0"
                 style={{ border: "1.5px solid rgba(255,255,255,0.25)", background: "rgba(255,255,255,0.08)" }}
               >
                 <img
                   src="/logo.png"
-                  alt="Tiệm Rêu Décor Logo"
+                  alt="Rêu"
                   className="w-full h-full object-cover select-none pointer-events-none"
                 />
               </div>
 
-              {/* Name + status */}
+              {/* "Chat với Rêu" */}
               <div className="flex-1 min-w-0">
-                <span className="block text-sm font-semibold" style={{ color: "#f0f7ee" }}>
-                  Tiệm Rêu Décor
+                <span className="block text-sm font-bold" style={{ color: "#f0f7ee" }}>
+                  Chat với Rêu
                 </span>
-                <div className="flex items-center gap-1.5 mt-0.5">
-                  <span
-                    className="cw-status-dot w-1.5 h-1.5 rounded-full flex-shrink-0"
-                    style={{ background: "#7dba5f" }}
-                  />
-                  <span className="text-[11px]" style={{ color: "rgba(255,255,255,0.55)" }}>
-                    Trợ lý AI · Trực tuyến
-                  </span>
-                </div>
               </div>
 
               {/* Actions */}
@@ -587,186 +545,294 @@ export default function ChatWidget() {
               </div>
             </div>
 
-            {/* ── MESSAGES ─────────────────────────── */}
+            {/* ── MESSAGES AREA ───────────────────── */}
             <div
-              className="flex-1 overflow-y-auto cw-scroll flex flex-col gap-4 px-4 py-4"
+              className="flex-1 overflow-y-auto cw-scroll flex flex-col px-4 py-4"
               style={{ background: "#fafbf8" }}
             >
-              {messages.map((msg, i) => (
-                <motion.div
-                  key={i}
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                >
-                  {msg.role === "user" ? (
-                    <div className="flex justify-end">
-                      <div
-                        className="max-w-[78%] text-[13px] leading-relaxed"
-                        style={{
-                          background: "linear-gradient(135deg, #2d4a22, #3a5e2c)",
-                          color: "#f0f7ee",
-                          borderRadius: "16px 16px 4px 16px",
-                          padding: "10px 14px",
-                          boxShadow: "0 2px 8px rgba(45,74,34,0.2)",
-                        }}
-                      >
-                        {renderContent(msg.content)}
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="flex items-start gap-2">
-                      {/* Bot avatar mini */}
-                      <div
-                        className="w-6 h-6 rounded-full overflow-hidden flex-shrink-0 mt-0.5"
-                        style={{ border: "1px solid rgba(66,87,51,0.15)", background: "#f0f5ee" }}
-                      >
-                        <img src="/logo.png" alt="" className="w-full h-full object-cover" />
-                      </div>
-                      <div
-                        className="max-w-[85%] text-[13px] leading-[1.7] rounded-[4px_16px_16px_16px]"
-                        style={{
-                          color: "#1e3319",
-                          background: "#eef4ea",
-                          padding: "10px 13px",
-                          border: "1px solid rgba(66,87,51,0.08)",
-                        }}
-                      >
-                        {msg.isStreaming && msg.content === "" ? (
-                          <div className="flex gap-1.5 items-center py-1">
-                            {[0, 1, 2].map((d) => (
-                              <span
-                                key={d}
-                                className="w-[5px] h-[5px] rounded-full"
-                                style={{
-                                  background: "#5a8f4a",
-                                  animation: `cw-typing 1.4s ${d * 0.18}s ease-in-out infinite`,
-                                }}
-                              />
-                            ))}
-                          </div>
-                        ) : (
-                          <>
-                            {renderContent(msg.content)}
-                            {msg.isStreaming && (
-                              <span className="inline-block w-[2px] h-3.5 ml-0.5 align-middle rounded-full animate-pulse" style={{ background: "#5a8f4a" }} />
-                            )}
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  )}
+              {/* ─── WELCOME SCREEN (initial state) ─── */}
+              {showWelcomeScreen ? (
+                <div className="flex flex-col gap-5">
+                  {/* Welcome card */}
+                  <div
+                    className="rounded-2xl px-5 py-4"
+                    style={{ background: "linear-gradient(135deg, #eef5ea 0%, #f4f9f1 100%)", border: "1px solid #dde8d7" }}
+                  >
+                    <p className="text-[15px] font-semibold leading-snug" style={{ color: "#1e3319" }}>
+                      {WELCOME_MESSAGE}
+                    </p>
+                  </div>
 
-                  {/* Product cards from API */}
-                  {msg.products && msg.products.length > 0 && (
-                    <div className="mt-3 flex flex-col gap-2">
-                      {msg.products.map((p) => (
-                        <a
-                          key={p.slug}
-                          href={p.slug}
-                          className="cw-product-card flex items-center gap-3 no-underline"
-                          style={{
-                            background: "#ffffff",
-                            border: "1px solid #e3ebdd",
-                            borderRadius: 14,
-                            padding: "10px 12px",
-                          }}
-                        >
-                          <div className="w-14 h-14 rounded-xl overflow-hidden flex-shrink-0 relative" style={{ background: "#f2f8f2" }}>
-                            {p.image ? (
-                              <img src={p.image} alt={p.name} className="w-full h-full object-cover" loading="lazy" />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center">
-                                <span className="text-lg">🌿</span>
-                              </div>
-                            )}
-                            {p.originalPrice && (
-                              <span className="absolute top-0.5 left-0.5 text-[8px] font-bold text-white px-1 py-0.5 rounded" style={{ background: "#e74c3c" }}>SALE</span>
-                            )}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <span className="block text-[12px] font-semibold truncate" style={{ color: "#2c3e24" }}>{p.name}</span>
-                            <span className="text-[10px] mt-0.5 block" style={{ color: "#8aa480" }}>{p.category}</span>
-                            <div className="flex items-center gap-1.5 mt-0.5">
-                              <span className="text-[12px] font-bold" style={{ color: "#425733" }}>{p.price}</span>
-                              {p.originalPrice && (
-                                <span className="text-[10px] line-through" style={{ color: "#ef4444" }}>{p.originalPrice}</span>
-                              )}
-                            </div>
-                          </div>
-                          <div className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center" style={{ background: "#425733" }}>
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-                          </div>
-                        </a>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Legacy product cards from AI streaming */}
-                  {msg.suggestedProducts && msg.suggestedProducts.length > 0 && !msg.products && (
-                    <div className="mt-3 flex flex-col gap-2">
-                      {msg.suggestedProducts.map((p) => (
-                        <a
-                          key={p.slug}
-                          href={p.slug}
-                          className="cw-product-card flex items-center gap-3 no-underline"
-                          style={{
-                            background: "#ffffff",
-                            border: "1px solid #e3ebdd",
-                            borderRadius: 14,
-                            padding: "10px 12px",
-                          }}
-                        >
-                          <div className="w-14 h-14 rounded-xl overflow-hidden flex-shrink-0" style={{ background: "#f2f8f2" }}>
-                            {p.image ? (
-                              <img src={p.image} alt={p.name} className="w-full h-full object-cover" loading="lazy" />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center">
-                                <span className="text-lg">🌿</span>
-                              </div>
-                            )}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <span className="block text-[12px] font-semibold truncate" style={{ color: "#2c3e24" }}>{p.name}</span>
-                            {p.price && <span className="text-[12px] font-bold" style={{ color: "#425733" }}>{p.price}</span>}
-                          </div>
-                          <div className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center" style={{ background: "#425733" }}>
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-                          </div>
-                        </a>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Quick chips — 2-column grid */}
-                  {i === 0 && msg.role === "assistant" && !isSending && messages.length === 1 && (
-                    <div className="mt-3 grid grid-cols-2 gap-1.5">
-                      {quickQs.map((q, qi) => (
+                  {/* ── 4 Category Cards (2×2 grid) ─── */}
+                  <div className="grid grid-cols-2 gap-2.5">
+                    {CATEGORY_ITEMS.map((item, idx) => {
+                      const Icon = item.icon;
+                      return (
                         <motion.button
-                          key={q.text}
-                          initial={{ opacity: 0, y: 8, scale: 0.95 }}
+                          key={item.action}
+                          initial={{ opacity: 0, y: 10, scale: 0.95 }}
                           animate={{ opacity: 1, y: 0, scale: 1 }}
-                          transition={{ delay: 0.08 + qi * 0.055, type: "spring", stiffness: 420, damping: 28 }}
-                          onClick={() => sendMessage(q.text)}
-                          className="cw-chip text-left text-[11.5px] font-medium cursor-pointer flex items-center gap-1.5"
+                          transition={{ delay: 0.05 + idx * 0.06, type: "spring", stiffness: 420, damping: 28 }}
+                          onClick={() => handleCategoryClick(item.action)}
+                          className="cw-category-card flex flex-col items-center gap-2 py-4 px-3 rounded-xl text-center"
                           style={{
-                            padding: "8px 11px",
+                            background: "#ffffff",
+                            border: "1px solid #e3ebdd",
+                          }}
+                        >
+                          <div
+                            className="w-10 h-10 rounded-xl flex items-center justify-center"
+                            style={{ background: `${item.color}12`, color: item.color }}
+                          >
+                            <Icon size={20} strokeWidth={1.8} />
+                          </div>
+                          <span className="text-[12px] font-semibold leading-tight" style={{ color: "#2d4a22" }}>
+                            {item.label}
+                          </span>
+                        </motion.button>
+                      );
+                    })}
+                  </div>
+
+                  {/* ── "Bạn muốn hỏi về:" ─────────── */}
+                  <div>
+                    <p className="text-[13px] font-semibold mb-2.5" style={{ color: "#5a6d52" }}>
+                      Bạn muốn hỏi về:
+                    </p>
+                    <div className="flex flex-col gap-2">
+                      {SUGGESTION_PILLS.map((pill, idx) => (
+                        <motion.button
+                          key={pill}
+                          initial={{ opacity: 0, x: -8 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: 0.3 + idx * 0.06, type: "spring", stiffness: 400, damping: 28 }}
+                          onClick={() => sendMessage(pill)}
+                          className="cw-suggestion-pill text-left text-[13px] font-medium px-4 py-2.5 rounded-xl"
+                          style={{
                             background: "#ffffff",
                             border: "1px solid #dde8d7",
-                            borderRadius: 12,
                             color: "#2d4a22",
-                            lineHeight: 1.35,
                           }}
                         >
-                          <span className="text-base leading-none flex-shrink-0" style={{ fontSize: 13 }}>{q.icon}</span>
-                          <span className="flex-1 min-w-0 truncate">{q.text}</span>
+                          {pill}
                         </motion.button>
                       ))}
                     </div>
+                  </div>
+
+                  {/* ── "Trò chuyện lại với Rêu" ───── */}
+                  <div style={{ borderTop: "1px solid #e8ede4", paddingTop: 16 }}>
+                    <button
+                      onClick={resetChat}
+                      className="cw-reset-btn w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-[13px] font-semibold"
+                      style={{
+                        background: "#ffffff",
+                        border: "1px solid #dde8d7",
+                        color: "#5a6d52",
+                      }}
+                    >
+                      <RotateCcw size={14} />
+                      Trò chuyện lại với Rêu
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                /* ─── CONVERSATION MODE ─────────────── */
+                <div className="flex flex-col gap-4">
+                  {messages.map((msg, i) => (
+                    <motion.div
+                      key={i}
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                    >
+                      {msg.role === "user" ? (
+                        <div className="flex justify-end">
+                          <div
+                            className="max-w-[78%] text-[13px] leading-relaxed"
+                            style={{
+                              background: "linear-gradient(135deg, #2d4a22, #3a5e2c)",
+                              color: "#f0f7ee",
+                              borderRadius: "16px 16px 4px 16px",
+                              padding: "10px 14px",
+                              boxShadow: "0 2px 8px rgba(45,74,34,0.2)",
+                            }}
+                          >
+                            {renderContent(msg.content)}
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex items-start gap-2">
+                          {/* Bot avatar mini */}
+                          <div
+                            className="w-6 h-6 rounded-full overflow-hidden flex-shrink-0 mt-0.5"
+                            style={{ border: "1px solid rgba(66,87,51,0.15)", background: "#f0f5ee" }}
+                          >
+                            <img src="/logo.png" alt="" className="w-full h-full object-cover" />
+                          </div>
+                          <div
+                            className="max-w-[85%] text-[13px] leading-[1.7] rounded-[4px_16px_16px_16px]"
+                            style={{
+                              color: "#1e3319",
+                              background: "#eef4ea",
+                              padding: "10px 13px",
+                              border: "1px solid rgba(66,87,51,0.08)",
+                            }}
+                          >
+                            {msg.isStreaming && msg.content === "" ? (
+                              <div className="flex gap-1.5 items-center py-1">
+                                {[0, 1, 2].map((d) => (
+                                  <span
+                                    key={d}
+                                    className="w-[5px] h-[5px] rounded-full"
+                                    style={{
+                                      background: "#5a8f4a",
+                                      animation: `cw-typing 1.4s ${d * 0.18}s ease-in-out infinite`,
+                                    }}
+                                  />
+                                ))}
+                              </div>
+                            ) : (
+                              <>
+                                {renderContent(msg.content)}
+                                {msg.isStreaming && (
+                                  <span className="inline-block w-[2px] h-3.5 ml-0.5 align-middle rounded-full animate-pulse" style={{ background: "#5a8f4a" }} />
+                                )}
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Product cards from API */}
+                      {msg.products && msg.products.length > 0 && (
+                        <div className="mt-3 flex flex-col gap-2">
+                          {msg.products.map((p) => (
+                            <a
+                              key={p.slug}
+                              href={p.slug}
+                              className="cw-product-card flex items-center gap-3 no-underline"
+                              style={{
+                                background: "#ffffff",
+                                border: "1px solid #e3ebdd",
+                                borderRadius: 14,
+                                padding: "10px 12px",
+                              }}
+                            >
+                              <div className="w-14 h-14 rounded-xl overflow-hidden flex-shrink-0 relative" style={{ background: "#f2f8f2" }}>
+                                {p.image ? (
+                                  <img src={p.image} alt={p.name} className="w-full h-full object-cover" loading="lazy" />
+                                ) : (
+                                  <div className="w-full h-full flex items-center justify-center">
+                                    <span className="text-lg">🌿</span>
+                                  </div>
+                                )}
+                                {p.originalPrice && (
+                                  <span className="absolute top-0.5 left-0.5 text-[8px] font-bold text-white px-1 py-0.5 rounded" style={{ background: "#e74c3c" }}>SALE</span>
+                                )}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <span className="block text-[12px] font-semibold truncate" style={{ color: "#2c3e24" }}>{p.name}</span>
+                                <span className="text-[10px] mt-0.5 block" style={{ color: "#8aa480" }}>{p.category}</span>
+                                <div className="flex items-center gap-1.5 mt-0.5">
+                                  <span className="text-[12px] font-bold" style={{ color: "#425733" }}>{p.price}</span>
+                                  {p.originalPrice && (
+                                    <span className="text-[10px] line-through" style={{ color: "#ef4444" }}>{p.originalPrice}</span>
+                                  )}
+                                </div>
+                              </div>
+                              <div className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center" style={{ background: "#425733" }}>
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                              </div>
+                            </a>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Legacy product cards from AI streaming */}
+                      {msg.suggestedProducts && msg.suggestedProducts.length > 0 && !msg.products && (
+                        <div className="mt-3 flex flex-col gap-2">
+                          {msg.suggestedProducts.map((p) => (
+                            <a
+                              key={p.slug}
+                              href={p.slug}
+                              className="cw-product-card flex items-center gap-3 no-underline"
+                              style={{
+                                background: "#ffffff",
+                                border: "1px solid #e3ebdd",
+                                borderRadius: 14,
+                                padding: "10px 12px",
+                              }}
+                            >
+                              <div className="w-14 h-14 rounded-xl overflow-hidden flex-shrink-0" style={{ background: "#f2f8f2" }}>
+                                {p.image ? (
+                                  <img src={p.image} alt={p.name} className="w-full h-full object-cover" loading="lazy" />
+                                ) : (
+                                  <div className="w-full h-full flex items-center justify-center">
+                                    <span className="text-lg">🌿</span>
+                                  </div>
+                                )}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <span className="block text-[12px] font-semibold truncate" style={{ color: "#2c3e24" }}>{p.name}</span>
+                                {p.price && <span className="text-[12px] font-bold" style={{ color: "#425733" }}>{p.price}</span>}
+                              </div>
+                              <div className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center" style={{ background: "#425733" }}>
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                              </div>
+                            </a>
+                          ))}
+                        </div>
+                      )}
+                    </motion.div>
+                  ))}
+
+                  {/* ── "Bạn muốn hỏi về:" suggestions (in conversation) ── */}
+                  {!isSending && messages.length > 1 && (
+                    <div className="mt-2">
+                      <p className="text-[12px] font-semibold mb-2" style={{ color: "#8a9e84" }}>
+                        Bạn muốn hỏi về:
+                      </p>
+                      <div className="flex flex-col gap-1.5">
+                        {SUGGESTION_PILLS.map((pill) => (
+                          <button
+                            key={pill}
+                            onClick={() => sendMessage(pill)}
+                            className="cw-suggestion-pill text-left text-[12px] font-medium px-3.5 py-2 rounded-lg"
+                            style={{
+                              background: "#ffffff",
+                              border: "1px solid #dde8d7",
+                              color: "#2d4a22",
+                            }}
+                          >
+                            {pill}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
                   )}
-                </motion.div>
-              ))}
-              <div ref={messagesEndRef} />
+
+                  {/* ── "Trò chuyện lại với Rêu" (in conversation) ── */}
+                  {messages.length > 1 && (
+                    <div className="mt-2 pt-3" style={{ borderTop: "1px solid #e8ede4" }}>
+                      <button
+                        onClick={resetChat}
+                        className="cw-reset-btn w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-[13px] font-semibold"
+                        style={{
+                          background: "#ffffff",
+                          border: "1px solid #dde8d7",
+                          color: "#5a6d52",
+                        }}
+                      >
+                        <RotateCcw size={14} />
+                        Trò chuyện lại với Rêu
+                      </button>
+                    </div>
+                  )}
+
+                  <div ref={messagesEndRef} />
+                </div>
+              )}
             </div>
 
             {/* ── INPUT ────────────────────────────── */}
@@ -855,7 +921,7 @@ export default function ChatWidget() {
                   boxShadow: "0 2px 14px rgba(45,74,34,0.14), 0 0 0 1px rgba(220,235,215,0.8)",
                 }}
               >
-                Hỏi em nhé! 🌿
+                Chat với Rêu 🌿
               </motion.div>
 
               {/* Bubble — forest gradient */}
