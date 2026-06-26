@@ -107,6 +107,15 @@ interface ProductCard {
   inStock: boolean;
 }
 
+interface KnowledgeHit {
+  id: string;
+  keyword: string;
+  response: string;
+  category: string;
+  priority: number;
+  score: number;
+}
+
 // =============================================
 // 1. GUARDRAIL — Chặn off-topic, chống lạm dụng model
 // =============================================
@@ -274,10 +283,105 @@ function normalizeVN(str: string): string {
   return str.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/đ/g, "d").replace(/[^a-z0-9\s]/g, "").trim();
 }
 
+function tokenizeForKnowledge(str: string): string[] {
+  const stopWords = new Set([
+    "toi", "minh", "em", "anh", "chi", "ban", "shop", "co", "khong", "ko",
+    "la", "gi", "ve", "cho", "hoi", "hoi", "nhe", "a", "ạ", "duoc", "duoc",
+    "sao", "the", "nao", "bao", "nhieu", "may", "cai",
+  ]);
+
+  return normalizeVN(str)
+    .split(/\s+/)
+    .map((token) => token.trim())
+    .filter((token) => token.length >= 2 && !stopWords.has(token));
+}
+
+function scoreKnowledgeEntry(messageTokens: string[], messageNorm: string, entry: {
+  keyword: string;
+  response: string;
+  category: string;
+  priority: number;
+}): number {
+  const keywordNorm = normalizeVN(entry.keyword);
+  const responseNorm = normalizeVN(entry.response);
+  const categoryNorm = normalizeVN(entry.category);
+  const keywordParts = keywordNorm
+    .split(/[,;|/]+/)
+    .map((part) => part.trim())
+    .filter(Boolean);
+
+  let score = Math.min(entry.priority, 100) / 100;
+
+  for (const part of keywordParts) {
+    if (part.length >= 2 && messageNorm.includes(part)) score += 6;
+  }
+
+  for (const token of messageTokens) {
+    if (keywordNorm.includes(token)) score += 2.5;
+    if (categoryNorm.includes(token)) score += 1.5;
+    if (responseNorm.includes(token)) score += 0.75;
+  }
+
+  return score;
+}
+
+async function searchOfficialKnowledge(message: string): Promise<KnowledgeHit[]> {
+  const messageNorm = normalizeVN(message);
+  const messageTokens = tokenizeForKnowledge(message);
+  if (messageTokens.length === 0) return [];
+
+  try {
+    const entries = await prisma.aiKnowledge.findMany({
+      where: { isActive: true },
+      select: {
+        id: true,
+        keyword: true,
+        response: true,
+        category: true,
+        priority: true,
+      },
+      orderBy: [{ priority: "desc" }, { updatedAt: "desc" }],
+      take: 80,
+    });
+
+    return entries
+      .map((entry) => ({
+        ...entry,
+        score: scoreKnowledgeEntry(messageTokens, messageNorm, entry),
+      }))
+      .filter((entry) => entry.score >= 2.5)
+      .sort((a, b) => b.score - a.score || b.priority - a.priority)
+      .slice(0, 4);
+  } catch (error) {
+    console.error("[CONSULT] Knowledge search error:", error);
+    return [];
+  }
+}
+
+function formatKnowledgeContext(hits: KnowledgeHit[]): string {
+  return hits
+    .map((hit, index) => {
+      return `[#${index + 1}] Danh mục: ${hit.category} | Từ khóa: ${hit.keyword} | Ưu tiên: ${hit.priority}\n${hit.response}`;
+    })
+    .join("\n\n---\n\n");
+}
+
+function buildKnowledgeFallback(hits: KnowledgeHit[]): string {
+  const top = hits[0];
+  if (!top) return "";
+
+  if (hits.length === 1) return top.response;
+
+  return hits
+    .slice(0, 3)
+    .map((hit) => hit.response)
+    .join("\n\n");
+}
+
 // =============================================
 // 5. SYSTEM PROMPT — Kiến thức terrarium chuyên sâu cho Ollama
 // =============================================
-async function buildSystemPrompt(pageContext?: PageContext): Promise<string> {
+async function buildSystemPrompt(pageContext?: PageContext, knowledgeContext?: string): Promise<string> {
   const catalog = await getProductCatalogText();
 
   const prompt = `Bạn là "Rêu" — trợ lý AI chuyên gia terrarium của "Tiệm Rêu Décor", shop terrarium tại Việt Nam.
@@ -287,11 +391,23 @@ Xưng "em", gọi khách "anh/chị". Trả lời bằng tiếng Việt, tự nh
 QUY TẮC HÀNH VI (BẮT BUỘC)
 ═══════════════════════════════════════
 1. Luôn CỐ GẮNG HIỂU Ý khách kể cả viết sai chính tả, viết tắt, tiếng lóng
-2. Trả lời DỰA TRÊN KIẾN THỨC bên dưới. KHÔNG bịa thông tin
+2. Ưu tiên tuyệt đối "NGUỒN CHÍNH THỨC TỪ KNOWLEDGE BASE" nếu có. KHÔNG bịa thông tin shop
 3. Độ dài phù hợp: câu đơn giản → 2-3 câu. Câu phức tạp → chia bullet points
 4. Khi gợi ý sản phẩm: CHỈ lấy từ DANH SÁCH BÊN DƯỚI, kèm giá + "Link: /products/slug"
 5. KHÔNG trả lời câu hỏi NGOÀI LĨNH VỰC terrarium/cây cảnh/shop
 6. Nếu không chắc → hỏi lại lịch sự, KHÔNG bịa
+7. Nếu câu hỏi liên quan chính sách/giá/tồn kho/voucher/đơn hàng mà CONTEXT không có dữ liệu → nói chưa có thông tin chắc chắn và hướng khách liên hệ shop
+
+${knowledgeContext ? `═══════════════════════════════════════
+NGUỒN CHÍNH THỨC TỪ KNOWLEDGE BASE
+═══════════════════════════════════════
+${knowledgeContext}
+
+Quy tắc sử dụng Knowledge Base:
+- Đây là nguồn chính thức của Tiệm Rêu, ưu tiên cao hơn kiến thức chung của model.
+- Không chép máy móc nếu không cần; hãy diễn giải thân thiện nhưng giữ đúng ý.
+- Không tự thêm giá, điều kiện bảo hành, phí ship, phương thức thanh toán nếu KB không nêu.
+` : ""}
 
 ═══════════════════════════════════════
 KIẾN THỨC TERRARIUM CHUYÊN SÂU
@@ -451,7 +567,8 @@ async function streamFromOllama(
 async function streamFromAI(
   message: string,
   history: { role: string; content: string }[],
-  pageContext?: PageContext
+  pageContext?: PageContext,
+  knowledgeContext?: string
 ): Promise<ReadableStream<Uint8Array> | null> {
   if (activeAiRequests >= MAX_CONCURRENT_AI) {
     console.log("[AI] Concurrency limit reached");
@@ -460,7 +577,7 @@ async function streamFromAI(
   activeAiRequests++;
 
   try {
-    const systemPrompt = await buildSystemPrompt(pageContext);
+    const systemPrompt = await buildSystemPrompt(pageContext, knowledgeContext);
     const ollamaMessages = [
       { role: "system", content: systemPrompt },
       ...history.slice(-4),
@@ -533,7 +650,6 @@ async function queryProducts(message: string): Promise<{ text: string; products:
     }
 
     // Build where: lọc giá theo salePrice (nếu có) hoặc basePrice
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const baseWhere: any = { status: "ACTIVE", inventory: { gt: 0 } };
 
     // Lọc theo danh mục nếu phát hiện keyword
@@ -689,14 +805,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ response: OFF_TOPIC_RESPONSE, source: "guardrail" });
     }
 
-    // ── 2. INSTANT KB: Greeting + Chính sách (< 5ms) ─────
-    const instant = getInstantResponse(trimmed);
-    if (instant) {
-      console.log(`[CONSULT] ⚡ Instant KB hit`);
-      return NextResponse.json({ response: instant, source: "knowledge" });
-    }
-
-    // ── 3. PRODUCT INTENT: DB query + thumbnails ──────────
+    // ── 2. PRODUCT INTENT: DB realtime query + thumbnails ──────────
     if (isProductIntent(trimmed)) {
       console.log(`[CONSULT] 🛒 Product intent detected`);
       const productResult = await queryProducts(trimmed);
@@ -709,10 +818,43 @@ export async function POST(request: Request) {
       }
     }
 
-    // ── 4. SKIP isOnTopic — Để Ollama tự xử lý câu hỏi không rõ ─
+    // ── 3. ADMIN KNOWLEDGE BASE RAG ───────────────────────
+    // Dữ liệu admin nhập ở /tiem-nho-nth24/ai-knowledge là nguồn chính thức.
+    // Nếu match, đưa context vào Ollama để diễn giải tự nhiên; nếu Ollama offline thì trả lời trực tiếp từ KB.
+    const knowledgeHits = await searchOfficialKnowledge(trimmed);
+    if (knowledgeHits.length > 0) {
+      console.log(`[CONSULT] 📚 KB RAG hit: ${knowledgeHits.map((hit) => hit.keyword).join(" | ")}`);
+      const knowledgeContext = formatKnowledgeContext(knowledgeHits);
+      const stream = await streamFromAI(trimmed, history, pageContext, knowledgeContext);
+      if (stream) {
+        return new Response(stream, {
+          headers: {
+            "Content-Type": "text/event-stream",
+            "Cache-Control": "no-cache",
+            Connection: "keep-alive",
+            "X-Consult-Source": "rag",
+          },
+        });
+      }
+
+      return NextResponse.json({
+        response: buildKnowledgeFallback(knowledgeHits),
+        source: "knowledge",
+        knowledgeIds: knowledgeHits.map((hit) => hit.id),
+      });
+    }
+
+    // ── 4. INSTANT KB: Greeting + hard-coded fallback policies ─────
+    const instant = getInstantResponse(trimmed);
+    if (instant) {
+      console.log(`[CONSULT] ⚡ Instant KB hit`);
+      return NextResponse.json({ response: instant, source: "knowledge" });
+    }
+
+    // ── 5. SKIP isOnTopic — Để Ollama tự xử lý câu hỏi không rõ ─
     // (isOnTopic() quá strict → chặn nhầm câu hỏi hợp lệ)
 
-    // ── 5. OLLAMA AI — Xử lý mọi câu hỏi terrarium ──────
+    // ── 6. OLLAMA AI — Xử lý mọi câu hỏi terrarium ──────
     console.log(`[CONSULT] 🧠 Sending to Ollama...`);
     const stream = await streamFromAI(trimmed, history, pageContext);
     if (stream) {
