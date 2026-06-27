@@ -151,4 +151,132 @@ export const DEFAULT_AI_KNOWLEDGE: AiKnowledgeDefault[] = [
     response:
       "📦 **Chăm sóc 7 ngày đầu sau khi nhận terrarium**\n\nTrong 7 ngày đầu, cây/rêu có thể hơi sốc do vận chuyển và thay đổi môi trường.\n\nAnh/chị nên:\n• Đặt bể ở nơi sáng nhẹ, tránh nắng trực tiếp\n• Không tưới quá nhiều ngay khi mới nhận\n• Quan sát độ ẩm, màu lá/rêu mỗi ngày\n• Mở nắp thoáng khí nếu bể quá ẩm hoặc đọng nước nhiều\n• Không tự ý tháo bố cục/cắm thêm cây khi bể chưa ổn định\n\nNếu thấy cây héo, mốc hoặc vàng nhanh, anh/chị gửi ảnh/video cho shop kiểm tra nhé 🌿",
   },
+  {
+    keyword: "úng nước, tưới quá nhiều, đất sũng nước, bể bị úng, cây bị úng, nước đọng đáy, dư nước",
+    category: "care",
+    priority: 98,
+    isActive: true,
+    response:
+      "💦 **Terrarium bị úng nước / tưới quá nhiều**\n\nDấu hiệu thường gặp:\n• Đất luôn ướt sũng, có nước đọng dưới đáy\n• Lá vàng mềm, thân mềm hoặc cây rũ xuống\n• Thành kính đọng sương cả ngày không tan\n• Bể dễ có mốc hoặc mùi ẩm khó chịu\n\nCách xử lý ngay:\n1. Ngưng tưới hoàn toàn vài ngày.\n2. Mở nắp 24–48 giờ để thoát ẩm nếu là bể kín.\n3. Đặt bể nơi sáng gián tiếp, thoáng nhẹ, tránh nắng trực tiếp.\n4. Gắp bỏ lá úng/vàng/mục để hạn chế nấm lan.\n5. Nếu nước đọng quá nhiều dưới đáy, nên gửi ảnh/video cho shop vì có thể cần xử lý lại lớp nền.\n\nSau khi bể ổn hơn, chỉ phun sương rất nhẹ khi mặt đất/rêu bắt đầu khô. Terrarium cần ẩm, nhưng không chịu được ngập nước lâu 🌿",
+  },
+  {
+    keyword: "thối rễ, rễ thối, cây thối gốc, gốc bị mềm, thân bị nhũn, cây bị nhũn, cây chết gốc",
+    category: "care",
+    priority: 96,
+    isActive: true,
+    response:
+      "🪴 **Cây bị thối rễ / thối gốc**\n\nThối rễ thường xảy ra khi đất quá ẩm lâu ngày hoặc bể quá bí. Dấu hiệu:\n• Gốc/thân mềm nhũn, chuyển nâu đen\n• Lá vàng mềm, rụng nhanh\n• Có mùi ẩm hôi nhẹ từ đất\n• Cây rũ dù đất vẫn ướt\n\nCách xử lý:\n1. Ngưng tưới và mở nắp cho thoáng.\n2. Nếu chỉ vài lá/gốc phụ bị hư: cắt bỏ phần mềm nhũn bằng kéo sạch.\n3. Gắp bỏ lá mục quanh gốc.\n4. Đặt bể nơi sáng gián tiếp, thoáng nhẹ.\n5. Nếu gốc chính đã nhũn nhiều, cây đó thường khó hồi phục; nên gửi ảnh cho shop để xem có cần thay cây/đổi nền không.\n\nKhông nên tưới thêm để “cứu cây” trong trường hợp này, vì càng ẩm rễ càng thối nhanh hơn.",
+  },
+  {
+    keyword: "sương đọng, đọng hơi nước, kính mờ, thành kính ướt, bể nhiều hơi nước, bể kín đọng nước",
+    category: "care",
+    priority: 94,
+    isActive: true,
+    response:
+      "🌫️ **Bể bị đọng sương / kính mờ nhiều**\n\nĐọng sương nhẹ vào sáng sớm là bình thường với bể kín. Nhưng nếu kính mờ/ướt cả ngày thì bể đang quá ẩm.\n\nCách xử lý:\n• Mở nắp 1–3 giờ mỗi ngày cho đến khi kính trong hơn\n• Tạm ngưng tưới/phun sương\n• Đặt bể nơi sáng gián tiếp, không đặt trong góc quá bí\n• Lau nhẹ mặt kính nếu cần quan sát cây\n\nMức ổn là: có hơi ẩm nhẹ theo thời điểm, nhưng không đọng nước chảy thành giọt cả ngày. Nếu kèm mốc hoặc lá vàng mềm thì xử lý như trường hợp dư nước.",
+  },
+  {
+    keyword: "bể bị khô, đất khô, rêu khô, thiếu ẩm, cây thiếu nước, lá héo khô, rêu giòn",
+    category: "care",
+    priority: 94,
+    isActive: true,
+    response:
+      "🏜️ **Terrarium bị khô / thiếu ẩm**\n\nDấu hiệu thiếu ẩm:\n• Rêu nhạt màu, khô giòn hoặc co lại\n• Lá héo mềm hoặc mép lá khô\n• Mặt đất khô, không còn độ ẩm nhẹ\n• Bể kín không còn hơi sương trong thời gian dài\n\nCách xử lý:\n1. Phun sương hạt mịn từng ít một, ưu tiên quanh rêu/gốc cây.\n2. Chờ 10–15 phút quan sát, nếu đất vẫn quá khô mới phun thêm nhẹ.\n3. Không đổ nước ào vào bể vì dễ gây úng ngược lại.\n4. Đặt bể nơi sáng gián tiếp, tránh gió điều hòa thổi trực tiếp.\n\nNếu rêu đã khô nâu/giòn hoàn toàn lâu ngày thì khả năng hồi phục thấp; anh/chị nên gửi ảnh để shop kiểm tra có cần thay rêu không.",
+  },
+  {
+    keyword: "cháy lá, lá bị cháy, nắng trực tiếp, cây bị nắng, lá khô mép, lá nâu mép, bể bị nóng",
+    category: "care",
+    priority: 94,
+    isActive: true,
+    response:
+      "☀️ **Cây bị cháy lá do nắng/nhiệt**\n\nTerrarium, đặc biệt là bể thủy tinh, rất dễ nóng lên nếu để nắng trực tiếp. Dấu hiệu:\n• Lá có mảng nâu khô, cháy mép\n• Rêu khô nhanh, chuyển vàng/nâu\n• Cây rũ sau khi bị nắng chiếu\n• Thành kính nóng khi chạm vào\n\nCách xử lý:\n1. Dời bể ngay sang nơi sáng gián tiếp, không có nắng gắt chiếu thẳng.\n2. Cắt bỏ lá cháy nặng nếu lá đã khô hẳn.\n3. Phun sương rất nhẹ nếu đất/rêu đang khô; không tưới nhiều nếu đất vẫn ẩm.\n4. Quan sát 2–3 ngày, phần cháy sẽ không xanh lại nhưng cây có thể ra lá mới nếu gốc còn khỏe.\n\nVị trí tốt: gần cửa sổ có rèm, bàn làm việc sáng nhẹ, kệ có ánh sáng tự nhiên tán xạ.",
+  },
+  {
+    keyword: "rêu nâu, rêu đen, rêu chết, rêu khô nâu, rêu đổi màu, rêu bị thâm",
+    category: "care",
+    priority: 93,
+    isActive: true,
+    response:
+      "🟤 **Rêu chuyển nâu/đen hoặc có dấu hiệu chết**\n\nRêu đổi màu thường do một trong các nhóm nguyên nhân:\n• Thiếu ẩm: rêu khô, giòn, nhạt rồi nâu\n• Dư ẩm/bí khí: rêu thâm đen, mềm mục\n• Nắng/nhiệt: rêu bị khô cháy từng mảng\n• Sốc môi trường sau vận chuyển\n\nCách kiểm tra nhanh:\n• Nếu rêu khô giòn → phun sương nhẹ, tăng ẩm từ từ\n• Nếu rêu mềm nhũn/đen → giảm ẩm, mở nắp, gắp bỏ phần hư\n• Nếu chỉ nâu vài đốm nhỏ → cắt/gắp bỏ, theo dõi thêm\n\nRêu đã đen mục hoặc khô chết hoàn toàn thường khó xanh lại. Nếu mảng hư lan nhanh, anh/chị gửi ảnh cho shop để xem nên thay rêu hay xử lý lại độ ẩm.",
+  },
+  {
+    keyword: "lá rụng, rụng lá, cây rụng lá, lá rơi, cây trụi lá, cây bị sốc",
+    category: "care",
+    priority: 90,
+    isActive: true,
+    response:
+      "🍂 **Cây trong terrarium bị rụng lá**\n\nRụng vài lá sau vận chuyển hoặc sau khi đổi vị trí là khá thường gặp. Nhưng rụng nhiều có thể do:\n• Sốc môi trường, thay đổi ánh sáng/nhiệt độ\n• Dư nước làm rễ yếu\n• Thiếu sáng kéo dài\n• Bể quá nóng hoặc quá bí\n\nCách xử lý:\n1. Gắp bỏ lá rụng khỏi bể để tránh mốc.\n2. Kiểm tra đất: nếu ướt sũng thì ngưng tưới và mở nắp; nếu khô thì phun sương nhẹ.\n3. Đặt bể nơi sáng gián tiếp ổn định, không đổi chỗ liên tục.\n4. Quan sát 3–7 ngày: nếu ngọn/gốc còn xanh, cây vẫn có khả năng hồi phục.\n\nNếu lá rụng kèm thân mềm, gốc đen hoặc mùi hôi thì khả năng úng/thối rễ cao hơn.",
+  },
+  {
+    keyword: "mùi hôi, bể bị hôi, mùi ẩm, mùi thối, đất có mùi, terrarium có mùi",
+    category: "care",
+    priority: 92,
+    isActive: true,
+    response:
+      "👃 **Terrarium có mùi hôi hoặc mùi ẩm nặng**\n\nBể khỏe thường có mùi đất/rêu nhẹ, không hôi. Nếu có mùi thối/ẩm nặng, nguyên nhân hay gặp là lá mục, úng nước, nấm mốc hoặc rễ thối.\n\nCách xử lý:\n1. Mở nắp cho thoáng 24 giờ.\n2. Gắp bỏ lá mục, rêu đen, phần cây mềm nhũn.\n3. Ngưng tưới vài ngày và đặt nơi sáng gián tiếp.\n4. Kiểm tra đáy bể có nước đọng nhiều không.\n5. Nếu mùi vẫn còn sau 1–2 ngày, nên gửi ảnh/video cho shop vì có thể cần xử lý lại nền hoặc thay cây hư.\n\nKhông nên xịt nước hoa/tinh dầu vào bể vì có thể làm cây và rêu bị sốc.",
+  },
+  {
+    keyword: "cây mọc dài, cây vươn cao, cây vươn sáng, cây bị cao, cây ốm yếu, thiếu sáng",
+    category: "care",
+    priority: 88,
+    isActive: true,
+    response:
+      "🌱 **Cây mọc dài, vươn cao hoặc yếu ớt**\n\nĐây thường là dấu hiệu cây đang thiếu sáng và cố vươn về phía nguồn sáng.\n\nCách xử lý:\n• Chuyển bể tới nơi có ánh sáng gián tiếp mạnh hơn\n• Xoay bể mỗi vài ngày để cây nhận sáng đều\n• Không đưa ra nắng gắt trực tiếp để tránh sốc/cháy lá\n• Nếu thân đã vươn quá dài, có thể cần cắt tỉa nhẹ phần ngọn\n\nNếu phòng ít ánh sáng tự nhiên, anh/chị có thể dùng đèn LED/grow light nhẹ vài giờ mỗi ngày. Cây sẽ không thấp lại ngay, nhưng phần lá/ngọn mới sẽ khỏe và gọn hơn.",
+  },
+  {
+    keyword: "phòng máy lạnh, điều hòa, máy lạnh, để trong phòng lạnh, gió điều hòa, văn phòng máy lạnh",
+    category: "care",
+    priority: 88,
+    isActive: true,
+    response:
+      "❄️ **Đặt terrarium trong phòng máy lạnh**\n\nCó thể đặt terrarium trong phòng máy lạnh, nhưng cần tránh gió lạnh thổi trực tiếp vào bể vì dễ làm cây mất ẩm, sốc nhiệt hoặc khô mép lá.\n\nLưu ý chăm sóc:\n• Đặt bể cách luồng gió điều hòa trực tiếp\n• Theo dõi độ ẩm thường xuyên hơn, nhất là bể mở\n• Nếu rêu/đất khô nhanh, phun sương nhẹ khi cần\n• Không đặt sát cửa kính nắng gắt sau thời gian bật máy lạnh\n\nVị trí đẹp là bàn làm việc/kệ có ánh sáng nhẹ, ổn định nhiệt độ và không bị gió thổi thẳng.",
+  },
+  {
+    keyword: "cắt tỉa, cây mọc um tùm, rêu mọc dày, cây quá to, tỉa lá, cắt cây",
+    category: "care",
+    priority: 86,
+    isActive: true,
+    response:
+      "✂️ **Cắt tỉa cây/rêu trong terrarium**\n\nKhi cây mọc quá cao, lá chạm thành kính hoặc rêu phủ quá dày, anh/chị có thể cắt tỉa nhẹ để bể thoáng và đẹp hơn.\n\nCách làm:\n1. Dùng kéo/nhíp sạch, lau khô trước khi thao tác.\n2. Cắt phần lá vàng, lá mục, cành mọc quá dài.\n3. Với rêu quá dày, gắp bớt từng ít một, không bóc toàn bộ mảng lớn.\n4. Sau khi tỉa, lấy hết phần vụn lá ra khỏi bể để tránh mốc.\n5. Không tưới nhiều ngay sau khi tỉa; chỉ phun sương nhẹ nếu bể khô.\n\nNên tỉa ít trước, quan sát bố cục rồi mới tỉa thêm để tránh làm bể bị trống quá.",
+  },
+  {
+    keyword: "fittonia, cẩm nhung, fitonia héo, cẩm nhung héo, lá cẩm nhung rũ, cây cẩm nhung",
+    category: "care",
+    priority: 88,
+    isActive: true,
+    response:
+      "🌿 **Cẩm nhung/Fittonia bị héo hoặc rũ lá**\n\nCẩm nhung khá nhạy với thiếu ẩm và thay đổi môi trường. Nếu lá rũ nhưng thân/gốc còn xanh, cây vẫn có thể hồi lại.\n\nCách xử lý:\n• Nếu đất hơi khô: phun sương nhẹ quanh gốc và rêu\n• Nếu đất đang ướt: không tưới thêm, mở nắp thoáng khí một lúc\n• Đặt nơi sáng gián tiếp, tránh nắng và gió điều hòa trực tiếp\n• Cắt bỏ lá hư nặng để cây tập trung hồi phục\n\nCẩm nhung thường hồi trong 12–48 giờ nếu nguyên nhân là thiếu ẩm/sốc nhẹ. Nếu gốc mềm nhũn hoặc lá vàng hàng loạt thì nghiêng về dư nước/thối rễ.",
+  },
+  {
+    keyword: "dương xỉ, dương xỉ héo, dương xỉ khô, lá dương xỉ vàng, fern",
+    category: "care",
+    priority: 86,
+    isActive: true,
+    response:
+      "🌿 **Dương xỉ trong terrarium bị khô/héo/vàng**\n\nDương xỉ thích ẩm và ánh sáng gián tiếp, nhưng không thích úng. Dấu hiệu cần kiểm tra:\n• Lá khô giòn: thiếu ẩm, gió điều hòa hoặc nắng nhẹ kéo dài\n• Lá vàng mềm: có thể dư nước hoặc bể quá bí\n• Ngọn non héo: sốc môi trường hoặc thiếu ẩm\n\nCách xử lý:\n1. Kiểm tra đất trước: khô thì phun sương nhẹ, ướt thì mở nắp thoáng.\n2. Đặt bể nơi sáng gián tiếp, tránh nắng trực tiếp.\n3. Cắt lá khô/vàng nặng để tránh mốc.\n4. Giữ ẩm ổn định, không để lúc quá khô lúc quá ướt.\n\nNếu dương xỉ mất gần hết lá nhưng gốc còn xanh, cây vẫn có thể ra mầm mới khi môi trường ổn định.",
+  },
+  {
+    keyword: "sen đá, xương rồng, succulent, cactus, sen đá trong bể kín, xương rồng trong terrarium",
+    category: "care",
+    priority: 90,
+    isActive: true,
+    response:
+      "🌵 **Sen đá/xương rồng trong terrarium chăm thế nào?**\n\nSen đá và xương rồng phù hợp hơn với **bể mở**, vì chúng cần thoáng khí, đất nhanh khô và nhiều sáng hơn cây/rêu ưa ẩm.\n\nCách chăm:\n• Tưới ít, thường 7–10 ngày/lần hoặc khi đất khô hẳn\n• Không phun sương lên lá quá thường xuyên\n• Đặt nơi sáng tốt, có nắng nhẹ buổi sáng nếu cây chịu được\n• Dùng nền thoát nước tốt, không giữ ẩm lâu\n\nKhông nên để sen đá/xương rồng trong bể kín ẩm lâu vì rất dễ úng và thối gốc. Nếu cây mềm nhũn hoặc lá trong suốt, cần ngưng tưới ngay.",
+  },
+  {
+    keyword: "bể bị xô lệch, vận chuyển bị lệch, cây bị đổ, nhận hàng bị lệch, bố cục bị xê dịch",
+    category: "shipping",
+    priority: 90,
+    isActive: true,
+    response:
+      "📦 **Bể bị xô lệch sau vận chuyển**\n\nNếu bể/cây hơi xê dịch nhẹ sau khi nhận, anh/chị có thể xử lý như sau:\n\n1. Đặt bể trên mặt phẳng, tránh lắc thêm.\n2. Dùng nhíp hoặc muỗng nhỏ chỉnh nhẹ cây/rêu về vị trí cũ.\n3. Gắp bỏ lá/rêu bị dập nặng nếu có.\n4. Không tưới nhiều ngay sau khi chỉnh; chỉ phun sương nhẹ nếu bể khô.\n5. Đặt bể nơi sáng gián tiếp để cây hồi lại.\n\nNếu bể vỡ, cây bật gốc nhiều hoặc bố cục hư nặng, anh/chị gửi video mở hàng/ảnh hiện trạng cho shop để được hỗ trợ đổi trả theo chính sách.",
+  },
+  {
+    keyword: "khi nào gửi ảnh, cần gửi hình, gửi video, shop kiểm tra, không biết bị gì, chẩn đoán cây",
+    category: "care",
+    priority: 84,
+    isActive: true,
+    response:
+      "📸 **Khi nào nên gửi ảnh/video cho shop kiểm tra?**\n\nAnh/chị nên gửi ảnh/video nếu gặp các trường hợp sau:\n• Cây vàng/héo lan nhanh trong 1–2 ngày\n• Gốc mềm nhũn, có mùi hôi hoặc nghi thối rễ\n• Bể mốc lan rộng, có côn trùng nhiều\n• Nước đọng đáy nhiều hoặc đất sũng lâu\n• Bể bị vỡ/xô lệch mạnh sau vận chuyển\n• Không chắc bể đang thiếu nước hay dư nước\n\nẢnh nên chụp: toàn cảnh bể, cận cảnh cây bị vấn đề, lớp đất/đáy bể và vị trí đặt bể. Như vậy shop sẽ tư vấn chính xác hơn thay vì đoán theo mô tả.",
+  },
 ];
