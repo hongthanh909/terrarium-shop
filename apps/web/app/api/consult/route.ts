@@ -288,6 +288,7 @@ function tokenizeForKnowledge(str: string): string[] {
     "toi", "minh", "em", "anh", "chi", "ban", "shop", "co", "khong", "ko",
     "la", "gi", "ve", "cho", "hoi", "hoi", "nhe", "a", "ạ", "duoc", "duoc",
     "sao", "the", "nao", "nhu", "bao", "nhieu", "may", "cai", "bi", "thi",
+    "ntn", "ma", "vay", "cu", "hon", "ro",
     "cay", "reu", "la", "be", "binh", "terrarium",
   ]);
 
@@ -295,6 +296,70 @@ function tokenizeForKnowledge(str: string): string[] {
     .split(/\s+/)
     .map((token) => token.trim())
     .filter((token) => token.length >= 2 && !stopWords.has(token));
+}
+
+function hasAnyPattern(text: string, patterns: RegExp[]): boolean {
+  return patterns.some((pattern) => pattern.test(text));
+}
+
+function isWateringGuideIntent(messageNorm: string): boolean {
+  const asksWatering = hasAnyPattern(messageNorm, [
+    /\btuoi\b/,
+    /\bphun suong\b/,
+    /\bcham nuoc\b/,
+    /\bcho nuoc\b/,
+  ]);
+
+  const asksHow = hasAnyPattern(messageNorm, [
+    /\bcach\b/,
+    /\bnhu the nao\b/,
+    /\bthe nao\b/,
+    /\bntn\b/,
+    /\blam sao\b/,
+    /\bbao lau\b/,
+    /\bmoi lan\b/,
+    /\bmay lan\b/,
+    /\bmoi ngay\b/,
+    /\bhuong dan\b/,
+  ]);
+
+  return asksWatering && (asksHow || messageNorm.split(/\s+/).length <= 6);
+}
+
+function isOverwateringIntent(messageNorm: string): boolean {
+  return hasAnyPattern(messageNorm, [
+    /\bung nuoc\b/,
+    /\btuoi qua nhieu\b/,
+    /\btuoi nhieu qua\b/,
+    /\blo tuoi nhieu\b/,
+    /\blo tay\b/,
+    /\bqua tay\b/,
+    /\bdat sung\b/,
+    /\bsung nuoc\b/,
+    /\buot sung\b/,
+    /\buot qua\b/,
+    /\bdu nuoc\b/,
+    /\bnuoc dong\b/,
+    /\bdong nuoc\b/,
+    /\bdong day\b/,
+  ]);
+}
+
+function isDrynessIntent(messageNorm: string): boolean {
+  return hasAnyPattern(messageNorm, [
+    /\bthieu nuoc\b/,
+    /\bthieu am\b/,
+    /\bbi kho\b/,
+    /\bdat kho\b/,
+    /\breu kho\b/,
+    /\bkho qua\b/,
+    /\bkho gion\b/,
+  ]);
+}
+
+function hasStrongKnowledgeIntent(message: string): boolean {
+  const normalized = normalizeVN(message);
+  return isWateringGuideIntent(normalized) || isOverwateringIntent(normalized) || isDrynessIntent(normalized);
 }
 
 function getSafeHistory(history: unknown): { role: string; content: string }[] {
@@ -322,18 +387,22 @@ function isFollowUpQuestion(message: string): boolean {
 
   return (
     tokens.length <= 1 ||
-    /\b(nhu the nao|cu the|chi tiet|lam sao|cach nao|tie?p tuc|noi ro hon|huong dan ky|the thi sao|ra sao|vay thi sao)\b/i.test(normalized)
+    /\b(nhu the nao|ntn|cu the|chi tiet|lam sao|cach nao|tie?p tuc|noi ro hon|huong dan ky|the thi sao|ra sao|vay thi sao)\b/i.test(normalized)
   );
 }
 
 function buildKnowledgeSearchQuery(message: string, history: { role: string; content: string }[]): string {
+  if (hasStrongKnowledgeIntent(message)) return message;
   if (!isFollowUpQuestion(message) || history.length === 0) return message;
 
   const recentContext = history
     .slice(-4)
+    .filter((item) => item.role === "user")
     .map((item) => item.content)
     .join(" ")
     .slice(-1200);
+
+  if (!recentContext.trim()) return message;
 
   return `${recentContext}\n${message}`;
 }
@@ -349,7 +418,7 @@ function shouldAnswerKnowledgeDirectly(hits: KnowledgeHit[]): boolean {
   return top.score >= 8 || ["care", "policy", "shipping", "greeting"].includes(top.category);
 }
 
-function scoreKnowledgeEntry(messageTokens: string[], messageNorm: string, entry: {
+function scoreKnowledgeEntry(messageTokens: string[], messageNorm: string, currentMessageNorm: string, entry: {
   keyword: string;
   response: string;
   category: string;
@@ -363,9 +432,34 @@ function scoreKnowledgeEntry(messageTokens: string[], messageNorm: string, entry
     .map((part) => part.trim())
     .filter(Boolean);
   const keywordTokens = new Set(tokenizeForKnowledge(entry.keyword));
+  const isWateringEntry = /\btuoi nuoc\b|\bbao lau tuoi\b|\bcach tuoi\b|\bphun suong\b/.test(keywordNorm);
+  const isOverwateringEntry = /\bung nuoc\b|\btuoi qua nhieu\b|\bdu nuoc\b|\bdat sung\b|\bnuoc dong\b/.test(keywordNorm);
+  const isDrynessEntry = /\bbi kho\b|\bdat kho\b|\breu kho\b|\bthieu am\b|\bthieu nuoc\b/.test(keywordNorm);
+
+  const wateringGuideIntent = isWateringGuideIntent(currentMessageNorm);
+  const overwateringIntent = isOverwateringIntent(currentMessageNorm);
+  const drynessIntent = isDrynessIntent(currentMessageNorm);
+
+  // Chặn lỗi kinh điển: "tưới nước như thế nào?" không được rơi vào case "úng nước".
+  if (wateringGuideIntent && !overwateringIntent && isOverwateringEntry) return 0;
+  if (overwateringIntent && isWateringEntry) return 0;
+  if (drynessIntent && isOverwateringEntry) return 0;
 
   let score = Math.min(entry.priority, 100) / 100;
   let hasKeywordMatch = false;
+
+  if (wateringGuideIntent && isWateringEntry) {
+    score += 18;
+    hasKeywordMatch = true;
+  }
+  if (overwateringIntent && isOverwateringEntry) {
+    score += 18;
+    hasKeywordMatch = true;
+  }
+  if (drynessIntent && isDrynessEntry) {
+    score += 18;
+    hasKeywordMatch = true;
+  }
 
   for (const part of keywordParts) {
     if (part.length >= 3 && messageNorm.includes(part)) {
@@ -386,8 +480,9 @@ function scoreKnowledgeEntry(messageTokens: string[], messageNorm: string, entry
   return hasKeywordMatch ? score : 0;
 }
 
-async function searchOfficialKnowledge(message: string): Promise<KnowledgeHit[]> {
+async function searchOfficialKnowledge(message: string, currentMessage = message): Promise<KnowledgeHit[]> {
   const messageNorm = normalizeVN(message);
+  const currentMessageNorm = normalizeVN(currentMessage);
   const messageTokens = tokenizeForKnowledge(message);
   if (messageTokens.length === 0) return [];
 
@@ -408,7 +503,7 @@ async function searchOfficialKnowledge(message: string): Promise<KnowledgeHit[]>
     return entries
       .map((entry) => ({
         ...entry,
-        score: scoreKnowledgeEntry(messageTokens, messageNorm, entry),
+        score: scoreKnowledgeEntry(messageTokens, messageNorm, currentMessageNorm, entry),
       }))
       .filter((entry) => entry.score >= 4)
       .sort((a, b) => b.score - a.score || b.priority - a.priority)
@@ -891,7 +986,7 @@ export async function POST(request: Request) {
     // Dữ liệu admin nhập ở /tiem-nho-nth24/ai-knowledge là nguồn chính thức.
     // Nếu match, đưa context vào Ollama để diễn giải tự nhiên; nếu Ollama offline thì trả lời trực tiếp từ KB.
     const knowledgeSearchQuery = buildKnowledgeSearchQuery(trimmed, history);
-    const knowledgeHits = await searchOfficialKnowledge(knowledgeSearchQuery);
+    const knowledgeHits = await searchOfficialKnowledge(knowledgeSearchQuery, trimmed);
     if (knowledgeHits.length > 0) {
       console.log(`[CONSULT] 📚 KB RAG hit: ${knowledgeHits.map((hit) => hit.keyword).join(" | ")}`);
 
