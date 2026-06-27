@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Package, Filter, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -52,6 +52,15 @@ export function ProductsClient({
   const { addItem } = useCartStore();
   const { isWished, toggleWishlist } = useWishlist();
   const prefersReducedMotion = useReducedMotion();
+  const isGroupedView = !selectedCategory && !initialSearch.trim();
+  const groupedProducts = useMemo(() => {
+    return categories
+      .map((category) => ({
+        category,
+        products: initialProducts.filter((product) => product.category?.id === category.id),
+      }))
+      .filter((group) => group.products.length > 0);
+  }, [categories, initialProducts]);
 
   const handleAddToCart = (product: Product, selectedPackage = "basic", quantity = 1) => {
     // Yêu cầu đăng nhập trước khi thêm vào giỏ hàng
@@ -205,6 +214,59 @@ export function ProductsClient({
                 Xem tất cả sản phẩm
               </Button>
             </motion.div>
+          ) : isGroupedView ? (
+            <div className="space-y-14">
+              {groupedProducts.map((group, groupIndex) => (
+                <motion.section
+                  key={group.category.id}
+                  initial={prefersReducedMotion ? false : { opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.12 + groupIndex * 0.05, duration: 0.4 }}
+                  className="scroll-mt-24"
+                >
+                  <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 mb-5">
+                    <div>
+                      <p className="text-xs uppercase tracking-[0.2em] text-[#8aa480] font-semibold mb-1">
+                        Danh mục
+                      </p>
+                      <h2 className="text-2xl font-bold text-[#1f3518]">
+                        {group.category.name}
+                      </h2>
+                      <p className="text-sm text-gray-500 mt-1">
+                        {group.products.length} sản phẩm trong danh mục này
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => handleCategoryChange(group.category.id)}
+                      className="self-start sm:self-auto px-4 py-2 rounded-full border border-[#c8d5be] bg-white text-sm font-semibold text-[#425733] hover:bg-[#f3f7ef] transition-colors"
+                    >
+                      Xem riêng danh mục
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    {group.products.map((product) => (
+                      <ProductCard
+                        key={product.id}
+                        id={product.id}
+                        slug={product.slug}
+                        name={product.name}
+                        basePrice={parseFloat(product.basePrice.toString())}
+                        salePrice={product.salePrice ? parseFloat(product.salePrice.toString()) : null}
+                        saleEndDate={product.saleEndDate ?? null}
+                        inventory={product.inventory}
+                        images={product.images}
+                        category={product.category}
+                        reviewCount={product._count?.reviews ?? 0}
+                        onAddToCart={(pkg, qty) => handleAddToCart(product, pkg, qty)}
+                        wished={isWished(product.id)}
+                        onToggleWishlist={() => toggleWishlist(product.id, product.name)}
+                      />
+                    ))}
+                  </div>
+                </motion.section>
+              ))}
+            </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {initialProducts.map((product) => (

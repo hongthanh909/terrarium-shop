@@ -15,7 +15,8 @@ async function ProductsData({
   search: string | null;
   page: number;
 }) {
-  const limit = 12;
+  const isBrowsingAll = !categoryId && !search;
+  const limit = isBrowsingAll ? 200 : 12;
   const where: any = { status: "ACTIVE", inventory: { gt: 0 } };
   if (categoryId) where.categoryId = categoryId;
   if (search) {
@@ -35,10 +36,11 @@ async function ProductsData({
         where,
         include: { category: true, _count: { select: { reviews: true } } },
         orderBy: [
+          { category: { name: "asc" } },
           { salePrice: { sort: "asc", nulls: "last" } },
           { createdAt: "desc" },
         ],
-        skip: (page - 1) * limit,
+        skip: isBrowsingAll ? 0 : (page - 1) * limit,
         take: limit,
       }),
       prisma.category.findMany({
