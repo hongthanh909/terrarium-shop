@@ -82,10 +82,10 @@ export const DEFAULT_AI_KNOWLEDGE: AiKnowledgeDefault[] = [
   {
     keyword: "tưới nước, bao lâu tưới, tưới terrarium, bể bị khô, chăm sóc nước, phun sương",
     category: "care",
-    priority: 85,
+    priority: 98,
     isActive: true,
     response:
-      "💧 **Cách tưới nước terrarium**\n\nTần suất tưới phụ thuộc vào loại bể:\n\n• **Bể kín:** thường chỉ cần phun sương nhẹ, không tưới quá nhiều\n• **Bể mở:** cần kiểm tra độ ẩm đất thường xuyên hơn\n• Nếu thấy rêu/cây hơi khô, có thể phun sương nhẹ\n• Nếu thành kính đọng nước quá nhiều hoặc đất luôn ướt, nên mở nắp thoáng khí và giảm tưới\n\nNguyên tắc quan trọng: terrarium cần **ẩm vừa đủ**, không bị úng.",
+      "💧 **Cách tưới nước terrarium đúng cách**\n\nTrước khi tưới, anh/chị nên nhìn 3 dấu hiệu: mặt đất có khô không, rêu/cây có nhạt màu hoặc hơi rũ không, thành kính có còn đọng sương nhiều không.\n\n**Cách tưới/phun:**\n1. Dùng bình xịt phun sương hạt mịn, không đổ nước ào trực tiếp vào bể.\n2. Phun nhẹ quanh gốc cây/rêu, tránh làm nước đọng thành vũng.\n3. Với bể nhỏ, thường chỉ cần vài lần bóp xịt là đủ; dừng khi bề mặt đất/rêu vừa ẩm.\n4. Sau khi tưới, đặt bể nơi sáng gián tiếp, không đem ra nắng trực tiếp.\n\n**Tần suất tham khảo:**\n• **Bể kín:** 1–2 tuần/lần hoặc lâu hơn nếu vẫn còn ẩm; chỉ phun rất nhẹ.\n• **Bể mở:** khoảng 3–5 ngày/lần, tùy độ khô của đất.\n• **Sen đá/xương rồng:** 7–10 ngày/lần, để đất khô hẳn rồi mới tưới.\n\n**Dấu hiệu tưới quá nhiều:** đất sũng, lá vàng mềm, thành kính đọng nước cả ngày, bể có mốc. Khi đó nên ngưng tưới và mở nắp thoáng khí.\n\nNguyên tắc dễ nhớ: terrarium cần **ẩm vừa đủ**, không phải càng nhiều nước càng tốt 🌿",
   },
   {
     keyword: "mốc, nấm mốc, bể bị mốc, mốc trắng, nấm trắng, rêu bị mốc",

@@ -287,7 +287,7 @@ function tokenizeForKnowledge(str: string): string[] {
   const stopWords = new Set([
     "toi", "minh", "em", "anh", "chi", "ban", "shop", "co", "khong", "ko",
     "la", "gi", "ve", "cho", "hoi", "hoi", "nhe", "a", "ạ", "duoc", "duoc",
-    "sao", "the", "nao", "bao", "nhieu", "may", "cai", "bi", "thi",
+    "sao", "the", "nao", "nhu", "bao", "nhieu", "may", "cai", "bi", "thi",
     "cay", "reu", "la", "be", "binh", "terrarium",
   ]);
 
@@ -295,6 +295,58 @@ function tokenizeForKnowledge(str: string): string[] {
     .split(/\s+/)
     .map((token) => token.trim())
     .filter((token) => token.length >= 2 && !stopWords.has(token));
+}
+
+function getSafeHistory(history: unknown): { role: string; content: string }[] {
+  if (!Array.isArray(history)) return [];
+
+  return history
+    .filter((item): item is { role: string; content: string } => {
+      return (
+        item &&
+        typeof item === "object" &&
+        typeof (item as { role?: unknown }).role === "string" &&
+        typeof (item as { content?: unknown }).content === "string"
+      );
+    })
+    .map((item) => ({
+      role: item.role === "assistant" ? "assistant" : "user",
+      content: item.content.slice(0, 700),
+    }))
+    .slice(-6);
+}
+
+function isFollowUpQuestion(message: string): boolean {
+  const normalized = normalizeVN(message);
+  const tokens = tokenizeForKnowledge(message);
+
+  return (
+    tokens.length <= 1 ||
+    /\b(nhu the nao|cu the|chi tiet|lam sao|cach nao|tie?p tuc|noi ro hon|huong dan ky|the thi sao|ra sao|vay thi sao)\b/i.test(normalized)
+  );
+}
+
+function buildKnowledgeSearchQuery(message: string, history: { role: string; content: string }[]): string {
+  if (!isFollowUpQuestion(message) || history.length === 0) return message;
+
+  const recentContext = history
+    .slice(-4)
+    .map((item) => item.content)
+    .join(" ")
+    .slice(-1200);
+
+  return `${recentContext}\n${message}`;
+}
+
+function shouldAnswerKnowledgeDirectly(hits: KnowledgeHit[]): boolean {
+  if (process.env.AI_KB_FAST_MODE === "false") return false;
+
+  const top = hits[0];
+  if (!top) return false;
+
+  // KB là nguồn chính thức và đã được admin duyệt. Với match rõ ràng, trả lời trực tiếp
+  // giúp chat nhanh hơn rất nhiều so với chờ Ollama diễn giải lại.
+  return top.score >= 8 || ["care", "policy", "shipping", "greeting"].includes(top.category);
 }
 
 function scoreKnowledgeEntry(messageTokens: string[], messageNorm: string, entry: {
@@ -401,6 +453,8 @@ QUY TẮC HÀNH VI (BẮT BUỘC)
 5. KHÔNG trả lời câu hỏi NGOÀI LĨNH VỰC terrarium/cây cảnh/shop
 6. Nếu không chắc → hỏi lại lịch sự, KHÔNG bịa
 7. Nếu câu hỏi liên quan chính sách/giá/tồn kho/voucher/đơn hàng mà CONTEXT không có dữ liệu → nói chưa có thông tin chắc chắn và hướng khách liên hệ shop
+8. Nếu khách hỏi nối tiếp kiểu "như thế nào", "cụ thể hơn", "làm sao", "vậy thì sao" → hiểu theo chủ đề ngay trước đó trong lịch sử chat, không bắt khách nhắc lại từ khóa
+9. Với câu hỏi chăm sóc, trả lời theo kiểu tư vấn thực hành: nguyên nhân → cách kiểm tra → thao tác từng bước → dấu hiệu cần dừng/liên hệ shop
 
 ${knowledgeContext ? `═══════════════════════════════════════
 NGUỒN CHÍNH THỨC TỪ KNOWLEDGE BASE
@@ -800,7 +854,8 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { message, history = [], pageContext } = body;
+    const { message, pageContext } = body;
+    const history = getSafeHistory(body?.history);
 
     if (!message || typeof message !== "string" || message.trim().length === 0) {
       return NextResponse.json({ response: "Vui lòng nhập câu hỏi." });
@@ -835,11 +890,25 @@ export async function POST(request: Request) {
     // ── 3. ADMIN KNOWLEDGE BASE RAG ───────────────────────
     // Dữ liệu admin nhập ở /tiem-nho-nth24/ai-knowledge là nguồn chính thức.
     // Nếu match, đưa context vào Ollama để diễn giải tự nhiên; nếu Ollama offline thì trả lời trực tiếp từ KB.
-    const knowledgeHits = await searchOfficialKnowledge(trimmed);
+    const knowledgeSearchQuery = buildKnowledgeSearchQuery(trimmed, history);
+    const knowledgeHits = await searchOfficialKnowledge(knowledgeSearchQuery);
     if (knowledgeHits.length > 0) {
       console.log(`[CONSULT] 📚 KB RAG hit: ${knowledgeHits.map((hit) => hit.keyword).join(" | ")}`);
+
+      if (shouldAnswerKnowledgeDirectly(knowledgeHits)) {
+        return NextResponse.json({
+          response: buildKnowledgeFallback(knowledgeHits),
+          source: "knowledge",
+          knowledgeIds: knowledgeHits.map((hit) => hit.id),
+        });
+      }
+
       const knowledgeContext = formatKnowledgeContext(knowledgeHits);
-      const stream = await streamFromAI(trimmed, history, pageContext, knowledgeContext);
+      const aiMessage =
+        knowledgeSearchQuery === trimmed
+          ? trimmed
+          : `${trimmed}\n\nNgữ cảnh hội thoại gần đây để hiểu câu hỏi nối tiếp:\n${knowledgeSearchQuery}`;
+      const stream = await streamFromAI(aiMessage, history, pageContext, knowledgeContext);
       if (stream) {
         return new Response(stream, {
           headers: {
@@ -883,7 +952,7 @@ export async function POST(request: Request) {
 
     // ── 6. OLLAMA OFFLINE → Fallback KB ───────────────────
     console.log(`[CONSULT] ⚠️ Ollama offline, trying fallback KB`);
-    const fallback = getOfflineFallback(trimmed);
+    const fallback = getOfflineFallback(knowledgeSearchQuery);
     if (fallback) {
       return NextResponse.json({ response: fallback, source: "knowledge" });
     }
