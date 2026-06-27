@@ -1,10 +1,11 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect } from "react";
-import { Settings, Store, Globe, Bell, Shield, Save, CheckCircle, Loader2 } from "lucide-react";
+import { Settings, Store, Globe, Bell, Shield, Save, CheckCircle, Loader2, Database, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { showToast } from "@/components/ui/custom-toast";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 
 interface ShopSettings {
   shopName: string;
@@ -33,6 +34,8 @@ export default function AdminSettingsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [clearing, setClearing] = useState(false);
+  const [showConfirmClear, setShowConfirmClear] = useState(false);
 
   // Load settings from DB on mount
   useEffect(() => {
@@ -87,6 +90,27 @@ export default function AdminSettingsPage() {
       showToast.error("Không thể lưu cài đặt. Vui lòng thử lại.");
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleClearTestData = async () => {
+    setClearing(true);
+    try {
+      const res = await fetch("/api/admin/clear-test-data", {
+        method: "POST",
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Lỗi khi xóa dữ liệu");
+
+      showToast.success(
+        `Đã xóa thành công ${data.details.orders} đơn hàng và ${data.details.customers} khách hàng kiểm thử.`
+      );
+      setShowConfirmClear(false);
+    } catch (err: any) {
+      console.error("Error clearing test data:", err);
+      showToast.error(err.message || "Không thể xóa dữ liệu kiểm thử. Vui lòng thử lại.");
+    } finally {
+      setClearing(false);
     }
   };
 
@@ -280,6 +304,46 @@ export default function AdminSettingsPage() {
           </div>
         </div>
       </section>
+
+      {/* Bảo trì & Dữ liệu */}
+      <section className="bg-white rounded-xl border border-red-200 shadow-sm overflow-hidden border-l-4 border-l-red-500">
+        <div className="p-5 border-b border-red-100 bg-red-50/50 flex items-center gap-2">
+          <Database className="w-5 h-5 text-red-600" />
+          <h3 className="font-semibold text-gray-800">Bảo trì & Dữ liệu</h3>
+        </div>
+        <div className="p-6 space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 bg-red-50/30 border border-red-100 rounded-lg">
+            <div className="max-w-xl">
+              <p className="font-semibold text-gray-800 flex items-center gap-1.5">
+                <Trash2 className="w-4 h-4 text-red-600" />
+                Dọn dẹp dữ liệu kiểm thử (Testing Data)
+              </p>
+              <p className="text-sm text-gray-500 mt-1">
+                Xóa vĩnh viễn toàn bộ đơn hàng (và các thông tin vận chuyển, trạng thái liên quan) cùng với tất cả tài khoản khách hàng kiểm thử (CUSTOMER). Tài khoản Admin sẽ được giữ lại an toàn.
+              </p>
+            </div>
+            <Button
+              variant="destructive"
+              onClick={() => setShowConfirmClear(true)}
+              className="bg-red-600 hover:bg-red-700 text-white font-semibold flex-shrink-0 self-start sm:self-center"
+            >
+              Xóa dữ liệu test
+            </Button>
+          </div>
+        </div>
+      </section>
+
+      {/* Confirm Dialog */}
+      <ConfirmDialog
+        open={showConfirmClear}
+        onOpenChange={(open) => !open && setShowConfirmClear(false)}
+        title="Xóa dữ liệu kiểm thử?"
+        description="Bạn chắc chắn muốn xóa toàn bộ đơn hàng và tài khoản khách hàng kiểm thử khỏi cơ sở dữ liệu? Hành động này sẽ xóa vĩnh viễn và không thể khôi phục."
+        confirmLabel={clearing ? "Đang xóa..." : "Xác nhận xóa vĩnh viễn"}
+        cancelLabel="Hủy"
+        variant="danger"
+        onConfirm={handleClearTestData}
+      />
     </div>
   );
 }
