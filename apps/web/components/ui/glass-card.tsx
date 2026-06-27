@@ -26,7 +26,7 @@ const variantStyles = {
   subtle:
     "bg-white/40 backdrop-blur-md border border-white/20 shadow-[0_2px_12px_rgba(66,87,51,0.05)]",
   solid:
-    "bg-white border border-[#e3ebdd] shadow-[0_4px_20px_rgba(66,87,51,0.06)]",
+    "bg-[#eef3ea] border border-[#d2dec9] shadow-[0_4px_20px_rgba(66,87,51,0.06)]",
 };
 
 export const GlassCard = forwardRef<HTMLDivElement, GlassCardProps>(
@@ -52,7 +52,7 @@ export const GlassCard = forwardRef<HTMLDivElement, GlassCardProps>(
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-40px" }}
         whileHover={
-          noHover || prefersReducedMotion ? undefined : { y: -4 }
+          noHover || prefersReducedMotion ? undefined : { y: -6, scale: 1.03 }
         }
         transition={{ duration: 0.35, ease: "easeOut" }}
         className={cn(

@@ -20,7 +20,7 @@ interface ProductCard {
 interface ChatMessage {
   role: "user" | "assistant";
   content: string;
-  source?: "ai" | "db" | "fallback" | "knowledge" | "guardrail" | "rag";
+  source?: "ai" | "db" | "fallback" | "knowledge" | "guardrail" | "rag" | "disabled";
   isStreaming?: boolean;
   products?: ProductCard[];
   suggestedProducts?: { name: string; slug: string; price: string; image?: string }[];

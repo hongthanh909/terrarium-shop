@@ -200,10 +200,10 @@ export function ExploreClient({ featured, pinned, topVoted, newArrivals, weeklyF
                     className="group flex-shrink-0 w-[calc(50%-8px)] sm:flex-1 sm:min-w-0 sm:max-w-[220px]"
                   >
                     {/* Card */}
-                    <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl overflow-hidden hover:bg-white/20 transition-all duration-300 hover:scale-[1.02] shadow-lg">
+                    <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl overflow-hidden hover:bg-white/20 transition-all duration-300 hover:scale-[1.03] shadow-lg">
                       {/* Image */}
                       <Link href={`/products/${item.product.slug}`}>
-                        <div className="relative aspect-[4/5] bg-[#dfe8da] overflow-hidden">
+                        <div className="relative aspect-[4/5] bg-white overflow-hidden">
                           {item.product.images[0] ? (
                             <ImageWrapper
                               src={item.product.images[0]}
@@ -433,10 +433,10 @@ function BentoCard({
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.4 }}
-      className={`group relative rounded-2xl overflow-hidden bg-white border border-[#e4eeda] shadow-sm hover:shadow-xl hover:scale-[1.02] transition-all duration-300 flex flex-col h-full ${className}`}
+      className={`group relative rounded-2xl overflow-hidden bg-[#eef3ea] border border-[#d2dec9] shadow-sm hover:shadow-xl hover:scale-[1.03] transition-all duration-300 flex flex-col h-full ${className}`}
     >
       {/* Image Container */}
-      <div className="relative w-full flex-1 bg-[#dfe8da] overflow-hidden min-h-[110px]">
+      <div className="relative w-full flex-1 bg-white overflow-hidden min-h-[110px]">
         {product.images[0] ? (
           <ImageWrapper src={product.images[0]} alt={product.name} fill className="object-contain p-2 group-hover:scale-105 transition-transform duration-500" />
         ) : (
@@ -447,7 +447,7 @@ function BentoCard({
       </div>
 
       {/* Content Section */}
-      <div className="p-3 sm:p-4 bg-white border-t border-gray-100 flex flex-col flex-shrink-0">
+      <div className="p-3 sm:p-4 bg-transparent flex flex-col flex-shrink-0">
         {showDetails && (
           <span className="text-gray-400 text-[10px] font-semibold uppercase tracking-wider mb-1 block">
             {product.category?.name || "Terrarium"}

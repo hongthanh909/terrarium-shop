@@ -122,10 +122,10 @@ export default function FavoritesPage() {
           {products.map((product) => (
             <div
               key={product.id}
-              className="group bg-white rounded-2xl border border-[#e4eeda] overflow-hidden hover:shadow-xl hover:scale-[1.03] transition-all duration-300"
+              className="group bg-[#eef3ea] rounded-2xl border border-[#d2dec9] overflow-hidden hover:shadow-xl hover:scale-[1.03] transition-all duration-300"
             >
               {/* Image */}
-              <Link href={`/products/${product.slug}`} className="block relative aspect-square bg-[#dfe8da]">
+              <Link href={`/products/${product.slug}`} className="block relative aspect-square bg-white">
                 {product.images[0] ? (
                   <ImageWrapper
                     src={product.images[0]}

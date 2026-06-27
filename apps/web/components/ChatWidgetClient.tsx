@@ -8,5 +8,6 @@ const ChatWidget = dynamic(() => import("@/components/ChatWidget"), {
 });
 
 export function ChatWidgetClient() {
+  if (process.env.NEXT_PUBLIC_AI_CHAT_ENABLED === "false") return null;
   return <ChatWidget />;
 }

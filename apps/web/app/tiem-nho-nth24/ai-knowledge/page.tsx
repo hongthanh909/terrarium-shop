@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { showToast } from "@/components/ui/custom-toast";
-import { Brain, Plus, Pencil, Trash2, Save, X, Search, ToggleLeft, ToggleRight } from "lucide-react";
+import { Brain, Plus, Pencil, Trash2, Save, X, Search, ToggleLeft, ToggleRight, Sparkles } from "lucide-react";
 
 interface AiEntry {
   id: string;
@@ -50,6 +50,7 @@ export default function AiKnowledgePage() {
     isActive: true,
   });
   const [saving, setSaving] = useState(false);
+  const [seeding, setSeeding] = useState(false);
 
   const fetchEntries = useCallback(async () => {
     try {
@@ -148,6 +149,25 @@ export default function AiKnowledgePage() {
     }
   };
 
+  const seedDefaultKnowledge = async () => {
+    if (!confirm("Nạp bộ kiến thức mẫu cho chatbot? Các mục trùng từ khóa sẽ được cập nhật.")) return;
+    setSeeding(true);
+    try {
+      const res = await fetch("/api/admin/ai-knowledge/seed", { method: "POST" });
+      const data = await res.json();
+      if (res.ok) {
+        showToast.success(`Đã nạp KB mẫu: ${data.created} mới, ${data.updated} cập nhật`);
+        fetchEntries();
+      } else {
+        showToast.error(data.error || "Không thể nạp KB mẫu");
+      }
+    } catch {
+      showToast.error("Lỗi kết nối khi nạp KB mẫu");
+    } finally {
+      setSeeding(false);
+    }
+  };
+
   const filtered = entries.filter((e) => {
     const matchSearch = !search || e.keyword.includes(search.toLowerCase()) || e.response.toLowerCase().includes(search.toLowerCase());
     const matchCategory = filterCategory === "all" || e.category === filterCategory;
@@ -174,6 +194,16 @@ export default function AiKnowledgePage() {
           className="flex items-center gap-2 px-4 py-2.5 bg-[#425733] text-white rounded-xl hover:bg-[#364a29] transition-colors font-medium text-sm"
         >
           <Plus className="w-4 h-4" /> Thêm kiến thức
+        </button>
+      </div>
+
+      <div className="flex justify-end">
+        <button
+          onClick={seedDefaultKnowledge}
+          disabled={seeding}
+          className="flex items-center gap-2 px-4 py-2.5 border border-[#c8d5be] text-[#425733] rounded-xl hover:bg-[#f0f7ea] transition-colors font-medium text-sm disabled:opacity-60"
+        >
+          <Sparkles className="w-4 h-4" /> {seeding ? "Đang nạp..." : "Nạp KB mẫu"}
         </button>
       </div>
 

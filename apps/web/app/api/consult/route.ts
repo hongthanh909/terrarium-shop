@@ -779,6 +779,16 @@ function getOfflineFallback(message: string): string | null {
 // =============================================
 export async function POST(request: Request) {
   try {
+    if (
+      process.env.AI_CHAT_ENABLED === "false" ||
+      process.env.NEXT_PUBLIC_AI_CHAT_ENABLED === "false"
+    ) {
+      return NextResponse.json(
+        { response: "Tính năng tư vấn AI đang tạm tắt. Anh/chị vui lòng liên hệ shop để được hỗ trợ trực tiếp nhé 🌿", source: "disabled" },
+        { status: 503 }
+      );
+    }
+
     const forwarded = request.headers.get("x-forwarded-for");
     const ip = forwarded?.split(",")[0]?.trim() || "unknown";
 
