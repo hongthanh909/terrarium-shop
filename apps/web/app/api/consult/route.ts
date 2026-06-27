@@ -522,9 +522,95 @@ function formatKnowledgeContext(hits: KnowledgeHit[]): string {
     .join("\n\n---\n\n");
 }
 
-function buildKnowledgeFallback(hits: KnowledgeHit[]): string {
+function getUserQuestionSnippet(message: string): string {
+  return message
+    .replace(/\s+/g, " ")
+    .replace(/[“”"]/g, "")
+    .trim()
+    .slice(0, 90);
+}
+
+function buildKnowledgeLeadIn(message: string, hit: KnowledgeHit): string {
+  const q = normalizeVN(message);
+  const question = getUserQuestionSnippet(message);
+
+  if (hit.category === "greeting") return "";
+
+  if (isWateringGuideIntent(q)) {
+    return "Dạ, về **cách tưới cây trong terrarium**, mình nên tưới theo kiểu bổ sung ẩm nhẹ chứ không tưới ngập như chậu cây thường ạ.";
+  }
+
+  if (isOverwateringIntent(q)) {
+    return "Dạ, nếu bể đang bị **dư nước/úng nước** thì ưu tiên đầu tiên là giảm ẩm và ngưng tưới thêm, vì rễ rất dễ yếu nếu ướt lâu ạ.";
+  }
+
+  if (isDrynessIntent(q)) {
+    return "Dạ, nếu bể/cây đang có dấu hiệu **thiếu ẩm hoặc bị khô**, mình nên tăng ẩm từ từ bằng phun sương nhẹ, không đổ nước ào vào bể ạ.";
+  }
+
+  if (/\breu vang\b|\breu bi vang\b|\breu ua\b/.test(q)) {
+    return "Dạ, **rêu vàng** thường liên quan đến ánh sáng, độ ẩm hoặc sốc môi trường. Mình cần kiểm tra xem rêu đang khô, bị úng hay thiếu sáng trước ạ.";
+  }
+
+  if (/\bla vang\b|\bcay vang\b|\bcay bi vang\b|\bcay ua\b|\bvang la\b/.test(q)) {
+    return "Dạ, **cây/lá bị vàng** thường do thiếu sáng, dư nước, bể quá bí hoặc cây bị sốc sau khi đổi môi trường ạ.";
+  }
+
+  if (/\bheo\b|\bru\b|\bla ru\b|\bcay ru\b/.test(q)) {
+    return "Dạ, **cây bị héo/rũ** có thể do thiếu nước, dư nước hoặc sốc môi trường; mình cần nhìn thêm tình trạng đất đang khô hay ướt để xử lý đúng ạ.";
+  }
+
+  if (/\bmoc\b|\bnam\b|\bnam moc\b/.test(q)) {
+    return "Dạ, **mốc trong terrarium** thường xuất hiện khi độ ẩm cao, bể bí hoặc có lá/rêu mục. Nếu mốc còn nhẹ thì mình xử lý được khá sớm ạ.";
+  }
+
+  if (/\bsuong\b|\bdong hoi\b|\bkinh mo\b|\bkinh uot\b/.test(q)) {
+    return "Dạ, **kính đọng sương** nhẹ là bình thường với bể kín, nhưng nếu đọng cả ngày thì bể đang hơi dư ẩm ạ.";
+  }
+
+  if (/\bthoi re\b|\bre thoi\b|\bthoi goc\b|\bnhun\b/.test(q)) {
+    return "Dạ, **thối rễ/thối gốc** thường là dấu hiệu nặng hơn của việc bể quá ẩm lâu ngày, nên cần ngưng tưới và kiểm tra phần gốc trước ạ.";
+  }
+
+  if (/\bnang\b|\bchay la\b|\bchay\b|\bnong\b/.test(q)) {
+    return "Dạ, nếu cây bị **nắng/nhiệt làm cháy lá**, phần lá cháy thường khó xanh lại, nhưng mình vẫn có thể cứu cây nếu gốc còn khỏe ạ.";
+  }
+
+  if (/\bcon trung\b|\bsau\b|\bbo\b|\bkien\b|\bruoi\b/.test(q)) {
+    return "Dạ, **côn trùng trong bể** thường liên quan đến môi trường quá ẩm hoặc lá mục; mình nên xử lý nhẹ trước, tránh xịt thuốc mạnh vào bể ạ.";
+  }
+
+  if (/\bmay lanh\b|\bdieu hoa\b|\bphong lanh\b/.test(q)) {
+    return "Dạ, terrarium vẫn có thể đặt trong **phòng máy lạnh**, nhưng cần tránh gió lạnh thổi trực tiếp làm cây mất ẩm ạ.";
+  }
+
+  if (/\bship\b|\bgiao hang\b|\bvan chuyen\b/.test(q)) {
+    return "Dạ, về **vận chuyển/giao hàng**, em trả lời theo chính sách hiện tại của Tiệm Rêu như sau ạ:";
+  }
+
+  if (/\bbao hanh\b|\bdoi tra\b|\bvo\b|\bloi\b/.test(q)) {
+    return "Dạ, về **đổi trả/bảo hành**, em trả lời theo chính sách hiện tại của Tiệm Rêu như sau ạ:";
+  }
+
+  if (/\bthanh toan\b|\bcod\b|\bchuyen khoan\b|\bmomo\b/.test(q)) {
+    return "Dạ, về **thanh toán**, em trả lời theo phương thức hiện tại của Tiệm Rêu như sau ạ:";
+  }
+
+  if (question) {
+    return `Dạ, với câu hỏi **“${question}”**, em hiểu ý anh/chị đang hỏi về phần này ạ:`;
+  }
+
+  return "Dạ, em gửi anh/chị thông tin phù hợp nhất trong Knowledge Base của Tiệm Rêu nhé:";
+}
+
+function buildKnowledgeFallback(hits: KnowledgeHit[], message?: string): string {
   const top = hits[0];
   if (!top) return "";
+
+  if (message) {
+    const leadIn = buildKnowledgeLeadIn(message, top);
+    if (leadIn) return `${leadIn}\n\n${top.response}`;
+  }
 
   return top.response;
 }
@@ -992,7 +1078,7 @@ export async function POST(request: Request) {
 
       if (shouldAnswerKnowledgeDirectly(knowledgeHits)) {
         return NextResponse.json({
-          response: buildKnowledgeFallback(knowledgeHits),
+          response: buildKnowledgeFallback(knowledgeHits, trimmed),
           source: "knowledge",
           knowledgeIds: knowledgeHits.map((hit) => hit.id),
         });
@@ -1016,7 +1102,7 @@ export async function POST(request: Request) {
       }
 
       return NextResponse.json({
-        response: buildKnowledgeFallback(knowledgeHits),
+        response: buildKnowledgeFallback(knowledgeHits, trimmed),
         source: "knowledge",
         knowledgeIds: knowledgeHits.map((hit) => hit.id),
       });

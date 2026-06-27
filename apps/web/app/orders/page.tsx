@@ -372,7 +372,7 @@ export default function MyOrdersPage() {
                           <AlertTriangle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
                           <div className="flex-1">
                             <p className="text-sm font-semibold text-yellow-800">Đơn hàng chưa được xác nhận</p>
-                            <p className="text-xs text-yellow-600 mt-0.5">Bạn có thể hủy đơn hàng này trực tiếp bằng cách nhấn nút "Hủy đơn hàng" ở góc trên của thẻ.</p>
+                            <p className="text-xs text-yellow-600 mt-0.5">Bạn có thể hủy đơn hàng này trực tiếp bằng cách nhấn nút &quot;Hủy đơn hàng&quot; ở góc trên của thẻ.</p>
                           </div>
                         </div>
                       )}
