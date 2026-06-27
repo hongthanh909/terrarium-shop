@@ -255,17 +255,29 @@ export default function MyOrdersPage() {
                     </div>
 
                     {/* Status badges */}
-                    <div className="flex flex-wrap gap-2 mb-4">
-                      <span className={`px-3 py-1 text-xs font-semibold rounded-full border ${getStatusBadge(order.status)}`}>
-                        {STATUS_LABELS[order.status] || order.status}
-                      </span>
-                      <span className={`px-3 py-1 text-xs font-medium rounded-full ${getPaymentStatusBadge(order.paymentStatus)}`}>
-                        {PAYMENT_STATUS_LABELS[order.paymentStatus] || order.paymentStatus}
-                      </span>
-                      {order.paymentMethod && (
-                        <span className="px-3 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-600">
-                          {PAYMENT_METHOD_LABELS[order.paymentMethod] || order.paymentMethod}
+                    <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
+                      <div className="flex flex-wrap gap-2">
+                        <span className={`px-3 py-1 text-xs font-semibold rounded-full border ${getStatusBadge(order.status)}`}>
+                          {STATUS_LABELS[order.status] || order.status}
                         </span>
+                        <span className={`px-3 py-1 text-xs font-medium rounded-full ${getPaymentStatusBadge(order.paymentStatus)}`}>
+                          {PAYMENT_STATUS_LABELS[order.paymentStatus] || order.paymentStatus}
+                        </span>
+                        {order.paymentMethod && (
+                          <span className="px-3 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-600">
+                            {PAYMENT_METHOD_LABELS[order.paymentMethod] || order.paymentMethod}
+                          </span>
+                        )}
+                      </div>
+
+                      {order.status === "PENDING" && (
+                        <button
+                          onClick={(e) => handleCancelOrder(order.id, e)}
+                          disabled={cancellingId === order.id}
+                          className="px-3 py-1.5 text-xs font-bold text-red-600 hover:text-white bg-red-50 hover:bg-red-600 border border-red-200 rounded-lg transition-all duration-200 disabled:opacity-50"
+                        >
+                          {cancellingId === order.id ? "Đang hủy..." : "Hủy đơn hàng"}
+                        </button>
                       )}
                     </div>
 
@@ -304,58 +316,34 @@ export default function MyOrdersPage() {
                       </div>
                     )}
 
-                    {/* Product thumbnails */}
-                    <div className="flex gap-2">
-                      {order.items.slice(0, 4).map((item: any) => (
-                        <div key={item.id} className="w-14 h-14 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
-                          {item.productImage ? (
-                            <ImageWrapper src={item.productImage} alt={item.productName} width={56} height={56} className="w-full h-full object-cover" />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center text-gray-300 text-xs">N/A</div>
-                          )}
+                    {/* Product items list - always visible */}
+                    <div className="space-y-2 mt-4">
+                      {order.items.map((item: any) => (
+                        <div key={item.id} className="flex gap-3 bg-gray-50 border border-gray-100/50 rounded-xl p-3">
+                          <div className="w-14 h-14 bg-white border border-gray-100 rounded-lg overflow-hidden flex-shrink-0">
+                            {item.productImage ? (
+                              <ImageWrapper src={item.productImage} alt={item.productName} width={56} height={56} className="w-full h-full object-cover" />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center text-gray-300 text-xs">N/A</div>
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="font-semibold text-sm text-gray-800 line-clamp-1">{item.productName}</div>
+                            <div className="text-xs text-gray-500 mt-1">SL: {item.quantity} × {item.price.toLocaleString("vi-VN")}₫</div>
+                          </div>
+                          <div className="font-bold text-sm text-gray-800 flex items-center">{(item.price * item.quantity).toLocaleString("vi-VN")}₫</div>
                         </div>
                       ))}
-                      {order.items.length > 4 && (
-                        <div className="w-14 h-14 bg-gray-100 rounded-lg flex items-center justify-center text-gray-500 text-sm font-semibold">
-                          +{order.items.length - 4}
-                        </div>
-                      )}
                     </div>
 
-                    <div className="mt-3 text-xs text-gray-400 text-center">
-                      {isExpanded ? "▲ Thu gọn" : "▼ Xem chi tiết đơn hàng"}
+                    <div className="mt-4 text-xs text-[#425733] font-semibold text-center hover:underline">
+                      {isExpanded ? "▲ Thu gọn giá tổng quan" : "▼ Xem chi phí tạm tính & chi tiết vận chuyển"}
                     </div>
                   </div>
 
-                    {/* Expandable order items */}
+                    {/* Expandable order details */}
                   {isExpanded && (
                     <div className="border-t px-6 py-5 bg-gray-50 rounded-b-xl">
-                      {/* Animated Timeline */}
-                      <div className="mb-6">
-                        <h3 className="font-semibold text-gray-800 mb-4">Trạng thái đơn hàng</h3>
-                        <OrderTimeline currentStatus={order.status} />
-                      </div>
-
-                      <h3 className="font-semibold text-gray-800 mb-4">Sản Phẩm Đã Đặt</h3>
-                      <div className="space-y-3 mb-4">
-                        {order.items.map((item: any) => (
-                          <div key={item.id} className="flex gap-4 bg-white rounded-lg p-3">
-                            <div className="w-16 h-16 bg-gray-100 rounded overflow-hidden flex-shrink-0">
-                              {item.productImage ? (
-                                <ImageWrapper src={item.productImage} alt={item.productName} width={64} height={64} className="w-full h-full object-cover" />
-                              ) : (
-                                <div className="w-full h-full flex items-center justify-center text-gray-300 text-xs">N/A</div>
-                              )}
-                            </div>
-                            <div className="flex-1">
-                              <div className="font-medium text-sm">{item.productName}</div>
-                              <div className="text-xs text-gray-500 mt-0.5">SL: {item.quantity} × {item.price.toLocaleString("vi-VN")}₫</div>
-                            </div>
-                            <div className="font-semibold text-sm text-gray-800">{(item.price * item.quantity).toLocaleString("vi-VN")}₫</div>
-                          </div>
-                        ))}
-                      </div>
-
                       {/* Order total breakdown */}
                       <div className="bg-white rounded-lg p-4 space-y-2 text-sm">
                         <div className="flex justify-between text-gray-600">
@@ -378,27 +366,20 @@ export default function MyOrdersPage() {
                         </div>
                       </div>
 
-                      {/* COD + PENDING → hiện nút hủy */}
+                      {/* COD + PENDING → hiện thông báo hủy */}
                       {order.status === "PENDING" && (
-                        <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-xl flex items-start gap-3">
+                        <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-xl flex items-start gap-3 text-left">
                           <AlertTriangle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
                           <div className="flex-1">
                             <p className="text-sm font-semibold text-yellow-800">Đơn hàng chưa được xác nhận</p>
-                            <p className="text-xs text-yellow-600 mt-0.5">Bạn có thể hủy đơn trước khi shop xác nhận.</p>
+                            <p className="text-xs text-yellow-600 mt-0.5">Bạn có thể hủy đơn hàng này trực tiếp bằng cách nhấn nút "Hủy đơn hàng" ở góc trên của thẻ.</p>
                           </div>
-                          <button
-                            onClick={(e) => handleCancelOrder(order.id, e)}
-                            disabled={cancellingId === order.id}
-                            className="flex-shrink-0 px-4 py-2 text-sm font-semibold text-red-600 border border-red-300 rounded-lg hover:bg-red-50 transition-colors disabled:opacity-50"
-                          >
-                            {cancellingId === order.id ? "Đang hủy..." : "Hủy đơn"}
-                          </button>
                         </div>
                       )}
 
                       {/* Confirmed — cannot cancel */}
                       {["CONFIRMED", "PROCESSING", "SHIPPING"].includes(order.status) && (
-                        <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-xl flex items-center gap-2">
+                        <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-xl flex items-center gap-2 text-left">
                           <CheckCircle className="w-4 h-4 text-blue-500 flex-shrink-0" />
                           <p className="text-xs text-blue-700">Đơn hàng đã được xác nhận, không thể hủy. Vui lòng liên hệ shop để được hỗ trợ.</p>
                         </div>
