@@ -18,7 +18,14 @@ async function ProductsData({
   const isBrowsingAll = !categoryId && !search;
   const limit = isBrowsingAll ? 200 : 12;
   const where: any = { status: "ACTIVE", inventory: { gt: 0 } };
-  if (categoryId) where.categoryId = categoryId;
+  if (categoryId) {
+    where.category = {
+      OR: [
+        { id: categoryId },
+        { slug: categoryId },
+      ],
+    };
+  }
   if (search) {
     where.OR = [
       { name: { contains: search, mode: "insensitive" } },
@@ -64,14 +71,21 @@ async function ProductsData({
   );
 }
 
-export default function ProductsPage({
+type ProductsSearchParams = {
+  category?: string;
+  search?: string;
+  page?: string;
+};
+
+export default async function ProductsPage({
   searchParams,
 }: {
-  searchParams: { category?: string; search?: string; page?: string };
+  searchParams: Promise<ProductsSearchParams> | ProductsSearchParams;
 }) {
-  const categoryId = searchParams.category || null;
-  const search = searchParams.search || null;
-  const page = parseInt(searchParams.page || "1");
+  const params = await searchParams;
+  const categoryId = params.category || null;
+  const search = params.search || null;
+  const page = parseInt(params.page || "1");
 
   return (
     <Suspense key={`${categoryId}-${search}-${page}`} fallback={<ProductsLoading />}>
