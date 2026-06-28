@@ -127,27 +127,27 @@ export function ProductsClient({
 
   return (
     <PageTransition>
-      <main className="min-h-screen bg-[#fafbf8] py-10 px-6">
+      <main className="min-h-screen bg-[#fafbf8] py-6 px-4 sm:py-10 sm:px-6">
         <div className="max-w-7xl mx-auto">
 
           {/* Header */}
           <SlideInHeading className="mb-8">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               <div>
-                <h1 className="text-4xl font-bold text-[#1a2e12]">Sản Phẩm</h1>
+                <h1 className="text-3xl sm:text-4xl font-bold text-[#1a2e12]">Sản Phẩm</h1>
                 <p className="text-gray-500 text-sm mt-1">{totalProducts} sản phẩm đang có</p>
               </div>
 
               {/* Search */}
-              <form onSubmit={handleSearch} className="flex items-center gap-2">
+              <form onSubmit={handleSearch} className="flex w-full items-center gap-2 md:w-auto">
                 <Input
                   type="text"
                   placeholder="Tìm kiếm sản phẩm..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-64 rounded-full border-[#c8d5be] focus:border-[#425733]"
+                  className="h-11 flex-1 rounded-full border-[#c8d5be] focus:border-[#425733] md:w-64"
                 />
-                <Button type="submit" size="sm" className="rounded-full bg-[#425733] hover:bg-[#364a29]">
+                <Button type="submit" size="sm" className="h-11 w-11 rounded-full bg-[#425733] hover:bg-[#364a29]">
                   <Search className="w-4 h-4" />
                 </Button>
               </form>
@@ -169,10 +169,10 @@ export function ProductsClient({
               <div className="flex-1 h-px bg-[#d4dec9]" />
             </div>
 
-            <div className="flex flex-nowrap sm:flex-wrap gap-2.5 overflow-x-auto pb-2 scrollbar-none -mx-6 px-6 sm:mx-0 sm:px-0">
+            <div className="flex flex-nowrap sm:flex-wrap gap-2.5 overflow-x-auto pb-2 scrollbar-none -mx-4 px-4 sm:mx-0 sm:px-0">
               <button
                 onClick={() => handleCategoryChange(null)}
-                className={`px-5 py-2 rounded-full text-sm font-semibold transition-colors duration-200 border-2 ${
+                className={`min-h-11 whitespace-nowrap px-5 py-2 rounded-full text-sm font-semibold transition-colors duration-200 border-2 ${
                   selectedCategory === null
                     ? "bg-[#425733] text-white border-[#425733] shadow-[0_4px_14px_rgba(66,87,51,0.35)]"
                     : "bg-white text-gray-500 border-[#c8d5be] hover:border-[#425733] hover:text-[#425733] hover:bg-[#f3f7ef]"
@@ -184,7 +184,7 @@ export function ProductsClient({
                 <button
                   key={cat.id}
                   onClick={() => handleCategoryChange(cat.id)}
-                  className={`px-5 py-2 rounded-full text-sm font-semibold transition-colors duration-200 border-2 ${
+                  className={`min-h-11 whitespace-nowrap px-5 py-2 rounded-full text-sm font-semibold transition-colors duration-200 border-2 ${
                     selectedCategory === cat.id
                       ? "bg-[#425733] text-white border-[#425733] shadow-[0_4px_14px_rgba(66,87,51,0.35)]"
                       : "bg-white text-gray-500 border-[#c8d5be] hover:border-[#425733] hover:text-[#425733] hover:bg-[#f3f7ef]"
@@ -215,7 +215,7 @@ export function ProductsClient({
               </Button>
             </motion.div>
           ) : isGroupedView ? (
-            <div className="space-y-14">
+            <div className="space-y-10 sm:space-y-14">
               {groupedProducts.map((group, groupIndex) => (
                 <motion.section
                   key={group.category.id}
@@ -224,7 +224,7 @@ export function ProductsClient({
                   transition={{ delay: 0.12 + groupIndex * 0.05, duration: 0.4 }}
                   className="scroll-mt-24"
                 >
-                  <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 mb-5 border-t border-[#d4dec9] pt-5">
+                  <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 mb-4 sm:mb-5 border-t border-[#d4dec9] pt-5">
                     <div>
                       <h2 className="text-2xl font-bold text-[#1f3518]">
                         {group.category.name}
@@ -241,7 +241,7 @@ export function ProductsClient({
                     </button>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                  <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
                     {group.products.map((product) => (
                       <ProductCard
                         key={product.id}
@@ -265,7 +265,7 @@ export function ProductsClient({
               ))}
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
               {initialProducts.map((product) => (
                 <ProductCard
                   key={product.id}

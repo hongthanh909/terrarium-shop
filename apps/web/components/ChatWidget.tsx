@@ -133,7 +133,7 @@ export default function ChatWidget() {
   }, []);
 
   // ── Free drag (absolute position) ──────────────
-  const [bubblePos, setBubblePos] = useState<{ right: number; bottom: number }>({ right: 16, bottom: 20 });
+  const [bubblePos, setBubblePos] = useState<{ right: number; bottom: number }>({ right: 16, bottom: 92 });
   const dragState = useRef<{ dragging: boolean; moved: boolean; startX: number; startY: number; startRight: number; startBottom: number } | null>(null);
 
   const onPointerDown = useCallback((e: React.PointerEvent) => {
@@ -157,7 +157,8 @@ export default function ChatWidget() {
     if (!ds.moved) return;
 
     const newRight = Math.max(0, Math.min(window.innerWidth - 60, ds.startRight + dx));
-    const newBottom = Math.max(0, Math.min(window.innerHeight - 60, ds.startBottom + dy));
+    const minBottom = window.innerWidth < 640 ? 92 : 20;
+    const newBottom = Math.max(minBottom, Math.min(window.innerHeight - 60, ds.startBottom + dy));
     setBubblePos({ right: newRight, bottom: newBottom });
   }, []);
 
@@ -360,9 +361,9 @@ export default function ChatWidget() {
     <>
       <style>{`
         .cw-panel {
-          width: calc(100vw - 32px);
+          width: calc(100vw - 16px);
           max-width: 400px;
-          height: calc(100dvh - 120px);
+          height: min(620px, calc(100dvh - 112px));
           max-height: 580px;
         }
         .cw-panel.cw-expanded {
@@ -372,6 +373,17 @@ export default function ChatWidget() {
         @media (min-width: 640px) {
           .cw-panel { width: 400px; height: 560px; max-height: 560px; }
           .cw-panel.cw-expanded { width: 520px; height: 720px; max-height: 720px; }
+        }
+        @media (max-width: 639px) {
+          .cw-panel {
+            border-radius: 18px !important;
+            max-width: calc(100vw - 16px);
+            max-height: calc(100dvh - 112px);
+          }
+          .cw-panel.cw-expanded {
+            max-width: calc(100vw - 16px);
+            max-height: calc(100dvh - 112px);
+          }
         }
         .cw-scroll::-webkit-scrollbar { width: 3px; }
         .cw-scroll::-webkit-scrollbar-track { background: transparent; }
@@ -525,7 +537,7 @@ export default function ChatWidget() {
                 <button
                   onClick={() => setExpanded(!expanded)}
                   title={expanded ? "Thu nhỏ" : "Mở rộng"}
-                  className="w-8 h-8 rounded-lg flex items-center justify-center transition-colors"
+                  className="w-10 h-10 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center transition-colors"
                   style={{ border: "none", cursor: "pointer", color: "rgba(255,255,255,0.6)" }}
                   onMouseEnter={e => (e.currentTarget.style.background = "rgba(255,255,255,0.1)")}
                   onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
@@ -535,7 +547,7 @@ export default function ChatWidget() {
                 <button
                   onClick={() => setOpen(false)}
                   title="Đóng"
-                  className="w-8 h-8 rounded-lg flex items-center justify-center transition-colors"
+                  className="w-10 h-10 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center transition-colors"
                   style={{ border: "none", cursor: "pointer", color: "rgba(255,255,255,0.6)" }}
                   onMouseEnter={e => (e.currentTarget.style.background = "rgba(255,255,255,0.1)")}
                   onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
@@ -836,7 +848,7 @@ export default function ChatWidget() {
             </div>
 
             {/* ── INPUT ────────────────────────────── */}
-            <div className="flex-shrink-0 px-3 py-2.5" style={{ borderTop: "1px solid #e3ebdd", background: "#ffffff" }}>
+            <div className="flex-shrink-0 px-3 py-2.5 pb-[calc(env(safe-area-inset-bottom)+0.625rem)]" style={{ borderTop: "1px solid #e3ebdd", background: "#ffffff" }}>
               <div className="flex items-end gap-2 rounded-2xl px-3.5 py-2" style={{ background: "#f5f8f3", border: "1px solid #e3ebdd" }}>
                 <div className="flex-1 relative">
                   <textarea
@@ -852,8 +864,8 @@ export default function ChatWidget() {
                     disabled={isSending || isCooldown || userMsgCount >= MAX_MESSAGES}
                     placeholder={isCooldown ? "Đợi chút..." : userMsgCount >= MAX_MESSAGES ? "Đã đạt giới hạn" : "Hỏi em về terrarium..."}
                     rows={1}
-                    className="cw-input w-full resize-none border-none outline-none bg-transparent text-[13px] leading-relaxed font-[inherit]"
-                    style={{ minHeight: 32, maxHeight: 80, boxShadow: "none", color: "#2c3e24" }}
+                    className="cw-input w-full resize-none border-none outline-none bg-transparent text-sm leading-relaxed font-[inherit]"
+                    style={{ minHeight: 40, maxHeight: 96, boxShadow: "none", color: "#2c3e24" }}
                   />
                   {message.length > 300 && (
                     <span className="absolute right-0 bottom-0 text-xs font-semibold" style={{ color: message.length >= MAX_INPUT ? "#dc2626" : "#526248" }}>
@@ -864,7 +876,7 @@ export default function ChatWidget() {
                 <button
                   onClick={() => sendMessage(message)}
                   disabled={isSending || isCooldown || !message.trim() || userMsgCount >= MAX_MESSAGES}
-                  className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 transition-colors"
+                  className="w-11 h-11 rounded-full flex items-center justify-center flex-shrink-0 transition-colors"
                   style={{
                     background: message.trim() && !isSending && !isCooldown
                       ? "linear-gradient(135deg, #3a5229, #4a6a35)"

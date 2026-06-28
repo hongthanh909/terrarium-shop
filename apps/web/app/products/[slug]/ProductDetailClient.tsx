@@ -444,7 +444,7 @@ export function ProductDetailClient({
   const dbVariants = (product.variantOptions || []).filter((v: any) => v.variantType !== LAMP_VARIANT_TYPE);
 
   return (
-    <main className="min-h-screen bg-background">
+    <main className="min-h-screen bg-background pb-28 lg:pb-0">
 
       {/* ── Lightbox ──────────────────────────────────────────────────────── */}
       {lightboxOpen && product?.images && (
@@ -558,7 +558,7 @@ export function ProductDetailClient({
       </Sheet>
 
       {/* ── Back ──────────────────────────────────────────────────────────── */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 sm:py-4">
         <Link href="/products" className="inline-flex items-center text-muted-foreground hover:text-primary transition-colors text-sm">
           <ArrowLeft className="w-4 h-4 mr-2" /> Quay lại sản phẩm
         </Link>
@@ -566,7 +566,7 @@ export function ProductDetailClient({
 
       {/* ── Product Layout ────────────────────────────────────────────────── */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 pb-12">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 xl:gap-12 mb-12">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 xl:gap-12 mb-10 lg:mb-12">
 
           {/* ── LEFT: Gallery ── */}
           <div className="flex flex-col gap-4">
@@ -575,7 +575,7 @@ export function ProductDetailClient({
               {product.images && product.images.length > 0 ? (
                 <div
                   className="relative rounded-2xl overflow-hidden bg-[#f8faf6] border border-[#eaefeb] shadow-sm cursor-zoom-in group w-full"
-                  style={{ aspectRatio: "1/1", maxHeight: "550px" }}
+                  style={{ aspectRatio: "1/1", maxHeight: "min(550px, 72dvh)" }}
                   onClick={() => handleOpenLightbox(currentImageIndex)}
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -600,14 +600,14 @@ export function ProductDetailClient({
                     <>
                       <button
                         onClick={(e) => { e.stopPropagation(); setCurrentImageIndex((p: number) => (p === 0 ? product.images.length - 1 : p - 1)); }}
-                        className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/90 hover:bg-white text-gray-700 flex items-center justify-center shadow transition-all opacity-0 group-hover:opacity-100"
+                        className="absolute left-3 top-1/2 -translate-y-1/2 w-11 h-11 sm:w-10 sm:h-10 rounded-full bg-white/90 hover:bg-white text-gray-700 flex items-center justify-center shadow transition-[opacity,background-color] opacity-100 sm:opacity-0 sm:group-hover:opacity-100"
                         aria-label="Ảnh trước"
                       >
                         <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
                       </button>
                       <button
                         onClick={(e) => { e.stopPropagation(); setCurrentImageIndex((p: number) => (p === product.images.length - 1 ? 0 : p + 1)); }}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/90 hover:bg-white text-gray-700 flex items-center justify-center shadow transition-all opacity-0 group-hover:opacity-100"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 w-11 h-11 sm:w-10 sm:h-10 rounded-full bg-white/90 hover:bg-white text-gray-700 flex items-center justify-center shadow transition-[opacity,background-color] opacity-100 sm:opacity-0 sm:group-hover:opacity-100"
                         aria-label="Ảnh tiếp"
                       >
                         <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
@@ -638,7 +638,7 @@ export function ProductDetailClient({
                   <button
                     key={i}
                     onClick={() => setCurrentImageIndex(i)}
-                    className={`relative w-[70px] h-[70px] rounded-lg overflow-hidden border-2 flex-shrink-0 transition-all duration-200 ${
+                    className={`relative w-20 h-20 sm:w-[70px] sm:h-[70px] rounded-xl sm:rounded-lg overflow-hidden border-2 flex-shrink-0 transition-[opacity,border-color,box-shadow] duration-200 ${
                       i === currentImageIndex
                         ? "border-[#425733] shadow-sm bg-white"
                         : "border-gray-200 bg-white opacity-60 hover:opacity-100 hover:border-[#425733]/40"
@@ -705,7 +705,7 @@ export function ProductDetailClient({
             </h1>
 
             {/* Short Description */}
-            <p className="text-sm text-gray-500 leading-relaxed mb-5">
+            <p className="text-[15px] text-gray-600 leading-relaxed mb-5">
               Bể kính terrarium với thiết kế tinh tế, kết hợp cây sống và tiểu cảnh thiên nhiên thu nhỏ, mang lại không gian xanh mát, thư giãn. Phù hợp trang trí bàn làm việc hoặc làm quà tặng ý nghĩa.
             </p>
 
@@ -761,7 +761,7 @@ export function ProductDetailClient({
             {isBểProduct && (
               <div className="mb-5">
                 <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2.5">Chọn phiên bản</p>
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                   {PACKAGES.map((pkg) => {
                     const isSelected = selectedPackage === pkg.key;
                     return (
@@ -769,7 +769,7 @@ export function ProductDetailClient({
                         key={pkg.key}
                         type="button"
                         onClick={() => setSelectedPackage(pkg.key)}
-                        className={`flex flex-col items-center gap-1 px-2 py-2.5 rounded-xl font-semibold text-xs transition-all duration-200 border-2 ${
+                        className={`flex flex-col items-center gap-1 px-3 py-3 rounded-xl font-semibold text-sm sm:text-xs transition-colors duration-200 border-2 ${
                           isSelected
                             ? "border-[#425733] bg-[#425733] text-white shadow-sm"
                             : "border-gray-200 bg-white text-gray-600 hover:border-[#425733]/60 hover:bg-[#f8faf6]"
@@ -800,7 +800,7 @@ export function ProductDetailClient({
                             key={opt}
                             type="button"
                             onClick={() => setSelectedVariants((prev) => ({ ...prev, [option.variantType]: opt }))}
-                            className={`px-4 py-2 rounded-xl font-medium text-sm transition-all border-2 ${
+                            className={`min-h-11 px-4 py-2 rounded-xl font-medium text-sm transition-colors border-2 ${
                               isSelected ? "border-[#425733] bg-[#425733] text-white shadow-md" : "border-gray-200 bg-white text-gray-700 hover:border-[#425733]/50 hover:bg-[#f8faf6]"
                             }`}
                           >
@@ -832,19 +832,19 @@ export function ProductDetailClient({
               </div>
 
               {/* Manual input */}
-              <div className="px-4 py-3 flex gap-2">
+              <div className="px-4 py-3 flex flex-col sm:flex-row gap-2">
                 <input
                   type="text"
                   value={voucherInput}
                   onChange={e => setVoucherInput(e.target.value.toUpperCase())}
                   onKeyDown={e => e.key === "Enter" && handleApplyVoucher()}
                   placeholder="Nhập mã voucher..."
-                  className="flex-1 px-3 py-2 text-sm border border-gray-200 rounded-xl outline-none focus:border-[#425733] focus:ring-1 focus:ring-[#425733]/20 transition-all"
+                  className="flex-1 min-h-11 px-3 py-2 text-sm border border-gray-200 rounded-xl outline-none focus:border-[#425733] focus:ring-1 focus:ring-[#425733]/20 transition-colors"
                 />
                 <button
                   onClick={() => handleApplyVoucher()}
                   disabled={voucherLoading || !voucherInput.trim()}
-                  className="px-4 py-2 text-sm font-bold bg-[#425733] text-white rounded-xl hover:bg-[#364a29] disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                  className="min-h-11 px-4 py-2 text-sm font-bold bg-[#425733] text-white rounded-xl hover:bg-[#364a29] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                   {voucherLoading ? "..." : "Áp dụng"}
                 </button>
@@ -1262,7 +1262,7 @@ export function ProductDetailClient({
         {relatedProducts.length > 0 && (
           <div className="mt-16">
             <h2 className="text-3xl font-bold text-center mb-8">Sản phẩm liên quan</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
               {relatedProducts.map((rel: any) => (
                 <ProductCard
                   key={rel.id}
@@ -1307,6 +1307,22 @@ export function ProductDetailClient({
             </div>
           </div>
         )}
+      </div>
+
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-[#d8e4cf] bg-white/95 px-4 py-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] shadow-[0_-12px_30px_rgba(26,46,18,0.10)] backdrop-blur lg:hidden">
+        <div className="mx-auto flex max-w-7xl items-center gap-3">
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-xs font-semibold text-[#526248]">{product.name}</p>
+            <p className="text-lg font-extrabold text-[#425733]">{finalPrice.toLocaleString("vi-VN")}â‚«</p>
+          </div>
+          <Button
+            className="h-12 min-w-[132px] rounded-xl bg-[#425733] px-4 text-sm font-bold text-white hover:bg-[#364a29]"
+            onClick={handleAddToCart}
+            disabled={product.inventory <= 0}
+          >
+            ThĂªm giá»
+          </Button>
+        </div>
       </div>
     </main>
   );

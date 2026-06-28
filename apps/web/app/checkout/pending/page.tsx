@@ -138,7 +138,7 @@ export default function CheckoutPendingPage() {
     return (
       <main className="min-h-screen bg-[#f4f8f0] flex items-center justify-center p-6">
         <div className="text-center space-y-4">
-          <div className="w-20 h-20 bg-[#e3ebdd] rounded-full flex items-center justify-center mx-auto animate-bounce">
+          <div className="w-20 h-20 bg-[#e3ebdd] rounded-full flex items-center justify-center mx-auto animate-pulse">
             <CheckCircle2 className="w-12 h-12 text-[#425733]" />
           </div>
           <p className="text-xl font-bold text-[#425733]">Đã xác nhận thanh toán!</p>

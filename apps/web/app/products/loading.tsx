@@ -22,7 +22,7 @@ export default function ProductsLoading() {
         </div>
 
         {/* Products grid skeleton */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
           {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
             <div key={i} className="rounded-2xl bg-[#eef3ea] border border-[#d2dec9] overflow-hidden">
               <div className="aspect-square bg-white animate-pulse" />

@@ -144,12 +144,12 @@ export default function Header() {
             : "bg-[#faf9f7]/95 backdrop-blur-md border-b border-[#e8ede0]/60"
         }`}
       >
-        <div className="flex items-center justify-between px-6 py-3 max-w-7xl mx-auto">
+        <div className="flex items-center justify-between px-3 py-2.5 sm:px-6 sm:py-3 max-w-7xl mx-auto">
           {/* Left section: Hamburger (mobile) / Nav links (desktop) */}
           <div className="flex items-center gap-0.5 flex-1 min-w-0">
             {/* Hamburger — chỉ hiện trên mobile */}
             <button
-              className="md:hidden w-9 h-9 flex items-center justify-center rounded-full text-[#425733]/70 hover:text-[#293a20] hover:bg-[#eceee5] transition-colors flex-shrink-0"
+              className="md:hidden w-11 h-11 flex items-center justify-center rounded-full text-[#425733]/80 hover:text-[#293a20] hover:bg-[#eceee5] transition-colors flex-shrink-0"
               onClick={() => setMobileMenuOpen(true)}
               aria-label="Mở menu"
             >
@@ -166,9 +166,9 @@ export default function Header() {
           </div>
 
           {/* Center section: Logo */}
-          <Link href="/" className="flex flex-col items-center group flex-shrink-0 mx-4">
+          <Link href="/" className="flex flex-col items-center group flex-shrink-0 mx-1 sm:mx-4">
             <span
-              className="text-xl text-[#2d4520] group-hover:text-[#3d5a2a] transition-colors leading-tight"
+              className="text-lg sm:text-xl text-[#2d4520] group-hover:text-[#3d5a2a] transition-colors leading-tight"
               style={{ fontFamily: "'Dancing Script', cursive", fontWeight: 600 }}
             >
               tiệm Rêu Décor
@@ -176,7 +176,7 @@ export default function Header() {
             <div className="flex items-center gap-1 mt-0.5 w-full">
               <div className="flex-1 h-px bg-[#c5d4b5]/60" />
               <span
-                className="text-[9px] tracking-wider text-[#5a7a48]/60 whitespace-nowrap px-1"
+              className="hidden sm:inline text-[9px] tracking-wider text-[#5a7a48]/60 whitespace-nowrap px-1"
                 style={{ fontFamily: "'Dancing Script', cursive" }}
               >
                 Terrarium &amp; Decor
@@ -198,7 +198,7 @@ export default function Header() {
 
             {/* Search — mobile */}
             <button
-              className="md:hidden w-9 h-9 flex items-center justify-center rounded-full text-[#4a5e38]/70 hover:text-[#293a20] hover:bg-[#eceee5] transition-colors"
+              className="md:hidden w-11 h-11 flex items-center justify-center rounded-full text-[#4a5e38]/80 hover:text-[#293a20] hover:bg-[#eceee5] transition-colors"
               onClick={() => setSearchOpen(true)}
               aria-label="Mở tìm kiếm"
             >
@@ -210,7 +210,7 @@ export default function Header() {
 
             {/* Cart */}
             <button
-              className="relative w-9 h-9 flex items-center justify-center rounded-full text-[#4a5e38]/70 hover:text-[#293a20] hover:bg-[#eceee5] transition-colors"
+              className="relative w-11 h-11 md:w-9 md:h-9 flex items-center justify-center rounded-full text-[#4a5e38]/80 hover:text-[#293a20] hover:bg-[#eceee5] transition-colors"
               onClick={() => {
                 if (!session) {
                   window.location.href = "/login?callbackUrl=/";
@@ -302,7 +302,7 @@ export default function Header() {
             ) : (
               <Link href="/login">
                 <button
-                  className="w-9 h-9 flex items-center justify-center rounded-full text-[#4a5e38]/70 hover:text-[#293a20] hover:bg-[#eceee5] transition-colors flex-shrink-0"
+                  className="w-11 h-11 md:w-9 md:h-9 flex items-center justify-center rounded-full text-[#4a5e38]/80 hover:text-[#293a20] hover:bg-[#eceee5] transition-colors flex-shrink-0"
                   aria-label="Đăng nhập"
                   title="Đăng nhập"
                 >
@@ -315,7 +315,7 @@ export default function Header() {
 
         {/* ── Marquee contact bar — light #ECEEE5 ──────────────────────────── */}
         <div
-          className="w-full overflow-hidden"
+          className="hidden sm:block w-full overflow-hidden"
           style={{
             background: "#ECEEE5",
             borderTop: "1px solid rgba(61, 90, 42, 0.10)",
@@ -382,7 +382,7 @@ export default function Header() {
             </SheetHeader>
 
             {/* Navigation Links */}
-            <nav className="flex-1 overflow-y-auto px-4 py-4">
+            <nav className="flex-1 overflow-y-auto px-4 py-4 space-y-5">
               <p className="text-[10px] uppercase tracking-wider text-[#3d5a2a]/40 font-semibold px-3 mb-2">Điều hướng</p>
               {NAV_LINKS.map((link) => {
                 const isActive = pathname === link.href || (link.href !== "/" && pathname?.startsWith(link.href));
@@ -390,7 +390,7 @@ export default function Header() {
                   <Link
                     key={link.href}
                     href={link.href}
-                    className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
+                    className={`flex items-center gap-3 px-3 py-3 rounded-xl text-base font-semibold transition-colors duration-200 ${
                       isActive
                         ? "bg-[#eceee5] text-[#2d4520]"
                         : "text-[#4a5e38]/80 hover:text-[#2d4520] hover:bg-[#eceee5]"
@@ -401,11 +401,11 @@ export default function Header() {
                 );
               })}
 
-              <div className="my-4 h-px bg-[#e0e8d5]" />
+              <div className="h-px bg-[#e0e8d5]" />
 
               <Link
                 href="/policies"
-                className="flex items-center gap-3 px-3 py-2 rounded-xl text-sm text-[#4a5e38]/60 hover:text-[#2d4520] hover:bg-[#eceee5] transition-all duration-200"
+                className="flex items-center gap-3 px-3 py-3 rounded-xl text-base font-semibold text-[#4a5e38]/80 hover:text-[#2d4520] hover:bg-[#eceee5] transition-colors duration-200"
               >
                 Chính sách
               </Link>
@@ -421,13 +421,13 @@ export default function Header() {
                   </div>
                   <Link
                     href="/profile/favorites"
-                    className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm text-[#4a5e38]/80 hover:text-[#2d4520] hover:bg-[#eceee5] transition-all duration-200"
+                    className="flex items-center gap-2 px-3 py-3 rounded-xl text-base font-semibold text-[#4a5e38]/80 hover:text-[#2d4520] hover:bg-[#eceee5] transition-colors duration-200"
                   >
                     <Heart className="w-4 h-4 fill-red-400 text-red-400" /> Sản phẩm yêu thích
                   </Link>
                   <button
                     onClick={() => { useCartStore.getState().clearCart(); signOut({ callbackUrl: "/" }); }}
-                    className="w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm text-red-500 hover:bg-red-50 transition-colors"
+                    className="w-full flex items-center gap-2 px-3 py-3 rounded-xl text-base font-semibold text-red-500 hover:bg-red-50 transition-colors"
                   >
                     <LogOut className="w-4 h-4" /> Đăng xuất
                   </button>
@@ -435,7 +435,7 @@ export default function Header() {
               ) : (
                 <Link
                   href="/login"
-                  className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-sm font-semibold bg-[#3d5a2a] text-white hover:bg-[#2d4520] transition-colors"
+                  className="w-full flex items-center justify-center gap-2 px-3 py-3.5 rounded-xl text-base font-semibold bg-[#3d5a2a] text-white hover:bg-[#2d4520] transition-colors"
                 >
                   <User className="w-4 h-4" /> Đăng nhập
                 </Link>
@@ -447,7 +447,7 @@ export default function Header() {
 
       {/* ─── Cart Drawer ──────────────────────────────────────────────────── */}
       <Sheet open={cartOpen} onOpenChange={setCartOpen}>
-        <SheetContent className="sm:max-w-md flex flex-col">
+        <SheetContent className="w-full sm:max-w-md flex flex-col p-4 sm:p-6">
           <SheetHeader className="pb-4 border-b">
             <SheetTitle className="flex items-center gap-2 text-lg font-bold text-gray-800">
               <ShoppingBasket className="w-5 h-5 text-[#425733]" />
@@ -458,7 +458,7 @@ export default function Header() {
             </SheetDescription>
           </SheetHeader>
 
-          <div className="flex-1 overflow-y-auto py-4">
+          <div className="flex-1 overflow-y-auto py-4 -mx-1 px-1">
             {items.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-center py-12">
                 <div className="w-20 h-20 rounded-full bg-[#e3ebdd] flex items-center justify-center mb-4">
@@ -492,7 +492,7 @@ export default function Header() {
             ) : (
               <div className="space-y-3">
                 {items.map((item: CartItem) => (
-                  <div key={`${item.productId}-${JSON.stringify(item.variants)}`} className="flex gap-3 p-3 rounded-xl bg-gray-50 border border-gray-100">
+                  <div key={`${item.productId}-${JSON.stringify(item.variants)}`} className="flex gap-3 p-3.5 rounded-2xl bg-gray-50 border border-gray-100">
                     <div className="w-20 h-20 sm:w-16 sm:h-16 rounded-lg overflow-hidden bg-[#e3ebdd] flex-shrink-0">
                       {item.productImage ? (
                         <ImageWrapper src={item.productImage} alt={item.productName} width={64} height={64} className="w-full h-full object-cover" />
@@ -513,7 +513,7 @@ export default function Header() {
                         </p>
                       )}
                       <p className="text-sm font-bold text-[#425733] mt-1">{item.price.toLocaleString("vi-VN")}₫</p>
-                      <div className="flex items-center gap-2 mt-2">
+                      <div className="flex items-center gap-2 mt-2 [&_button]:min-h-9 [&_button]:min-w-9">
                         <button onClick={() => updateQuantity(item.productId, item.quantity - 1, item.variants)} className="w-6 h-6 rounded-full bg-white border border-gray-200 flex items-center justify-center hover:border-[#425733] transition-colors" aria-label={`Giảm số lượng ${item.productName}`}>
                           <Minus className="w-3 h-3" />
                         </button>
@@ -533,7 +533,7 @@ export default function Header() {
           </div>
 
           {items.length > 0 && (
-            <div className="border-t pt-4 space-y-3">
+            <div className="sticky bottom-0 -mx-4 sm:-mx-6 px-4 sm:px-6 pt-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] border-t bg-white/95 backdrop-blur space-y-3">
               <div className="flex justify-between items-center">
                 <span className="font-semibold text-gray-700">Tạm tính</span>
                 <span className="text-xl font-bold text-[#425733]">{cartTotal.toLocaleString("vi-VN")}₫</span>
@@ -542,14 +542,14 @@ export default function Header() {
                 <Link
                   href="/products"
                   onClick={() => setCartOpen(false)}
-                  className="py-2.5 rounded-xl border-2 border-[#425733] text-[#425733] text-sm font-semibold text-center hover:bg-[#e3ebdd] transition-colors"
+                  className="py-3.5 rounded-xl border-2 border-[#425733] text-[#425733] text-sm font-semibold text-center hover:bg-[#e3ebdd] transition-colors"
                 >
                   Tiếp tục mua
                 </Link>
                 <Link
                   href="/checkout"
                   onClick={() => setCartOpen(false)}
-                  className="py-2.5 rounded-xl bg-[#425733] text-white text-sm font-semibold text-center hover:bg-[#364a29] transition-colors"
+                  className="py-3.5 rounded-xl bg-[#425733] text-white text-sm font-semibold text-center hover:bg-[#364a29] transition-colors"
                 >
                   Thanh toán →
                 </Link>

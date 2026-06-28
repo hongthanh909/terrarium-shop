@@ -78,12 +78,12 @@ export function ProductCard({
     <GlassCard
       variant="solid"
       className={cn(
-        "group relative flex flex-col p-4 h-full transition-shadow duration-300 hover:shadow-xl cursor-pointer",
+        "group relative flex flex-col p-2.5 sm:p-4 h-full transition-shadow duration-300 hover:shadow-xl cursor-pointer",
         className
       )}
     >
       {/* Image area */}
-      <Link href={`/products/${slug}`} className="block relative overflow-hidden rounded-2xl bg-white mb-4 aspect-square flex-shrink-0">
+      <Link href={`/products/${slug}`} className="block relative overflow-hidden rounded-xl sm:rounded-2xl bg-white mb-3 sm:mb-4 aspect-square flex-shrink-0">
         {images[0] ? (
           <ImageWrapper src={images[0]} alt={name} fill className="object-cover transition-transform duration-500 group-hover:scale-110" />
         ) : (
@@ -113,8 +113,8 @@ export function ProductCard({
         <button
           onClick={(e) => { e.preventDefault(); onToggleWishlist?.(); }}
           className={cn(
-            "absolute top-2 left-2 z-10 w-8 h-8 rounded-full flex items-center justify-center shadow-sm transition-opacity duration-200",
-            "opacity-40 sm:opacity-0 sm:group-hover:opacity-100",
+            "absolute top-2 left-2 z-10 w-9 h-9 sm:w-8 sm:h-8 rounded-full flex items-center justify-center shadow-sm transition-opacity duration-200",
+            "opacity-80 sm:opacity-0 sm:group-hover:opacity-100",
             wished
               ? "bg-red-500 text-white scale-100 opacity-100"
               : "bg-white text-[#526248] hover:bg-gray-50 hover:scale-110 active:scale-95"
@@ -128,23 +128,23 @@ export function ProductCard({
       {/* Info section */}
       <div className="flex flex-col flex-1">
         {/* Category */}
-        <span className="text-[#526248] text-xs font-semibold uppercase tracking-wider mb-1 block">
+        <span className="text-[#526248] text-[11px] sm:text-xs font-semibold uppercase tracking-wider mb-1 block truncate">
           {category?.name || "SẢN PHẨM"}
         </span>
 
         {/* Name & Price Row */}
-        <div className="flex justify-between items-start gap-2 mb-1.5">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-1 sm:gap-2 mb-1.5">
           <Link href={`/products/${slug}`} className="flex-1 min-w-0">
-            <h3 className="font-bold text-gray-900 line-clamp-2 group-hover:text-[#425733] transition-colors leading-snug text-[15px] sm:text-base">
+            <h3 className="font-bold text-gray-900 line-clamp-2 group-hover:text-[#425733] transition-colors leading-snug text-sm sm:text-base">
               {name}
             </h3>
           </Link>
-          <div className="flex flex-col items-end flex-shrink-0 pl-1">
-            <span className="text-base font-bold text-[#2d3d23]">
+          <div className="flex flex-row sm:flex-col items-baseline sm:items-end gap-1 sm:gap-0 flex-shrink-0 sm:pl-1">
+            <span className="text-sm sm:text-base font-bold text-[#2d3d23]">
               {displayPrice.toLocaleString("vi-VN")}₫
             </span>
             {isOnSale && (
-              <span className="text-xs text-red-500 font-medium line-through">
+              <span className="text-[11px] sm:text-xs text-red-500 font-medium line-through">
                 {(basePrice + pkgPriceAdjustment).toLocaleString("vi-VN")}₫
               </span>
             )}
@@ -155,7 +155,7 @@ export function ProductCard({
         </div>
 
         {/* Rating */}
-        <div className="flex items-center gap-1 mb-2.5">
+        <div className="flex items-center gap-1 mb-2 sm:mb-2.5">
           {rating > 0 || reviewCount > 0 ? (
             <>
               <Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
@@ -171,7 +171,7 @@ export function ProductCard({
 
         {/* Variant Selector */}
         {isBểProduct && (
-          <div className="mb-4">
+          <div className="mb-3 sm:mb-4">
             <p className="text-xs font-bold text-[#526248] uppercase tracking-widest mb-1.5">Chọn phiên bản</p>
             <div className="grid grid-cols-3 gap-1">
               {(["basic", "standard", "advanced"] as const).map((key) => {
@@ -203,7 +203,7 @@ export function ProductCard({
         {/* Quantity & Add to Cart Row */}
         <div className="flex items-center justify-between gap-2 mt-auto">
           {/* Quantity Selector */}
-          <div className="flex items-center bg-[#f3f7ef] rounded-lg border border-[#e3ebdd] overflow-hidden p-0.5 flex-shrink-0">
+          <div className="hidden sm:flex items-center bg-[#f3f7ef] rounded-lg border border-[#e3ebdd] overflow-hidden p-0.5 flex-shrink-0">
             <button
               type="button"
               onClick={(e) => {
@@ -243,7 +243,7 @@ export function ProductCard({
             }}
             disabled={isOutOfStock}
             className={cn(
-              "flex-1 py-2 px-3 rounded-lg text-white text-sm font-bold transition-colors flex items-center justify-center gap-1.5",
+              "flex-1 min-h-10 py-2 px-2 sm:px-3 rounded-lg text-white text-xs sm:text-sm font-bold transition-colors flex items-center justify-center gap-1.5",
               isOutOfStock
                 ? "bg-gray-300 text-gray-600 cursor-not-allowed"
                 : "bg-gradient-to-r from-[#3a5229] to-[#4a6a35] hover:from-[#2d3d23] hover:to-[#3a5229] active:scale-[0.97]",

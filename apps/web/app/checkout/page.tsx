@@ -195,7 +195,7 @@ export default function CheckoutPage() {
 
   if (itemsToCheckout.length === 0) {
     return (
-      <main className="min-h-screen bg-background py-8 px-6">
+      <main className="min-h-screen bg-background py-8 px-4 sm:px-6">
         <div className="max-w-2xl mx-auto text-center">
           <h1 className="text-3xl font-bold mb-4">Giỏ Hàng Trống</h1>
           <p className="text-muted-foreground mb-8">Hãy thêm sản phẩm vào giỏ hàng trước!</p>
@@ -208,7 +208,7 @@ export default function CheckoutPage() {
   }
 
   return (
-    <main className="min-h-screen bg-background py-8 px-6">
+    <main className="min-h-screen bg-background px-4 pb-28 pt-6 sm:px-6 sm:py-8 lg:pb-8">
       <div className="max-w-6xl mx-auto">
         <div className="mb-6">
           <Link href="/products" className="inline-flex items-center text-muted-foreground hover:text-primary">
@@ -220,14 +220,14 @@ export default function CheckoutPage() {
         <h1 className="text-3xl font-bold mb-8">Thanh Toán</h1>
 
         <form onSubmit={handleSubmit}>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2 space-y-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
+          <div className="lg:col-span-2 space-y-5 sm:space-y-6">
             <Card>
               <CardHeader>
                 <CardTitle>Thông Tin Khách Hàng</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 [&_input]:min-h-11 [&_label]:mb-1.5 [&_label]:block">
                   <div>
                     <Label htmlFor="name">Họ tên *</Label>
                     <Input id="name" name="name" value={formData.name} onChange={handleInputChange} required placeholder="Nguyễn Văn A" />
@@ -252,7 +252,7 @@ export default function CheckoutPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 [&_input]:min-h-11 [&_label]:mb-1.5 [&_label]:block">
                   <div className="md:col-span-2">
                     <Label htmlFor="address">Địa chỉ *</Label>
                     <Input id="address" name="address" value={formData.address} onChange={handleInputChange} required placeholder="Số nhà, tên đường" />
@@ -278,7 +278,7 @@ export default function CheckoutPage() {
                 <CardTitle>Phương Thức Vận Chuyển</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                <label className="flex items-center justify-between p-4 border rounded-lg cursor-pointer hover:bg-muted/50">
+                <label className="flex items-center justify-between gap-3 p-4 border rounded-xl cursor-pointer hover:bg-muted/50">
                   <div className="flex items-center gap-3">
                     <input type="radio" name="shippingMethod" value="GHN_STANDARD" checked={formData.shippingMethod === "GHN_STANDARD"} onChange={(e) => { handleInputChange(e); setShippingFee(30000); }} className="h-4 w-4" />
                     <div>
@@ -288,7 +288,7 @@ export default function CheckoutPage() {
                   </div>
                   <p className="font-semibold">30.000₫</p>
                 </label>
-                <label className="flex items-center justify-between p-4 border rounded-lg cursor-pointer hover:bg-muted/50">
+                <label className="flex items-center justify-between gap-3 p-4 border rounded-xl cursor-pointer hover:bg-muted/50">
                   <div className="flex items-center gap-3">
                     <input type="radio" name="shippingMethod" value="GHN_EXPRESS" checked={formData.shippingMethod === "GHN_EXPRESS"} onChange={(e) => { handleInputChange(e); setShippingFee(50000); }} className="h-4 w-4" />
                     <div>
@@ -309,7 +309,7 @@ export default function CheckoutPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                <label className="flex items-start p-4 border rounded-lg cursor-pointer hover:bg-muted/50">
+                <label className="flex items-start p-4 border rounded-xl cursor-pointer hover:bg-muted/50">
                   <input type="radio" name="paymentMethod" value="COD" checked={formData.paymentMethod === "COD"} onChange={handleInputChange} className="mt-1 mr-3 h-4 w-4" />
                   <div>
                     <p className="font-semibold">Thanh Toán Khi Nhận Hàng (COD)</p>
@@ -325,7 +325,7 @@ export default function CheckoutPage() {
                 <CardTitle>Mã Giảm Giá</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="flex gap-4">
+                <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
                   <Input name="voucherCode" value={formData.voucherCode} onChange={handleInputChange} placeholder="Nhập mã giảm giá" disabled={voucherApplied || voucherChecking} />
                   <Button
                     type="button"
@@ -362,7 +362,7 @@ export default function CheckoutPage() {
             <Button
               type="submit"
               size="lg"
-              className="w-full bg-[#425733] hover:bg-[#364a29]"
+              className="hidden lg:flex w-full bg-[#425733] hover:bg-[#364a29]"
               disabled={
                 loading ||
                 voucherChecking ||
@@ -380,13 +380,13 @@ export default function CheckoutPage() {
             </Button>
           </div>
 
-          <div className="lg:col-span-1">
-            <Card className="sticky top-6">
+          <div className="order-first lg:order-none lg:col-span-1">
+            <Card className="sticky top-24">
               <CardHeader>
                 <CardTitle>Tổng Đơn Hàng</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4 mb-6 max-h-64 overflow-y-auto">
+                <div className="space-y-4 mb-6 max-h-56 lg:max-h-64 overflow-y-auto">
                   {itemsToCheckout.map((item: CartItem) => (
                     <div key={item.id} className="flex gap-4">
                       <ImageWrapper src={item.productImage} alt={item.productName} width={64} height={64} className="w-16 h-16 object-cover rounded" />
@@ -430,6 +430,25 @@ export default function CheckoutPage() {
                 </div>
               </CardContent>
             </Card>
+          </div>
+        </div>
+        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-[#d8e4cf] bg-white/95 px-4 py-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] shadow-[0_-12px_30px_rgba(26,46,18,0.10)] backdrop-blur lg:hidden">
+          <div className="mx-auto flex max-w-6xl items-center gap-3">
+            <div className="min-w-0 flex-1">
+              <p className="text-xs font-semibold text-muted-foreground">Tá»•ng thanh toĂ¡n</p>
+              <p className="text-lg font-extrabold text-[#425733]">{total.toLocaleString("vi-VN")}â‚«</p>
+            </div>
+            <Button
+              type="submit"
+              className="h-12 min-w-[148px] rounded-xl bg-[#425733] px-4 text-sm font-bold text-white hover:bg-[#364a29]"
+              disabled={
+                loading ||
+                voucherChecking ||
+                (formData.voucherCode.trim().length > 0 && !voucherApplied && !voucherError)
+              }
+            >
+              {loading ? "Äang xá»­ lĂ½..." : "Äáº·t hĂ ng"}
+            </Button>
           </div>
         </div>
         </form>
