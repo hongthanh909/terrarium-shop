@@ -172,7 +172,7 @@ export function ProductsClient({
             <div className="flex flex-nowrap sm:flex-wrap gap-2.5 overflow-x-auto pb-2 scrollbar-none -mx-6 px-6 sm:mx-0 sm:px-0">
               <button
                 onClick={() => handleCategoryChange(null)}
-                className={`px-5 py-2 rounded-full text-sm font-semibold transition-all duration-200 border-2 ${
+                className={`px-5 py-2 rounded-full text-sm font-semibold transition-colors duration-200 border-2 ${
                   selectedCategory === null
                     ? "bg-[#425733] text-white border-[#425733] shadow-[0_4px_14px_rgba(66,87,51,0.35)]"
                     : "bg-white text-gray-500 border-[#c8d5be] hover:border-[#425733] hover:text-[#425733] hover:bg-[#f3f7ef]"
@@ -184,7 +184,7 @@ export function ProductsClient({
                 <button
                   key={cat.id}
                   onClick={() => handleCategoryChange(cat.id)}
-                  className={`px-5 py-2 rounded-full text-sm font-semibold transition-all duration-200 border-2 ${
+                  className={`px-5 py-2 rounded-full text-sm font-semibold transition-colors duration-200 border-2 ${
                     selectedCategory === cat.id
                       ? "bg-[#425733] text-white border-[#425733] shadow-[0_4px_14px_rgba(66,87,51,0.35)]"
                       : "bg-white text-gray-500 border-[#c8d5be] hover:border-[#425733] hover:text-[#425733] hover:bg-[#f3f7ef]"

@@ -138,7 +138,7 @@ export default function Header() {
 
       {/* ─── Full-Width Navbar — LIGHT CREAM ──────────────────────────────── */}
       <motion.header
-        className={`sticky top-0 z-40 w-full transition-all duration-300 ${
+        className={`sticky top-0 z-40 w-full transition-colors duration-300 ${
           scrolled
             ? "bg-white/96 backdrop-blur-xl shadow-[0_1px_16px_rgba(61,90,42,0.08)] border-b border-[#dde5d3]/80"
             : "bg-[#faf9f7]/95 backdrop-blur-md border-b border-[#e8ede0]/60"
@@ -246,7 +246,7 @@ export default function Header() {
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <button
-                    className="flex items-center gap-1.5 hover:bg-[#eceee5] transition-all focus:outline-none py-1 px-2.5 rounded-full flex-shrink-0 text-[#293a20] border border-[#c5d4b5]/60"
+                    className="flex items-center gap-1.5 hover:bg-[#eceee5] transition-colors focus:outline-none py-1 px-2.5 rounded-full flex-shrink-0 text-[#293a20] border border-[#c5d4b5]/60"
                     aria-label="Mở menu tài khoản"
                     title={session.user?.name || "Tài khoản"}
                   >
@@ -325,7 +325,7 @@ export default function Header() {
             {[0, 1].map((dup) => (
               <span
                 key={dup}
-                className="flex items-center gap-8 text-[11px] text-[#3d5a2a]/80 whitespace-nowrap px-8 font-medium"
+                className="flex items-center gap-8 text-xs text-[#3d5a2a] whitespace-nowrap px-8 font-medium"
                 style={{ fontFamily: "inherit" }}
                 aria-hidden={dup === 1}
               >
