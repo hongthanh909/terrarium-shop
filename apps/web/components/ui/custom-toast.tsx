@@ -115,7 +115,7 @@ function ToastItem({
     <div
       className={`
         relative w-[360px] max-w-[calc(100vw-2rem)] bg-white rounded-xl shadow-lg border border-gray-100
-        transition-all duration-260 ease-out overflow-hidden
+        transition-[opacity,transform] duration-260 ease-out overflow-hidden
         ${exiting ? "opacity-0 translate-x-6 scale-95" : "opacity-100 translate-x-0 scale-100"}
       `}
       style={{
@@ -124,9 +124,9 @@ function ToastItem({
     >
       {/* Top progress bar */}
       <div
-        className="absolute top-0 left-0 h-[3px] rounded-t-xl transition-none"
+        className="absolute top-0 left-0 h-[3px] w-full rounded-t-xl transition-none origin-left"
         style={{
-          width: `${progress}%`,
+          transform: `scaleX(${progress / 100})`,
           background: config.bar,
         }}
       />
