@@ -87,7 +87,7 @@ export function ProductCard({
         {images[0] ? (
           <ImageWrapper src={images[0]} alt={name} fill className="object-cover transition-transform duration-500 group-hover:scale-110" />
         ) : (
-          <div className="absolute inset-0 flex items-center justify-center text-gray-400">
+          <div className="absolute inset-0 flex items-center justify-center text-[#66745c]">
             <Package className="w-12 h-12" />
           </div>
         )}
@@ -117,7 +117,7 @@ export function ProductCard({
             "opacity-40 sm:opacity-0 sm:group-hover:opacity-100",
             wished
               ? "bg-red-500 text-white scale-100 opacity-100"
-              : "bg-white text-gray-400 hover:bg-gray-50 hover:scale-110 active:scale-95"
+              : "bg-white text-[#66745c] hover:bg-gray-50 hover:scale-110 active:scale-95"
           )}
           aria-label="Yêu thích"
         >
@@ -128,7 +128,7 @@ export function ProductCard({
       {/* Info section */}
       <div className="flex flex-col flex-1">
         {/* Category */}
-        <span className="text-gray-400 text-[10px] font-semibold uppercase tracking-wider mb-1 block">
+        <span className="text-[#66745c] text-xs font-semibold uppercase tracking-wider mb-1 block">
           {category?.name || "SẢN PHẨM"}
         </span>
 
@@ -162,17 +162,17 @@ export function ProductCard({
               <span className="text-xs font-semibold text-gray-700">
                 {rating > 0 ? rating.toFixed(1) : ""}
               </span>
-              <span className="text-[10px] text-gray-400">({reviewCount})</span>
+              <span className="text-xs text-[#66745c]">({reviewCount})</span>
             </>
           ) : (
-            <span className="text-[10px] text-gray-400 italic">Chưa có đánh giá</span>
+            <span className="text-xs text-[#66745c] italic">Chưa có đánh giá</span>
           )}
         </div>
 
         {/* Variant Selector */}
         {isBểProduct && (
           <div className="mb-4">
-            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">Chọn phiên bản</p>
+            <p className="text-xs font-bold text-[#66745c] uppercase tracking-widest mb-1.5">Chọn phiên bản</p>
             <div className="grid grid-cols-3 gap-1">
               {(["basic", "standard", "advanced"] as const).map((key) => {
                 const label = key === "basic" ? "Cơ bản" : key === "standard" ? "Tiêu chuẩn" : "Nâng cao";
@@ -186,7 +186,7 @@ export function ProductCard({
                       setSelectedPackage(key);
                     }}
                     className={cn(
-                      "py-1.5 px-0.5 rounded-lg font-bold text-[10px] transition-all duration-200 border-2 text-center leading-tight",
+                      "py-1.5 px-0.5 rounded-lg font-bold text-xs transition-all duration-200 border-2 text-center leading-tight",
                       isSelected
                         ? "border-[#425733] bg-[#425733] text-white shadow-sm"
                         : "border-gray-200 bg-white text-gray-600 hover:border-[#425733]/50 hover:bg-[#f8faf6]"
@@ -243,7 +243,7 @@ export function ProductCard({
             }}
             disabled={isOutOfStock}
             className={cn(
-              "flex-1 py-2 px-3 rounded-lg text-white text-xs font-bold transition-all flex items-center justify-center gap-1.5",
+              "flex-1 py-2 px-3 rounded-lg text-white text-sm font-bold transition-all flex items-center justify-center gap-1.5",
               isOutOfStock
                 ? "bg-gray-300 text-gray-600 cursor-not-allowed"
                 : "bg-gradient-to-r from-[#3a5229] to-[#4a6a35] hover:from-[#2d3d23] hover:to-[#3a5229] active:scale-[0.97]",

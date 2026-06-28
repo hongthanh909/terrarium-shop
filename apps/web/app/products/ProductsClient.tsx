@@ -134,7 +134,7 @@ export function ProductsClient({
           <SlideInHeading className="mb-8">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               <div>
-                <h1 className="text-4xl font-bold" style={{ background: 'linear-gradient(135deg, #1a2e12, #425733)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Sản Phẩm</h1>
+                <h1 className="text-4xl font-bold text-[#1a2e12]">Sản Phẩm</h1>
                 <p className="text-gray-500 text-sm mt-1">{totalProducts} sản phẩm đang có</p>
               </div>
 
@@ -163,7 +163,7 @@ export function ProductsClient({
           >
             <div className="flex items-center gap-3 mb-4">
               <Filter className="w-4 h-4 text-[#425733] flex-shrink-0" />
-              <span className="text-xs font-semibold uppercase tracking-wider text-gray-400">
+              <span className="text-xs font-semibold uppercase tracking-wider text-[#5f7057]">
                 Danh mục
               </span>
               <div className="flex-1 h-px bg-[#d4dec9]" />
@@ -205,7 +205,7 @@ export function ProductsClient({
               transition={{ delay: 0.2 }}
             >
               <Package className="w-16 h-16 mx-auto text-[#a8c098] mb-4" />
-              <p className="text-gray-400 mb-4">Không tìm thấy sản phẩm nào.</p>
+              <p className="text-[#5f7057] mb-4">Không tìm thấy sản phẩm nào.</p>
               <Button
                 variant="outline"
                 onClick={() => { setSelectedCategory(null); setSearchQuery(""); router.push("/products"); }}
@@ -224,11 +224,8 @@ export function ProductsClient({
                   transition={{ delay: 0.12 + groupIndex * 0.05, duration: 0.4 }}
                   className="scroll-mt-24"
                 >
-                  <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 mb-5">
+                  <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 mb-5 border-t border-[#d4dec9] pt-5">
                     <div>
-                      <p className="text-xs uppercase tracking-[0.2em] text-[#8aa480] font-semibold mb-1">
-                        Danh mục
-                      </p>
                       <h2 className="text-2xl font-bold text-[#1f3518]">
                         {group.category.name}
                       </h2>
