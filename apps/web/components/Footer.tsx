@@ -63,7 +63,7 @@ export default async function Footer() {
                 <div className="w-5 h-px bg-[#8ba57a]" />
               </div>
             </Link>
-            <p className="text-[hsl(220,14%,45%)] text-sm leading-relaxed">
+            <p className="text-[hsl(220,14%,30%)] text-sm leading-relaxed">
               Terrarium thủ công mang thiên nhiên vào không gian sống của bạn. Mỗi sản phẩm là một hệ sinh thái thu nhỏ, được tạo hình tỉ mỉ.
             </p>
             {/* Social Links */}
@@ -86,7 +86,7 @@ export default async function Footer() {
           {/* Quick Links */}
           <div>
             <h3 className="font-bold text-[hsl(220,14%,25%)] mb-4">Khám phá</h3>
-            <ul className="space-y-3 text-sm text-[hsl(220,14%,45%)]">
+            <ul className="space-y-3 text-sm text-[hsl(220,14%,30%)]">
               <li>
                 <Link href="/products" className="relative hover:text-[#425733] transition-colors after:absolute after:bottom-0 after:left-0 after:w-full after:h-[1px] after:bg-[#425733] after:origin-left after:scale-x-0 hover:after:scale-x-100 after:transition-transform after:duration-300">
                   Tất cả sản phẩm
@@ -113,7 +113,7 @@ export default async function Footer() {
           {/* Contact */}
           <div>
             <h3 className="font-bold text-[hsl(220,14%,25%)] mb-4">Liên hệ</h3>
-            <ul className="space-y-3 text-sm text-[hsl(220,14%,45%)]">
+            <ul className="space-y-3 text-sm text-[hsl(220,14%,30%)]">
               {emails.length > 0 ? (
                 emails.map((item: any, idx: number) => (
                   <li key={idx} className="flex items-center gap-2">
@@ -176,7 +176,7 @@ export default async function Footer() {
           {/* Policies */}
           <div>
             <h3 className="font-bold text-[hsl(220,14%,25%)] mb-4">Chính sách</h3>
-            <ul className="space-y-3 text-sm text-[hsl(220,14%,45%)]">
+            <ul className="space-y-3 text-sm text-[hsl(220,14%,30%)]">
               <li>
                 <Link href="/policies/warranty" className="hover:text-[#425733] transition-colors">
                   Bảo hành

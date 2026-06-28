@@ -378,7 +378,7 @@ export default function ChatWidget() {
         .cw-scroll::-webkit-scrollbar-thumb { background: rgba(66,87,51,0.15); border-radius: 99px; }
         .cw-input::placeholder { color: #8a9e84; }
         .cw-category-card {
-          transition: all 0.2s cubic-bezier(0.4,0,0.2,1);
+          transition: transform 0.2s cubic-bezier(0.4,0,0.2,1), box-shadow 0.2s cubic-bezier(0.4,0,0.2,1), border-color 0.2s cubic-bezier(0.4,0,0.2,1), background-color 0.2s cubic-bezier(0.4,0,0.2,1), color 0.2s cubic-bezier(0.4,0,0.2,1);
           cursor: pointer;
         }
         .cw-category-card:hover {
@@ -390,7 +390,7 @@ export default function ChatWidget() {
           transform: translateY(0) scale(0.97);
         }
         .cw-suggestion-pill {
-          transition: all 0.18s cubic-bezier(0.4,0,0.2,1);
+          transition: transform 0.18s cubic-bezier(0.4,0,0.2,1), box-shadow 0.18s cubic-bezier(0.4,0,0.2,1), border-color 0.18s cubic-bezier(0.4,0,0.2,1), background-color 0.18s cubic-bezier(0.4,0,0.2,1), color 0.18s cubic-bezier(0.4,0,0.2,1);
           cursor: pointer;
         }
         .cw-suggestion-pill:hover {
@@ -402,7 +402,7 @@ export default function ChatWidget() {
         }
         .cw-suggestion-pill:active { transform: translateY(0) scale(0.97); }
         .cw-product-card {
-          transition: all 0.25s cubic-bezier(0.4,0,0.2,1);
+          transition: transform 0.25s cubic-bezier(0.4,0,0.2,1), box-shadow 0.25s cubic-bezier(0.4,0,0.2,1), border-color 0.25s cubic-bezier(0.4,0,0.2,1);
         }
         .cw-product-card:hover {
           transform: translateY(-2px);
@@ -410,7 +410,7 @@ export default function ChatWidget() {
           border-color: #b8d8b8;
         }
         .cw-reset-btn {
-          transition: all 0.2s ease;
+          transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
           cursor: pointer;
         }
         .cw-reset-btn:hover {
@@ -525,7 +525,7 @@ export default function ChatWidget() {
                 <button
                   onClick={() => setExpanded(!expanded)}
                   title={expanded ? "Thu nhỏ" : "Mở rộng"}
-                  className="w-8 h-8 rounded-lg flex items-center justify-center transition-all"
+                  className="w-8 h-8 rounded-lg flex items-center justify-center transition-colors"
                   style={{ border: "none", cursor: "pointer", color: "rgba(255,255,255,0.6)" }}
                   onMouseEnter={e => (e.currentTarget.style.background = "rgba(255,255,255,0.1)")}
                   onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
@@ -535,7 +535,7 @@ export default function ChatWidget() {
                 <button
                   onClick={() => setOpen(false)}
                   title="Đóng"
-                  className="w-8 h-8 rounded-lg flex items-center justify-center transition-all"
+                  className="w-8 h-8 rounded-lg flex items-center justify-center transition-colors"
                   style={{ border: "none", cursor: "pointer", color: "rgba(255,255,255,0.6)" }}
                   onMouseEnter={e => (e.currentTarget.style.background = "rgba(255,255,255,0.1)")}
                   onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
@@ -733,11 +733,11 @@ export default function ChatWidget() {
                               </div>
                               <div className="flex-1 min-w-0">
                                 <span className="block text-[12px] font-semibold truncate" style={{ color: "#2c3e24" }}>{p.name}</span>
-                                <span className="text-[10px] mt-0.5 block" style={{ color: "#8aa480" }}>{p.category}</span>
+                                  <span className="text-xs mt-0.5 block" style={{ color: "#526248" }}>{p.category}</span>
                                 <div className="flex items-center gap-1.5 mt-0.5">
                                   <span className="text-[12px] font-bold" style={{ color: "#425733" }}>{p.price}</span>
                                   {p.originalPrice && (
-                                    <span className="text-[10px] line-through" style={{ color: "#ef4444" }}>{p.originalPrice}</span>
+                                    <span className="text-xs line-through" style={{ color: "#dc2626" }}>{p.originalPrice}</span>
                                   )}
                                 </div>
                               </div>
@@ -856,7 +856,7 @@ export default function ChatWidget() {
                     style={{ minHeight: 32, maxHeight: 80, boxShadow: "none", color: "#2c3e24" }}
                   />
                   {message.length > 300 && (
-                    <span className="absolute right-0 bottom-0 text-[10px] font-semibold" style={{ color: message.length >= MAX_INPUT ? "#dc2626" : "#9ca3af" }}>
+                    <span className="absolute right-0 bottom-0 text-xs font-semibold" style={{ color: message.length >= MAX_INPUT ? "#dc2626" : "#526248" }}>
                       {message.length}/{MAX_INPUT}
                     </span>
                   )}
@@ -864,7 +864,7 @@ export default function ChatWidget() {
                 <button
                   onClick={() => sendMessage(message)}
                   disabled={isSending || isCooldown || !message.trim() || userMsgCount >= MAX_MESSAGES}
-                  className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 transition-all"
+                  className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 transition-colors"
                   style={{
                     background: message.trim() && !isSending && !isCooldown
                       ? "linear-gradient(135deg, #3a5229, #4a6a35)"
@@ -880,10 +880,10 @@ export default function ChatWidget() {
               <div className="text-center pt-1.5 pb-0.5">
                 <Link
                   href="/products"
-                  className="inline-flex items-center gap-1 text-[11px] font-medium no-underline transition-colors"
-                  style={{ color: "#8a9e84" }}
+                  className="inline-flex items-center gap-1 text-xs font-medium no-underline transition-colors"
+                  style={{ color: "#526248" }}
                   onMouseEnter={e => (e.currentTarget.style.color = "#2d4a22")}
-                  onMouseLeave={e => (e.currentTarget.style.color = "#8a9e84")}
+                  onMouseLeave={e => (e.currentTarget.style.color = "#526248")}
                 >
                   <ExternalLink size={10} /> Khám phá bộ sưu tập
                 </Link>
