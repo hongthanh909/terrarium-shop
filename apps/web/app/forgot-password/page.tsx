@@ -107,7 +107,7 @@ export default function ForgotPasswordPage() {
                 {isSuccess ? (
                   <>
                     <h1 className="text-xl font-bold text-gray-800 mb-1">Kiểm tra email</h1>
-                    <p className="text-gray-400 text-sm">Chúng tôi đã gửi link khôi phục cho bạn</p>
+                    <p className="text-gray-400 text-sm">Nếu email đã đăng ký, link khôi phục sẽ được gửi</p>
                   </>
                 ) : (
                   <>
@@ -141,14 +141,14 @@ export default function ForgotPasswordPage() {
 
                   <div>
                     <p className="text-sm text-gray-500 leading-relaxed">
-                      Chúng tôi đã gửi email đến
+                      Nếu email này đã có tài khoản, hệ thống sẽ gửi link khôi phục đến
                     </p>
                     <p className="font-semibold text-gray-800 mt-1">{email}</p>
                   </div>
 
                   <div className="bg-[#f8faf6] border border-[#e3ebdd] rounded-xl p-4 text-left">
                     <p className="text-xs text-gray-500 leading-relaxed">
-                      Vui lòng kiểm tra hộp thư (và thư mục Spam). Link sẽ hết hạn sau 1 giờ.
+                      Vui lòng kiểm tra hộp thư và thư mục Spam. Nếu vẫn không thấy email, có thể địa chỉ này chưa được đăng ký hoặc hệ thống gửi mail đang gặp lỗi.
                     </p>
                   </div>
 
