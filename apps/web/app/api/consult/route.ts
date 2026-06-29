@@ -255,6 +255,7 @@ function getInstantResponse(message: string): string | null {
 // =============================================
 function isProductIntent(message: string): boolean {
   const q = message.toLowerCase().trim();
+  const n = normalizeVN(message);
   const productPatterns = [
     /s(ả|a)n\s*ph(ẩ|a)m/i,
     /\bsp\b/i,
@@ -273,7 +274,25 @@ function isProductIntent(message: string): boolean {
     /có\s*(bán|bể|sản|sp)/i,
     /list\s*(sản|sp)/i,
   ];
-  return productPatterns.some(p => p.test(q));
+  const normalizedProductPatterns = [
+    /\bsan\s*pham\b/,
+    /\bsp\b/,
+    /\bgia\b.*\b(bao|ca|tien|duoi|tam|khoang)\b/,
+    /\bbao\s*nhieu\b/,
+    /\bbn\b/,
+    /\bmuon\s*mua\b/,
+    /\bmua\s+(gi|cai|con|be|chau)\b/,
+    /\bgoi\s*y\b.*\b(san|sp|be|terrarium|qua|combo)\b/,
+    /\b(dat|mua)\s*hang\b/,
+    /\b(con|het)\s*hang\b/,
+    /\bqua\s*tang\b/,
+    /\bcombo\b/,
+    /\bxem\b.*\b(san|sp|be|hang)\b/,
+    /\bco\b.*\b(ban|be|san|sp)\b/,
+    /\blist\b.*\b(san|sp)\b/,
+    /\bduoi\s*\d+\s*(k|nghin|trieu|tr)?\b.*\b(be|terrarium|san|sp)\b/,
+  ];
+  return productPatterns.some(p => p.test(q)) || normalizedProductPatterns.some((p) => p.test(n));
 }
 
 // =============================================
@@ -357,9 +376,42 @@ function isDrynessIntent(messageNorm: string): boolean {
   ]);
 }
 
+function isYellowingIntent(messageNorm: string): boolean {
+  return hasAnyPattern(messageNorm, [
+    /\breu vang\b/,
+    /\breu bi vang\b/,
+    /\bla vang\b/,
+    /\bvang la\b/,
+    /\bcay vang\b/,
+    /\bcay bi vang\b/,
+    /\bcay ua\b/,
+    /\breu ua\b/,
+    /\bbi ua\b/,
+  ]);
+}
+
+function isWiltingIntent(messageNorm: string): boolean {
+  return hasAnyPattern(messageNorm, [
+    /\bcay heo\b/,
+    /\bla heo\b/,
+    /\bbi heo\b/,
+    /\bcay ru\b/,
+    /\bla ru\b/,
+    /\bbi ru\b/,
+    /\bheo mem\b/,
+    /\bmem la\b/,
+  ]);
+}
+
 function hasStrongKnowledgeIntent(message: string): boolean {
   const normalized = normalizeVN(message);
-  return isWateringGuideIntent(normalized) || isOverwateringIntent(normalized) || isDrynessIntent(normalized);
+  return (
+    isWateringGuideIntent(normalized) ||
+    isOverwateringIntent(normalized) ||
+    isDrynessIntent(normalized) ||
+    isYellowingIntent(normalized) ||
+    isWiltingIntent(normalized)
+  );
 }
 
 function getSafeHistory(history: unknown): { role: string; content: string }[] {
@@ -415,7 +467,7 @@ function shouldAnswerKnowledgeDirectly(hits: KnowledgeHit[]): boolean {
 
   // KB là nguồn chính thức và đã được admin duyệt. Với match rõ ràng, trả lời trực tiếp
   // giúp chat nhanh hơn rất nhiều so với chờ Ollama diễn giải lại.
-  return top.score >= 8 || ["care", "policy", "shipping", "greeting"].includes(top.category);
+  return top.score >= 8 || ["policy", "shipping", "greeting"].includes(top.category);
 }
 
 function scoreKnowledgeEntry(messageTokens: string[], messageNorm: string, currentMessageNorm: string, entry: {
@@ -435,15 +487,21 @@ function scoreKnowledgeEntry(messageTokens: string[], messageNorm: string, curre
   const isWateringEntry = /\btuoi nuoc\b|\bbao lau tuoi\b|\bcach tuoi\b|\bphun suong\b/.test(keywordNorm);
   const isOverwateringEntry = /\bung nuoc\b|\btuoi qua nhieu\b|\bdu nuoc\b|\bdat sung\b|\bnuoc dong\b/.test(keywordNorm);
   const isDrynessEntry = /\bbi kho\b|\bdat kho\b|\breu kho\b|\bthieu am\b|\bthieu nuoc\b/.test(keywordNorm);
+  const isYellowingEntry = /\bvang\b|\bvang la\b|\bla vang\b|\breu vang\b|\bbi ua\b|\bcay ua\b/.test(keywordNorm);
+  const isWiltingEntry = /\bheo\b|\bru\b|\bla ru\b|\bcay ru\b|\bheo mem\b/.test(keywordNorm);
 
   const wateringGuideIntent = isWateringGuideIntent(currentMessageNorm);
   const overwateringIntent = isOverwateringIntent(currentMessageNorm);
   const drynessIntent = isDrynessIntent(currentMessageNorm);
+  const yellowingIntent = isYellowingIntent(currentMessageNorm);
+  const wiltingIntent = isWiltingIntent(currentMessageNorm);
 
   // Chặn lỗi kinh điển: "tưới nước như thế nào?" không được rơi vào case "úng nước".
   if (wateringGuideIntent && !overwateringIntent && isOverwateringEntry) return 0;
   if (overwateringIntent && isWateringEntry) return 0;
   if (drynessIntent && isOverwateringEntry) return 0;
+  if (yellowingIntent && isWiltingEntry) return 0;
+  if (wiltingIntent && isYellowingEntry) return 0;
 
   let score = Math.min(entry.priority, 100) / 100;
   let hasKeywordMatch = false;
@@ -457,6 +515,14 @@ function scoreKnowledgeEntry(messageTokens: string[], messageNorm: string, curre
     hasKeywordMatch = true;
   }
   if (drynessIntent && isDrynessEntry) {
+    score += 18;
+    hasKeywordMatch = true;
+  }
+  if (yellowingIntent && isYellowingEntry) {
+    score += 18;
+    hasKeywordMatch = true;
+  }
+  if (wiltingIntent && isWiltingEntry) {
     score += 18;
     hasKeywordMatch = true;
   }
@@ -746,13 +812,23 @@ async function streamFromOllama(
   console.log(`[AI] Trying Ollama (model: ${model})...`);
 
   const abortCtrl = new AbortController();
-  const timeout = setTimeout(() => abortCtrl.abort(), 30000);
+  const timeout = setTimeout(() => abortCtrl.abort(), 18_000);
 
   try {
     const res = await fetch(`${ollamaUrl}/api/chat`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ model, messages, stream: true }),
+      body: JSON.stringify({
+        model,
+        messages,
+        stream: true,
+        keep_alive: "10m",
+        options: {
+          temperature: 0.45,
+          top_p: 0.9,
+          num_predict: 280,
+        },
+      }),
       signal: abortCtrl.signal,
     });
     clearTimeout(timeout);
@@ -845,6 +921,7 @@ async function streamFromAI(
 async function queryProducts(message: string): Promise<{ text: string; products: ProductCard[] } | null> {
   try {
     const q = message.toLowerCase();
+    const n = normalizeVN(message);
     type OrderBy = { featured?: "desc" | "asc"; createdAt?: "desc" | "asc"; basePrice?: "desc" | "asc" };
     let orderBy: OrderBy[] = [{ featured: "desc" }, { createdAt: "desc" }];
 
@@ -878,13 +955,13 @@ async function queryProducts(message: string): Promise<{ text: string; products:
     // ── Phát hiện danh mục từ tin nhắn ────────────────────────────────
     let categoryKeyword: string | null = null;
 
-    if (/\bbể\b|terrarium|bình\s*thủy\s*tinh|hủ|bình\s*cây|vườn\s*thủy\s*tinh/i.test(q)) {
+    if (/\bbể\b|terrarium|bình\s*thủy\s*tinh|hủ|bình\s*cây|vườn\s*thủy\s*tinh/i.test(q) || /\bbe\b|terrarium|binh thuy tinh|hu|binh cay|vuon thuy tinh/.test(n)) {
       categoryKeyword = "bể";
-    } else if (/\bcây\b|rêu|cỏ|fitonia|fittonia|cây\s*xanh|cây\s*cảnh|thực\s*vật/i.test(q)) {
+    } else if (/\bcây\b|rêu|cỏ|fitonia|fittonia|cây\s*xanh|cây\s*cảnh|thực\s*vật/i.test(q) || /\bcay\b|reu|co|fitonia|fittonia|cay xanh|cay canh|thuc vat/.test(n)) {
       categoryKeyword = "cây";
-    } else if (/phụ\s*kiện|dụng\s*cụ|nhíp|xẻ|phễu|sỏi|than\s*hoạt|substrate|tool/i.test(q)) {
+    } else if (/phụ\s*kiện|dụng\s*cụ|nhíp|xẻ|phễu|sỏi|than\s*hoạt|substrate|tool/i.test(q) || /phu kien|dung cu|nhip|xe|phieu|soi|than hoat|substrate|tool/.test(n)) {
       categoryKeyword = "phụ kiện";
-    } else if (/quà|combo|giỏ\s*quà|set/i.test(q)) {
+    } else if (/quà|combo|giỏ\s*quà|set/i.test(q) || /qua|combo|gio qua|set/.test(n)) {
       categoryKeyword = "combo";
     }
 
@@ -1139,13 +1216,15 @@ export async function POST(request: Request) {
     }
 
     // ── 7. PRODUCT FALLBACK (last resort) ─────────────────
-    const fallbackProducts = await queryProducts(trimmed);
-    if (fallbackProducts) {
-      return NextResponse.json({
-        response: fallbackProducts.text,
-        source: "db",
-        products: fallbackProducts.products,
-      });
+    if (isProductIntent(trimmed)) {
+      const fallbackProducts = await queryProducts(trimmed);
+      if (fallbackProducts) {
+        return NextResponse.json({
+          response: fallbackProducts.text,
+          source: "db",
+          products: fallbackProducts.products,
+        });
+      }
     }
 
     // ── 8. FINAL FALLBACK ─────────────────────────────────

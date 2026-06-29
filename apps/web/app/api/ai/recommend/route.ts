@@ -46,12 +46,28 @@ export async function POST(request: Request) {
 
   const prompt = buildProductPrompt(product);
 
-  // Call Ollama model (llama3:8b) – assuming Ollama HTTP API is available at localhost:11434
-  const ollamaRes = await fetch("http://localhost:11434/api/generate", {
+  const ollamaUrl = process.env.OLLAMA_URL || process.env.OLLAMA_BASE_URL || "http://localhost:11434";
+  const model = process.env.OLLAMA_MODEL || "llama3.2:3b";
+  const abortCtrl = new AbortController();
+  const timeout = setTimeout(() => abortCtrl.abort(), 18_000);
+
+  // Call the same Ollama model configured for /api/consult.
+  const ollamaRes = await fetch(`${ollamaUrl}/api/generate`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ model: "llama3:8b", prompt, stream: false }),
-  });
+    body: JSON.stringify({
+      model,
+      prompt,
+      stream: false,
+      keep_alive: "10m",
+      options: {
+        temperature: 0.45,
+        top_p: 0.9,
+        num_predict: 220,
+      },
+    }),
+    signal: abortCtrl.signal,
+  }).finally(() => clearTimeout(timeout));
 
   if (!ollamaRes.ok) {
     const err = await ollamaRes.text();
