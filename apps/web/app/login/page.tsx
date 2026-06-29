@@ -72,8 +72,7 @@ function AuthPage() {
     try {
       if (isLogin) {
         await handleLogin();
-        // Sau login, session chứa role — nếu là ADMIN thì về admin panel
-        // (admin bị chặn ở server, nên flow này chỉ xảy ra với CUSTOMER)
+        // Sau login, session chứa role. Admin cũng có thể dùng storefront như user.
         router.push(callbackUrl === "/" ? "/" : callbackUrl);
       } else {
         await handleRegister();

@@ -138,13 +138,6 @@ export const authOptions: NextAuthOptions = {
           throw new Error("Email hoặc mật khẩu không đúng.");
         }
 
-        // Block admin from logging in via customer form
-        if (user.role === "ADMIN") {
-          throw new Error(
-            "Tài khoản quản trị viên không thể đăng nhập tại đây. Vui lòng dùng trang đăng nhập quản trị."
-          );
-        }
-
         return {
           id: user.id,
           email: user.email,
