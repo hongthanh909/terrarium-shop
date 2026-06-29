@@ -60,6 +60,10 @@ function checkLoginRateLimit(ip: string): { allowed: boolean; retryAfter?: numbe
   return { allowed: true };
 }
 
+function hasAdminSession(token: any): boolean {
+  return token?.role === "ADMIN" && token?.authProvider === "admin-login" && token?.adminSession === true;
+}
+
 export async function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
   const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
@@ -77,7 +81,7 @@ export async function proxy(request: NextRequest) {
       req: request as any,
       secret: process.env.NEXTAUTH_SECRET,
     });
-    if (token && token.role === "ADMIN") {
+    if (hasAdminSession(token)) {
       return NextResponse.redirect(new URL(ADMIN_SECRET_PATH, request.url));
     }
     const response = NextResponse.next();
@@ -126,8 +130,9 @@ export async function proxy(request: NextRequest) {
     if (!token) {
       return NextResponse.redirect(new URL(ADMIN_LOGIN_PATH, request.url));
     }
-    // Verify role
-    if (token.role !== "ADMIN") {
+    // Verify role + admin-login provider. A storefront customer-login session
+    // with ADMIN role must not unlock the admin panel directly.
+    if (!hasAdminSession(token)) {
       return NextResponse.redirect(new URL(ADMIN_LOGIN_PATH, request.url));
     }
     // Xác thực header Referer bắt nguồn từ các trang admin hoặc trang đăng nhập admin
@@ -159,7 +164,7 @@ export async function proxy(request: NextRequest) {
 
   // ─── 6. API Admin routes ─────────────────────────────────────────────────────
   if (isApiAdmin) {
-    if (!token || token.role !== "ADMIN") {
+    if (!token || !hasAdminSession(token)) {
       const response = new NextResponse(
         JSON.stringify({ error: "Unauthorized" }),
         { status: 401, headers: { "Content-Type": "application/json" } }

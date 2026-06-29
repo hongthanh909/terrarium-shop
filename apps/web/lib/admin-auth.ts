@@ -7,6 +7,11 @@ export interface TokenPayload {
   id: string;
   email: string;
   role: string;
+  authProvider?: string;
+}
+
+function hasAdminSession(token: any): boolean {
+  return token?.role === "ADMIN" && token?.authProvider === "admin-login" && token?.adminSession === true;
 }
 
 /**
@@ -44,21 +49,23 @@ export async function verifyAdminRequest(
       });
     }
 
-    if (token && token.role === "ADMIN") {
+    if (token && hasAdminSession(token)) {
       return {
         id: token.id as string,
         email: token.email as string,
         role: token.role as string,
+        authProvider: token.authProvider as string,
       };
     }
 
     // Try 4: Fallback to server session (works in API routes)
     const session = await getServerSession(authOptions);
-    if (session && (session.user as any)?.role === "ADMIN") {
+    if (session && (session.user as any)?.role === "ADMIN" && (session.user as any)?.authProvider === "admin-login" && (session.user as any)?.adminSession === true) {
       return {
         id: (session.user as any).id as string,
         email: session.user?.email as string,
         role: (session.user as any).role as string,
+        authProvider: (session.user as any).authProvider as string,
       };
     }
 

@@ -110,6 +110,7 @@ export const authOptions: NextAuthOptions = {
           name: user.name ?? null,
           role: user.role,
           image: user.image ?? null,
+          authProvider: "admin-login",
         };
       },
     }),
@@ -144,6 +145,7 @@ export const authOptions: NextAuthOptions = {
           name: user.name ?? null,
           role: user.role,
           image: user.image ?? null,
+          authProvider: "customer-login",
         };
       },
     }),
@@ -156,11 +158,13 @@ export const authOptions: NextAuthOptions = {
   },
 
   callbacks: {
-    async jwt({ token, user, trigger, session }) {
+    async jwt({ token, user, account, trigger, session }) {
       if (user) {
         token.id = user.id;
         token.role = (user as any).role;
         token.picture = (user as any).image;
+        token.authProvider = (user as any).authProvider || account?.provider;
+        token.adminSession = token.role === "ADMIN" && token.authProvider === "admin-login";
       }
       if (trigger === "update" && session) {
         if (session.name !== undefined) token.name = session.name;
@@ -172,6 +176,8 @@ export const authOptions: NextAuthOptions = {
       if (token && session.user) {
         (session.user as any).id = token.id;
         (session.user as any).role = token.role;
+        (session.user as any).authProvider = token.authProvider;
+        (session.user as any).adminSession = token.adminSession;
         session.user.name = token.name;
         session.user.image = token.picture as string | null;
       }

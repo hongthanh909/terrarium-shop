@@ -116,6 +116,34 @@ interface KnowledgeHit {
   score: number;
 }
 
+function getProductConsultNotes(normalizedMessage: string): string[] {
+  const notes: string[] = [];
+
+  if (/\bban lam viec\b|\bban hoc\b|\bdesk\b/.test(normalizedMessage)) {
+    notes.push("Ưu tiên mẫu gọn, dễ đặt trên bàn làm việc/bàn học, không chiếm nhiều diện tích.");
+  }
+  if (/\bphong ngu\b|\bke dau giuong\b/.test(normalizedMessage)) {
+    notes.push("Với phòng ngủ, nên chọn mẫu nhỏ-vừa, ít mùi ẩm, đặt nơi có ánh sáng gián tiếp nhẹ.");
+  }
+  if (/\bphong khach\b|\bke sach\b|\bke trang tri\b/.test(normalizedMessage)) {
+    notes.push("Với phòng khách/kệ trang trí, có thể chọn mẫu nổi bật hơn để làm điểm nhấn decor.");
+  }
+  if (/\bvan phong\b|\bcong ty\b|\bmay lanh\b|\bdieu hoa\b/.test(normalizedMessage)) {
+    notes.push("Với văn phòng/máy lạnh, nên tránh luồng gió điều hòa trực tiếp và ưu tiên mẫu dễ giữ ẩm.");
+  }
+  if (/\bqua tang\b|\bsinh nhat\b|\btan gia\b|\bban gai\b|\bban trai\b|\bsep\b|\bdong nghiep\b/.test(normalizedMessage)) {
+    notes.push("Nếu làm quà tặng, nên chọn mẫu dễ chăm, bố cục xinh và an toàn khi vận chuyển.");
+  }
+  if (/\bnguoi moi\b|\blan dau\b|\bde cham\b|\bit cham\b|\bban ron\b|\bnewbie\b|\bbeginner\b/.test(normalizedMessage)) {
+    notes.push("Với người mới, nên ưu tiên mẫu dễ chăm và chỉ cần theo dõi độ ẩm định kỳ.");
+  }
+  if (/\bphong toi\b|\bit sang\b|\bthieu sang\b/.test(normalizedMessage)) {
+    notes.push("Nếu không gian ít sáng, nên đặt gần nguồn sáng gián tiếp hoặc bổ sung đèn LED nhẹ.");
+  }
+
+  return notes.slice(0, 3);
+}
+
 // =============================================
 // 1. GUARDRAIL — Chặn off-topic, chống lạm dụng model
 // =============================================
@@ -291,6 +319,8 @@ function isProductIntent(message: string): boolean {
     /\bco\b.*\b(ban|be|san|sp)\b/,
     /\blist\b.*\b(san|sp)\b/,
     /\bduoi\s*\d+\s*(k|nghin|trieu|tr)?\b.*\b(be|terrarium|san|sp)\b/,
+    /\b(tu van|goi y|chon)\b.*\b(ban lam viec|ban hoc|phong ngu|phong khach|van phong|may lanh|khong gian|ngan sach|decor|qua tang)\b/,
+    /\b(be|terrarium|cay|reu)\b.*\b(ban lam viec|ban hoc|phong ngu|phong khach|van phong|may lanh|duoi|tam|ngan sach|decor|qua tang)\b/,
   ];
   return productPatterns.some(p => p.test(q)) || normalizedProductPatterns.some((p) => p.test(n));
 }
@@ -933,15 +963,15 @@ async function queryProducts(message: string): Promise<{ text: string; products:
     //           "đưới 1 triệu", "1.5 triệu", "dưới 1tr"
     let maxPriceFilter: number | null = null;
 
-    const priceMaxMatch = q.match(
-      /(?:dưới|tầm|khoảng|tối đa|không quá)[\s<≤]*([\d.,]+)\s*(k|nghìn|ng|triệu|tr⁠|\btr\b)?/i
-    );
+    const priceMaxMatch =
+      q.match(/(?:dưới|tầm|khoảng|tối đa|không quá)[\s<≤]*([\d.,]+)\s*(k|nghìn|ng|triệu|tr⁠|\btr\b)?/i) ||
+      n.match(/(?:duoi|tam|khoang|toi da|khong qua)[\s<≤]*([\d.,]+)\s*(k|nghin|ng|trieu|tr)?/i);
 
     const parsePrice = (raw: string, unit?: string): number => {
       const num = parseFloat(raw.replace(/\./g, "").replace(/,/, "."));
       const u = (unit || "").toLowerCase().trim();
-      if (u === "triệu" || u === "tr⁠" || u === "tr") return num * 1_000_000;
-      if (u === "k" || u === "nghìn" || u === "ng") return num * 1_000;
+      if (u === "triệu" || u === "trieu" || u === "tr⁠" || u === "tr") return num * 1_000_000;
+      if (u === "k" || u === "nghìn" || u === "nghin" || u === "ng") return num * 1_000;
       if (num < 1_000) return num * 1_000;
       return num;
     };
@@ -1030,6 +1060,11 @@ async function queryProducts(message: string): Promise<{ text: string; products:
       inStock: true,
     }));
 
+    const consultNotes = getProductConsultNotes(n);
+    const noteText = consultNotes.length > 0
+      ? `\n\nEm chọn theo nhu cầu của anh/chị:\n${consultNotes.map((note) => `• ${note}`).join("\n")}`
+      : "";
+
     let intro = "\u{1F33F} D\u1EA1, \u0111\u00e2y l\u00e0 m\u1ed9t s\u1ed1 s\u1ea3n ph\u1ea9m n\u1ed5i b\u1eadt t\u1ea1i Ti\u1ec7m R\u00eau:";
     if (categoryKeyword && maxPriceFilter !== null) {
       intro = `\u{1F33F} D\u1EA1, \u0111\u00e2y l\u00e0 c\u00e1c **${categoryKeyword}** trong t\u1ea7m **${maxPriceFilter.toLocaleString("vi-VN")}\u20ab**:`;
@@ -1046,7 +1081,7 @@ async function queryProducts(message: string): Promise<{ text: string; products:
     }
 
     return {
-      text: `${intro}\n\n💡 Bấm vào sản phẩm để xem chi tiết. Freeship đơn từ 500.000₫ ạ!`,
+      text: `${intro}${noteText}\n\n💡 Bấm vào sản phẩm để xem chi tiết. Freeship đơn từ 500.000₫ ạ!`,
       products: productCards,
     };
   } catch (error) {
