@@ -20,10 +20,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { email } = validated.data;
+    const email = validated.data.email.trim().toLowerCase();
 
-    const user = await prisma.customer.findUnique({
-      where: { email },
+    const user = await prisma.customer.findFirst({
+      where: {
+        email: {
+          equals: email,
+          mode: "insensitive",
+        },
+      },
     });
 
     // We don't want to leak whether an email exists or not.
@@ -42,7 +47,7 @@ export async function POST(request: NextRequest) {
 
     // Save token to DB
     await prisma.customer.update({
-      where: { email },
+      where: { id: user.id },
       data: {
         resetToken: token,
         resetTokenExpiry: expiry,
@@ -50,12 +55,14 @@ export async function POST(request: NextRequest) {
     });
 
     // Send email
-    const emailResult = await sendPasswordResetEmail(email, token);
+    const emailResult = await sendPasswordResetEmail(user.email, token);
     
-    // Check if email was not sent because API KEY is missing (in dev)
-    // We still return success to the client so they know to check the logs.
-    if (!emailResult.success && emailResult.error === "RESEND_API_KEY is not configured") {
-      console.log("Mock email sent. Check console for the reset link.");
+    if (!emailResult.success) {
+      console.error("Forgot password email send failed:", emailResult.error);
+      return NextResponse.json(
+        { error: "Chưa gửi được email khôi phục. Vui lòng thử lại sau hoặc liên hệ shop." },
+        { status: 502 }
+      );
     }
 
     return NextResponse.json({

@@ -23,11 +23,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { email, password, name, phone } = validated.data;
+    const { password, name, phone } = validated.data;
+    const email = validated.data.email.trim().toLowerCase();
 
 
-    const existing = await prisma.customer.findUnique({
-      where: { email }
+    const existing = await prisma.customer.findFirst({
+      where: {
+        email: {
+          equals: email,
+          mode: "insensitive",
+        },
+      },
     });
 
     if (existing) {

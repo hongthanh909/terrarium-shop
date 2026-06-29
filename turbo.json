@@ -28,6 +28,7 @@
         "PAYOS_API_KEY",
         "PAYOS_CHECKSUM_KEY",
         "RESEND_API_KEY",
+        "RESEND_FROM_EMAIL",
         "NEXT_PUBLIC_SITE_URL"
       ]
     },

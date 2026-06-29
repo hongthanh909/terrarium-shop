@@ -14,6 +14,7 @@ import { ADMIN_SECRET_PATH } from "@/lib/admin-path";
 //     immediately, preventing pool exhaustion on Supabase free tier.
 // ─────────────────────────────────────────────────────────────────────────────
 async function findUserByEmail(email: string) {
+  const normalizedEmail = email.trim().toLowerCase();
   const client = new PrismaClient({
     datasources: {
       db: {
@@ -23,8 +24,13 @@ async function findUserByEmail(email: string) {
     log: ["error"],
   });
   try {
-    const user = await client.customer.findUnique({
-      where: { email },
+    const user = await client.customer.findFirst({
+      where: {
+        email: {
+          equals: normalizedEmail,
+          mode: "insensitive",
+        },
+      },
       select: {
         id: true,
         email: true,
@@ -37,7 +43,7 @@ async function findUserByEmail(email: string) {
 
     // Tự động thăng cấp email cấu hình admin thành vai trò ADMIN nếu đang là CUSTOMER
     const adminEmail = process.env.ADMIN_EMAIL;
-    if (user && adminEmail && user.email.toLowerCase() === adminEmail.toLowerCase() && user.role !== "ADMIN") {
+    if (user && adminEmail && user.email.toLowerCase() === adminEmail.trim().toLowerCase() && user.role !== "ADMIN") {
       const updatedUser = await client.customer.update({
         where: { id: user.id },
         data: { role: "ADMIN" },

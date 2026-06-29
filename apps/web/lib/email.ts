@@ -5,7 +5,7 @@ const resend = resendApiKey ? new Resend(resendApiKey) : null;
 
 // Default sender email — dùng domain đã verified trên Resend
 // Nếu chưa verify domain, Resend sẽ dùng 'onboarding@resend.dev' (chỉ gửi đến email owner)
-const DEFAULT_FROM = 'Tiệm Rêu Decor <no-reply@tiemreudecor.com>'; 
+const DEFAULT_FROM = process.env.RESEND_FROM_EMAIL || 'Tiệm Rêu Decor <no-reply@tiemreudecor.com>'; 
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://tiemreudecor.com';
 

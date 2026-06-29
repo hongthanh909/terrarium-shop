@@ -34,7 +34,8 @@ function AuthPage() {
   const [formData, setFormData] = useState({ email: "", password: "", name: "", phone: "" });
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const value = e.target.name === "email" ? e.target.value.trim().toLowerCase() : e.target.value;
+    setFormData({ ...formData, [e.target.name]: value });
     setError(null);
   };
 

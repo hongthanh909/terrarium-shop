@@ -31,10 +31,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { email, password } = validated.data;
+    const { password } = validated.data;
+    const email = validated.data.email.trim().toLowerCase();
 
-    const customer = await prisma.customer.findUnique({
-      where: { email },
+    const customer = await prisma.customer.findFirst({
+      where: {
+        email: {
+          equals: email,
+          mode: "insensitive",
+        },
+      },
       select: {
         id: true,
         email: true,
