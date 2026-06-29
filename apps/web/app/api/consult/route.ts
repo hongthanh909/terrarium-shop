@@ -981,7 +981,7 @@ async function queryProducts(message: string): Promise<{ text: string; products:
       ];
     }
 
-    const products = await prisma.product.findMany({
+    let products = await prisma.product.findMany({
       where: baseWhere,
       select: {
         name: true, slug: true, basePrice: true, salePrice: true,
@@ -990,6 +990,19 @@ async function queryProducts(message: string): Promise<{ text: string; products:
       take: 6,
       orderBy,
     });
+
+    if (products.length === 0 && categoryKeyword) {
+      const { category, ...broadWhere } = baseWhere;
+      products = await prisma.product.findMany({
+        where: broadWhere,
+        select: {
+          name: true, slug: true, basePrice: true, salePrice: true,
+          images: true, category: { select: { name: true } }, featured: true,
+        },
+        take: 6,
+        orderBy,
+      });
+    }
 
     if (products.length === 0) {
       const catLabel = categoryKeyword ? ` loại **${categoryKeyword}**` : "";
@@ -1036,7 +1049,8 @@ async function queryProducts(message: string): Promise<{ text: string; products:
       text: `${intro}\n\n💡 Bấm vào sản phẩm để xem chi tiết. Freeship đơn từ 500.000₫ ạ!`,
       products: productCards,
     };
-  } catch {
+  } catch (error) {
+    console.error("[CONSULT] Product query error:", error);
     return null;
   }
 }
@@ -1046,6 +1060,22 @@ async function queryProducts(message: string): Promise<{ text: string; products:
 // =============================================
 function getOfflineFallback(message: string): string | null {
   const q = message.toLowerCase().trim();
+  const n = normalizeVN(message);
+
+  if (isOverwateringIntent(n))
+    return "💦 **Bể bị dư nước / lỡ tưới quá nhiều**\n\nDạ nếu đất đang sũng nước hoặc có nước đọng đáy, mình nên xử lý theo hướng **giảm ẩm trước**, không tưới thêm ạ.\n\nCách xử lý nhanh:\n1. Ngưng tưới hoàn toàn vài ngày.\n2. Nếu là bể kín, mở nắp 24–48 giờ để thoát ẩm.\n3. Đặt bể nơi sáng gián tiếp, thoáng nhẹ, tránh nắng trực tiếp.\n4. Gắp bỏ lá vàng mềm/lá mục để hạn chế mốc lan.\n5. Nếu gốc cây mềm nhũn hoặc có mùi hôi, nên gửi ảnh/video cho shop để kiểm tra thối rễ.\n\nSau khi bể ổn lại, chỉ phun sương rất nhẹ khi mặt đất/rêu bắt đầu khô. Terrarium cần ẩm, nhưng không chịu được ngập nước lâu 🌿";
+
+  if (isWateringGuideIntent(n))
+    return "💧 **Cách tưới nước terrarium đúng cách**\n\nDạ, terrarium nên tưới theo kiểu **bổ sung ẩm nhẹ**, không tưới ngập như chậu cây thường.\n\nCách tưới:\n1. Dùng bình xịt phun sương hạt mịn.\n2. Xịt nhẹ quanh gốc cây/rêu, không xịt quá lâu một chỗ.\n3. Dừng khi mặt rêu/đất vừa ẩm, chưa bị sũng nước.\n4. Sau khi tưới, đặt bể nơi sáng gián tiếp, tránh nắng trực tiếp.\n\nTần suất tham khảo:\n• Bể kín: 1–2 tuần/lần hoặc lâu hơn nếu vẫn còn ẩm.\n• Bể mở: khoảng 3–5 ngày/lần.\n• Sen đá/xương rồng: 7–10 ngày/lần, chờ đất khô hẳn rồi mới tưới.\n\nMẹo dễ nhớ: **ẩm vừa đủ, không đọng nước** 🌿";
+
+  if (isYellowingIntent(n))
+    return "💛 **Rêu/cây bị vàng**\n\nDạ, rêu hoặc lá cây bị vàng thường do một trong các nguyên nhân sau:\n\n• Thiếu ánh sáng gián tiếp\n• Tưới quá nhiều làm bể bị úng\n• Bể quá bí, độ ẩm cao lâu ngày\n• Cây/rêu bị sốc sau vận chuyển hoặc đổi vị trí\n\nCách xử lý:\n1. Đặt bể nơi sáng nhẹ, tránh nắng trực tiếp.\n2. Kiểm tra đất/rêu: nếu còn ẩm thì chưa tưới thêm.\n3. Nếu bể kín bị đọng sương cả ngày, mở nắp thoáng 1–3 giờ.\n4. Gắp/cắt bỏ phần lá hoặc rêu đã vàng hư để tránh mốc lan.\n\nNếu vàng kèm gốc mềm nhũn, mùi hôi hoặc đất sũng nước thì nghiêng về dư nước/thối rễ — anh/chị nên gửi ảnh cho shop kiểm tra kỹ hơn ạ.";
+
+  if (isWiltingIntent(n))
+    return "🥀 **Cây bị héo hoặc rũ lá**\n\nDạ cây héo/rũ có thể do thiếu nước, dư nước hoặc sốc môi trường. Mình nên kiểm tra đất trước khi xử lý:\n\n• Nếu đất/rêu khô: phun sương nhẹ từng ít một, đợi 10–15 phút rồi quan sát.\n• Nếu đất đang ướt/sũng: ngưng tưới, mở nắp/để thoáng 24 giờ.\n• Đặt bể nơi sáng gián tiếp, tránh nắng gắt và gió điều hòa thổi trực tiếp.\n• Cắt bỏ lá hư nặng để cây tập trung hồi phục.\n\nNếu sau 1–2 ngày cây vẫn héo hoặc gốc mềm nhũn, anh/chị gửi ảnh/video để shop xem chính xác hơn nhé 🌿";
+
+  if (/\bmoc\b|\bnam\b|\bnam moc\b/.test(n))
+    return "🍄 **Xử lý terrarium bị mốc**\n\nMốc thường xuất hiện khi bể quá ẩm, bí khí hoặc có lá/rêu mục.\n\nCách xử lý:\n1. Mở nắp 24–48 giờ để giảm ẩm.\n2. Dùng nhíp/tăm bông gắp hoặc lau phần mốc.\n3. Gắp bỏ lá mục, rêu hư.\n4. Giảm tưới/phun sương trong vài ngày.\n5. Đặt bể nơi sáng gián tiếp, thoáng nhẹ.\n\nNếu mốc lan rộng hoặc có mùi hôi, anh/chị nên gửi ảnh/video cho shop kiểm tra ạ.";
 
   if (/terrarium.*là.*gì|là.*gì.*terrarium|terrarium.*nghĩa/i.test(q))
     return "🌿 **Terrarium là gì?**\n\nTerrarium là một **vườn thu nhỏ** trong bình/lọ thủy tinh, mô phỏng hệ sinh thái tự nhiên.\n\n**2 loại chính:**\n• **Bể kín (closed):** Có nắp, tạo chu trình nước tuần hoàn, gần như tự duy trì — rất dễ chăm!\n• **Bể mở (open):** Không nắp, phù hợp sen đá, xương rồng.\n\n**Lịch sử:** Được phát minh bởi Nathaniel Ward (1842) khi phát hiện cây dương xỉ tự mọc trong lọ thủy tinh.\n\n**Cấu tạo:** Sỏi thoát nước → than hoạt tính → đất → rêu/cây → trang trí.\n\nAnh/chị muốn tìm hiểu thêm về gì ạ? 😊";
@@ -1145,7 +1175,17 @@ export async function POST(request: Request) {
       }
     }
 
-    // ── 3. ADMIN KNOWLEDGE BASE RAG ───────────────────────
+    // ── 3. DETERMINISTIC CARE KB ──────────────────────────
+    // Các case chăm sóc rõ ràng cần trả lời nhanh và chắc, không chờ Ollama
+    // và không phụ thuộc KB admin cũ có thể match nhiễu.
+    if (hasStrongKnowledgeIntent(trimmed)) {
+      const careFallback = getOfflineFallback(trimmed);
+      if (careFallback) {
+        return NextResponse.json({ response: careFallback, source: "knowledge" });
+      }
+    }
+
+    // ── 4. ADMIN KNOWLEDGE BASE RAG ───────────────────────
     // Dữ liệu admin nhập ở /tiem-nho-nth24/ai-knowledge là nguồn chính thức.
     // Nếu match, đưa context vào Ollama để diễn giải tự nhiên; nếu Ollama offline thì trả lời trực tiếp từ KB.
     const knowledgeSearchQuery = buildKnowledgeSearchQuery(trimmed, history);
@@ -1185,17 +1225,17 @@ export async function POST(request: Request) {
       });
     }
 
-    // ── 4. INSTANT KB: Greeting + hard-coded fallback policies ─────
+    // ── 5. INSTANT KB: Greeting + hard-coded fallback policies ─────
     const instant = getInstantResponse(trimmed);
     if (instant) {
       console.log(`[CONSULT] ⚡ Instant KB hit`);
       return NextResponse.json({ response: instant, source: "knowledge" });
     }
 
-    // ── 5. SKIP isOnTopic — Để Ollama tự xử lý câu hỏi không rõ ─
+    // ── 6. SKIP isOnTopic — Để Ollama tự xử lý câu hỏi không rõ ─
     // (isOnTopic() quá strict → chặn nhầm câu hỏi hợp lệ)
 
-    // ── 6. OLLAMA AI — Xử lý mọi câu hỏi terrarium ──────
+    // ── 7. OLLAMA AI — Xử lý mọi câu hỏi terrarium ──────
     console.log(`[CONSULT] 🧠 Sending to Ollama...`);
     const stream = await streamFromAI(trimmed, history, pageContext);
     if (stream) {
@@ -1208,14 +1248,14 @@ export async function POST(request: Request) {
       });
     }
 
-    // ── 6. OLLAMA OFFLINE → Fallback KB ───────────────────
+    // ── 8. OLLAMA OFFLINE → Fallback KB ───────────────────
     console.log(`[CONSULT] ⚠️ Ollama offline, trying fallback KB`);
     const fallback = getOfflineFallback(knowledgeSearchQuery);
     if (fallback) {
       return NextResponse.json({ response: fallback, source: "knowledge" });
     }
 
-    // ── 7. PRODUCT FALLBACK (last resort) ─────────────────
+    // ── 9. PRODUCT FALLBACK (last resort) ─────────────────
     if (isProductIntent(trimmed)) {
       const fallbackProducts = await queryProducts(trimmed);
       if (fallbackProducts) {
@@ -1227,7 +1267,7 @@ export async function POST(request: Request) {
       }
     }
 
-    // ── 8. FINAL FALLBACK ─────────────────────────────────
+    // ── 10. FINAL FALLBACK ─────────────────────────────────
     return NextResponse.json({
       response: "Dạ em tạm thời chưa thể trả lời câu hỏi này. Anh/chị có thể hỏi em về:\n\n• 🌿 **Kiến thức terrarium** (cách làm, chăm sóc, xử lý sự cố)\n• 🛒 **Sản phẩm** (gợi ý, giá cả, so sánh)\n• 📦 **Chính sách** (ship, đổi trả, thanh toán)\n\nHoặc liên hệ Zalo/Facebook Tiệm Rêu để được hỗ trợ trực tiếp nhé! 😊",
       source: "fallback",
