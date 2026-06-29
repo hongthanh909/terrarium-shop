@@ -58,11 +58,9 @@ function AuthPage() {
     });
 
     if (result?.error) {
-      // NextAuth v4: lỗi credentials luôn là "CredentialsSignin"
-      // Message thực từ authorize() bị ẩn vì lý do bảo mật
-      // Hiện thị message chung, không để lộ lý do cụ thể
-      throw new Error("Email hoặc mật khẩu không đúng. Nếu bạn là quản trị viên, vui lòng dùng trang đăng nhập riêng.");
+      throw new Error("Email hoặc mật khẩu không đúng. Vui lòng kiểm tra lại thông tin đăng nhập.");
     }
+
     return result;
   };
 
