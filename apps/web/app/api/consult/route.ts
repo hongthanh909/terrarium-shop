@@ -321,6 +321,8 @@ function isProductIntent(message: string): boolean {
     /\bduoi\s*\d+\s*(k|nghin|trieu|tr)?\b.*\b(be|terrarium|san|sp)\b/,
     /\b(tu van|goi y|chon)\b.*\b(ban lam viec|ban hoc|phong ngu|phong khach|van phong|may lanh|khong gian|ngan sach|decor|qua tang)\b/,
     /\b(be|terrarium|cay|reu)\b.*\b(ban lam viec|ban hoc|phong ngu|phong khach|van phong|may lanh|duoi|tam|ngan sach|decor|qua tang)\b/,
+    /\b(tu van|goi y|chon)\b.*\b(mau|qua|sinh nhat|tan gia|sep|dong nghiep|ban gai|ban trai)\b/,
+    /\b(mau|set|be|terrarium)\b.*\b(qua|sinh nhat|tan gia|sep|dong nghiep|ban gai|ban trai)\b/,
   ];
   return productPatterns.some(p => p.test(q)) || normalizedProductPatterns.some((p) => p.test(n));
 }
