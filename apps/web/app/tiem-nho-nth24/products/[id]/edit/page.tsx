@@ -57,7 +57,6 @@ export default function EditProductPage() {
   const [uploadingVideo, setUploadingVideo] = useState(false);
 
   // Crop state
-  const [mainCropSrc, setMainCropSrc]   = useState<string | null>(null);
   const [subCropQueue, setSubCropQueue] = useState<string[]>([]);
   const [reCropIdx, setReCropIdx]       = useState<number | null>(null);
 
@@ -256,18 +255,17 @@ export default function EditProductPage() {
   const handleMainImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    // Open crop modal
-    const objectUrl = URL.createObjectURL(file);
-    setMainCropSrc(objectUrl);
-    if (mainImageInputRef.current) mainImageInputRef.current.value = "";
-  };
-
-  const handleMainCropConfirm = async (blob: Blob) => {
-    setMainCropSrc(null);
     setUploadingMain(true);
-    const url = await uploadImage(new File([blob], "main.jpg", { type: "image/jpeg" }));
-    if (url) { setMainImage(url); showToast.success("Đã cắt và tải ảnh chính"); }
-    setUploadingMain(false);
+    try {
+      const url = await uploadImage(file);
+      if (url) {
+        setMainImage(url);
+        showToast.success("Đã tải ảnh chính");
+      }
+    } finally {
+      setUploadingMain(false);
+      if (mainImageInputRef.current) mainImageInputRef.current.value = "";
+    }
   };
 
   const handleSubImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -542,8 +540,8 @@ export default function EditProductPage() {
                   <>
                     <ImageWrapper src={mainImage} alt="Ảnh chính" fill noRound className="object-cover" />
                     <div className="absolute inset-0 bg-black/0 hover:bg-black/30 transition-colors flex flex-col items-center justify-center gap-1">
-                      <Crop className="w-5 h-5 text-white opacity-0 hover:opacity-100" />
-                      <span className="text-white text-xs font-medium opacity-0 hover:opacity-100">Đổi & cắt ảnh</span>
+                      <Upload className="w-5 h-5 text-white opacity-0 hover:opacity-100" />
+                      <span className="text-white text-xs font-medium opacity-0 hover:opacity-100">Đổi ảnh</span>
                     </div>
                     <div className="absolute top-2 left-2 bg-amber-400 text-white text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
                       <Star className="w-2.5 h-2.5 fill-white" /> Chính
@@ -563,15 +561,15 @@ export default function EditProductPage() {
                 )}
               </div>
               <div className="flex-1">
-                <p className="text-xs text-gray-500 mb-2">Ảnh chính hiển thị trong danh sách sản phẩm và trang chi tiết. Khuyến nghị: tỷ lệ 1:1, tối thiểu 600×600px. <strong>Sẽ mở crop để căn chỉnh.</strong></p>
+                <p className="text-xs text-gray-500 mb-2">Ảnh chính hiển thị trong danh sách sản phẩm và trang chi tiết. Khuyến nghị: tỷ lệ 1:1, tối thiểu 600×600px. Hệ thống sẽ tải ảnh trực tiếp, không cần cắt thủ công.</p>
                 <button
                   type="button"
                   onClick={() => mainImageInputRef.current?.click()}
                   disabled={uploadingMain}
                   className="flex items-center gap-2 bg-[#425733] text-white px-4 py-2 rounded-full text-sm font-semibold hover:bg-[#364a29] disabled:opacity-50 transition-colors"
                 >
-                  <Crop className="w-4 h-4" />
-                  {uploadingMain ? "Đang tải..." : mainImage ? "Thay & cắt ảnh chính" : "Tải & cắt ảnh chính"}
+                  <Upload className="w-4 h-4" />
+                  {uploadingMain ? "Đang tải..." : mainImage ? "Thay ảnh chính" : "Tải ảnh chính"}
                 </button>
               </div>
             </div>
@@ -860,13 +858,6 @@ export default function EditProductPage() {
         </div>
       </form>
     </div>
-
-      {/* Crop Modal: Ảnh chính (1:1) */}
-      {mainCropSrc && (
-        <ImageCropModal src={mainCropSrc} aspect={1} title="Ảnh Chính — Cắt theo tỉ lệ 1:1"
-          onConfirm={handleMainCropConfirm}
-          onCancel={() => { URL.revokeObjectURL(mainCropSrc); setMainCropSrc(null); }} />
-      )}
 
       {/* Crop Modal: Ảnh phụ queue */}
       {subCropQueue[0] && reCropIdx === null && (
