@@ -138,35 +138,27 @@ export default function CreateProductPage() {
     }
   };
 
-  // ── Ảnh phụ — queue crop ──────────────────────────────
-  const handleSubImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // ── Ảnh phụ — upload trực tiếp, crop lại là tùy chọn ──
+  const handleSubImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     if (!files.length) return;
     if (subImages.length + files.length > 10) { showToast.error("Tối đa 10 ảnh phụ"); return; }
-    // Build queue of object URLs → crop lần lượt
-    const queue = files.map((f) => URL.createObjectURL(f));
-    setSubCropQueue(queue);
-    if (subImageInputRef.current) subImageInputRef.current.value = "";
-  };
-
-  const handleSubCropConfirm = async (blob: Blob) => {
-    // Upload current
     setUploadingSub(true);
-    const url = await uploadImage(new File([blob], "sub.jpg", { type: "image/jpeg" }));
-    if (url) setSubImages((prev) => [...prev, url]);
-    // Pop queue
-    setSubCropQueue((prev) => {
-      const next = prev.slice(1);
-      return next;
-    });
-    setUploadingSub(false);
-    if (!blob) showToast.error("Upload thất bại");
-  };
+    try {
+      const uploadedUrls: string[] = [];
+      for (const file of files) {
+        const url = await uploadImage(file);
+        if (url) uploadedUrls.push(url);
+      }
 
-  const handleSubCropCancel = () => {
-    // Revoke all remaining
-    subCropQueue.forEach((u) => URL.revokeObjectURL(u));
-    setSubCropQueue([]);
+      if (uploadedUrls.length > 0) {
+        setSubImages((prev) => [...prev, ...uploadedUrls]);
+        showToast.success(`Đã tải thêm ${uploadedUrls.length} ảnh phụ`);
+      }
+    } finally {
+      setUploadingSub(false);
+      if (subImageInputRef.current) subImageInputRef.current.value = "";
+    }
   };
 
   // ── Re-crop ảnh phụ đã upload ─────────────────────────
@@ -397,7 +389,7 @@ export default function CreateProductPage() {
 
             <button type="button" onClick={() => subImageInputRef.current?.click()} disabled={uploadingSub || subImages.length >= 10} className="flex items-center gap-2 text-sm text-[#425733] hover:text-[#364a29] font-medium disabled:opacity-40 transition-colors">
               <Upload className="w-4 h-4" />
-              {uploadingSub ? `Đang crop & tải (còn ${subCropQueue.length} ảnh)...` : "Tải nhiều ảnh phụ cùng lúc (sẽ crop từng ảnh)"}
+              {uploadingSub ? "Đang tải ảnh phụ..." : "Tải nhiều ảnh phụ cùng lúc"}
             </button>
           </div>
 
@@ -515,14 +507,6 @@ export default function CreateProductPage() {
         </div>
       </form>
     </div>
-
-    {/* Crop Modal: Ảnh phụ — queue hoặc re-crop */}
-    {currentSubCropSrc && reCropIdx === null && (
-      <ImageCropModal src={currentSubCropSrc}
-        title={`Ảnh Phụ ${subImages.length + (subCropQueue.length > 0 ? subCropQueue.length : 0)} — Kéo để chọn vùng cắt ${subCropQueue.length > 1 ? `(còn ${subCropQueue.length} ảnh)` : ""}`}
-        onConfirm={handleSubCropConfirm}
-        onCancel={handleSubCropCancel} />
-    )}
 
     {/* Crop Modal: Re-crop ảnh phụ đã upload */}
     {currentSubCropSrc && reCropIdx !== null && (
