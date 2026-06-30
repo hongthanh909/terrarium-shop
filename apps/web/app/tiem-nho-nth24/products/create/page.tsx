@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ImageWrapper } from "@/components/ui/ImageWrapper";
@@ -29,12 +29,34 @@ const formatVND = (value: string | number) => {
 };
 
 const MAX_VIDEO_MB = 50;
+const CREATE_PRODUCT_DRAFT_KEY = "tiemreu:create-product:draft:v1";
+const DRAFT_NAVIGATION_MESSAGE = "Bạn có thay đổi chưa lưu. Dữ liệu đã được giữ tạm, bạn vẫn muốn rời trang?";
+
+const DEFAULT_FORM_DATA = {
+  slug: "",
+  name: "",
+  basePrice: "",
+  salePrice: "",
+  saleEndDate: "",
+  type: "PRODUCT",
+  categoryId: "",
+  status: "DRAFT",
+  inventory: 0,
+  isFeatured: false,
+  size: "",
+  soil: "",
+  moss: "",
+  driftwood: "",
+  accessories: "",
+};
 
 export default function CreateProductPage() {
   const router = useRouter();
   const mainImageInputRef = useRef<HTMLInputElement>(null);
   const subImageInputRef  = useRef<HTMLInputElement>(null);
   const videoInputRef     = useRef<HTMLInputElement>(null);
+  const draftHydratedRef = useRef(false);
+  const allowNavigationRef = useRef(false);
 
   const [categories, setCategories]     = useState<Category[]>([]);
   const [loading, setLoading]           = useState(false);
@@ -53,23 +75,7 @@ export default function CreateProductPage() {
   // Video
   const [productVideo, setProductVideo] = useState<string>("");
 
-  const [formData, setFormData] = useState({
-    slug: "",
-    name: "",
-    basePrice: "",
-    salePrice: "",
-    saleEndDate: "",
-    type: "PRODUCT",
-    categoryId: "",
-    status: "DRAFT",
-    inventory: 0,
-    isFeatured: false,
-    size: "",
-    soil: "",
-    moss: "",
-    driftwood: "",
-    accessories: "",
-  });
+  const [formData, setFormData] = useState({ ...DEFAULT_FORM_DATA });
 
   const [careGuide, setCareGuide] = useState({
     watering: "",
@@ -102,6 +108,114 @@ export default function CreateProductPage() {
       .then((data) => { if (data && !data.error) setSuggestions(data); })
       .catch(() => {});
   }, []);
+
+  useEffect(() => {
+    try {
+      const rawDraft = window.localStorage.getItem(CREATE_PRODUCT_DRAFT_KEY);
+      if (!rawDraft) {
+        draftHydratedRef.current = true;
+        return;
+      }
+
+      const draft = JSON.parse(rawDraft);
+      if (draft?.formData) setFormData((prev) => ({ ...prev, ...draft.formData }));
+      if (draft?.careGuide) setCareGuide((prev) => ({ ...prev, ...draft.careGuide }));
+      if (typeof draft?.mainImage === "string") setMainImage(draft.mainImage);
+      if (Array.isArray(draft?.subImages)) setSubImages(draft.subImages);
+      if (typeof draft?.productVideo === "string") setProductVideo(draft.productVideo);
+      if (typeof draft?.tempMin === "number") setTempMin(draft.tempMin);
+      if (typeof draft?.tempMax === "number") setTempMax(draft.tempMax);
+      if (typeof draft?.humidityMin === "number") setHumidityMin(draft.humidityMin);
+      if (typeof draft?.humidityMax === "number") setHumidityMax(draft.humidityMax);
+
+      showToast.success("Đã khôi phục bản nháp sản phẩm chưa lưu");
+    } catch {
+      window.localStorage.removeItem(CREATE_PRODUCT_DRAFT_KEY);
+    } finally {
+      draftHydratedRef.current = true;
+    }
+  }, []);
+
+  const hasUnsavedDraft = useCallback(() => {
+    if (allowNavigationRef.current) return false;
+    return Boolean(
+      formData.name ||
+      formData.slug ||
+      formData.basePrice ||
+      formData.salePrice ||
+      formData.saleEndDate ||
+      formData.categoryId ||
+      formData.inventory ||
+      formData.isFeatured ||
+      formData.size ||
+      formData.soil ||
+      formData.moss ||
+      formData.driftwood ||
+      formData.accessories ||
+      careGuide.watering ||
+      careGuide.sunlight ||
+      careGuide.commonIssues ||
+      careGuide.videoUrl ||
+      mainImage ||
+      subImages.length > 0 ||
+      productVideo
+    );
+  }, [formData, careGuide, mainImage, subImages, productVideo]);
+
+  useEffect(() => {
+    if (!draftHydratedRef.current || allowNavigationRef.current) return;
+
+    const draft = {
+      formData,
+      careGuide,
+      mainImage,
+      subImages,
+      productVideo,
+      tempMin,
+      tempMax,
+      humidityMin,
+      humidityMax,
+      savedAt: new Date().toISOString(),
+    };
+
+    if (hasUnsavedDraft()) {
+      window.localStorage.setItem(CREATE_PRODUCT_DRAFT_KEY, JSON.stringify(draft));
+    } else {
+      window.localStorage.removeItem(CREATE_PRODUCT_DRAFT_KEY);
+    }
+  }, [formData, careGuide, mainImage, subImages, productVideo, tempMin, tempMax, humidityMin, humidityMax, hasUnsavedDraft]);
+
+  useEffect(() => {
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      if (!hasUnsavedDraft()) return;
+      event.preventDefault();
+      event.returnValue = DRAFT_NAVIGATION_MESSAGE;
+    };
+
+    const handleDocumentClick = (event: MouseEvent) => {
+      if (!hasUnsavedDraft()) return;
+      const target = event.target as HTMLElement | null;
+      const anchor = target?.closest?.("a[href]") as HTMLAnchorElement | null;
+      if (!anchor || anchor.target === "_blank") return;
+
+      const href = anchor.getAttribute("href");
+      if (!href || href.startsWith("#") || href.startsWith("javascript:")) return;
+
+      const confirmed = window.confirm(DRAFT_NAVIGATION_MESSAGE);
+      if (!confirmed) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    document.addEventListener("click", handleDocumentClick, true);
+
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+      document.removeEventListener("click", handleDocumentClick, true);
+    };
+  }, [formData, careGuide, mainImage, subImages, productVideo, tempMin, tempMax, humidityMin, humidityMax, hasUnsavedDraft]);
 
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const name = e.target.value;
@@ -257,11 +371,14 @@ export default function CreateProductPage() {
         body: JSON.stringify(productData),
       });
       if (res.ok) {
+        allowNavigationRef.current = true;
+        window.localStorage.removeItem(CREATE_PRODUCT_DRAFT_KEY);
         showToast.success("Tạo sản phẩm thành công!");
         router.push("/tiem-nho-nth24/products");
       } else {
         const err = await res.json();
-        showToast.error(err.error || "Lỗi khi tạo sản phẩm");
+        const detail = Array.isArray(err.details) && err.details[0]?.message ? err.details[0].message : "";
+        showToast.error(err.error || detail || "Lỗi khi tạo sản phẩm");
       }
     } catch {
       showToast.error("Lỗi kết nối");

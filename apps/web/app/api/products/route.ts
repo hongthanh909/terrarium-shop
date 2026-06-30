@@ -7,6 +7,7 @@ import { authOptions } from "@/lib/auth";
 import { verifyAdminRequest, unauthorizedResponse } from "@/lib/admin-auth";
 import { logAdminAction } from "@/lib/audit";
 import { revalidatePath } from "next/cache";
+import { Prisma } from "@prisma/client";
 
 export async function GET(request: NextRequest) {
   try {
@@ -192,6 +193,13 @@ export async function POST(request: NextRequest) {
       accessories,
     } = validatedData;
 
+    if (!categoryId) {
+      return NextResponse.json(
+        { error: "Vui lòng chọn danh mục sản phẩm." },
+        { status: 400 }
+      );
+    }
+
     // Resolve sale fields
     const salePrice = salePriceRaw != null ? Number(salePriceRaw) : null;
     const saleEndDate = saleEndDateRaw ? new Date(saleEndDateRaw) : null;
@@ -293,10 +301,39 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error: "Validation error", details: error.errors },
+        {
+          error: error.errors[0]?.message || "Dữ liệu sản phẩm chưa hợp lệ.",
+          details: error.errors,
+        },
         { status: 400 }
       );
     }
+
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error.code === "P2002") {
+        const fields = Array.isArray(error.meta?.target) ? error.meta.target.join(", ") : "dữ liệu";
+        const message = String(fields).includes("slug")
+          ? "Slug này đã tồn tại. Vui lòng đổi slug URL khác trước khi tạo sản phẩm."
+          : `${fields} đã tồn tại. Vui lòng kiểm tra lại.`;
+
+        return NextResponse.json({ error: message, code: error.code }, { status: 409 });
+      }
+
+      if (error.code === "P2003" || error.code === "P2025") {
+        return NextResponse.json(
+          { error: "Danh mục sản phẩm không tồn tại hoặc đã bị xoá. Vui lòng chọn lại danh mục.", code: error.code },
+          { status: 400 }
+        );
+      }
+
+      if (error.code === "P2009" || error.code === "P2011") {
+        return NextResponse.json(
+          { error: "Dữ liệu sản phẩm chưa hợp lệ. Vui lòng kiểm tra lại các trường bắt buộc.", code: error.code },
+          { status: 400 }
+        );
+      }
+    }
+
     console.error("Error creating product:", error);
     return NextResponse.json(
       { error: "Internal server error" },
