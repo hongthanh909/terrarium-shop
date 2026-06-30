@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, Mail, CheckCircle2 } from "lucide-react";
+import { AlertCircle, ArrowLeft, CheckCircle2, Mail } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Label } from "@/components/ui/label";
 import { ShimmerButton } from "@/components/ui/shimmer-button";
@@ -12,15 +12,21 @@ export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
     const normalizedEmail = email.trim().toLowerCase();
     if (!normalizedEmail) {
-      showToast.error("Vui lòng nhập địa chỉ email");
+      const message = "Vui lòng nhập địa chỉ email";
+      setErrorMessage(message);
+      showToast.error(message);
       return;
     }
+
     setEmail(normalizedEmail);
+    setErrorMessage(null);
     setLoading(true);
 
     try {
@@ -34,12 +40,16 @@ export default function ForgotPasswordPage() {
 
       if (res.ok) {
         setIsSuccess(true);
-        showToast.success(data.message || "Yêu cầu khôi phục mật khẩu đã được gửi!");
+        showToast.success(data.message || "Đã gửi link khôi phục mật khẩu!");
       } else {
-        showToast.error(data.error || "Có lỗi xảy ra, vui lòng thử lại");
+        const message = data.error || "Có lỗi xảy ra, vui lòng thử lại";
+        setErrorMessage(message);
+        showToast.error(message);
       }
     } catch (error) {
-      showToast.error("Lỗi kết nối. Vui lòng kiểm tra lại mạng.");
+      const message = "Lỗi kết nối. Vui lòng kiểm tra lại mạng.";
+      setErrorMessage(message);
+      showToast.error(message);
     } finally {
       setLoading(false);
     }
@@ -47,7 +57,6 @@ export default function ForgotPasswordPage() {
 
   return (
     <main className="min-h-screen relative flex items-center justify-center overflow-hidden bg-gradient-to-br from-[#dce5d5] via-[#e8efe2] to-[#f0f4ee]">
-      {/* Background blobs */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div
           className="absolute top-1/3 -left-24 w-[420px] h-[420px] rounded-full blur-[100px] opacity-40"
@@ -68,14 +77,12 @@ export default function ForgotPasswordPage() {
           Quay lại đăng nhập
         </Link>
 
-        {/* Card */}
         <motion.div
           initial={{ opacity: 0, y: 24, scale: 0.97 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ duration: 0.5, ease: "easeOut" }}
           className="relative rounded-3xl overflow-hidden bg-white/80 backdrop-blur-xl border border-white/60 shadow-[0_20px_60px_rgba(66,87,51,0.12)]"
         >
-          {/* Header */}
           <div className="px-8 pt-8 pb-6 border-b border-gray-100 text-center">
             <Link href="/" className="inline-flex flex-col items-center group mb-4">
               <span
@@ -107,19 +114,18 @@ export default function ForgotPasswordPage() {
                 {isSuccess ? (
                   <>
                     <h1 className="text-xl font-bold text-gray-800 mb-1">Kiểm tra email</h1>
-                    <p className="text-gray-400 text-sm">Nếu email đã đăng ký, link khôi phục sẽ được gửi</p>
+                    <p className="text-gray-400 text-sm">Link khôi phục đã được gửi đến email đã đăng ký</p>
                   </>
                 ) : (
                   <>
                     <h1 className="text-xl font-bold text-gray-800 mb-1">Quên mật khẩu?</h1>
-                    <p className="text-gray-400 text-sm">Nhập email để nhận link đặt lại mật khẩu</p>
+                    <p className="text-gray-400 text-sm">Nhập email đã đăng ký để nhận link đặt lại mật khẩu</p>
                   </>
                 )}
               </motion.div>
             </AnimatePresence>
           </div>
 
-          {/* Body */}
           <div className="px-8 py-6">
             <AnimatePresence mode="wait">
               {isSuccess ? (
@@ -141,20 +147,24 @@ export default function ForgotPasswordPage() {
 
                   <div>
                     <p className="text-sm text-gray-500 leading-relaxed">
-                      Nếu email này đã có tài khoản, hệ thống sẽ gửi link khôi phục đến
+                      Hệ thống đã gửi link khôi phục mật khẩu đến
                     </p>
                     <p className="font-semibold text-gray-800 mt-1">{email}</p>
                   </div>
 
                   <div className="bg-[#f8faf6] border border-[#e3ebdd] rounded-xl p-4 text-left">
                     <p className="text-xs text-gray-500 leading-relaxed">
-                      Vui lòng kiểm tra hộp thư và thư mục Spam. Nếu vẫn không thấy email, có thể địa chỉ này chưa được đăng ký hoặc hệ thống gửi mail đang gặp lỗi.
+                      Vui lòng kiểm tra hộp thư và mục Spam. Link đặt lại mật khẩu chỉ có hiệu lực trong 1 giờ.
                     </p>
                   </div>
 
                   <div className="space-y-2 pt-2">
                     <button
-                      onClick={() => { setIsSuccess(false); setEmail(""); }}
+                      onClick={() => {
+                        setIsSuccess(false);
+                        setEmail("");
+                        setErrorMessage(null);
+                      }}
                       className="w-full py-2.5 rounded-full border-2 border-[#425733]/20 text-[#425733] text-sm font-medium hover:bg-[#425733]/5 transition-colors"
                     >
                       Thử email khác
@@ -176,6 +186,13 @@ export default function ForgotPasswordPage() {
                   className="space-y-4"
                   onSubmit={handleSubmit}
                 >
+                  {errorMessage && (
+                    <div className="flex items-start gap-2 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
+                      <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+                      <span>{errorMessage}</span>
+                    </div>
+                  )}
+
                   <div>
                     <Label htmlFor="forgot-email" className="text-gray-600 text-sm mb-1.5 block">
                       Địa chỉ email
@@ -187,7 +204,10 @@ export default function ForgotPasswordPage() {
                         type="email"
                         required
                         value={email}
-                        onChange={(e) => setEmail(e.target.value)}
+                        onChange={(e) => {
+                          setEmail(e.target.value);
+                          setErrorMessage(null);
+                        }}
                         className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-gray-50 border border-gray-200 text-gray-800 placeholder:text-gray-300 text-sm focus:outline-none focus:border-[#425733] focus:ring-2 focus:ring-[#425733]/10 focus:shadow-[0_0_0_3px_rgba(66,87,51,0.08)] transition-all"
                         placeholder="email@example.com"
                         autoComplete="email"
@@ -209,7 +229,6 @@ export default function ForgotPasswordPage() {
           </div>
         </motion.div>
 
-        {/* Footer */}
         <p className="text-center text-xs text-gray-400 mt-6">
           Bảo mật bởi Tiệm Rêu Décor
         </p>

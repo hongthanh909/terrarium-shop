@@ -31,21 +31,22 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // We don't want to leak whether an email exists or not.
-    // So if the user doesn't exist, we just return success anyway.
+    // Storefront UX choice: show a clear message when the account is not registered.
+    // This makes "forgot password" easier for real customers to understand.
     if (!user) {
-      return NextResponse.json({
-        success: true,
-        message: "Nếu email tồn tại trong hệ thống, chúng tôi đã gửi link đặt lại mật khẩu.",
-      });
+      return NextResponse.json(
+        {
+          error: "Email này chưa được đăng ký tài khoản. Vui lòng đăng ký mới hoặc kiểm tra lại email.",
+          code: "ACCOUNT_NOT_FOUND",
+        },
+        { status: 404 }
+      );
     }
 
-    // Generate random token
     const token = crypto.randomBytes(32).toString("hex");
     const expiry = new Date();
-    expiry.setHours(expiry.getHours() + 1); // Token is valid for 1 hour
+    expiry.setHours(expiry.getHours() + 1);
 
-    // Save token to DB
     await prisma.customer.update({
       where: { id: user.id },
       data: {
@@ -54,9 +55,8 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Send email
     const emailResult = await sendPasswordResetEmail(user.email, token);
-    
+
     if (!emailResult.success) {
       console.error("Forgot password email send failed:", emailResult.error);
       return NextResponse.json(
@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: "Nếu email tồn tại trong hệ thống, chúng tôi đã gửi link đặt lại mật khẩu.",
+      message: "Đã gửi link đặt lại mật khẩu. Vui lòng kiểm tra hộp thư và mục Spam.",
     });
   } catch (error) {
     console.error("Forgot password error:", error);
