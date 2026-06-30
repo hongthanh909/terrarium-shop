@@ -323,20 +323,26 @@ export default function EditProductPage() {
       return;
     }
     setUploadingVideo(true);
-    const fd = new FormData();
-    fd.append("file", file);
-    fd.append("bucket", "products");
-    const res = await fetch("/api/upload", { method: "POST", body: fd });
-    if (res.ok) {
-      const data = await res.json();
-      setProductVideo(data.url);
-      setCareGuide((prev) => ({ ...prev, videoUrl: data.url }));
-      showToast.success("Đã tải video lên thành công!");
-    } else {
-      showToast.error("Upload video thất bại");
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      fd.append("bucket", "products");
+      const res = await fetch("/api/upload", { method: "POST", body: fd });
+      const data = await res.json().catch(() => null);
+
+      if (res.ok && data?.url) {
+        setProductVideo(data.url);
+        setCareGuide((prev) => ({ ...prev, videoUrl: data.url }));
+        showToast.success("Đã tải video lên thành công!");
+      } else {
+        showToast.error(data?.error || "Upload video thất bại");
+      }
+    } catch (error) {
+      showToast.error("Không kết nối được server upload. Vui lòng thử lại.");
+    } finally {
+      setUploadingVideo(false);
+      if (videoInputRef.current) videoInputRef.current.value = "";
     }
-    setUploadingVideo(false);
-    if (videoInputRef.current) videoInputRef.current.value = "";
   };
 
   const handleSubmit = async (e: React.FormEvent) => {

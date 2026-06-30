@@ -6,7 +6,28 @@ import { authOptions } from "@/lib/auth";
 
 const ADMIN_BUCKETS = new Set(["products", "banners", "blog", "homepage", "policies", "gallery", "avatars"]);
 const CUSTOMER_BUCKETS = new Set(["avatars"]);
+
 const ALLOWED_IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
+const ALLOWED_VIDEO_TYPES = new Set(["video/mp4", "video/webm", "video/quicktime"]);
+const ALLOWED_VIDEO_EXTENSIONS = new Set([".mp4", ".webm", ".mov"]);
+
+const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
+const MAX_VIDEO_SIZE = 50 * 1024 * 1024;
+
+function getUploadKind(file: File): "image" | "video" | null {
+  const type = file.type.toLowerCase();
+  const name = file.name.toLowerCase();
+
+  if (ALLOWED_IMAGE_TYPES.has(type)) return "image";
+  if (ALLOWED_VIDEO_TYPES.has(type)) return "video";
+
+  // Some browsers/devices provide an empty or generic MIME type.
+  if (ALLOWED_VIDEO_EXTENSIONS.has(name.slice(name.lastIndexOf(".")))) {
+    return "video";
+  }
+
+  return null;
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -14,7 +35,7 @@ export async function POST(request: NextRequest) {
     const session = await getServerSession(authOptions);
 
     if (!admin && !session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại." }, { status: 401 });
     }
 
     const formData = await request.formData();
@@ -22,25 +43,34 @@ export async function POST(request: NextRequest) {
     const bucket = (formData.get("bucket") as string) || "products";
 
     if (!file) {
-      return NextResponse.json({ error: "No file provided" }, { status: 400 });
+      return NextResponse.json({ error: "Chưa chọn file để tải lên." }, { status: 400 });
     }
 
     const bucketAllowed = admin ? ADMIN_BUCKETS.has(bucket) : CUSTOMER_BUCKETS.has(bucket);
     if (!bucketAllowed) {
-      return NextResponse.json({ error: "Bucket is not allowed" }, { status: 400 });
+      return NextResponse.json({ error: "Bạn không có quyền upload vào thư mục này." }, { status: 400 });
     }
 
-    if (!ALLOWED_IMAGE_TYPES.has(file.type)) {
+    const kind = getUploadKind(file);
+    if (!kind) {
       return NextResponse.json(
-        { error: "Only JPG, PNG, WEBP or GIF images are allowed" },
+        { error: "Định dạng file chưa được hỗ trợ. Ảnh: JPG/PNG/WEBP/GIF. Video: MP4/WEBM/MOV." },
         { status: 400 }
       );
     }
 
-    const maxSize = 5 * 1024 * 1024;
-    if (file.size > maxSize) {
+    if (kind === "video" && (!admin || bucket !== "products")) {
       return NextResponse.json(
-        { error: "File size must be less than 5MB" },
+        { error: "Video chỉ được upload bởi admin trong mục sản phẩm." },
+        { status: 400 }
+      );
+    }
+
+    const maxSize = kind === "video" ? MAX_VIDEO_SIZE : MAX_IMAGE_SIZE;
+    if (file.size > maxSize) {
+      const maxSizeMB = Math.round(maxSize / 1024 / 1024);
+      return NextResponse.json(
+        { error: `${kind === "video" ? "Video" : "Ảnh"} quá lớn. Tối đa ${maxSizeMB}MB.` },
         { status: 400 }
       );
     }
@@ -51,12 +81,13 @@ export async function POST(request: NextRequest) {
       success: true,
       url: publicUrl,
       fileName: publicUrl.split("/").pop(),
+      type: kind,
       provider: process.env.STORAGE_PROVIDER || "supabase",
     });
   } catch (error) {
-    console.error("Error uploading image:", error);
+    console.error("Error uploading file:", error);
     return NextResponse.json(
-      { error: "Failed to upload image" },
+      { error: "Tải file thất bại. Vui lòng thử lại hoặc kiểm tra cấu hình storage." },
       { status: 500 }
     );
   }
