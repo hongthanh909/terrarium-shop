@@ -32,7 +32,7 @@ export default function AdminProductsPage() {
   const { data: products = [], isLoading: loading, error } = useQuery<Product[], Error>({
     queryKey: ["admin-products"],
     queryFn: async () => {
-      const response = await fetch("/api/products?status=all");
+      const response = await fetch("/api/products?status=all&limit=500&nocache=true");
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         throw new Error(errorData.error || "Không thể tải danh sách sản phẩm.");

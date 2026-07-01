@@ -214,6 +214,32 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const existingSlugProduct = await prisma.product.findUnique({
+      where: { slug },
+      select: {
+        id: true,
+        slug: true,
+        name: true,
+        status: true,
+        images: true,
+        category: { select: { id: true, name: true } },
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+
+    if (existingSlugProduct) {
+      return NextResponse.json(
+        {
+          error: `Slug này đang thuộc về sản phẩm "${existingSlugProduct.name}". Vui lòng mở sản phẩm đó để sửa hoặc đổi slug URL khác.`,
+          code: "SLUG_ALREADY_EXISTS",
+          existingProduct: existingSlugProduct,
+          editUrl: `/tiem-nho-nth24/products/${existingSlugProduct.id}/edit`,
+        },
+        { status: 409 }
+      );
+    }
+
     const product = await prisma.$transaction(async (tx) => {
       // Create product
       const newProduct = await tx.product.create({

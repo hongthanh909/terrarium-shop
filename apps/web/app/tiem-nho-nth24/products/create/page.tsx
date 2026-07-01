@@ -378,6 +378,19 @@ export default function CreateProductPage() {
       } else {
         const err = await res.json();
         const detail = Array.isArray(err.details) && err.details[0]?.message ? err.details[0].message : "";
+
+        if (err.existingProduct?.id) {
+          const shouldOpenExisting = window.confirm(
+            `${err.error}\n\nBạn có muốn mở sản phẩm đang giữ slug "${err.existingProduct.slug}" để kiểm tra không?`
+          );
+
+          if (shouldOpenExisting) {
+            allowNavigationRef.current = true;
+            router.push(`/tiem-nho-nth24/products/${err.existingProduct.id}/edit`);
+          }
+
+          return;
+        }
         showToast.error(err.error || detail || "Lỗi khi tạo sản phẩm");
       }
     } catch {
