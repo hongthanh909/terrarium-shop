@@ -2,7 +2,21 @@ import { Metadata } from "next";
 import Link from "next/link";
 import { ImageWrapper } from "@/components/ui/ImageWrapper";
 import { Suspense } from "react";
-import { Sprout, Truck, ArrowRight, FileText, Calendar, Gift, Sparkles, Bot, Leaf } from "lucide-react";
+import {
+  Sprout,
+  Truck,
+  ArrowRight,
+  FileText,
+  Calendar,
+  Gift,
+  Sparkles,
+  Bot,
+  Leaf,
+  HandHeart,
+  Flower2,
+  BookOpen,
+  ShieldCheck,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -283,92 +297,117 @@ export default async function Home() {
   return (
     <main className="min-h-[100dvh]" style={{ background: "#ECEEE5" }}>
 
-      {/* ── Hero Section — 2-column split layout ─────────────────────────── */}
+      {/* ── Hero Section: 16:9 editorial product banner ───────────────────── */}
       <section
         id="about"
-        className="relative overflow-hidden"
-        style={{ background: "linear-gradient(145deg, #ECEEE5 0%, #F6F3EE 55%, #FAF9F7 100%)" }}
+        className="relative overflow-hidden px-4 py-6 sm:px-6 lg:px-10 lg:py-10"
+        style={{ background: "linear-gradient(145deg, #ECEEE5 0%, #F7F4EE 62%, #FBFAF6 100%)" }}
       >
-        <div className="max-w-7xl mx-auto px-6 lg:px-10">
-          <div className="grid grid-cols-1 lg:grid-cols-2 min-h-[88vh] items-center gap-8 lg:gap-0">
+        <div className="mx-auto max-w-7xl">
+          <div
+            className="relative overflow-hidden rounded-[2rem] lg:aspect-video"
+            style={{
+              background:
+                "radial-gradient(circle at 78% 28%, rgba(206,218,188,0.72), transparent 28%), linear-gradient(135deg, #fbf8f1 0%, #eee9dc 48%, #f8f6ef 100%)",
+              boxShadow: "0 30px 90px rgba(38, 58, 31, 0.16)",
+            }}
+          >
+            <div
+              className="pointer-events-none absolute inset-0 opacity-60"
+              style={{
+                background:
+                  "radial-gradient(circle at 12% 18%, rgba(255,255,255,0.82), transparent 30%), radial-gradient(circle at 76% 68%, rgba(91,111,75,0.14), transparent 26%)",
+              }}
+            />
+            <div className="relative z-10 grid min-h-[720px] grid-cols-1 lg:min-h-0 lg:grid-cols-[0.95fr_1.05fr]">
+              <div className="flex flex-col justify-center px-6 pb-10 pt-12 sm:px-10 lg:px-14 lg:pb-44 lg:pt-12">
+                <ScrollReveal direction="up" initiallyVisible>
+                  <p className="mb-5 text-[11px] font-semibold uppercase tracking-[0.28em] text-[#6f845d]">
+                    Terrarium & Moss Art
+                  </p>
+                  <h1 className="max-w-[12ch] text-[2.8rem] font-serif leading-[1.05] tracking-[-0.04em] text-[#263b20] sm:text-6xl lg:text-[4rem]">
+                    Mang đến một chút rêu - một chút xanh
+                  </h1>
+                  <p className="mt-6 max-w-[34ch] text-base leading-relaxed text-[#3f5134] sm:text-lg">
+                    Chúng mình sẽ mang đến sự bình yên trong không gian nhỏ của bạn
+                  </p>
 
-            {/* Left Column — Text Content */}
-            <div className="flex flex-col justify-center py-16 lg:py-20 lg:pr-14 order-2 lg:order-1">
-              <ScrollReveal direction="up" initiallyVisible>
-                {/* Eyebrow */}
-                <p
-                  className="text-[11px] font-semibold tracking-[0.2em] uppercase mb-5"
-                  style={{ color: "#5a7a48" }}
-                >
-                  VỀ CHÚNG TÔI
-                </p>
+                  <div className="mt-9 flex flex-col gap-4 sm:flex-row sm:items-center">
+                    <Link
+                      href="/products"
+                      className="inline-flex min-h-12 items-center justify-center rounded-xl bg-[#263b20] px-9 text-base font-semibold text-white shadow-[0_14px_28px_rgba(38,59,32,0.22)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#314d28] active:scale-[0.98]"
+                    >
+                      Mua ngay
+                    </Link>
+                    <Link
+                      href="/products"
+                      className="inline-flex min-h-12 items-center justify-center gap-3 rounded-xl px-2 text-base font-semibold text-[#263b20] transition-all duration-200 hover:translate-x-1 active:scale-[0.98]"
+                    >
+                      Khám phá bộ sưu tập
+                      <ArrowRight className="h-5 w-5 stroke-[1.7]" />
+                    </Link>
+                  </div>
 
-                {/* Headline */}
-                <h1
-                  className="text-4xl sm:text-5xl lg:text-[3.25rem] font-extrabold leading-[1.12] tracking-tight mb-6"
-                  style={{ color: "#1e3112" }}
-                >
-                  Tạo nên những thiết kế terrarium mang dấu ấn riêng
-                </h1>
+                  <div className="mt-8 grid max-w-xl grid-cols-4 gap-3 text-[#2f4328] sm:gap-4">
+                    {[
+                      { label: "Thủ công", Icon: HandHeart },
+                      { label: "Phong thủy", Icon: Flower2 },
+                      { label: "Dễ chăm", Icon: Leaf },
+                      { label: "Quà tặng", Icon: Gift },
+                    ].map(({ label, Icon }) => (
+                      <div key={label} className="flex flex-col items-center gap-3 border-[#c7cfba] sm:border-r sm:last:border-r-0">
+                        <Icon className="h-7 w-7 stroke-[1.45] sm:h-8 sm:w-8" />
+                        <span className="text-xs font-medium sm:text-sm">{label}</span>
+                      </div>
+                    ))}
+                  </div>
+                </ScrollReveal>
+              </div>
 
-                {/* Description */}
-                <p
-                  className="text-base leading-relaxed mb-10 max-w-[48ch]"
-                  style={{ color: "#4a5e38" }}
-                >
-                  Mỗi terrarium được tạo hình tỉ mỉ, kết hợp thiết kế thủy tinh đẹp mắt với hệ thực vật được chọn lọc để mang thiên nhiên thanh tao vào không gian sống của bạn.
-                </p>
+              <div className="relative flex min-h-[520px] items-end justify-center px-4 pb-28 lg:min-h-0 lg:pb-24 lg:pr-8">
+                <div className="absolute bottom-28 left-4 hidden h-28 w-28 rounded-full bg-[#d8d0bf]/55 blur-[1px] lg:block" />
+                <div className="absolute right-8 top-10 h-64 w-44 rotate-12 rounded-[45%] border border-[#c9c0aa] bg-[#e7dfcf]/72 shadow-inner lg:right-12 lg:top-16" />
+                <div className="absolute bottom-24 right-0 h-56 w-40 rotate-[-18deg] rounded-[45%] border border-[#c9c0aa] bg-[#efe8d9]/70 shadow-inner lg:right-6" />
+                <div className="absolute right-0 top-10 h-72 w-28 rotate-12 rounded-full bg-[#7b875f]/25 blur-2xl" />
 
-                {/* CTA Buttons */}
-                <div className="flex flex-col sm:flex-row gap-3">
-                  <Link
-                    href="/products"
-                    className="inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-full text-sm font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg active:scale-[0.98]"
-                    style={{ background: "#3d5a2a" }}
-                  >
-                    <Sprout className="w-4 h-4" />
-                    Khám Phá Cửa Hàng
-                  </Link>
-                  <Link
-                    href="/consult"
-                    className="inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-full text-sm font-semibold transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md active:scale-[0.98]"
-                    style={{
-                      color: "#3d5a2a",
-                      border: "1.5px solid #9ab88a",
-                      background: "rgba(255,255,255,0.65)",
-                    }}
-                  >
-                    <Sparkles className="w-4 h-4" />
-                    Nhận Tư Vấn Ngay
-                  </Link>
+                <div className="pointer-events-none absolute bottom-24 left-8 h-20 w-52 rotate-[-8deg] rounded-full bg-[#5b3b20]/16 blur-2xl lg:left-20" />
+
+                <div className="absolute left-[8%] top-[10%] hidden text-white drop-shadow-[0_1px_8px_rgba(54,67,45,0.4)] lg:block">
+                  <span className="text-lg font-medium">Nhỏ gọn</span>
+                  <div className="mt-2 h-12 w-24 rounded-bl-[42px] border-b-2 border-l-2 border-white/90" />
                 </div>
-              </ScrollReveal>
-            </div>
+                <div className="absolute left-[2%] top-[44%] hidden text-white drop-shadow-[0_1px_8px_rgba(54,67,45,0.45)] lg:block">
+                  <span className="text-lg font-medium">Dễ chăm sóc</span>
+                  <div className="ml-20 mt-2 h-12 w-28 rounded-br-[48px] border-b-2 border-r-2 border-white/90" />
+                </div>
+                <div className="absolute right-[2%] top-[48%] hidden text-right text-white drop-shadow-[0_1px_8px_rgba(54,67,45,0.45)] lg:block">
+                  <div className="mb-2 ml-auto h-14 w-24 rounded-tl-[48px] border-l-2 border-t-2 border-white/90" />
+                  <span className="text-lg font-medium">Sản phẩm<br />độc đáo</span>
+                </div>
 
-            {/* Right Column — Hero Image */}
-            <div className="relative flex items-end justify-center order-1 lg:order-2 pt-10 lg:pt-0 lg:h-[88vh]">
-              {/* Decorative organic background blob */}
-              <div
-                className="absolute top-8 right-0 w-[92%] h-[82%] rounded-[2.5rem]"
-                style={{
-                  background: "linear-gradient(145deg, #d8e8c4 0%, #c2d9a8 100%)",
-                  opacity: 0.4,
-                }}
-              />
-              {/* Hero Image */}
-              <div
-                className="relative z-10 w-full max-w-md lg:max-w-none mx-auto h-[58vw] lg:h-[78vh] overflow-hidden"
-                style={{ borderRadius: "2rem", boxShadow: "0 24px 70px rgba(30,49,18,0.18)" }}
-              >
                 <img
-                  src="/terrarium_hero_split.png"
-                  alt="Bàn tay đang chăm sóc terrarium thủ công"
-                  className="w-full h-full object-cover"
-                  style={{ objectPosition: "50% 25%" }}
+                  src="/hero-terrarium-product-cutout.png"
+                  alt="Terrarium rêu decor nguyên bản từ ảnh sản phẩm của Tiệm Rêu Décor"
+                  className="relative z-10 max-h-[590px] w-auto max-w-[86%] object-contain drop-shadow-[0_28px_36px_rgba(28,40,24,0.24)] lg:max-h-[760px] lg:max-w-[72%]"
                 />
               </div>
             </div>
 
+            <div className="relative z-20 grid gap-5 bg-[#6d7b5e] px-6 py-6 text-white sm:grid-cols-3 sm:px-10 lg:absolute lg:inset-x-0 lg:bottom-0 lg:px-14">
+              {[
+                { title: "Giao Hàng Nhanh", text: "Toàn quốc nhanh chóng", Icon: Truck },
+                { title: "Hướng Dẫn Chăm Sóc", text: "Mẹo để terrarium luôn xanh", Icon: BookOpen },
+                { title: "Bảo Mật Thanh Toán", text: "Thanh toán an toàn 100%", Icon: ShieldCheck },
+              ].map(({ title, text, Icon }) => (
+                <div key={title} className="flex items-center gap-4 sm:border-r sm:border-white/28 sm:pr-6 sm:last:border-r-0">
+                  <Icon className="h-8 w-8 shrink-0 stroke-[1.35]" />
+                  <div>
+                    <h2 className="text-base font-semibold tracking-[-0.01em]">{title}</h2>
+                    <p className="mt-1 text-sm text-white/82">{text}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>
