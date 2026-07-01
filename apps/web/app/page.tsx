@@ -302,20 +302,24 @@ export default async function Home() {
             className="block h-auto w-full select-none"
             fetchPriority="high"
           />
-          <Link
-            href="/products"
-            className="group absolute left-[5.65%] top-[49.65%] flex h-[7.25%] w-[11.85%] items-center justify-center overflow-hidden rounded-[0.75vw] bg-[#20391f]/95 text-[clamp(11px,1.25vw,24px)] font-semibold text-white shadow-[0_1vw_2.2vw_rgba(32,57,31,0.22)] ring-1 ring-white/10 transition-all duration-300 ease-out hover:-translate-y-[0.15vw] hover:bg-[#2b4728] hover:shadow-[0_1.15vw_2.8vw_rgba(32,57,31,0.3)] focus:outline-none focus:ring-2 focus:ring-[#263b20] focus:ring-offset-2 active:translate-y-0 active:scale-[0.985]"
-          >
-            <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/18 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
-            <span className="relative">Mua ngay</span>
-          </Link>
-          <Link
-            href="/products"
-            className="group absolute left-[20.55%] top-[49.65%] flex h-[7.25%] w-[18.6%] items-center justify-center gap-[0.85vw] rounded-[0.75vw] bg-[#f5efe5] px-[1vw] text-[clamp(10px,1.12vw,22px)] font-semibold text-[#20391f] shadow-[0_0.45vw_1.15vw_rgba(55,70,44,0.1)] transition-all duration-300 ease-out hover:-translate-y-[0.12vw] hover:bg-[#fff8ee] hover:shadow-[0_0.8vw_1.9vw_rgba(32,57,31,0.16)] focus:outline-none focus:ring-2 focus:ring-[#263b20] focus:ring-offset-2 active:translate-y-0 active:scale-[0.985]"
-          >
-            <span className="relative">Khám phá bộ sưu tập</span>
-            <ArrowRight className="relative h-[1.35vw] min-h-3 w-[1.35vw] min-w-3 stroke-[1.8] transition-transform duration-300 group-hover:translate-x-[0.3vw]" />
-          </Link>
+          <div className="absolute left-[5.65%] top-[49.2%] flex h-[8.35%] w-[34.5%] items-center gap-[3.2%] rounded-[1.15vw] bg-[#f4ebdd] px-[0.75%] shadow-[0_0.35vw_0.9vw_rgba(52,62,45,0.1)] ring-1 ring-white/70">
+            <Link
+              href="/products"
+              className="group relative flex h-[62%] w-[28.5%] items-center justify-center overflow-hidden rounded-full bg-[#3f5d33] text-[clamp(8px,0.78vw,14px)] font-semibold text-white shadow-[0_0.22vw_0.55vw_rgba(39,59,33,0.15)] ring-1 ring-white/15 transition-all duration-300 ease-out hover:-translate-y-[0.05vw] hover:bg-[#314d28] hover:shadow-[0_0.35vw_0.8vw_rgba(39,59,33,0.2)] focus:outline-none focus:ring-2 focus:ring-[#3f5d33] focus:ring-offset-2 active:translate-y-0 active:scale-[0.985]"
+            >
+              <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/16 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
+              <span className="relative">Mua ngay</span>
+            </Link>
+            <Link
+              href="/products"
+              className="group flex h-[62%] w-[51.5%] items-center justify-center rounded-full border border-[#3f5d33]/20 bg-[#fffaf0] text-[#263b20] shadow-[0_0.12vw_0.35vw_rgba(55,70,44,0.06)] transition-all duration-300 ease-out hover:-translate-y-[0.05vw] hover:border-[#3f5d33]/35 hover:bg-white hover:shadow-[0_0.26vw_0.65vw_rgba(39,59,33,0.1)] focus:outline-none focus:ring-2 focus:ring-[#3f5d33] focus:ring-offset-2 active:translate-y-0 active:scale-[0.985]"
+            >
+              <span className="flex items-center justify-center gap-[0.45vw] rounded-full px-[0.85vw] py-[0.28vw] text-[clamp(7px,0.7vw,13px)] font-semibold">
+                Khám phá bộ sưu tập
+                <ArrowRight className="h-[0.78vw] min-h-2.5 w-[0.78vw] min-w-2.5 stroke-[1.8] transition-transform duration-300 group-hover:translate-x-[0.14vw]" />
+              </span>
+            </Link>
+          </div>
         </div>
       </section>
 
