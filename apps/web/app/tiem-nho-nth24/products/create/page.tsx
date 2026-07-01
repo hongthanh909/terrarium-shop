@@ -67,6 +67,7 @@ export default function CreateProductPage() {
   // Crop states
   const [subCropQueue, setSubCropQueue] = useState<string[]>([]);   // queue of objectURLs
   const [reCropIdx, setReCropIdx]       = useState<number | null>(null); // index to re-crop
+  const [mainCropSrc, setMainCropSrc]   = useState<string | null>(null);
 
   // Images
   const [mainImage, setMainImage] = useState<string>("");
@@ -249,6 +250,20 @@ export default function CreateProductPage() {
     } finally {
       setUploadingMain(false);
       if (mainImageInputRef.current) mainImageInputRef.current.value = "";
+    }
+  };
+
+  const handleMainCropConfirm = async (blob: Blob) => {
+    setUploadingMain(true);
+    try {
+      const url = await uploadImage(new File([blob], "main.jpg", { type: "image/jpeg" }));
+      if (url) {
+        setMainImage(url);
+        showToast.success("Đã crop lại ảnh chính");
+      }
+    } finally {
+      setMainCropSrc(null);
+      setUploadingMain(false);
     }
   };
 
@@ -471,10 +486,18 @@ export default function CreateProductPage() {
               </div>
               <div className="flex-1">
                 <p className="text-xs text-gray-500 mb-2">Ảnh chính hiển thị trong danh sách sản phẩm và trang chi tiết. Khuyến nghị: tỷ lệ 1:1, tối thiểu 600×600px. Hệ thống sẽ tải ảnh trực tiếp, không cần cắt thủ công.</p>
-                <button type="button" onClick={() => mainImageInputRef.current?.click()} disabled={uploadingMain} className="flex items-center gap-2 bg-[#425733] text-white px-4 py-2 rounded-full text-sm font-semibold hover:bg-[#364a29] disabled:opacity-50 transition-colors">
-                  <Upload className="w-4 h-4" />
-                  {uploadingMain ? "Đang tải..." : mainImage ? "Thay ảnh chính" : "Tải ảnh chính"}
-                </button>
+                <div className="flex flex-wrap gap-2">
+                  <button type="button" onClick={() => mainImageInputRef.current?.click()} disabled={uploadingMain} className="flex items-center gap-2 bg-[#425733] text-white px-4 py-2 rounded-full text-sm font-semibold hover:bg-[#364a29] disabled:opacity-50 transition-colors">
+                    <Upload className="w-4 h-4" />
+                    {uploadingMain ? "Đang tải..." : mainImage ? "Thay ảnh chính" : "Tải ảnh chính"}
+                  </button>
+                  {mainImage && (
+                    <button type="button" onClick={() => setMainCropSrc(mainImage)} disabled={uploadingMain} className="flex items-center gap-2 border border-[#425733]/30 text-[#425733] px-4 py-2 rounded-full text-sm font-semibold hover:bg-[#f5f7f4] disabled:opacity-50 transition-colors">
+                      <Crop className="w-4 h-4" />
+                      Crop ảnh chính
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -637,6 +660,13 @@ export default function CreateProductPage() {
         </div>
       </form>
     </div>
+
+    {/* Crop Modal: Crop ảnh chính tùy chọn */}
+    {mainCropSrc && (
+      <ImageCropModal src={mainCropSrc} title="Crop ảnh chính"
+        onConfirm={handleMainCropConfirm}
+        onCancel={() => setMainCropSrc(null)} />
+    )}
 
     {/* Crop Modal: Re-crop ảnh phụ đã upload */}
     {currentSubCropSrc && reCropIdx !== null && (
