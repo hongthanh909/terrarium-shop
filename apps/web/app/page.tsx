@@ -304,14 +304,18 @@ export default async function Home() {
           />
           <Link
             href="/products"
-            aria-label="Mua ngay"
-            className="absolute left-[5.6%] top-[49.6%] h-[7.4%] w-[12%] rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#263b20] focus:ring-offset-2"
-          />
+            className="group absolute left-[5.65%] top-[49.65%] flex h-[7.25%] w-[11.85%] items-center justify-center overflow-hidden rounded-[0.75vw] bg-[#20391f]/95 text-[clamp(11px,1.25vw,24px)] font-semibold text-white shadow-[0_1vw_2.2vw_rgba(32,57,31,0.22)] ring-1 ring-white/10 transition-all duration-300 ease-out hover:-translate-y-[0.15vw] hover:bg-[#2b4728] hover:shadow-[0_1.15vw_2.8vw_rgba(32,57,31,0.3)] focus:outline-none focus:ring-2 focus:ring-[#263b20] focus:ring-offset-2 active:translate-y-0 active:scale-[0.985]"
+          >
+            <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/18 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
+            <span className="relative">Mua ngay</span>
+          </Link>
           <Link
             href="/products"
-            aria-label="Khám phá bộ sưu tập"
-            className="absolute left-[21%] top-[51.8%] h-[5.5%] w-[19%] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#263b20] focus:ring-offset-2"
-          />
+            className="group absolute left-[20.55%] top-[49.65%] flex h-[7.25%] w-[18.6%] items-center justify-center gap-[0.85vw] rounded-[0.75vw] bg-[#f5efe5] px-[1vw] text-[clamp(10px,1.12vw,22px)] font-semibold text-[#20391f] shadow-[0_0.45vw_1.15vw_rgba(55,70,44,0.1)] transition-all duration-300 ease-out hover:-translate-y-[0.12vw] hover:bg-[#fff8ee] hover:shadow-[0_0.8vw_1.9vw_rgba(32,57,31,0.16)] focus:outline-none focus:ring-2 focus:ring-[#263b20] focus:ring-offset-2 active:translate-y-0 active:scale-[0.985]"
+          >
+            <span className="relative">Khám phá bộ sưu tập</span>
+            <ArrowRight className="relative h-[1.35vw] min-h-3 w-[1.35vw] min-w-3 stroke-[1.8] transition-transform duration-300 group-hover:translate-x-[0.3vw]" />
+          </Link>
         </div>
       </section>
 
