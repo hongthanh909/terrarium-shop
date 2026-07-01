@@ -1,12 +1,10 @@
 "use client";
 
-import Link from "next/link";
 import { ImageWrapper } from "@/components/ui/ImageWrapper";
-import { Package, ArrowRight, ShoppingBasket, Clock, Star, TrendingUp } from "lucide-react";
+import { Clock, Star, TrendingUp } from "lucide-react";
 import { showToast } from "@/components/ui/custom-toast";
 import { useCartStore } from "@/lib/store/cartStore";
 import { useWishlist } from "@/lib/hooks/useWishlist";
-import { Button } from "@/components/ui/button";
 import { ProductCard } from "@/components/ui/product-card";
 import { PageTransition } from "@/components/ui/page-transition";
 import { motion } from "framer-motion";
@@ -83,29 +81,6 @@ function useAddToCart() {
   };
 }
 
-/* ── Helper: price display ── */
-function PriceTag({ product, className = "" }: { product: Product; className?: string }) {
-  const base = Number(product.basePrice.toString());
-  const sale = product.salePrice ? Number(product.salePrice.toString()) : null;
-  const isOnSale = sale != null && sale < base && (product.saleEndDate == null || new Date(product.saleEndDate) > new Date());
-  const displayPrice = isOnSale ? sale! : base;
-  const discountPct = isOnSale ? Math.round(((base - sale!) / base) * 100) : 0;
-
-  return (
-    <div className={`flex items-center gap-2 ${className}`}>
-      {isOnSale && (
-        <span className="px-2 py-0.5 rounded-md bg-gradient-to-r from-red-500 to-rose-400 text-white text-xs font-bold">
-          -{discountPct}%
-        </span>
-      )}
-      <span className="font-bold">{displayPrice.toLocaleString("vi-VN")}₫</span>
-      {isOnSale && (
-        <span className="text-sm text-red-500 font-medium line-through">{base.toLocaleString("vi-VN")}₫</span>
-      )}
-    </div>
-  );
-}
-
 /* ═══════════════════════════════════════════════════════════════════════ */
 /*  MAIN COMPONENT                                                       */
 /* ═══════════════════════════════════════════════════════════════════════ */
@@ -172,105 +147,53 @@ export function ExploreClient({ featured, pinned, topVoted, newArrivals, weeklyF
             <div className="absolute inset-0 bg-gradient-to-br from-[#2d3d23] to-[#1a2e12]" />
           )}
 
-          {/* ── Foreground: cards row ── */}
-          <div className="relative z-10 w-full max-w-7xl mx-auto px-6 py-12 md:py-16">
-
-            {/* Section label */}
+          {/* Foreground: unified product cards */}
+          <div className="relative z-10 w-full max-w-7xl mx-auto px-5 py-12 md:px-6 md:py-16">
             <motion.div
               initial={{ opacity: 0, y: -12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
-              className="mb-6 text-center"
+              className="mb-7 text-center"
             >
               <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">Sản Phẩm Nổi Bật Tuần Này</h1>
-              <p className="text-white/60 text-sm mt-1">Được ghim đặc biệt bởi Tiệm Rêu Décor</p>
+              <p className="text-white/70 text-sm mt-1">Được ghim đặc biệt bởi Tiệm Rêu Décor</p>
             </motion.div>
 
             {hasHero ? (
-              /* ── Card row: 1–5 items ── */
-              <div
-                className="flex gap-4 justify-center flex-wrap sm:flex-nowrap"
-              >
+              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
                 {heroItems.map((item, idx) => (
                   <motion.div
                     key={item.product.id}
                     initial={{ opacity: 0, y: 24 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: idx * 0.07 }}
-                    className="group flex-shrink-0 w-[calc(50%-8px)] sm:flex-1 sm:min-w-0 sm:max-w-[220px]"
+                    transition={{ duration: 0.45, delay: idx * 0.06 }}
+                    className="h-full"
                   >
-                    {/* Card */}
-                    <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl overflow-hidden hover:bg-white/20 transition-all duration-300 hover:scale-[1.03] shadow-lg">
-                      {/* Image */}
-                      <Link href={`/products/${item.product.slug}`}>
-                        <div className="relative aspect-[4/5] bg-white overflow-hidden">
-                          {item.product.images[0] ? (
-                            <ImageWrapper
-                              src={item.product.images[0]}
-                              alt={item.product.name}
-                              fill
-                              className="object-contain p-2 group-hover:scale-105 transition-transform duration-500"
-                            />
-                          ) : (
-                            <div className="absolute inset-0 flex items-center justify-center">
-                              <Package className="w-8 h-8 text-gray-400" />
-                            </div>
-                          )}
-                          {/* Badge */}
-                          {item.reason && (
-                            <div className="absolute top-2 left-2 bg-[#425733]/90 text-white text-[10px] font-bold px-2 py-0.5 rounded-full backdrop-blur-sm">
-                              {item.reason}
-                            </div>
-                          )}
-                        </div>
-                      </Link>
-
-                      {/* Info */}
-                      <div className="p-3">
-                        <p className="text-[10px] text-white/50 uppercase tracking-wider mb-0.5">
-                          {item.product.category?.name || "Terrarium"}
-                        </p>
-                        <Link href={`/products/${item.product.slug}`}>
-                          <h3 className="font-bold text-white text-sm line-clamp-2 leading-snug hover:text-white/80 transition-colors">
-                            {item.product.name}
-                          </h3>
-                        </Link>
-                        <PriceTag product={item.product} className="text-white/90 text-sm mt-1" />
-
-                        {/* Actions */}
-                        <div className="flex gap-1.5 mt-2.5">
-                          <Button
-                            asChild
-                            size="sm"
-                            className="flex-1 bg-white text-[#1a2e12] hover:bg-white/90 font-bold rounded-xl text-xs h-8 px-2"
-                          >
-                            <Link href={`/products/${item.product.slug}`}>
-                              <ArrowRight className="w-3 h-3 mr-1" /> Chi tiết
-                            </Link>
-                          </Button>
-                          <button
-                            onClick={() => addToCart(item.product)}
-                            className="w-8 h-8 rounded-xl bg-white/15 hover:bg-white/30 border border-white/20 flex items-center justify-center text-white transition-all flex-shrink-0"
-                            title="Thêm vào giỏ"
-                          >
-                            <ShoppingBasket className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                      </div>
-                    </div>
+                    <ProductCard
+                      id={item.product.id}
+                      slug={item.product.slug}
+                      name={item.product.name}
+                      basePrice={parseFloat(item.product.basePrice.toString())}
+                      salePrice={item.product.salePrice ? parseFloat(item.product.salePrice.toString()) : null}
+                      saleEndDate={item.product.saleEndDate ?? null}
+                      images={item.product.images}
+                      category={item.product.category}
+                      onAddToCart={(pkg, qty) => addToCart(item.product, pkg, qty)}
+                      wished={isWished(item.product.id)}
+                      onToggleWishlist={() => toggleWishlist(item.product.id, item.product.name)}
+                    />
                   </motion.div>
                 ))}
               </div>
             ) : (
-              /* Empty state */
-              <p className="text-center text-white/50 text-sm">
+              <p className="text-center text-white/70 text-sm">
                 Chưa có sản phẩm nổi bật nào được ghim.
               </p>
             )}
           </div>
         </section>
 
-        {/* ═══ 3. BENTO GRID — Sản Phẩm Nổi Bật ═════════════════════════ */}
+        {/* Featured products: same card system as /products */}
         {allFeatured.length > 0 && (
           <section className="py-14 px-6">
             <div className="max-w-7xl mx-auto">
@@ -280,43 +203,24 @@ export function ExploreClient({ featured, pinned, topVoted, newArrivals, weeklyF
                 subtitle="Được yêu thích và lựa chọn nhiều nhất"
               />
 
-              {/* Bento layout: 1 large + small cards */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 auto-rows-[220px]">
-                {allFeatured.slice(0, 5).map((product, idx) => {
-                  const isLarge = idx === 0;
-                  return (
-                    <BentoCard
-                      key={product.id}
-                      product={product}
-                      className={isLarge ? "col-span-2 row-span-2" : "col-span-1 row-span-1"}
-                      onAddToCart={() => addToCart(product)}
-                      showDetails={isLarge}
-                    />
-                  );
-                })}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                {allFeatured.slice(0, 8).map(product => (
+                  <ProductCard
+                    key={product.id}
+                    id={product.id}
+                    slug={product.slug}
+                    name={product.name}
+                    basePrice={parseFloat(product.basePrice.toString())}
+                    salePrice={product.salePrice ? parseFloat(product.salePrice.toString()) : null}
+                    saleEndDate={product.saleEndDate ?? null}
+                    images={product.images}
+                    category={product.category}
+                    onAddToCart={(pkg, qty) => addToCart(product, pkg, qty)}
+                    wished={isWished(product.id)}
+                    onToggleWishlist={() => toggleWishlist(product.id, product.name)}
+                  />
+                ))}
               </div>
-
-              {/* Remaining items as standard grid */}
-              {allFeatured.length > 5 && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-6">
-                  {allFeatured.slice(5, 9).map(product => (
-                    <ProductCard
-                      key={product.id}
-                      id={product.id}
-                      slug={product.slug}
-                      name={product.name}
-                      basePrice={parseFloat(product.basePrice.toString())}
-                      salePrice={product.salePrice ? parseFloat(product.salePrice.toString()) : null}
-                      saleEndDate={product.saleEndDate ?? null}
-                      images={product.images}
-                      category={product.category}
-                      onAddToCart={(pkg, qty) => addToCart(product, pkg, qty)}
-                      wished={isWished(product.id)}
-                      onToggleWishlist={() => toggleWishlist(product.id, product.name)}
-                    />
-                  ))}
-                </div>
-              )}
             </div>
           </section>
         )}
@@ -412,70 +316,6 @@ function SectionHeader({ icon, title, subtitle }: { icon: React.ReactNode; title
         <h2 className="text-2xl font-bold text-[#1a2e12] tracking-tight">{title}</h2>
       </div>
       <p className="text-sm text-gray-500 ml-10">{subtitle}</p>
-    </motion.div>
-  );
-}
-
-function BentoCard({
-  product,
-  className = "",
-  onAddToCart,
-  showDetails = false,
-}: {
-  product: Product;
-  className?: string;
-  onAddToCart: () => void;
-  showDetails?: boolean;
-}) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ duration: 0.4 }}
-      className={`group relative rounded-2xl overflow-hidden bg-[#eef3ea] border border-[#d2dec9] shadow-sm hover:shadow-xl hover:scale-[1.03] transition-all duration-300 flex flex-col h-full ${className}`}
-    >
-      {/* Image Container */}
-      <div className="relative w-full flex-1 bg-white overflow-hidden min-h-[110px]">
-        {product.images[0] ? (
-          <ImageWrapper src={product.images[0]} alt={product.name} fill className="object-contain p-2 group-hover:scale-105 transition-transform duration-500" />
-        ) : (
-          <div className="absolute inset-0 flex items-center justify-center text-gray-400">
-            <Package className="w-10 h-10" />
-          </div>
-        )}
-      </div>
-
-      {/* Content Section */}
-      <div className="p-3 sm:p-4 bg-transparent flex flex-col flex-shrink-0">
-        {showDetails && (
-          <span className="text-gray-400 text-[10px] font-semibold uppercase tracking-wider mb-1 block">
-            {product.category?.name || "Terrarium"}
-          </span>
-        )}
-        <Link href={`/products/${product.slug}`} className="block mb-1">
-          <h3 className={`font-bold text-gray-900 group-hover:text-[#425733] transition-colors leading-snug line-clamp-2 ${showDetails ? "text-base sm:text-lg" : "text-xs sm:text-sm"}`}>
-            {product.name}
-          </h3>
-        </Link>
-        
-        <PriceTag product={product} className={`text-[#2d3d23] mt-0.5 ${showDetails ? "text-base" : "text-xs"}`} />
-        
-        {showDetails && (
-          <div className="flex gap-2 mt-3">
-            <Button asChild size="sm" className="bg-[#425733] text-white hover:bg-[#364a29] font-semibold rounded-xl text-xs h-8 px-4">
-              <Link href={`/products/${product.slug}`}>Xem chi tiết</Link>
-            </Button>
-            <button
-              onClick={(e) => { e.preventDefault(); onAddToCart(); }}
-              className="flex items-center gap-1.5 bg-gray-100 hover:bg-gray-200 text-[#425733] px-3 py-1.5 rounded-xl text-xs font-semibold transition-all h-8"
-            >
-              <ShoppingBasket className="w-3.5 h-3.5" />
-              Thêm vào giỏ
-            </button>
-          </div>
-        )}
-      </div>
     </motion.div>
   );
 }
