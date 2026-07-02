@@ -83,6 +83,8 @@ export default function EditProductPage() {
     moss: "",
     driftwood: "",
     accessories: "",
+    displayRating: "",
+    displayReviewCount: "",
   });
 
   const [careGuide, setCareGuide] = useState({
@@ -177,6 +179,8 @@ export default function EditProductPage() {
           moss: product.moss || "",
           driftwood: product.driftwood || "",
           accessories: product.accessories || "",
+          displayRating: product.displayRating != null ? String(product.displayRating) : "",
+          displayReviewCount: product.displayReviewCount != null ? String(product.displayReviewCount) : "",
         });
 
         // Pre-fill images
@@ -380,6 +384,8 @@ export default function EditProductPage() {
       }
 
       const inventoryVal = formData.inventory === "" ? 0 : parseInt(formData.inventory) || 0;
+      const displayRatingVal = formData.displayRating === "" ? null : Math.min(5, Math.max(0, parseFloat(formData.displayRating) || 0));
+      const displayReviewCountVal = formData.displayReviewCount === "" ? 0 : Math.max(0, parseInt(formData.displayReviewCount) || 0);
 
       const productData: Record<string, unknown> = {
         ...formData,
@@ -389,6 +395,8 @@ export default function EditProductPage() {
         saleEndDate: formData.saleEndDate
           ? new Date(formData.saleEndDate + ":00+07:00").toISOString()
           : null,
+        displayRating: displayRatingVal,
+        displayReviewCount: displayReviewCountVal,
         images: allImages,
         size: formData.size || null,
         soil: formData.soil || null,
@@ -488,6 +496,24 @@ export default function EditProductPage() {
               onChange={(e) => setFormData({ ...formData, inventory: e.target.value })}
               min="0"
               placeholder="Nhập số lượng tồn kho"
+            />
+            <FormField
+              label="Số sao hiển thị"
+              type="number"
+              value={formData.displayRating}
+              onChange={(e) => setFormData({ ...formData, displayRating: e.target.value })}
+              min="0"
+              max="5"
+              step="0.1"
+              placeholder="VD: 4.8"
+            />
+            <FormField
+              label="Số lượt đánh giá hiển thị"
+              type="number"
+              value={formData.displayReviewCount}
+              onChange={(e) => setFormData({ ...formData, displayReviewCount: e.target.value })}
+              min="0"
+              placeholder="VD: 24"
             />
             {/* Sale end date - chỉ hiển thị nếu có giá KM */}
             {formData.salePrice && (

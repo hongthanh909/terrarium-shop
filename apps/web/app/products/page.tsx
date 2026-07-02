@@ -41,7 +41,11 @@ async function ProductsData({
     [products, categories, total] = await Promise.all([
       prisma.product.findMany({
         where,
-        include: { category: true, _count: { select: { reviews: true } } },
+        include: {
+          category: true,
+          reviews: { where: { approved: true }, select: { rating: true } },
+          _count: { select: { reviews: true } },
+        },
         orderBy: [
           { category: { name: "asc" } },
           { salePrice: { sort: "asc", nulls: "last" } },

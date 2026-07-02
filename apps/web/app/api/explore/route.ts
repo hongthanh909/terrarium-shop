@@ -14,14 +14,14 @@ export async function GET() {
       // Featured products
       prisma.product.findMany({
         where: { status: "ACTIVE", featured: true },
-        include: { category: true },
+        include: { category: true, reviews: { where: { approved: true }, select: { rating: true } } },
         orderBy: { createdAt: "desc" },
         take: 8,
       }),
       // Pinned products (pinnedUntil > now)
       prisma.product.findMany({
         where: { status: "ACTIVE", pinnedUntil: { gt: now } },
-        include: { category: true },
+        include: { category: true, reviews: { where: { approved: true }, select: { rating: true } } },
         orderBy: { pinnedUntil: "desc" },
         take: 8,
       }),
@@ -30,6 +30,7 @@ export async function GET() {
         where: { status: "ACTIVE" },
         include: {
           category: true,
+          reviews: { where: { approved: true }, select: { rating: true } },
           _count: { select: { votes: true } },
         },
         orderBy: [
@@ -41,7 +42,7 @@ export async function GET() {
       // New arrivals (last 30 days)
       prisma.product.findMany({
         where: { status: "ACTIVE", createdAt: { gte: thirtyDaysAgo } },
-        include: { category: true },
+        include: { category: true, reviews: { where: { approved: true }, select: { rating: true } } },
         orderBy: { createdAt: "desc" },
         take: 8,
       }),
@@ -51,7 +52,7 @@ export async function GET() {
     if (newArrivals.length === 0) {
       newArrivals = await prisma.product.findMany({
         where: { status: "ACTIVE" },
-        include: { category: true },
+        include: { category: true, reviews: { where: { approved: true }, select: { rating: true } } },
         orderBy: { createdAt: "desc" },
         take: 8,
       });

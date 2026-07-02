@@ -12,6 +12,7 @@ import { useWishlist } from "@/lib/hooks/useWishlist";
 import { useSession } from "next-auth/react";
 import { showToast } from "@/components/ui/custom-toast";
 import { motion, useReducedMotion } from "framer-motion";
+import { getProductRatingSummary } from "@/lib/product-rating";
 
 interface Product {
   id: string;
@@ -23,6 +24,9 @@ interface Product {
   inventory: number;
   images: string[];
   category: { id: string; name: string };
+  displayRating?: number | string | null;
+  displayReviewCount?: number | null;
+  reviews?: { rating: number }[];
   _count?: { reviews: number };
 }
 
@@ -242,7 +246,9 @@ export function ProductsClient({
                   </div>
 
                   <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
-                    {group.products.map((product) => (
+                    {group.products.map((product) => {
+                      const ratingSummary = getProductRatingSummary(product);
+                      return (
                       <ProductCard
                         key={product.id}
                         id={product.id}
@@ -254,19 +260,23 @@ export function ProductsClient({
                         inventory={product.inventory}
                         images={product.images}
                         category={product.category}
-                        reviewCount={product._count?.reviews ?? 0}
+                        rating={ratingSummary.rating}
+                        reviewCount={ratingSummary.reviewCount}
                         onAddToCart={(pkg, qty) => handleAddToCart(product, pkg, qty)}
                         wished={isWished(product.id)}
                         onToggleWishlist={() => toggleWishlist(product.id, product.name)}
                       />
-                    ))}
+                      );
+                    })}
                   </div>
                 </motion.section>
               ))}
             </div>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
-              {initialProducts.map((product) => (
+              {initialProducts.map((product) => {
+                const ratingSummary = getProductRatingSummary(product);
+                return (
                 <ProductCard
                   key={product.id}
                   id={product.id}
@@ -278,12 +288,14 @@ export function ProductsClient({
                   inventory={product.inventory}
                   images={product.images}
                   category={product.category}
-                  reviewCount={product._count?.reviews ?? 0}
+                  rating={ratingSummary.rating}
+                  reviewCount={ratingSummary.reviewCount}
                   onAddToCart={(pkg, qty) => handleAddToCart(product, pkg, qty)}
                   wished={isWished(product.id)}
                   onToggleWishlist={() => toggleWishlist(product.id, product.name)}
                 />
-              ))}
+                );
+              })}
             </div>
           )}
         </div>

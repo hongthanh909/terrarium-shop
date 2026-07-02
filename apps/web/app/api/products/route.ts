@@ -113,6 +113,8 @@ export async function GET(request: NextRequest) {
           featured: true,
           status: true,
           images: true,
+          displayRating: true,
+          displayReviewCount: true,
           categoryId: true,
           createdAt: true,
           updatedAt: true,
@@ -191,6 +193,8 @@ export async function POST(request: NextRequest) {
       moss,
       driftwood,
       accessories,
+      displayRating,
+      displayReviewCount,
     } = validatedData;
 
     if (!categoryId) {
@@ -260,6 +264,8 @@ export async function POST(request: NextRequest) {
           moss: moss ?? null,
           driftwood: driftwood ?? null,
           accessories: accessories ?? null,
+          displayRating: displayRating ?? null,
+          displayReviewCount: displayReviewCount ?? 0,
         } as any,
       });
 

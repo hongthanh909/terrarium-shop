@@ -47,7 +47,11 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
     prisma.product.findMany({
       where: { categoryId: product.categoryId, id: { not: product.id }, status: "ACTIVE" },
       take: 4,
-      include: { category: true }
+      include: {
+        category: true,
+        reviews: { where: { approved: true }, select: { rating: true } },
+        _count: { select: { reviews: true } },
+      }
     }),
   ]);
 

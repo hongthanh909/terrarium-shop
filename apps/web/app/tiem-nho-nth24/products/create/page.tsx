@@ -48,6 +48,8 @@ const DEFAULT_FORM_DATA = {
   moss: "",
   driftwood: "",
   accessories: "",
+  displayRating: 4.8,
+  displayReviewCount: 24,
 };
 
 export default function CreateProductPage() {
@@ -438,6 +440,8 @@ export default function CreateProductPage() {
             <FormField label="Giá cơ bản (VNĐ) *" type="text" value={formData.basePrice} onChange={(e) => setFormData({ ...formData, basePrice: formatVND(e.target.value) })} required placeholder="299.000" />
             <FormField label="Giá khuyến mãi (VNĐ)" type="text" value={formData.salePrice} onChange={(e) => setFormData({ ...formData, salePrice: formatVND(e.target.value) })} placeholder="Để trống nếu không giảm giá" />
             <FormField label="Tồn kho" type="number" value={formData.inventory} onChange={(e) => setFormData({ ...formData, inventory: parseInt(e.target.value) || 0 })} min="0" />
+            <FormField label="Số sao hiển thị" type="number" value={formData.displayRating} onChange={(e) => setFormData({ ...formData, displayRating: Math.min(5, Math.max(0, parseFloat(e.target.value) || 0)) })} min="0" max="5" step="0.1" />
+            <FormField label="Số lượt đánh giá hiển thị" type="number" value={formData.displayReviewCount} onChange={(e) => setFormData({ ...formData, displayReviewCount: Math.max(0, parseInt(e.target.value) || 0) })} min="0" />
             {formData.salePrice && (
               <div className="md:col-span-2">
                 <label className="block text-sm font-semibold text-gray-700 mb-1.5">Thời Hạn Flash Sale <span className="text-[10px] text-[#425733] font-normal">(Giờ VN)</span></label>

@@ -19,6 +19,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "
 import { ProductCard } from "@/components/ui/product-card";
 import { ImageWrapper } from "@/components/ui/ImageWrapper";
 import { useWishlist } from "@/lib/hooks/useWishlist";
+import { getPositiveRatingBreakdown, getProductRatingSummary } from "@/lib/product-rating";
 
 // ── Package variant constants ───────────────────────────────────────────────
 const LAMP_VARIANT_TYPE = "Đèn";
@@ -436,7 +437,8 @@ export function ProductDetailClient({
   const { price: finalPrice, base: originalPrice, isSale } = getPriceWithVariants();
   const discountPercent = isSale && originalPrice > 0 ? Math.round(((originalPrice - finalPrice) / originalPrice) * 100) : 0;
   const hasCareGuide = !!(product.careGuide && (product.careGuide.watering || product.careGuide.sunlight || product.careGuide.temperature || product.careGuide.humidity));
-  const avgRating = reviews.length > 0 ? reviews.reduce((s: number, r: any) => s + r.rating, 0) / reviews.length : 0;
+  const ratingSummary = getProductRatingSummary({ ...product, reviews });
+  const ratingBreakdown = getPositiveRatingBreakdown(ratingSummary.rating, ratingSummary.reviewCount);
 
 
 
@@ -686,13 +688,13 @@ export function ProductDetailClient({
             <div className="flex items-center gap-2 mb-3">
               <div className="flex gap-0.5">
                 {[1, 2, 3, 4, 5].map((s) => (
-                  <Star key={s} className={`w-4 h-4 ${reviews.length > 0 && s <= Math.round(avgRating) ? "fill-yellow-400 text-yellow-400" : "fill-gray-200 text-gray-200"}`} />
+                  <Star key={s} className={`w-4 h-4 ${ratingSummary.rating > 0 && s <= Math.round(ratingSummary.rating) ? "fill-yellow-400 text-yellow-400" : "fill-gray-200 text-gray-200"}`} />
                 ))}
               </div>
-              {reviews.length > 0 ? (
+              {ratingSummary.reviewCount > 0 ? (
                 <>
-                  <span className="text-sm font-bold text-gray-700">{avgRating.toFixed(1)}</span>
-                  <span className="text-xs text-gray-400">({reviews.length} đánh giá)</span>
+                  <span className="text-sm font-bold text-gray-700">{ratingSummary.rating.toFixed(1)}</span>
+                  <span className="text-xs text-gray-400">({ratingSummary.reviewCount} đánh giá)</span>
                 </>
               ) : (
                 <span className="text-xs text-gray-400 font-medium">Chưa có đánh giá</span>
@@ -1227,23 +1229,25 @@ export function ProductDetailClient({
               
               <div className="flex flex-col sm:flex-row lg:flex-col items-center gap-4 mb-6">
                 <div className="text-center bg-[#f8faf6] border border-[#eaefeb] rounded-xl px-5 py-4 w-full sm:w-auto lg:w-full">
-                  <p className="text-5xl font-extrabold text-[#1a2e12]">0.0</p>
+                  <p className="text-5xl font-extrabold text-[#1a2e12]">{ratingSummary.rating.toFixed(1)}</p>
                   <div className="flex gap-0.5 mt-1.5 justify-center">
                     {[1, 2, 3, 4, 5].map((s) => (
-                      <Star key={s} className="w-4 h-4 fill-gray-200 text-gray-200" />
+                      <Star key={s} className={`w-4 h-4 ${ratingSummary.rating > 0 && s <= Math.round(ratingSummary.rating) ? "fill-yellow-400 text-yellow-400" : "fill-gray-200 text-gray-200"}`} />
                     ))}
                   </div>
-                  <p className="text-xs text-gray-400 mt-1 font-semibold">Chưa có đánh giá</p>
+                  <p className="text-xs text-gray-400 mt-1 font-semibold">
+                    {ratingSummary.reviewCount > 0 ? `${ratingSummary.reviewCount} lượt đánh giá` : "Chưa có đánh giá"}
+                  </p>
                 </div>
                 
                 <div className="flex-1 w-full space-y-1.5">
-                  {[5, 4, 3, 2, 1].map((stars) => (
-                    <div key={stars} className="flex items-center gap-2 text-xs">
-                      <span className="w-10 text-gray-500 font-semibold text-right">{stars} Sao</span>
+                  {ratingBreakdown.map((row) => (
+                    <div key={row.stars} className="flex items-center gap-2 text-xs">
+                      <span className="w-10 text-gray-500 font-semibold text-right">{row.stars} Sao</span>
                       <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
-                        <div className="h-full bg-yellow-400 transition-all duration-300" style={{ width: "0%" }} />
+                        <div className="h-full bg-yellow-400 transition-all duration-300" style={{ width: `${row.percent}%` }} />
                       </div>
-                      <span className="w-6 text-gray-400 text-right">0%</span>
+                      <span className="w-6 text-gray-400 text-right">{row.percent}%</span>
                     </div>
                   ))}
                 </div>
@@ -1251,7 +1255,7 @@ export function ProductDetailClient({
               
               <div className="border-t border-gray-100 pt-4 text-center">
                 <p className="text-xs text-gray-400 py-4 font-medium">
-                  Chưa có đánh giá nào cho sản phẩm này.
+                  {reviews.length > 0 ? `${reviews.length} đánh giá đã được duyệt.` : "Chưa có nội dung đánh giá được duyệt."}
                 </p>
               </div>
             </div>
@@ -1263,7 +1267,9 @@ export function ProductDetailClient({
           <div className="mt-16">
             <h2 className="text-3xl font-bold text-center mb-8">Sản phẩm liên quan</h2>
             <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
-              {relatedProducts.map((rel: any) => (
+              {relatedProducts.map((rel: any) => {
+                const relRatingSummary = getProductRatingSummary(rel);
+                return (
                 <ProductCard
                   key={rel.id}
                   id={rel.id}
@@ -1274,7 +1280,8 @@ export function ProductDetailClient({
                   saleEndDate={rel.saleEndDate ?? null}
                   images={rel.images}
                   category={rel.category}
-                  reviewCount={rel._count?.reviews ?? 0}
+                  rating={relRatingSummary.rating}
+                  reviewCount={relRatingSummary.reviewCount}
                   onAddToCart={(pkg, qty) => {
                     if (!session) {
                       showToast.warning("Vui lòng đăng nhập để thêm sản phẩm");
@@ -1303,7 +1310,8 @@ export function ProductDetailClient({
                   wished={isWished(rel.id)}
                   onToggleWishlist={() => toggleWishlist(rel.id, rel.name)}
                 />
-              ))}
+                );
+              })}
             </div>
           </div>
         )}

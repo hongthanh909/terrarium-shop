@@ -183,6 +183,8 @@ model Product {
   moss          String?        // Loại rêu
   driftwood     String?        // Bố cục lũa
   accessories   String?        // Phụ kiện
+  displayRating Decimal?       @db.Decimal(2, 1)
+  displayReviewCount Int       @default(0)
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
 

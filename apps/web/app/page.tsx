@@ -18,6 +18,7 @@ import { ReviewMarquee } from "@/components/ui/review-marquee";
 import { prisma } from "@/lib/prisma";
 import { FeaturedProductCard } from "@/components/ui/featured-product-card";
 import { BrandGallery } from "@/components/ui/brand-gallery";
+import { getProductRatingSummary } from "@/lib/product-rating";
 
 // ISR: Cache page for 60 seconds, revalidate in background
 // This makes the page INSTANT for most requests instead of waiting for DB every time
@@ -125,10 +126,7 @@ async function FeaturedProductsSection() {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {products.map((product: any, index: number) => {
-              const reviews = product.reviews || [];
-              const avgRating = reviews.length > 0
-                ? reviews.reduce((sum: number, r: any) => sum + r.rating, 0) / reviews.length
-                : 0;
+              const ratingSummary = getProductRatingSummary(product);
               return (
                 <ScrollReveal key={product.id} direction="up" delay={index * 0.1} className="h-full">
                   <FeaturedProductCard
@@ -141,8 +139,8 @@ async function FeaturedProductsSection() {
                     inventory={product.inventory}
                     images={product.images}
                     category={product.category ? { name: product.category.name } : undefined}
-                    rating={Math.round(avgRating * 10) / 10}
-                    reviewCount={reviews.length}
+                    rating={ratingSummary.rating}
+                    reviewCount={ratingSummary.reviewCount}
                     isNew={product.isNew || false}
                     isBestseller={product.isBestseller || false}
                   />

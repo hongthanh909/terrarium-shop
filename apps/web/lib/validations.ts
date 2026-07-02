@@ -56,6 +56,8 @@ export const createProductSchema = z.object({
   moss: z.string().optional().nullable(),
   driftwood: z.string().optional().nullable(),
   accessories: z.string().optional().nullable(),
+  displayRating: z.number().min(0).max(5).optional().nullable(),
+  displayReviewCount: z.number().int().min(0).optional().default(0),
 });
 
 export const updateProductSchema = createProductSchema.partial();

@@ -8,6 +8,7 @@ import { useWishlist } from "@/lib/hooks/useWishlist";
 import { ProductCard } from "@/components/ui/product-card";
 import { PageTransition } from "@/components/ui/page-transition";
 import { motion } from "framer-motion";
+import { getProductRatingSummary } from "@/lib/product-rating";
 
 interface Product {
   id: string;
@@ -18,6 +19,9 @@ interface Product {
   saleEndDate?: string | null;
   images: string[];
   category: { id: string; name: string };
+  displayRating?: number | string | null;
+  displayReviewCount?: number | null;
+  reviews?: { rating: number }[];
   featured: boolean;
   pinnedUntil: string | null;
   voteCount?: number;
@@ -161,7 +165,9 @@ export function ExploreClient({ featured, pinned, topVoted, newArrivals, weeklyF
 
             {hasHero ? (
               <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-                {heroItems.map((item, idx) => (
+                {heroItems.map((item, idx) => {
+                  const ratingSummary = getProductRatingSummary(item.product);
+                  return (
                   <motion.div
                     key={item.product.id}
                     initial={{ opacity: 0, y: 24 }}
@@ -178,12 +184,15 @@ export function ExploreClient({ featured, pinned, topVoted, newArrivals, weeklyF
                       saleEndDate={item.product.saleEndDate ?? null}
                       images={item.product.images}
                       category={item.product.category}
+                      rating={ratingSummary.rating}
+                      reviewCount={ratingSummary.reviewCount}
                       onAddToCart={(pkg, qty) => addToCart(item.product, pkg, qty)}
                       wished={isWished(item.product.id)}
                       onToggleWishlist={() => toggleWishlist(item.product.id, item.product.name)}
                     />
                   </motion.div>
-                ))}
+                  );
+                })}
               </div>
             ) : (
               <p className="text-center text-white/70 text-sm">
@@ -204,7 +213,9 @@ export function ExploreClient({ featured, pinned, topVoted, newArrivals, weeklyF
               />
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                {allFeatured.slice(0, 8).map(product => (
+                {allFeatured.slice(0, 8).map(product => {
+                  const ratingSummary = getProductRatingSummary(product);
+                  return (
                   <ProductCard
                     key={product.id}
                     id={product.id}
@@ -215,11 +226,14 @@ export function ExploreClient({ featured, pinned, topVoted, newArrivals, weeklyF
                     saleEndDate={product.saleEndDate ?? null}
                     images={product.images}
                     category={product.category}
+                    rating={ratingSummary.rating}
+                    reviewCount={ratingSummary.reviewCount}
                     onAddToCart={(pkg, qty) => addToCart(product, pkg, qty)}
                     wished={isWished(product.id)}
                     onToggleWishlist={() => toggleWishlist(product.id, product.name)}
                   />
-                ))}
+                  );
+                })}
               </div>
             </div>
           </section>
@@ -235,7 +249,9 @@ export function ExploreClient({ featured, pinned, topVoted, newArrivals, weeklyF
                 subtitle="Bình chọn cao nhất từ cộng đồng"
               />
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                {topVoted.slice(0, 8).map(product => (
+                {topVoted.slice(0, 8).map(product => {
+                  const ratingSummary = getProductRatingSummary(product);
+                  return (
                   <ProductCard
                     key={product.id}
                     id={product.id}
@@ -246,11 +262,14 @@ export function ExploreClient({ featured, pinned, topVoted, newArrivals, weeklyF
                     saleEndDate={product.saleEndDate ?? null}
                     images={product.images}
                     category={product.category}
+                    rating={ratingSummary.rating}
+                    reviewCount={ratingSummary.reviewCount}
                     onAddToCart={(pkg, qty) => addToCart(product, pkg, qty)}
                     wished={isWished(product.id)}
                     onToggleWishlist={() => toggleWishlist(product.id, product.name)}
                   />
-                ))}
+                  );
+                })}
               </div>
             </div>
           </section>
@@ -266,7 +285,9 @@ export function ExploreClient({ featured, pinned, topVoted, newArrivals, weeklyF
                 subtitle="Vừa ra mắt, sẵn sàng khám phá"
               />
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                {newArrivals.slice(0, 8).map(product => (
+                {newArrivals.slice(0, 8).map(product => {
+                  const ratingSummary = getProductRatingSummary(product);
+                  return (
                   <ProductCard
                     key={product.id}
                     id={product.id}
@@ -277,12 +298,15 @@ export function ExploreClient({ featured, pinned, topVoted, newArrivals, weeklyF
                     saleEndDate={product.saleEndDate ?? null}
                     images={product.images}
                     category={product.category}
+                    rating={ratingSummary.rating}
+                    reviewCount={ratingSummary.reviewCount}
                     isNew
                     onAddToCart={(pkg, qty) => addToCart(product, pkg, qty)}
                     wished={isWished(product.id)}
                     onToggleWishlist={() => toggleWishlist(product.id, product.name)}
                   />
-                ))}
+                  );
+                })}
               </div>
             </div>
           </section>

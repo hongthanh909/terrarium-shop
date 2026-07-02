@@ -108,6 +108,8 @@ export async function PUT(
       moss,
       driftwood,
       accessories,
+      displayRating,
+      displayReviewCount,
     } = validatedData;
 
     // Extract sale fields from body
@@ -156,6 +158,8 @@ export async function PUT(
           moss: moss !== undefined ? moss : undefined,
           driftwood: driftwood !== undefined ? driftwood : undefined,
           accessories: accessories !== undefined ? accessories : undefined,
+          displayRating: displayRating !== undefined ? displayRating : undefined,
+          displayReviewCount: displayReviewCount !== undefined ? displayReviewCount : undefined,
         } as any,
       });
 

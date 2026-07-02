@@ -10,7 +10,8 @@
     "generate": "npx prisma generate",
     "studio": "npx prisma studio",
     "push": "npx prisma db push",
-    "seed": "npx prisma db seed"
+    "seed": "npx prisma db seed",
+    "backfill:display-ratings": "ts-node ./scripts/backfill-product-display-ratings.ts"
   },
   "prisma": {
     "seed": "ts-node ./seed.ts"

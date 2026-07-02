@@ -18,19 +18,19 @@ export default async function ExplorePage() {
     let [featured, pinned, topVoted, newArrivals, weeklyFeaturedList, heroBgSetting] = await Promise.all([
       prisma.product.findMany({
         where: { status: "ACTIVE", featured: true },
-        include: { category: true, _count: { select: { votes: true } } },
+        include: { category: true, reviews: { where: { approved: true }, select: { rating: true } }, _count: { select: { votes: true } } },
         orderBy: { createdAt: "desc" },
         take: 8,
       }),
       prisma.product.findMany({
         where: { status: "ACTIVE", pinnedUntil: { gt: now } },
-        include: { category: true, _count: { select: { votes: true } } },
+        include: { category: true, reviews: { where: { approved: true }, select: { rating: true } }, _count: { select: { votes: true } } },
         orderBy: { pinnedUntil: "desc" },
         take: 8,
       }),
       prisma.product.findMany({
         where: { status: "ACTIVE" },
-        include: { category: true, _count: { select: { votes: true } } },
+        include: { category: true, reviews: { where: { approved: true }, select: { rating: true } }, _count: { select: { votes: true } } },
         orderBy: [
           { votes: { _count: "desc" } },
           { createdAt: "desc" }
@@ -39,14 +39,14 @@ export default async function ExplorePage() {
       }),
       prisma.product.findMany({
         where: { status: "ACTIVE", createdAt: { gte: thirtyDaysAgo } },
-        include: { category: true, _count: { select: { votes: true } } },
+        include: { category: true, reviews: { where: { approved: true }, select: { rating: true } }, _count: { select: { votes: true } } },
         orderBy: { createdAt: "desc" },
         take: 8,
       }),
       // Fetch ALL active weekly featured (up to 5 shown in hero)
       prisma.weeklyFeatured.findMany({
         where: { isActive: true },
-        include: { product: { include: { category: true } } },
+        include: { product: { include: { category: true, reviews: { where: { approved: true }, select: { rating: true } } } } },
         orderBy: { weekStart: "desc" },
         take: 5,
       }).catch(() => [] as any[]),
@@ -60,7 +60,7 @@ export default async function ExplorePage() {
     if (newArrivals.length === 0) {
       newArrivals = await prisma.product.findMany({
         where: { status: "ACTIVE" },
-        include: { category: true, _count: { select: { votes: true } } },
+        include: { category: true, reviews: { where: { approved: true }, select: { rating: true } }, _count: { select: { votes: true } } },
         orderBy: { createdAt: "desc" },
         take: 8,
       });
