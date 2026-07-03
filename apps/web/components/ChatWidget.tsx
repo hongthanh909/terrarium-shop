@@ -141,14 +141,15 @@ export default function ChatWidget() {
   // ── Free drag (absolute position) ──────────────
   const [bubblePos, setBubblePos] = useState<{ right: number; bottom: number }>({ right: 16, bottom: 92 });
   const dragState = useRef<{ dragging: boolean; moved: boolean; startX: number; startY: number; startRight: number; startBottom: number } | null>(null);
-  const [panelRect, setPanelRect] = useState({ left: 0, top: 0, ...DEFAULT_PANEL_SIZE });
-  const panelDragState = useRef<{ dragging: boolean; startX: number; startY: number; startLeft: number; startTop: number } | null>(null);
+  // Panel anchored from bottom-right (same as bubble) — avoids scroll-jump on open
+  const [panelRect, setPanelRect] = useState({ right: 16, bottom: 160, ...DEFAULT_PANEL_SIZE });
+  const panelDragState = useRef<{ dragging: boolean; startX: number; startY: number; startRight: number; startBottom: number } | null>(null);
   const panelResizeState = useRef<{
     handle: ResizeHandle;
     startX: number;
     startY: number;
-    startLeft: number;
-    startTop: number;
+    startRight: number;
+    startBottom: number;
     startWidth: number;
     startHeight: number;
   } | null>(null);
@@ -161,8 +162,8 @@ export default function ChatWidget() {
     return {
       width,
       height,
-      left: Math.max(8, Math.min(rect.left, vw - width - 8)),
-      top: Math.max(8, Math.min(rect.top, vh - height - 8)),
+      right: Math.max(8, Math.min(rect.right, vw - width - 8)),
+      bottom: Math.max(8, Math.min(rect.bottom, vh - height - 8)),
     };
   }, [viewport.h, viewport.w]);
 
@@ -171,12 +172,10 @@ export default function ChatWidget() {
     const vh = viewport.h || window.innerHeight;
     const width = Math.min(size.width, vw - 16);
     const height = Math.min(size.height, vh - 16);
-    const bubbleLeft = vw - bubblePos.right - 56;
-    const bubbleTop = vh - bubblePos.bottom - 56;
-    const prefersLeft = bubbleLeft > vw / 2;
-    const left = prefersLeft ? bubbleLeft - width - 12 : bubbleLeft + 56 + 12;
-    const top = bubbleTop + 28 - height / 2;
-    return clampPanelRect({ left, top, width, height });
+    // Anchor panel above the bubble using the same right/bottom coordinate system
+    const right = bubblePos.right;
+    const bottom = bubblePos.bottom + 56 + 12; // bubble height (56) + gap (12)
+    return clampPanelRect({ right, bottom, width, height });
   }, [bubblePos.bottom, bubblePos.right, clampPanelRect, viewport.h, viewport.w]);
 
   const onPointerDown = useCallback((e: React.PointerEvent) => {
@@ -220,18 +219,19 @@ export default function ChatWidget() {
       dragging: true,
       startX: e.clientX,
       startY: e.clientY,
-      startLeft: panelRect.left,
-      startTop: panelRect.top,
+      startRight: panelRect.right,
+      startBottom: panelRect.bottom,
     };
-  }, [panelRect.left, panelRect.top]);
+  }, [panelRect.right, panelRect.bottom]);
 
   const onPanelDragMove = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
     const ds = panelDragState.current;
     if (!ds || !ds.dragging) return;
+    // Moving right → right decreases; moving down → bottom decreases
     setPanelRect(prev => clampPanelRect({
       ...prev,
-      left: ds.startLeft + e.clientX - ds.startX,
-      top: ds.startTop + e.clientY - ds.startY,
+      right: ds.startRight - (e.clientX - ds.startX),
+      bottom: ds.startBottom - (e.clientY - ds.startY),
     }));
   }, [clampPanelRect]);
 
@@ -247,12 +247,12 @@ export default function ChatWidget() {
       handle,
       startX: e.clientX,
       startY: e.clientY,
-      startLeft: panelRect.left,
-      startTop: panelRect.top,
+      startRight: panelRect.right,
+      startBottom: panelRect.bottom,
       startWidth: panelRect.width,
       startHeight: panelRect.height,
     };
-  }, [panelRect.height, panelRect.left, panelRect.top, panelRect.width]);
+  }, [panelRect.bottom, panelRect.right, panelRect.width, panelRect.height]);
 
   const onPanelResizeMove = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
     const rs = panelResizeState.current;
@@ -263,21 +263,26 @@ export default function ChatWidget() {
     const dx = e.clientX - rs.startX;
     const dy = e.clientY - rs.startY;
     const next = {
-      left: rs.startLeft,
-      top: rs.startTop,
+      right: rs.startRight,
+      bottom: rs.startBottom,
       width: rs.startWidth,
       height: rs.startHeight,
     };
 
+    // In right/bottom coordinate system:
+    // 'e' handle: expand right edge → width grows, right stays same
     if (rs.handle.includes("e")) next.width = rs.startWidth + dx;
+    // 's' handle: expand bottom edge → height grows, bottom stays same  
     if (rs.handle.includes("s")) next.height = rs.startHeight + dy;
+    // 'w' handle: expand left edge → width grows, right increases
     if (rs.handle.includes("w")) {
       next.width = rs.startWidth - dx;
-      next.left = rs.startLeft + dx;
+      next.right = rs.startRight + dx;
     }
+    // 'n' handle: expand top edge → height grows, bottom increases
     if (rs.handle.includes("n")) {
       next.height = rs.startHeight - dy;
-      next.top = rs.startTop + dy;
+      next.bottom = rs.startBottom + dy;
     }
 
     setPanelRect(clampPanelRect(next));
@@ -637,8 +642,8 @@ export default function ChatWidget() {
             transition={{ type: "spring", stiffness: 380, damping: 30 }}
             className={`fixed z-[9999] cw-panel flex flex-col ${expanded ? "cw-expanded" : ""}`}
             style={{
-              left: panelRect.left,
-              top: panelRect.top,
+              right: panelRect.right,
+              bottom: panelRect.bottom,
               width: panelRect.width,
               height: panelRect.height,
               "--cw-scale": panelScale,
