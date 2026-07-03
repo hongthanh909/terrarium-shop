@@ -5,10 +5,13 @@ import { Suspense } from "react";
 import {
   Sprout,
   ArrowRight,
+  BookOpen,
   FileText,
   Calendar,
   Gift,
   Leaf,
+  ShieldCheck,
+  Truck,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -293,30 +296,54 @@ export default async function Home() {
         id="about"
         className="relative overflow-hidden bg-[#ECEEE5]"
       >
-        <div className="relative w-full">
+        <div className="relative min-h-[calc(100dvh-96px)] w-full">
           <img
             src="/home-hero-full-banner.png"
-            alt="Banner terrarium Tiệm Rêu Décor với sản phẩm rêu decor, lời giới thiệu, nút mua ngay và các lợi ích dịch vụ"
-            className="block h-auto w-full select-none"
+            alt="Banner terrarium Tiệm Rêu Décor với sản phẩm rêu decor và lời giới thiệu"
+            className="block h-[calc(100dvh-96px)] w-full select-none object-cover object-center"
             fetchPriority="high"
           />
-          <div className="absolute left-[5.65%] top-[49.2%] flex h-[8.35%] w-[34.5%] items-center gap-[3.2%] px-[0.75%]">
+          <div className="absolute left-6 right-6 top-[52.5%] flex h-11 items-center gap-3 sm:left-[5.65%] sm:right-auto sm:h-[8.5%] sm:w-[34.5%] sm:gap-[3.2%] sm:px-[0.75%]">
             <Link
               href="/products"
-              className="group relative flex h-[62%] w-[28.5%] items-center justify-center overflow-hidden rounded-full bg-[#3f5d33] text-[clamp(8px,0.78vw,14px)] font-semibold text-white shadow-[0_0.22vw_0.55vw_rgba(39,59,33,0.15)] ring-1 ring-white/15 transition-all duration-300 ease-out hover:-translate-y-[0.05vw] hover:bg-[#314d28] hover:shadow-[0_0.35vw_0.8vw_rgba(39,59,33,0.2)] focus:outline-none focus:ring-2 focus:ring-[#3f5d33] focus:ring-offset-2 active:translate-y-0 active:scale-[0.985]"
+              className="group relative flex h-full w-[36%] items-center justify-center overflow-hidden rounded-full bg-[#3f5d33] text-[13px] font-semibold text-white shadow-[0_0.22vw_0.55vw_rgba(39,59,33,0.15)] ring-1 ring-white/15 transition-all duration-300 ease-out hover:-translate-y-[0.05vw] hover:bg-[#314d28] hover:shadow-[0_0.35vw_0.8vw_rgba(39,59,33,0.2)] focus:outline-none focus:ring-2 focus:ring-[#3f5d33] focus:ring-offset-2 active:translate-y-0 active:scale-[0.985] sm:h-[64%] sm:w-[30%] sm:text-[clamp(8px,0.78vw,14px)]"
             >
               <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/16 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
               <span className="relative">Mua ngay</span>
             </Link>
             <Link
-              href="/products"
-              className="group flex h-[62%] w-[51.5%] items-center justify-center rounded-full border border-[#3f5d33]/20 bg-[#fffaf0] text-[#263b20] shadow-[0_0.12vw_0.35vw_rgba(55,70,44,0.06)] transition-all duration-300 ease-out hover:-translate-y-[0.05vw] hover:border-[#3f5d33]/35 hover:bg-white hover:shadow-[0_0.26vw_0.65vw_rgba(39,59,33,0.1)] focus:outline-none focus:ring-2 focus:ring-[#3f5d33] focus:ring-offset-2 active:translate-y-0 active:scale-[0.985]"
+              href="/explore"
+              className="group flex h-full w-[58%] items-center justify-center rounded-full border border-[#3f5d33]/20 bg-[#fffaf0] text-[#263b20] shadow-[0_0.12vw_0.35vw_rgba(55,70,44,0.06)] transition-all duration-300 ease-out hover:-translate-y-[0.05vw] hover:border-[#3f5d33]/35 hover:bg-white hover:shadow-[0_0.26vw_0.65vw_rgba(39,59,33,0.1)] focus:outline-none focus:ring-2 focus:ring-[#3f5d33] focus:ring-offset-2 active:translate-y-0 active:scale-[0.985] sm:h-[64%] sm:w-[52%]"
             >
-              <span className="flex items-center justify-center gap-[0.45vw] rounded-full px-[0.85vw] py-[0.28vw] text-[clamp(7px,0.7vw,13px)] font-semibold">
+              <span className="flex items-center justify-center gap-1.5 rounded-full px-3 py-1 text-[12px] font-semibold sm:gap-[0.45vw] sm:px-[0.85vw] sm:py-[0.28vw] sm:text-[clamp(11px,0.78vw,14px)]">
                 Khám phá bộ sưu tập
                 <ArrowRight className="h-[0.78vw] min-h-2.5 w-[0.78vw] min-w-2.5 stroke-[1.8] transition-transform duration-300 group-hover:translate-x-[0.14vw]" />
               </span>
             </Link>
+          </div>
+          <div className="absolute inset-x-0 bottom-0 bg-[#526044]/90 text-white shadow-[0_-0.45vw_1.2vw_rgba(30,45,26,0.12)] backdrop-blur-sm">
+            <div className="mx-auto grid max-w-6xl grid-cols-1 sm:grid-cols-3">
+              {[
+                { icon: Truck, title: "Giao Hàng Nhanh", subtitle: "Toàn quốc nhanh chóng" },
+                { icon: BookOpen, title: "Hướng Dẫn Chăm Sóc", subtitle: "Mẹo để terrarium luôn xanh" },
+                { icon: ShieldCheck, title: "Bảo Mật Thanh Toán", subtitle: "Thanh toán an toàn 100%" },
+              ].map((item, index) => {
+                const Icon = item.icon;
+                return (
+                  <Link
+                    href="/policies"
+                    key={item.title}
+                    className={`group flex min-h-[72px] items-center justify-center gap-4 px-5 py-3 transition-all duration-300 hover:bg-white/8 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70 active:scale-[0.985] sm:min-h-[92px] sm:gap-5 sm:px-6 sm:py-4 ${index > 0 ? "border-t border-white/20 sm:border-l sm:border-t-0 sm:border-white/28" : ""}`}
+                  >
+                    <Icon className="h-8 w-8 shrink-0 stroke-[1.45] text-white/90 transition-transform duration-300 group-hover:-translate-y-0.5" />
+                    <span className="min-w-0">
+                      <span className="block text-lg font-semibold leading-tight tracking-[0]">{item.title}</span>
+                      <span className="mt-1 block text-sm leading-snug text-white/78">{item.subtitle}</span>
+                    </span>
+                  </Link>
+                );
+              })}
+            </div>
           </div>
         </div>
       </section>
