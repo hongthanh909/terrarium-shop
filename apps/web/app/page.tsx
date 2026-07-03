@@ -300,7 +300,7 @@ export default async function Home() {
             className="block h-auto w-full select-none"
             fetchPriority="high"
           />
-          <div className="absolute left-[5.65%] top-[49.2%] flex h-[8.35%] w-[34.5%] items-center gap-[3.2%] rounded-[1.15vw] bg-[#f4ebdd] px-[0.75%] shadow-[0_0.35vw_0.9vw_rgba(52,62,45,0.1)] ring-1 ring-white/70">
+          <div className="absolute left-[5.65%] top-[49.2%] flex h-[8.35%] w-[34.5%] items-center gap-[3.2%] px-[0.75%]">
             <Link
               href="/products"
               className="group relative flex h-[62%] w-[28.5%] items-center justify-center overflow-hidden rounded-full bg-[#3f5d33] text-[clamp(8px,0.78vw,14px)] font-semibold text-white shadow-[0_0.22vw_0.55vw_rgba(39,59,33,0.15)] ring-1 ring-white/15 transition-all duration-300 ease-out hover:-translate-y-[0.05vw] hover:bg-[#314d28] hover:shadow-[0_0.35vw_0.8vw_rgba(39,59,33,0.2)] focus:outline-none focus:ring-2 focus:ring-[#3f5d33] focus:ring-offset-2 active:translate-y-0 active:scale-[0.985]"
