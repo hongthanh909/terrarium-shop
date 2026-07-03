@@ -35,6 +35,8 @@ interface PageContext {
   blogTitle?: string;
 }
 
+type ResizeHandle = "n" | "s" | "e" | "w" | "ne" | "nw" | "se" | "sw";
+
 // ── Category menu items (Shopee-style 2×2 grid) ─────
 const CATEGORY_ITEMS = [
   { icon: Package, label: "Tất cả sản phẩm", action: "products" as const, color: "#3d5a2a" },
@@ -141,6 +143,15 @@ export default function ChatWidget() {
   const dragState = useRef<{ dragging: boolean; moved: boolean; startX: number; startY: number; startRight: number; startBottom: number } | null>(null);
   const [panelRect, setPanelRect] = useState({ left: 0, top: 0, ...DEFAULT_PANEL_SIZE });
   const panelDragState = useRef<{ dragging: boolean; startX: number; startY: number; startLeft: number; startTop: number } | null>(null);
+  const panelResizeState = useRef<{
+    handle: ResizeHandle;
+    startX: number;
+    startY: number;
+    startLeft: number;
+    startTop: number;
+    startWidth: number;
+    startHeight: number;
+  } | null>(null);
 
   const clampPanelRect = useCallback((rect: typeof panelRect) => {
     const vw = viewport.w || window.innerWidth;
@@ -226,6 +237,54 @@ export default function ChatWidget() {
 
   const onPanelDragEnd = useCallback(() => {
     panelDragState.current = null;
+  }, []);
+
+  const onPanelResizeStart = useCallback((handle: ResizeHandle) => (e: React.PointerEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    panelResizeState.current = {
+      handle,
+      startX: e.clientX,
+      startY: e.clientY,
+      startLeft: panelRect.left,
+      startTop: panelRect.top,
+      startWidth: panelRect.width,
+      startHeight: panelRect.height,
+    };
+  }, [panelRect.height, panelRect.left, panelRect.top, panelRect.width]);
+
+  const onPanelResizeMove = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+    const rs = panelResizeState.current;
+    if (!rs) return;
+    e.preventDefault();
+    e.stopPropagation();
+
+    const dx = e.clientX - rs.startX;
+    const dy = e.clientY - rs.startY;
+    const next = {
+      left: rs.startLeft,
+      top: rs.startTop,
+      width: rs.startWidth,
+      height: rs.startHeight,
+    };
+
+    if (rs.handle.includes("e")) next.width = rs.startWidth + dx;
+    if (rs.handle.includes("s")) next.height = rs.startHeight + dy;
+    if (rs.handle.includes("w")) {
+      next.width = rs.startWidth - dx;
+      next.left = rs.startLeft + dx;
+    }
+    if (rs.handle.includes("n")) {
+      next.height = rs.startHeight - dy;
+      next.top = rs.startTop + dy;
+    }
+
+    setPanelRect(clampPanelRect(next));
+  }, [clampPanelRect]);
+
+  const onPanelResizeEnd = useCallback(() => {
+    panelResizeState.current = null;
   }, []);
 
   useEffect(() => {
@@ -431,6 +490,10 @@ export default function ChatWidget() {
     if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(message); }
   };
 
+  const panelScale = Math.max(0.88, Math.min(1.08, panelRect.width / DEFAULT_PANEL_SIZE.width));
+  const compactPanel = panelRect.width < 370 || panelRect.height < 500;
+  const textareaMaxHeight = Math.max(72, Math.min(120, panelRect.height * 0.22));
+
   // ═══════════════════════════════════════════════
   // RENDER
   // ═══════════════════════════════════════════════
@@ -438,11 +501,11 @@ export default function ChatWidget() {
     <>
       <style>{`
         .cw-panel {
+          position: relative;
           min-width: 320px;
           min-height: 420px;
           max-width: calc(100vw - 16px);
           max-height: calc(100dvh - 16px);
-          resize: both;
         }
         @media (max-width: 639px) {
           .cw-panel {
@@ -453,6 +516,41 @@ export default function ChatWidget() {
           }
         }
         .cw-panel-header { cursor: move; touch-action: none; user-select: none; }
+        .cw-panel-header > * { position: relative; z-index: 5; }
+        .cw-resize-handle {
+          position: absolute;
+          z-index: 4;
+          touch-action: none;
+          user-select: none;
+        }
+        .cw-resize-handle::after {
+          content: "";
+          position: absolute;
+          border-radius: 999px;
+          background: rgba(66,87,51,0);
+          transition: background-color 0.16s ease;
+        }
+        .cw-resize-handle:hover::after { background: rgba(66,87,51,0.18); }
+        .cw-resize-n, .cw-resize-s { left: 16px; right: 16px; height: 10px; cursor: ns-resize; }
+        .cw-resize-n { top: 0; }
+        .cw-resize-s { bottom: 0; }
+        .cw-resize-n::after, .cw-resize-s::after { left: 22%; right: 22%; height: 3px; top: 50%; transform: translateY(-50%); }
+        .cw-resize-e, .cw-resize-w { top: 16px; bottom: 16px; width: 10px; cursor: ew-resize; }
+        .cw-resize-e { right: 0; }
+        .cw-resize-w { left: 0; }
+        .cw-resize-e::after, .cw-resize-w::after { top: 22%; bottom: 22%; width: 3px; left: 50%; transform: translateX(-50%); }
+        .cw-resize-ne, .cw-resize-nw, .cw-resize-se, .cw-resize-sw { width: 18px; height: 18px; }
+        .cw-resize-ne { top: 0; right: 0; cursor: nesw-resize; }
+        .cw-resize-sw { bottom: 0; left: 0; cursor: nesw-resize; }
+        .cw-resize-nw { top: 0; left: 0; cursor: nwse-resize; }
+        .cw-resize-se { bottom: 0; right: 0; cursor: nwse-resize; }
+        .cw-resize-ne::after, .cw-resize-nw::after, .cw-resize-se::after, .cw-resize-sw::after {
+          inset: 5px;
+          border: 1px solid rgba(66,87,51,0.18);
+        }
+        .cw-fluid-text { font-size: calc(13px * var(--cw-scale)); }
+        .cw-fluid-small { font-size: calc(12px * var(--cw-scale)); }
+        .cw-fluid-gap { gap: calc(12px * var(--cw-scale)); }
         .cw-scroll::-webkit-scrollbar { width: 3px; }
         .cw-scroll::-webkit-scrollbar-track { background: transparent; }
         .cw-scroll::-webkit-scrollbar-thumb { background: rgba(66,87,51,0.15); border-radius: 99px; }
@@ -543,15 +641,28 @@ export default function ChatWidget() {
               top: panelRect.top,
               width: panelRect.width,
               height: panelRect.height,
+              "--cw-scale": panelScale,
               borderRadius: 16,
               overflow: "hidden",
               background: "#ffffff",
               boxShadow: "0 12px 48px rgba(26,46,18,0.12), 0 0 0 1px rgba(227,235,221,0.6)",
-            }}
+            } as React.CSSProperties}
           >
+            {(["n", "s", "e", "w", "ne", "nw", "se", "sw"] as ResizeHandle[]).map((handle) => (
+              <div
+                key={handle}
+                className={`cw-resize-handle cw-resize-${handle}`}
+                onPointerDown={onPanelResizeStart(handle)}
+                onPointerMove={onPanelResizeMove}
+                onPointerUp={onPanelResizeEnd}
+                onPointerCancel={onPanelResizeEnd}
+                aria-hidden="true"
+              />
+            ))}
+
             {/* ── HEADER — "Chat với Rêu" ────────── */}
             <div
-              className="cw-panel-header flex-shrink-0 flex items-center gap-3 px-4 py-3"
+              className={`cw-panel-header flex-shrink-0 flex items-center ${compactPanel ? "gap-2 px-3 py-2.5" : "gap-3 px-4 py-3"}`}
               onPointerDown={onPanelDragStart}
               onPointerMove={onPanelDragMove}
               onPointerUp={onPanelDragEnd}
@@ -563,7 +674,7 @@ export default function ChatWidget() {
             >
               {/* Avatar */}
               <div
-                className="w-9 h-9 rounded-full overflow-hidden flex-shrink-0"
+                className={`${compactPanel ? "w-8 h-8" : "w-9 h-9"} rounded-full overflow-hidden flex-shrink-0`}
                 style={{ border: "1.5px solid rgba(255,255,255,0.25)", background: "rgba(255,255,255,0.08)" }}
               >
                 <img
@@ -575,13 +686,25 @@ export default function ChatWidget() {
 
               {/* "Chat với Rêu" */}
               <div className="flex-1 min-w-0">
-                <span className="block text-sm font-bold" style={{ color: "#f0f7ee" }}>
+                <span className="block font-bold cw-fluid-text" style={{ color: "#f0f7ee" }}>
                   Chat với Rêu
                 </span>
               </div>
 
               {/* Actions */}
               <div className="flex gap-0.5 flex-shrink-0">
+                {messages.length > 1 && (
+                  <button
+                    onClick={resetChat}
+                    title="TrĂ² chuyá»‡n láº¡i"
+                    className={`${compactPanel ? "w-8 h-8" : "w-10 h-10 sm:w-8 sm:h-8"} rounded-lg flex items-center justify-center transition-colors`}
+                    style={{ border: "none", cursor: "pointer", color: "rgba(255,255,255,0.6)" }}
+                    onMouseEnter={e => (e.currentTarget.style.background = "rgba(255,255,255,0.1)")}
+                    onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
+                  >
+                    <RotateCcw size={14} />
+                  </button>
+                )}
                 <button
                   onClick={() => {
                     const nextExpanded = !expanded;
@@ -593,7 +716,7 @@ export default function ChatWidget() {
                     }));
                   }}
                   title={expanded ? "Thu nhỏ" : "Mở rộng"}
-                  className="w-10 h-10 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center transition-colors"
+                  className={`${compactPanel ? "w-8 h-8" : "w-10 h-10 sm:w-8 sm:h-8"} rounded-lg flex items-center justify-center transition-colors`}
                   style={{ border: "none", cursor: "pointer", color: "rgba(255,255,255,0.6)" }}
                   onMouseEnter={e => (e.currentTarget.style.background = "rgba(255,255,255,0.1)")}
                   onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
@@ -603,7 +726,7 @@ export default function ChatWidget() {
                 <button
                   onClick={() => setOpen(false)}
                   title="Đóng"
-                  className="w-10 h-10 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center transition-colors"
+                  className={`${compactPanel ? "w-8 h-8" : "w-10 h-10 sm:w-8 sm:h-8"} rounded-lg flex items-center justify-center transition-colors`}
                   style={{ border: "none", cursor: "pointer", color: "rgba(255,255,255,0.6)" }}
                   onMouseEnter={e => (e.currentTarget.style.background = "rgba(255,255,255,0.1)")}
                   onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
@@ -615,7 +738,7 @@ export default function ChatWidget() {
 
             {/* ── MESSAGES AREA ───────────────────── */}
             <div
-              className="flex-1 overflow-y-auto cw-scroll flex flex-col px-4 py-4"
+              className={`flex-1 overflow-y-auto cw-scroll flex flex-col ${compactPanel ? "px-3 py-3" : "px-4 py-4"}`}
               style={{ background: "#fafbf8" }}
             >
               {/* ─── WELCOME SCREEN (initial state) ─── */}
@@ -706,7 +829,7 @@ export default function ChatWidget() {
                 </div>
               ) : (
                 /* ─── CONVERSATION MODE ─────────────── */
-                <div className="flex flex-col gap-4">
+                <div className="flex min-h-full flex-col justify-center cw-fluid-gap">
                   {messages.map((msg, i) => (
                     <motion.div
                       key={i}
@@ -717,7 +840,7 @@ export default function ChatWidget() {
                       {msg.role === "user" ? (
                         <div className="flex justify-end">
                           <div
-                            className="max-w-[78%] text-[13px] leading-relaxed"
+                            className="max-w-[78%] cw-fluid-text leading-relaxed"
                             style={{
                               background: "linear-gradient(135deg, #2d4a22, #3a5e2c)",
                               color: "#f0f7ee",
@@ -730,7 +853,7 @@ export default function ChatWidget() {
                           </div>
                         </div>
                       ) : (
-                        <div className="flex items-start gap-2">
+                        <div className="flex items-start justify-center gap-2">
                           {/* Bot avatar mini */}
                           <div
                             className="w-6 h-6 rounded-full overflow-hidden flex-shrink-0 mt-0.5"
@@ -739,7 +862,7 @@ export default function ChatWidget() {
                             <img src="/logo.png" alt="" className="w-full h-full object-cover" />
                           </div>
                           <div
-                            className="max-w-[85%] text-[13px] leading-[1.7] rounded-[4px_16px_16px_16px]"
+                            className="max-w-[88%] cw-fluid-text leading-[1.7] rounded-[4px_16px_16px_16px]"
                             style={{
                               color: "#1e3319",
                               background: "#eef4ea",
@@ -855,57 +978,14 @@ export default function ChatWidget() {
                     </motion.div>
                   ))}
 
-                  {/* ── "Bạn muốn hỏi về:" suggestions (in conversation) ── */}
-                  {!isSending && messages.length > 1 && (
-                    <div className="mt-2">
-                      <p className="text-[12px] font-semibold mb-2" style={{ color: "#8a9e84" }}>
-                        Bạn muốn hỏi về:
-                      </p>
-                      <div className="flex flex-col gap-1.5">
-                        {SUGGESTION_PILLS.map((pill) => (
-                          <button
-                            key={pill}
-                            onClick={() => sendMessage(pill)}
-                            className="cw-suggestion-pill text-left text-[12px] font-medium px-3.5 py-2 rounded-lg"
-                            style={{
-                              background: "#ffffff",
-                              border: "1px solid #dde8d7",
-                              color: "#2d4a22",
-                            }}
-                          >
-                            {pill}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* ── "Trò chuyện lại với Rêu" (in conversation) ── */}
-                  {messages.length > 1 && (
-                    <div className="mt-2 pt-3" style={{ borderTop: "1px solid #e8ede4" }}>
-                      <button
-                        onClick={resetChat}
-                        className="cw-reset-btn w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-[13px] font-semibold"
-                        style={{
-                          background: "#ffffff",
-                          border: "1px solid #dde8d7",
-                          color: "#5a6d52",
-                        }}
-                      >
-                        <RotateCcw size={14} />
-                        Trò chuyện lại với Rêu
-                      </button>
-                    </div>
-                  )}
-
                   <div ref={messagesEndRef} />
                 </div>
               )}
             </div>
 
             {/* ── INPUT ────────────────────────────── */}
-            <div className="flex-shrink-0 px-3 py-2.5 pb-[calc(env(safe-area-inset-bottom)+0.625rem)]" style={{ borderTop: "1px solid #e3ebdd", background: "#ffffff" }}>
-              <div className="flex items-end gap-2 rounded-2xl px-3.5 py-2" style={{ background: "#f5f8f3", border: "1px solid #e3ebdd" }}>
+            <div className={`flex-shrink-0 ${compactPanel ? "px-2.5 py-2" : "px-3 py-2.5"} pb-[calc(env(safe-area-inset-bottom)+0.625rem)]`} style={{ borderTop: "1px solid #e3ebdd", background: "#ffffff" }}>
+              <div className={`flex items-end gap-2 rounded-2xl ${compactPanel ? "px-3 py-1.5" : "px-3.5 py-2"}`} style={{ background: "#f5f8f3", border: "1px solid #e3ebdd" }}>
                 <div className="flex-1 relative">
                   <textarea
                     ref={textareaRef}
@@ -914,14 +994,14 @@ export default function ChatWidget() {
                       const v = e.target.value;
                       if (v.length <= MAX_INPUT) setMessage(v);
                       e.target.style.height = "auto";
-                      e.target.style.height = Math.min(e.target.scrollHeight, 80) + "px";
+                      e.target.style.height = Math.min(e.target.scrollHeight, textareaMaxHeight) + "px";
                     }}
                     onKeyDown={handleKey}
                     disabled={isSending || isCooldown || userMsgCount >= MAX_MESSAGES}
                     placeholder={isCooldown ? "Đợi chút..." : userMsgCount >= MAX_MESSAGES ? "Đã đạt giới hạn" : "Hỏi em về terrarium..."}
                     rows={1}
-                    className="cw-input w-full resize-none border-none outline-none bg-transparent text-sm leading-relaxed font-[inherit]"
-                    style={{ minHeight: 40, maxHeight: 96, boxShadow: "none", color: "#2c3e24" }}
+                    className="cw-input w-full resize-none border-none outline-none bg-transparent cw-fluid-text leading-relaxed font-[inherit]"
+                    style={{ minHeight: compactPanel ? 34 : 40, maxHeight: textareaMaxHeight, boxShadow: "none", color: "#2c3e24" }}
                   />
                   {message.length > 300 && (
                     <span className="absolute right-0 bottom-0 text-xs font-semibold" style={{ color: message.length >= MAX_INPUT ? "#dc2626" : "#526248" }}>
@@ -932,7 +1012,7 @@ export default function ChatWidget() {
                 <button
                   onClick={() => sendMessage(message)}
                   disabled={isSending || isCooldown || !message.trim() || userMsgCount >= MAX_MESSAGES}
-                  className="w-11 h-11 rounded-full flex items-center justify-center flex-shrink-0 transition-colors"
+                  className={`${compactPanel ? "w-10 h-10" : "w-11 h-11"} rounded-full flex items-center justify-center flex-shrink-0 transition-colors`}
                   style={{
                     background: message.trim() && !isSending && !isCooldown
                       ? "linear-gradient(135deg, #3a5229, #4a6a35)"
