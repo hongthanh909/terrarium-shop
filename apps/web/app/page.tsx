@@ -89,7 +89,6 @@ async function FeaturedProductsSection() {
   try {
     products = await prisma.product.findMany({
       where: { featured: true, status: "ACTIVE", inventory: { gt: 0 } },
-      take: 4,
       include: {
         category: true,
         reviews: { where: { approved: true }, select: { rating: true } },

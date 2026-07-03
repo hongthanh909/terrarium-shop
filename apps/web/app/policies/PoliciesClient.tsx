@@ -1,6 +1,5 @@
 "use client";
 
-import { ImageWrapper } from "@/components/ui/ImageWrapper";
 import { motion } from "framer-motion";
 import { MessageCircle, ChevronDown } from "lucide-react";
 import { useState } from "react";
@@ -92,19 +91,7 @@ export function PoliciesClient({
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1, duration: 0.5 }}
         >
-          {/* Logo */}
-          <div className="flex justify-center mb-5">
-            <div className="w-20 h-20 rounded-2xl overflow-hidden shadow-[0_8px_24px_rgba(66,87,51,0.25)] bg-white p-1">
-              <ImageWrapper
-                src="/logo.png"
-                alt="Tiệm Rêu Décor logo"
-                width={80}
-                height={80}
-                className="w-full h-full object-contain"
-              />
-            </div>
-          </div>
-          <div className="inline-flex items-center gap-2 bg-[#e3ebdd] px-4 py-2 rounded-full text-sm font-medium text-[#425733] mb-3">
+          <div className="inline-flex items-center gap-2 bg-[#e3ebdd] px-4 py-2 rounded-full text-sm font-medium text-[#425733] mb-4">
             <span>Minh bạch &amp; Tin cậy</span>
           </div>
           <h1 className="text-4xl md:text-5xl font-bold text-[#1a2e12] mb-4">

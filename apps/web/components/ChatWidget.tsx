@@ -104,6 +104,9 @@ function getPageContext(pathname: string): PageContext {
 const MAX_MESSAGES = 30;
 const COOLDOWN_MS = 3000;
 const MAX_INPUT = 400;
+const DEFAULT_PANEL_SIZE = { width: 400, height: 560 };
+const EXPANDED_PANEL_SIZE = { width: 520, height: 700 };
+const MIN_PANEL_SIZE = { width: 320, height: 420 };
 
 const WELCOME_MESSAGE = "Xin chào, Rêu có thể giúp bạn điều gì?";
 
@@ -122,6 +125,7 @@ export default function ChatWidget() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const abortRef = useRef<AbortController | null>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
 
   // ── Viewport dimensions ────────────────────────
   const [viewport, setViewport] = useState({ w: 0, h: 0 });
@@ -135,6 +139,34 @@ export default function ChatWidget() {
   // ── Free drag (absolute position) ──────────────
   const [bubblePos, setBubblePos] = useState<{ right: number; bottom: number }>({ right: 16, bottom: 92 });
   const dragState = useRef<{ dragging: boolean; moved: boolean; startX: number; startY: number; startRight: number; startBottom: number } | null>(null);
+  const [panelRect, setPanelRect] = useState({ left: 0, top: 0, ...DEFAULT_PANEL_SIZE });
+  const panelDragState = useRef<{ dragging: boolean; startX: number; startY: number; startLeft: number; startTop: number } | null>(null);
+
+  const clampPanelRect = useCallback((rect: typeof panelRect) => {
+    const vw = viewport.w || window.innerWidth;
+    const vh = viewport.h || window.innerHeight;
+    const width = Math.max(MIN_PANEL_SIZE.width, Math.min(rect.width, vw - 16));
+    const height = Math.max(MIN_PANEL_SIZE.height, Math.min(rect.height, vh - 16));
+    return {
+      width,
+      height,
+      left: Math.max(8, Math.min(rect.left, vw - width - 8)),
+      top: Math.max(8, Math.min(rect.top, vh - height - 8)),
+    };
+  }, [viewport.h, viewport.w]);
+
+  const getPanelRectNearBubble = useCallback((size = DEFAULT_PANEL_SIZE) => {
+    const vw = viewport.w || window.innerWidth;
+    const vh = viewport.h || window.innerHeight;
+    const width = Math.min(size.width, vw - 16);
+    const height = Math.min(size.height, vh - 16);
+    const bubbleLeft = vw - bubblePos.right - 56;
+    const bubbleTop = vh - bubblePos.bottom - 56;
+    const prefersLeft = bubbleLeft > vw / 2;
+    const left = prefersLeft ? bubbleLeft - width - 12 : bubbleLeft + 56 + 12;
+    const top = bubbleTop + 28 - height / 2;
+    return clampPanelRect({ left, top, width, height });
+  }, [bubblePos.bottom, bubblePos.right, clampPanelRect, viewport.h, viewport.w]);
 
   const onPointerDown = useCallback((e: React.PointerEvent) => {
     (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
@@ -169,6 +201,51 @@ export default function ChatWidget() {
     }
     dragState.current = null;
   }, []);
+
+  const onPanelDragStart = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+    if ((e.target as HTMLElement).closest("button")) return;
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    panelDragState.current = {
+      dragging: true,
+      startX: e.clientX,
+      startY: e.clientY,
+      startLeft: panelRect.left,
+      startTop: panelRect.top,
+    };
+  }, [panelRect.left, panelRect.top]);
+
+  const onPanelDragMove = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+    const ds = panelDragState.current;
+    if (!ds || !ds.dragging) return;
+    setPanelRect(prev => clampPanelRect({
+      ...prev,
+      left: ds.startLeft + e.clientX - ds.startX,
+      top: ds.startTop + e.clientY - ds.startY,
+    }));
+  }, [clampPanelRect]);
+
+  const onPanelDragEnd = useCallback(() => {
+    panelDragState.current = null;
+  }, []);
+
+  useEffect(() => {
+    if (open) setPanelRect(getPanelRectNearBubble(expanded ? EXPANDED_PANEL_SIZE : DEFAULT_PANEL_SIZE));
+  }, [expanded, getPanelRectNearBubble, open]);
+
+  useEffect(() => {
+    if (!open) return;
+    setPanelRect(prev => clampPanelRect(prev));
+  }, [clampPanelRect, open, viewport.h, viewport.w]);
+
+  useEffect(() => {
+    if (!open || !panelRef.current) return;
+    const observer = new ResizeObserver(([entry]) => {
+      const { width, height } = entry.contentRect;
+      setPanelRect(prev => clampPanelRect({ ...prev, width, height }));
+    });
+    observer.observe(panelRef.current);
+    return () => observer.disconnect();
+  }, [clampPanelRect, open]);
 
   // ── Page context ───────────────────────────────
   const [pageCtx, setPageCtx] = useState<PageContext>(() => getPageContext(pathname));
@@ -361,30 +438,21 @@ export default function ChatWidget() {
     <>
       <style>{`
         .cw-panel {
-          width: calc(100vw - 16px);
-          max-width: 400px;
-          height: min(620px, calc(100dvh - 112px));
-          max-height: 580px;
-        }
-        .cw-panel.cw-expanded {
-          max-width: 520px;
-          max-height: 720px;
-        }
-        @media (min-width: 640px) {
-          .cw-panel { width: 400px; height: 560px; max-height: 560px; }
-          .cw-panel.cw-expanded { width: 520px; height: 720px; max-height: 720px; }
+          min-width: 320px;
+          min-height: 420px;
+          max-width: calc(100vw - 16px);
+          max-height: calc(100dvh - 16px);
+          resize: both;
         }
         @media (max-width: 639px) {
           .cw-panel {
             border-radius: 18px !important;
+            min-width: min(320px, calc(100vw - 16px));
             max-width: calc(100vw - 16px);
-            max-height: calc(100dvh - 112px);
-          }
-          .cw-panel.cw-expanded {
-            max-width: calc(100vw - 16px);
-            max-height: calc(100dvh - 112px);
+            max-height: calc(100dvh - 16px);
           }
         }
+        .cw-panel-header { cursor: move; touch-action: none; user-select: none; }
         .cw-scroll::-webkit-scrollbar { width: 3px; }
         .cw-scroll::-webkit-scrollbar-track { background: transparent; }
         .cw-scroll::-webkit-scrollbar-thumb { background: rgba(66,87,51,0.15); border-radius: 99px; }
@@ -462,43 +530,19 @@ export default function ChatWidget() {
       {/* ═══ CHAT PANEL ═══════════════════════════ */}
       <AnimatePresence>
         {open && (() => {
-          const BUBBLE_SIZE = 56;
-          const GAP = 12;
-          const panelW = expanded ? 520 : 400;
-          const panelH = expanded ? 700 : 540;
-          const safeW = Math.min(panelW, viewport.w - 16);
-          const safeH = Math.min(panelH, viewport.h - 16);
-
-          const bubbleCX = viewport.w - bubblePos.right - BUBBLE_SIZE / 2;
-          const bubbleCY = viewport.h - bubblePos.bottom - BUBBLE_SIZE / 2;
-
-          const pos: React.CSSProperties = {};
-          if (bubbleCX > viewport.w / 2) {
-            pos.right = Math.max(8, bubblePos.right);
-          } else {
-            const bubbleLeft = viewport.w - bubblePos.right - BUBBLE_SIZE;
-            pos.left = Math.max(8, Math.min(bubbleLeft, viewport.w - safeW - 8));
-          }
-
-          const spaceAbove = viewport.h - bubblePos.bottom - BUBBLE_SIZE;
-          const spaceBelow = bubblePos.bottom;
-          if (spaceAbove >= safeH + GAP) {
-            pos.bottom = bubblePos.bottom + BUBBLE_SIZE + GAP;
-          } else if (spaceBelow >= safeH + GAP) {
-            pos.top = viewport.h - bubblePos.bottom + GAP;
-          } else {
-            pos.top = Math.max(8, (viewport.h - safeH) / 2);
-          }
-
           return (
           <motion.div
+            ref={panelRef}
             initial={{ opacity: 0, y: 16, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 12, scale: 0.95 }}
             transition={{ type: "spring", stiffness: 380, damping: 30 }}
             className={`fixed z-[9999] cw-panel flex flex-col ${expanded ? "cw-expanded" : ""}`}
             style={{
-              ...pos,
+              left: panelRect.left,
+              top: panelRect.top,
+              width: panelRect.width,
+              height: panelRect.height,
               borderRadius: 16,
               overflow: "hidden",
               background: "#ffffff",
@@ -507,7 +551,11 @@ export default function ChatWidget() {
           >
             {/* ── HEADER — "Chat với Rêu" ────────── */}
             <div
-              className="flex-shrink-0 flex items-center gap-3 px-4 py-3"
+              className="cw-panel-header flex-shrink-0 flex items-center gap-3 px-4 py-3"
+              onPointerDown={onPanelDragStart}
+              onPointerMove={onPanelDragMove}
+              onPointerUp={onPanelDragEnd}
+              onPointerCancel={onPanelDragEnd}
               style={{
                 background: "linear-gradient(135deg, #1a2f18 0%, #243d20 100%)",
                 borderBottom: "1px solid rgba(255,255,255,0.06)",
@@ -535,7 +583,15 @@ export default function ChatWidget() {
               {/* Actions */}
               <div className="flex gap-0.5 flex-shrink-0">
                 <button
-                  onClick={() => setExpanded(!expanded)}
+                  onClick={() => {
+                    const nextExpanded = !expanded;
+                    setExpanded(nextExpanded);
+                    setPanelRect(prev => clampPanelRect({
+                      ...prev,
+                      width: nextExpanded ? EXPANDED_PANEL_SIZE.width : DEFAULT_PANEL_SIZE.width,
+                      height: nextExpanded ? EXPANDED_PANEL_SIZE.height : DEFAULT_PANEL_SIZE.height,
+                    }));
+                  }}
                   title={expanded ? "Thu nhỏ" : "Mở rộng"}
                   className="w-10 h-10 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center transition-colors"
                   style={{ border: "none", cursor: "pointer", color: "rgba(255,255,255,0.6)" }}
