@@ -8,8 +8,6 @@ import {
   BookOpen,
   FileText,
   Calendar,
-  Gift,
-  Leaf,
   ShieldCheck,
   Truck,
 } from "lucide-react";
@@ -302,26 +300,32 @@ export default async function Home() {
             className="block h-[calc(100dvh-96px)] w-full select-none object-cover object-center"
             fetchPriority="high"
           />
-          <div className="absolute left-6 right-6 top-[52.5%] flex h-11 items-center gap-3 sm:left-[5.65%] sm:right-auto sm:h-[8.5%] sm:w-[34.5%] sm:gap-[3.2%] sm:px-[0.75%]">
-            <Link
-              href="/products"
-              className="group relative flex h-full w-[36%] items-center justify-center overflow-hidden rounded-full bg-[#3f5d33] text-[13px] font-semibold text-white shadow-[0_0.22vw_0.55vw_rgba(39,59,33,0.15)] ring-1 ring-white/15 transition-all duration-300 ease-out hover:-translate-y-[0.05vw] hover:bg-[#314d28] hover:shadow-[0_0.35vw_0.8vw_rgba(39,59,33,0.2)] focus:outline-none focus:ring-2 focus:ring-[#3f5d33] focus:ring-offset-2 active:translate-y-0 active:scale-[0.985] sm:h-[64%] sm:w-[30%] sm:text-[clamp(8px,0.78vw,14px)]"
-            >
-              <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/16 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
-              <span className="relative">Mua ngay</span>
-            </Link>
-            <Link
-              href="/explore"
-              className="group flex h-full w-[58%] items-center justify-center rounded-full border border-[#3f5d33]/20 bg-[#fffaf0] text-[#263b20] shadow-[0_0.12vw_0.35vw_rgba(55,70,44,0.06)] transition-all duration-300 ease-out hover:-translate-y-[0.05vw] hover:border-[#3f5d33]/35 hover:bg-white hover:shadow-[0_0.26vw_0.65vw_rgba(39,59,33,0.1)] focus:outline-none focus:ring-2 focus:ring-[#3f5d33] focus:ring-offset-2 active:translate-y-0 active:scale-[0.985] sm:h-[64%] sm:w-[52%]"
-            >
-              <span className="flex items-center justify-center gap-1.5 rounded-full px-3 py-1 text-[12px] font-semibold sm:gap-[0.45vw] sm:px-[0.85vw] sm:py-[0.28vw] sm:text-[clamp(11px,0.78vw,14px)]">
+          <div className="absolute left-6 right-6 top-[15%] z-10 sm:left-[5.8%] sm:right-auto sm:top-[19%] sm:w-[39%] lg:w-[36%]">
+            <h1 className="max-w-[11ch] font-serif text-4xl font-semibold leading-[1.08] tracking-[0] text-[#263b20] drop-shadow-[0_1px_0_rgba(255,255,255,0.35)] sm:text-5xl lg:text-6xl">
+              Một chút rêu - một chút xanh
+            </h1>
+            <p className="mt-4 max-w-xl text-base font-medium leading-relaxed text-[#2f3f2b] sm:text-lg lg:text-xl">
+              Mang đến không gian bình yên cho riêng bạn
+            </p>
+            <div className="mt-6 flex flex-wrap items-center gap-3 sm:mt-8">
+              <Link
+                href="/products"
+                className="group relative flex h-11 min-w-[124px] items-center justify-center overflow-hidden rounded-full bg-[#3f5d33] px-6 text-sm font-semibold text-white shadow-[0_8px_18px_rgba(39,59,33,0.16)] ring-1 ring-white/15 transition-all duration-300 ease-out hover:-translate-y-0.5 hover:bg-[#314d28] hover:shadow-[0_12px_24px_rgba(39,59,33,0.22)] focus:outline-none focus:ring-2 focus:ring-[#3f5d33] focus:ring-offset-2 active:translate-y-0 active:scale-[0.985] sm:h-12 sm:min-w-[148px] sm:px-8"
+              >
+                <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/16 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
+                <span className="relative">Mua ngay</span>
+              </Link>
+              <Link
+                href="/explore"
+                className="group flex h-11 min-w-[190px] items-center justify-center rounded-full border border-[#3f5d33]/20 bg-[#fffaf0] px-5 text-[13px] font-semibold text-[#263b20] shadow-[0_5px_14px_rgba(55,70,44,0.08)] transition-all duration-300 ease-out hover:-translate-y-0.5 hover:border-[#3f5d33]/35 hover:bg-white hover:shadow-[0_10px_22px_rgba(39,59,33,0.12)] focus:outline-none focus:ring-2 focus:ring-[#3f5d33] focus:ring-offset-2 active:translate-y-0 active:scale-[0.985] sm:h-12 sm:min-w-[216px] sm:bg-[#fffaf0]/92 sm:px-7 sm:text-sm sm:backdrop-blur-[2px]"
+              >
                 Khám phá bộ sưu tập
-                <ArrowRight className="h-[0.78vw] min-h-2.5 w-[0.78vw] min-w-2.5 stroke-[1.8] transition-transform duration-300 group-hover:translate-x-[0.14vw]" />
-              </span>
-            </Link>
+                <ArrowRight className="ml-2 h-4 w-4 stroke-[1.8] transition-transform duration-300 group-hover:translate-x-1" />
+              </Link>
+            </div>
           </div>
-          <div className="absolute inset-x-0 bottom-0 bg-[#526044]/90 text-white shadow-[0_-0.45vw_1.2vw_rgba(30,45,26,0.12)] backdrop-blur-sm">
-            <div className="mx-auto grid max-w-6xl grid-cols-1 sm:grid-cols-3">
+          <div className="absolute inset-x-0 bottom-0 bg-[#526044]/88 text-white shadow-[0_-6px_18px_rgba(30,45,26,0.12)] backdrop-blur-sm">
+            <div className="mx-auto grid max-w-6xl grid-cols-3">
               {[
                 { icon: Truck, title: "Giao Hàng Nhanh", subtitle: "Toàn quốc nhanh chóng" },
                 { icon: BookOpen, title: "Hướng Dẫn Chăm Sóc", subtitle: "Mẹo để terrarium luôn xanh" },
@@ -332,84 +336,17 @@ export default async function Home() {
                   <Link
                     href="/policies"
                     key={item.title}
-                    className={`group flex min-h-[72px] items-center justify-center gap-4 px-5 py-3 transition-all duration-300 hover:bg-white/8 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70 active:scale-[0.985] sm:min-h-[92px] sm:gap-5 sm:px-6 sm:py-4 ${index > 0 ? "border-t border-white/20 sm:border-l sm:border-t-0 sm:border-white/28" : ""}`}
+                    className={`group flex min-h-[58px] flex-col items-center justify-center gap-1 px-2 py-2 text-center transition-all duration-300 hover:bg-white/8 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70 active:scale-[0.985] sm:min-h-[66px] sm:flex-row sm:gap-3 sm:px-5 sm:text-left ${index > 0 ? "border-l border-white/20 sm:border-white/28" : ""}`}
                   >
-                    <Icon className="h-8 w-8 shrink-0 stroke-[1.45] text-white/90 transition-transform duration-300 group-hover:-translate-y-0.5" />
+                    <Icon className="h-5 w-5 shrink-0 stroke-[1.55] text-white/90 transition-transform duration-300 group-hover:-translate-y-0.5 sm:h-6 sm:w-6" />
                     <span className="min-w-0">
-                      <span className="block text-lg font-semibold leading-tight tracking-[0]">{item.title}</span>
-                      <span className="mt-1 block text-sm leading-snug text-white/78">{item.subtitle}</span>
+                      <span className="block text-[11px] font-semibold leading-tight tracking-[0] sm:text-[15px]">{item.title}</span>
+                      <span className="mt-0.5 hidden text-xs leading-snug text-white/78 sm:block">{item.subtitle}</span>
                     </span>
                   </Link>
                 );
               })}
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── Feature Cards Section ─────────────────────────────────────────── */}
-      <section className="py-12 px-6" style={{ background: "#ECEEE5" }}>
-        <div className="max-w-6xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            <ScrollReveal direction="up" delay={0.1} className="h-full">
-              <div
-                className="bg-white rounded-2xl p-6 md:p-7 flex items-start gap-4 hover:-translate-y-1 transition-all duration-300 h-full"
-                style={{ boxShadow: "0 4px 24px rgba(41,74,32,0.07)", border: "1px solid #e4eeda" }}
-              >
-                <div
-                  className="flex-shrink-0 w-11 h-11 rounded-xl flex items-center justify-center"
-                  style={{ background: "#f0f5eb", color: "#3d5a2a" }}
-                >
-                  <Sprout className="w-5 h-5 stroke-[1.5]" />
-                </div>
-                <div>
-                  <h3 className="text-sm font-bold mb-1.5" style={{ color: "#1e3112" }}>Thiết kế theo cá nhân</h3>
-                  <p className="text-sm leading-relaxed" style={{ color: "#5a7060" }}>
-                    Terrarium được tạo riêng theo phong cách và nhu cầu của bạn.
-                  </p>
-                </div>
-              </div>
-            </ScrollReveal>
-
-            <ScrollReveal direction="up" delay={0.2} className="h-full">
-              <div
-                className="bg-white rounded-2xl p-6 md:p-7 flex items-start gap-4 hover:-translate-y-1 transition-all duration-300 h-full"
-                style={{ boxShadow: "0 4px 24px rgba(41,74,32,0.07)", border: "1px solid #e4eeda" }}
-              >
-                <div
-                  className="flex-shrink-0 w-11 h-11 rounded-xl flex items-center justify-center"
-                  style={{ background: "#f0f5eb", color: "#3d5a2a" }}
-                >
-                  <Leaf className="w-5 h-5 stroke-[1.5]" />
-                </div>
-                <div>
-                  <h3 className="text-sm font-bold mb-1.5" style={{ color: "#1e3112" }}>Thủ công tỉ mỉ</h3>
-                  <p className="text-sm leading-relaxed" style={{ color: "#5a7060" }}>
-                    Mỗi sản phẩm handmade được chăm chút trong từng chi tiết.
-                  </p>
-                </div>
-              </div>
-            </ScrollReveal>
-
-            <ScrollReveal direction="up" delay={0.3} className="h-full">
-              <div
-                className="bg-white rounded-2xl p-6 md:p-7 flex items-start gap-4 hover:-translate-y-1 transition-all duration-300 h-full"
-                style={{ boxShadow: "0 4px 24px rgba(41,74,32,0.07)", border: "1px solid #e4eeda" }}
-              >
-                <div
-                  className="flex-shrink-0 w-11 h-11 rounded-xl flex items-center justify-center"
-                  style={{ background: "#f0f5eb", color: "#3d5a2a" }}
-                >
-                  <Gift className="w-5 h-5 stroke-[1.5]" />
-                </div>
-                <div>
-                  <h3 className="text-sm font-bold mb-1.5" style={{ color: "#1e3112" }}>Quà tặng &amp; trang trí</h3>
-                  <p className="text-sm leading-relaxed" style={{ color: "#5a7060" }}>
-                    Phù hợp cho bàn làm việc, phòng khách hoặc những món quà tinh tế.
-                  </p>
-                </div>
-              </div>
-            </ScrollReveal>
           </div>
         </div>
       </section>
