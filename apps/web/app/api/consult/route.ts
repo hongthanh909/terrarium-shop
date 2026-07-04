@@ -301,6 +301,8 @@ function isProductIntent(message: string): boolean {
     /xem\s*(sản|sp|bể|hàng)/i,
     /có\s*(bán|bể|sản|sp)/i,
     /list\s*(sản|sp)/i,
+    /\b(bể|terrarium|mẫu|sản phẩm)\b.*\b(rẻ|giá tốt|bình dân|tiết kiệm)\b/i,
+    /\b(rẻ|giá tốt|bình dân|tiết kiệm)\b.*\b(bể|terrarium|mẫu|sản phẩm)\b/i,
     /(?:dưới|tầm|khoảng|tối đa|không quá|ngân sách)\s*[\d.,]+\s*(k|nghìn|ng|triệu|tr)?/i,
     /[\d.,]+\s*(k|nghìn|ng|triệu|tr)\s*(trở xuống|đổ lại|quay đầu|có gì|mua gì)?/i,
   ];
@@ -320,6 +322,8 @@ function isProductIntent(message: string): boolean {
     /\bxem\b.*\b(san|sp|be|hang)\b/,
     /\bco\b.*\b(ban|be|san|sp)\b/,
     /\blist\b.*\b(san|sp)\b/,
+    /\b(be|terrarium|mau|san pham)\b.*\b(re|gia tot|binh dan|tiet kiem)\b/,
+    /\b(re|gia tot|binh dan|tiet kiem)\b.*\b(be|terrarium|mau|san pham)\b/,
     /\bduoi\s*\d+\s*(k|nghin|trieu|tr)?\b.*\b(be|terrarium|san|sp)\b/,
     /\b(tu van|goi y|chon)\b.*\b(ban lam viec|ban hoc|phong ngu|phong khach|van phong|may lanh|khong gian|ngan sach|decor|qua tang)\b/,
     /\b(be|terrarium|cay|reu)\b.*\b(ban lam viec|ban hoc|phong ngu|phong khach|van phong|may lanh|duoi|tam|ngan sach|decor|qua tang)\b/,
@@ -1082,12 +1086,16 @@ async function queryProducts(message: string): Promise<{ text: string; products:
     let intro = "\u{1F33F} D\u1EA1, \u0111\u00e2y l\u00e0 m\u1ed9t s\u1ed1 s\u1ea3n ph\u1ea9m n\u1ed5i b\u1eadt t\u1ea1i Ti\u1ec7m R\u00eau:";
     if (categoryKeyword && maxPriceFilter !== null) {
       intro = `\u{1F33F} D\u1EA1, \u0111\u00e2y l\u00e0 c\u00e1c **${categoryKeyword}** trong t\u1ea7m **${maxPriceFilter.toLocaleString("vi-VN")}\u20ab**:`;
+    } else if (categoryKeyword === "bể" && /rẻ|tiết kiệm|bình dân|giá tốt/i.test(q)) {
+      intro = "🌿 Dạ, bên Rêu có nhiều mẫu bể giá dễ thương cho anh/chị chọn. Em gửi trước vài bể giá tốt, đang còn hàng trong shop nhé:";
     } else if (categoryKeyword) {
       intro = `\u{1F33F} D\u1EA1, \u0111\u00e2y l\u00e0 c\u00e1c s\u1ea3n ph\u1ea9m **${categoryKeyword}** t\u1ea1i Ti\u1ec7m R\u00eau:`;
     } else if (maxPriceFilter !== null) {
       intro = `\u{1F33F} D\u1EA1, \u0111\u00e2y l\u00e0 c\u00e1c s\u1ea3n ph\u1ea9m trong t\u1ea7m **${maxPriceFilter.toLocaleString("vi-VN")}\u20ab** t\u1ea1i Ti\u1ec7m R\u00eau:`;
-    } else if (/rẻ|tiết kiệm|bình dân/i.test(q)) {
-      intro = "🌿 Dạ, đây là các sản phẩm giá tốt nhất:";
+    } else if (/rẻ|tiết kiệm|bình dân|giá tốt/i.test(q)) {
+      intro = categoryKeyword === "bể"
+        ? "🌿 Dạ, bên Rêu có nhiều mẫu bể giá dễ thương cho anh/chị chọn. Em gửi trước vài bể giá tốt, đang còn hàng trong shop nhé:"
+        : "🌿 Dạ, bên Rêu có nhiều sản phẩm giá dễ thương cho anh/chị chọn. Em gửi trước vài mẫu giá tốt, đang còn hàng trong shop nhé:";
     } else if (/đắt|cao cấp|premium/i.test(q)) {
       intro = "🌿 Dạ, đây là các sản phẩm cao cấp:";
     } else if (/đẹp|xinh|cute/i.test(q)) {

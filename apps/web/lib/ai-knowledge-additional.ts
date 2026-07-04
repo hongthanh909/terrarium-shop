@@ -18,12 +18,12 @@ export const ADDITIONAL_AI_KNOWLEDGE: AiKnowledgeDefault[] = [
       "💰 **Cách hiểu câu hỏi về giá/ngân sách**\n\nKhi khách hỏi theo ngân sách, chatbot cần hiểu các cách viết phổ biến:\n• **1tr / 1 triệu / 1.000.000 / 1000000** = 1.000.000₫\n• **500k / 500 nghìn / 500.000** = 500.000₫\n• **dưới, tầm, khoảng, tối đa, không quá** đều là tín hiệu lọc theo ngân sách\n\nVới câu hỏi giá, ưu tiên lấy sản phẩm từ **database hiện tại** để có giá, tồn kho và link đúng. Không dùng Ollama để tự đoán giá hoặc tự bịa sản phẩm.",
   },
   {
-    keyword: "sản phẩm giá rẻ, mẫu rẻ nhất, giá tốt, bình dân, tiết kiệm, ngân sách thấp, sản phẩm rẻ",
+    keyword: "sản phẩm giá rẻ, bể giá rẻ, mẫu rẻ nhất, giá tốt, bình dân, tiết kiệm, ngân sách thấp, sản phẩm rẻ",
     category: "product",
     priority: 95,
     isActive: true,
     response:
-      "🌿 **Tư vấn sản phẩm giá tốt**\n\nNếu khách hỏi sản phẩm giá rẻ/tiết kiệm, nên ưu tiên:\n• Sản phẩm còn hàng\n• Giá sale nếu đang có khuyến mãi\n• Mẫu nhỏ, dễ đặt bàn, dễ chăm\n• Tối đa 3-6 gợi ý để khách dễ chọn\n\nCâu trả lời nên kèm giá và link sản phẩm. Nếu không có sản phẩm trong ngân sách, hãy nói rõ hiện chưa có mẫu phù hợp và gợi ý nâng ngân sách hoặc xem mẫu gần mức giá đó.",
+      "🌿 Dạ, bên Rêu có khá nhiều mẫu bể giá dễ thương, phù hợp để bàn làm việc, bàn học hoặc làm quà nhỏ xinh.\n\nAnh/chị muốn Rêu tư vấn theo kiểu nào ạ?\n• Bể mini giá tốt, dễ chăm\n• Bể đã setup sẵn, nhận về là trưng được ngay\n• Bể làm quà tặng gọn xinh\n• Bể theo ngân sách cụ thể như 300k, 500k hoặc dưới 1 triệu\n\nNếu anh/chị cho Rêu biết khoảng ngân sách hoặc vị trí đặt bể, Rêu sẽ gợi ý các mẫu đang còn hàng và giá tốt nhất trong shop nhé.",
   },
   {
     keyword: "sản phẩm cao cấp, mẫu đẹp nhất, mẫu sang, premium, decor phòng khách, làm điểm nhấn, mẫu nổi bật",
