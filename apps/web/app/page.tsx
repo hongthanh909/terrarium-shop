@@ -305,7 +305,7 @@ export default async function Home() {
               Một chút rêu - một chút xanh
             </h1>
             <p className="mt-4 max-w-xl text-base font-medium leading-relaxed text-[#2f3f2b] sm:text-lg lg:text-xl">
-              Mang đến không gian bình yên cho riêng bạn
+              Một góc xanh nhỏ, một khoảng bình yên riêng
             </p>
             <div className="mt-6 flex flex-wrap items-center gap-3 sm:mt-8">
               <Link
