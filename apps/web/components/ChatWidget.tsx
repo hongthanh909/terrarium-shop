@@ -125,6 +125,7 @@ export default function ChatWidget() {
   const [isAIAvailable, setIsAIAvailable] = useState<boolean | null>(null);
   const [isCooldown, setIsCooldown] = useState(false);
   const messagesScrollRef = useRef<HTMLDivElement>(null);
+  const latestUserMessageRef = useRef<HTMLDivElement | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const abortRef = useRef<AbortController | null>(null);
   const panelRef = useRef<HTMLDivElement>(null);
@@ -357,13 +358,19 @@ export default function ChatWidget() {
 
   const userMsgCount = messages.filter(m => m.role === "user").length;
   const showWelcomeScreen = messages.length === 1 && !isSending;
+  const latestUserIndex = messages.map((m) => m.role).lastIndexOf("user");
+  const conversationMessages = messages
+    .map((msg, index) => ({ msg, index }))
+    .filter(({ msg, index }) => !(index === 0 && msg.role === "assistant"));
 
   useEffect(() => {
     if (!open) return;
-    const scrollArea = messagesScrollRef.current;
-    if (!scrollArea) return;
-    scrollArea.scrollTo({ top: scrollArea.scrollHeight, behavior: "smooth" });
-  }, [messages, open]);
+    if (showWelcomeScreen) {
+      messagesScrollRef.current?.scrollTo({ top: 0 });
+      return;
+    }
+    latestUserMessageRef.current?.scrollIntoView({ block: "start", behavior: "smooth" });
+  }, [latestUserIndex, open, showWelcomeScreen]);
   useEffect(() => { if (open) setTimeout(() => textareaRef.current?.focus(), 150); }, [open]);
   useEffect(() => () => { abortRef.current?.abort(); }, []);
 
@@ -648,7 +655,7 @@ export default function ChatWidget() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 12, scale: 0.95 }}
             transition={{ type: "spring", stiffness: 380, damping: 30 }}
-            className={`fixed z-[9999] cw-panel flex flex-col ${expanded ? "cw-expanded" : ""}`}
+            className={`fixed z-[9999] cw-panel flex min-h-0 flex-col ${expanded ? "cw-expanded" : ""}`}
             style={{
               right: panelRect.right,
               bottom: panelRect.bottom,
@@ -752,7 +759,7 @@ export default function ChatWidget() {
             {/* ── MESSAGES AREA ───────────────────── */}
             <div
               ref={messagesScrollRef}
-              className={`flex-1 overflow-y-auto cw-scroll flex flex-col ${compactPanel ? "px-3 py-3" : "px-4 py-4"}`}
+              className={`min-h-0 flex-1 overflow-y-auto cw-scroll flex flex-col ${compactPanel ? "px-3 py-3" : "px-4 py-4"}`}
               style={{ background: "#fafbf8" }}
             >
               {/* ─── WELCOME SCREEN (initial state) ─── */}
@@ -843,10 +850,15 @@ export default function ChatWidget() {
                 </div>
               ) : (
                 /* ─── CONVERSATION MODE ─────────────── */
-                <div className="flex min-h-full flex-col justify-center cw-fluid-gap">
-                  {messages.map((msg, i) => (
+                <div className="flex min-h-full flex-col justify-start cw-fluid-gap pb-2">
+                  {conversationMessages.map(({ msg, index }) => (
                     <motion.div
-                      key={i}
+                      key={index}
+                      ref={(node) => {
+                        if (msg.role === "user" && index === latestUserIndex) {
+                          latestUserMessageRef.current = node;
+                        }
+                      }}
                       initial={{ opacity: 0, y: 8 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ type: "spring", stiffness: 400, damping: 30 }}
