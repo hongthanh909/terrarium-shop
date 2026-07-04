@@ -13,6 +13,7 @@
 
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { streamFromOpenAI } from "@/lib/ai/openai";
 
 // =============================================
 // RATE LIMITING
@@ -305,6 +306,8 @@ function isProductIntent(message: string): boolean {
     /\b(rẻ|giá tốt|bình dân|tiết kiệm)\b.*\b(bể|terrarium|mẫu|sản phẩm)\b/i,
     /(?:dưới|tầm|khoảng|tối đa|không quá|ngân sách)\s*[\d.,]+\s*(k|nghìn|ng|triệu|tr)?/i,
     /[\d.,]+\s*(k|nghìn|ng|triệu|tr)\s*(trở xuống|đổ lại|quay đầu|có gì|mua gì)?/i,
+    /\b(bể|terrarium|mẫu|sản phẩm)\b.*\b(setup|set up|sẵn|làm sẵn|trưng ngay|full set)\b/i,
+    /\b(setup|set up|sẵn|làm sẵn|trưng ngay|full set)\b.*\b(bể|terrarium|mẫu|sản phẩm)\b/i,
   ];
   const normalizedProductPatterns = [
     /\bsan\s*pham\b/,
@@ -331,8 +334,26 @@ function isProductIntent(message: string): boolean {
     /\b(mau|set|be|terrarium)\b.*\b(qua|sinh nhat|tan gia|sep|dong nghiep|ban gai|ban trai)\b/,
     /\b(duoi|tam|khoang|toi da|khong qua|ngan sach)\b\s*[\d.,]+\s*(k|nghin|ng|trieu|tr)?\b/,
     /\b[\d.,]+\s*(k|nghin|ng|trieu|tr)\b\s*(tro xuong|do lai|quay dau|co gi|mua gi)?\b/,
+    /\b(be|terrarium|mau|san pham)\b.*\b(setup|set up|san|lam san|trung ngay|full set)\b/,
+    /\b(setup|set up|san|lam san|trung ngay|full set)\b.*\b(be|terrarium|mau|san pham)\b/,
   ];
   return productPatterns.some(p => p.test(q)) || normalizedProductPatterns.some((p) => p.test(n));
+}
+
+function isSetupReadyProductIntent(message: string): boolean {
+  const n = normalizeVN(message);
+  return hasAnyPattern(n, [
+    /\bda setup\b/,
+    /\bsetup san\b/,
+    /\bset up san\b/,
+    /\bbe san\b/,
+    /\bmau san\b/,
+    /\blam san\b/,
+    /\bda lam san\b/,
+    /\bnhan ve trung ngay\b/,
+    /\btrung ngay\b/,
+    /\bfull set\b/,
+  ]);
 }
 
 // =============================================
@@ -933,13 +954,33 @@ async function streamFromAI(
 
   try {
     const systemPrompt = await buildSystemPrompt(pageContext, knowledgeContext);
-    const ollamaMessages = [
+    const aiMessages = [
       { role: "system", content: systemPrompt },
       ...history.slice(-4),
       { role: "user", content: message },
     ];
+    const provider = (process.env.AI_PROVIDER || "ollama").toLowerCase();
+    const preferOpenAI = provider === "openai";
 
-    const stream = await streamFromOllama(ollamaMessages);
+    if (preferOpenAI) {
+      const openAiStream = await streamFromOpenAI({
+        systemPrompt,
+        messages: aiMessages,
+        model: process.env.OPENAI_MODEL || "gpt-5-mini",
+        onDone: () => {
+          activeAiRequests--;
+        },
+      });
+
+      if (openAiStream) {
+        console.log("[AI] Using OPENAI");
+        return openAiStream;
+      }
+
+      console.log("[AI] OpenAI unavailable, trying Ollama fallback");
+    }
+
+    const stream = await streamFromOllama(aiMessages);
     if (stream) {
       console.log("[AI] ✅ Using OLLAMA");
       return stream;
@@ -962,6 +1003,7 @@ async function queryProducts(message: string): Promise<{ text: string; products:
   try {
     const q = message.toLowerCase();
     const n = normalizeVN(message);
+    const setupReadyIntent = isSetupReadyProductIntent(message);
     type OrderBy = { featured?: "desc" | "asc"; createdAt?: "desc" | "asc"; basePrice?: "desc" | "asc" };
     let orderBy: OrderBy[] = [{ featured: "desc" }, { createdAt: "desc" }];
 
@@ -1003,7 +1045,7 @@ async function queryProducts(message: string): Promise<{ text: string; products:
     // ── Phát hiện danh mục từ tin nhắn ────────────────────────────────
     let categoryKeyword: string | null = null;
 
-    if (/\bbể\b|terrarium|bình\s*thủy\s*tinh|hủ|bình\s*cây|vườn\s*thủy\s*tinh/i.test(q) || /\bbe\b|terrarium|binh thuy tinh|hu|binh cay|vuon thuy tinh/.test(n)) {
+    if (setupReadyIntent || /\bbể\b|terrarium|bình\s*thủy\s*tinh|hủ|bình\s*cây|vườn\s*thủy\s*tinh/i.test(q) || /\bbe\b|terrarium|binh thuy tinh|hu|binh cay|vuon thuy tinh/.test(n)) {
       categoryKeyword = "bể";
     } else if (/\bcây\b|rêu|cỏ|fitonia|fittonia|cây\s*xanh|cây\s*cảnh|thực\s*vật/i.test(q) || /\bcay\b|reu|fitonia|fittonia|cay xanh|cay canh|thuc vat/.test(n)) {
       categoryKeyword = "cây";
@@ -1084,7 +1126,11 @@ async function queryProducts(message: string): Promise<{ text: string; products:
       : "";
 
     let intro = "\u{1F33F} D\u1EA1, \u0111\u00e2y l\u00e0 m\u1ed9t s\u1ed1 s\u1ea3n ph\u1ea9m n\u1ed5i b\u1eadt t\u1ea1i Ti\u1ec7m R\u00eau:";
-    if (categoryKeyword && maxPriceFilter !== null) {
+    if (setupReadyIntent && categoryKeyword === "bể" && maxPriceFilter !== null) {
+      intro = `🌿 Dạ, đây là các mẫu **bể đã setup sẵn** trong tầm **${maxPriceFilter.toLocaleString("vi-VN")}₫**. Anh/chị nhận về có thể trưng ngay, chỉ cần đặt nơi sáng nhẹ và chăm theo hướng dẫn của Rêu:`;
+    } else if (setupReadyIntent && categoryKeyword === "bể") {
+      intro = "🌿 Dạ, đây là các mẫu **bể đã setup sẵn** tại Tiệm Rêu. Anh/chị nhận về có thể trưng ngay, chỉ cần đặt nơi sáng nhẹ và theo dõi độ ẩm:";
+    } else if (categoryKeyword && maxPriceFilter !== null) {
       intro = `\u{1F33F} D\u1EA1, \u0111\u00e2y l\u00e0 c\u00e1c **${categoryKeyword}** trong t\u1ea7m **${maxPriceFilter.toLocaleString("vi-VN")}\u20ab**:`;
     } else if (categoryKeyword === "bể" && /rẻ|tiết kiệm|bình dân|giá tốt/i.test(q)) {
       intro = "🌿 Dạ, bên Rêu có nhiều mẫu bể giá dễ thương cho anh/chị chọn. Em gửi trước vài bể giá tốt, đang còn hàng trong shop nhé:";
