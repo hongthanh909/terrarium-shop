@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { verifyAdminRequest, unauthorizedResponse } from "@/lib/admin-auth";
 import { logAdminAction } from "@/lib/audit";
 import { DEFAULT_AI_KNOWLEDGE } from "@/lib/ai-knowledge-defaults";
+import { ADDITIONAL_AI_KNOWLEDGE } from "@/lib/ai-knowledge-additional";
 
 export async function POST(request: NextRequest) {
   try {
@@ -12,7 +13,9 @@ export async function POST(request: NextRequest) {
     let created = 0;
     let updated = 0;
 
-    for (const item of DEFAULT_AI_KNOWLEDGE) {
+    const seedItems = [...DEFAULT_AI_KNOWLEDGE, ...ADDITIONAL_AI_KNOWLEDGE];
+
+    for (const item of seedItems) {
       const keyword = item.keyword.trim().toLowerCase();
       const existing = await prisma.aiKnowledge.findFirst({
         where: { keyword },
@@ -47,14 +50,16 @@ export async function POST(request: NextRequest) {
     await logAdminAction(admin.id, "UPDATE", "AiKnowledge", "default-seed", {
       created,
       updated,
-      total: DEFAULT_AI_KNOWLEDGE.length,
+      total: seedItems.length,
+      additional: ADDITIONAL_AI_KNOWLEDGE.length,
     });
 
     return NextResponse.json({
       success: true,
       created,
       updated,
-      total: DEFAULT_AI_KNOWLEDGE.length,
+      total: seedItems.length,
+      additional: ADDITIONAL_AI_KNOWLEDGE.length,
     });
   } catch (error) {
     console.error("Error seeding AI knowledge:", error);

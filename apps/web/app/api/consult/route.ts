@@ -301,6 +301,8 @@ function isProductIntent(message: string): boolean {
     /xem\s*(sản|sp|bể|hàng)/i,
     /có\s*(bán|bể|sản|sp)/i,
     /list\s*(sản|sp)/i,
+    /(?:dưới|tầm|khoảng|tối đa|không quá|ngân sách)\s*[\d.,]+\s*(k|nghìn|ng|triệu|tr)?/i,
+    /[\d.,]+\s*(k|nghìn|ng|triệu|tr)\s*(trở xuống|đổ lại|quay đầu|có gì|mua gì)?/i,
   ];
   const normalizedProductPatterns = [
     /\bsan\s*pham\b/,
@@ -323,6 +325,8 @@ function isProductIntent(message: string): boolean {
     /\b(be|terrarium|cay|reu)\b.*\b(ban lam viec|ban hoc|phong ngu|phong khach|van phong|may lanh|duoi|tam|ngan sach|decor|qua tang)\b/,
     /\b(tu van|goi y|chon)\b.*\b(mau|qua|sinh nhat|tan gia|sep|dong nghiep|ban gai|ban trai)\b/,
     /\b(mau|set|be|terrarium)\b.*\b(qua|sinh nhat|tan gia|sep|dong nghiep|ban gai|ban trai)\b/,
+    /\b(duoi|tam|khoang|toi da|khong qua|ngan sach)\b\s*[\d.,]+\s*(k|nghin|ng|trieu|tr)?\b/,
+    /\b[\d.,]+\s*(k|nghin|ng|trieu|tr)\b\s*(tro xuong|do lai|quay dau|co gi|mua gi)?\b/,
   ];
   return productPatterns.some(p => p.test(q)) || normalizedProductPatterns.some((p) => p.test(n));
 }
@@ -961,18 +965,26 @@ async function queryProducts(message: string): Promise<{ text: string; products:
     else if (/đắt|cao cấp|premium|sang|luxury/i.test(q)) orderBy = [{ basePrice: "desc" }];
 
     // ── Parse giới hạn giá từ message ─────────────────────────────
-    // Hỗ trợ: "dưới 400k", "dưới 500.000", "tầm 300k", "khoảng 200k"
-    //           "đưới 1 triệu", "1.5 triệu", "dưới 1tr"
+    // Hỗ trợ: "dưới 400k", "dưới 500.000", "tầm 300k", "khoảng 200k",
+    //          "dưới 1 triệu", "1.5 triệu", "dưới 1tr", "dưới 1.000.000tr".
     let maxPriceFilter: number | null = null;
 
     const priceMaxMatch =
-      q.match(/(?:dưới|tầm|khoảng|tối đa|không quá)[\s<≤]*([\d.,]+)\s*(k|nghìn|ng|triệu|tr⁠|\btr\b)?/i) ||
+      q.match(/(?:dưới|tầm|khoảng|tối đa|không quá)[\s<≤]*([\d.,]+)\s*(k|nghìn|ng|triệu|tr)?/i) ||
       n.match(/(?:duoi|tam|khoang|toi da|khong qua)[\s<≤]*([\d.,]+)\s*(k|nghin|ng|trieu|tr)?/i);
 
     const parsePrice = (raw: string, unit?: string): number => {
-      const num = parseFloat(raw.replace(/\./g, "").replace(/,/, "."));
+      const compact = raw.replace(/\s/g, "");
+      const hasThousandsSeparator = /\d[.,]\d{3}(?:[.,]\d{3})*$/.test(compact);
+      const num = hasThousandsSeparator
+        ? Number(compact.replace(/[.,]/g, ""))
+        : parseFloat(compact.replace(/\./g, "").replace(/,/, "."));
       const u = (unit || "").toLowerCase().trim();
-      if (u === "triệu" || u === "trieu" || u === "tr⁠" || u === "tr") return num * 1_000_000;
+      if (!Number.isFinite(num)) return 0;
+      if (u === "triệu" || u === "trieu" || u === "tr⁠" || u === "tr") {
+        // Người dùng hay gõ "1.000.000tr"; nếu số đã là tiền VND thì không nhân tiếp.
+        return num >= 1_000 ? num : num * 1_000_000;
+      }
       if (u === "k" || u === "nghìn" || u === "nghin" || u === "ng") return num * 1_000;
       if (num < 1_000) return num * 1_000;
       return num;
@@ -989,7 +1001,7 @@ async function queryProducts(message: string): Promise<{ text: string; products:
 
     if (/\bbể\b|terrarium|bình\s*thủy\s*tinh|hủ|bình\s*cây|vườn\s*thủy\s*tinh/i.test(q) || /\bbe\b|terrarium|binh thuy tinh|hu|binh cay|vuon thuy tinh/.test(n)) {
       categoryKeyword = "bể";
-    } else if (/\bcây\b|rêu|cỏ|fitonia|fittonia|cây\s*xanh|cây\s*cảnh|thực\s*vật/i.test(q) || /\bcay\b|reu|co|fitonia|fittonia|cay xanh|cay canh|thuc vat/.test(n)) {
+    } else if (/\bcây\b|rêu|cỏ|fitonia|fittonia|cây\s*xanh|cây\s*cảnh|thực\s*vật/i.test(q) || /\bcay\b|reu|fitonia|fittonia|cay xanh|cay canh|thuc vat/.test(n)) {
       categoryKeyword = "cây";
     } else if (/phụ\s*kiện|dụng\s*cụ|nhíp|xẻ|phễu|sỏi|than\s*hoạt|substrate|tool/i.test(q) || /phu kien|dung cu|nhip|xe|phieu|soi|than hoat|substrate|tool/.test(n)) {
       categoryKeyword = "phụ kiện";
