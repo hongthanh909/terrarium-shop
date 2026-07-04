@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, useMemo, useCallback } from "react";
+import { useState, useRef, useEffect, useLayoutEffect, useMemo, useCallback } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
@@ -124,7 +124,7 @@ export default function ChatWidget() {
   const [isSending, setIsSending] = useState(false);
   const [isAIAvailable, setIsAIAvailable] = useState<boolean | null>(null);
   const [isCooldown, setIsCooldown] = useState(false);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesScrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const abortRef = useRef<AbortController | null>(null);
   const panelRef = useRef<HTMLDivElement>(null);
@@ -207,10 +207,13 @@ export default function ChatWidget() {
   const onPointerUp = useCallback(() => {
     const ds = dragState.current;
     if (ds && !ds.moved) {
+      if (!open) {
+        setPanelRect(getPanelRectNearBubble(expanded ? EXPANDED_PANEL_SIZE : DEFAULT_PANEL_SIZE));
+      }
       setOpen(prev => !prev);
     }
     dragState.current = null;
-  }, []);
+  }, [expanded, getPanelRectNearBubble, open]);
 
   const onPanelDragStart = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
     if ((e.target as HTMLElement).closest("button")) return;
@@ -292,7 +295,7 @@ export default function ChatWidget() {
     panelResizeState.current = null;
   }, []);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (open) setPanelRect(getPanelRectNearBubble(expanded ? EXPANDED_PANEL_SIZE : DEFAULT_PANEL_SIZE));
   }, [expanded, getPanelRectNearBubble, open]);
 
@@ -355,7 +358,12 @@ export default function ChatWidget() {
   const userMsgCount = messages.filter(m => m.role === "user").length;
   const showWelcomeScreen = messages.length === 1 && !isSending;
 
-  useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages]);
+  useEffect(() => {
+    if (!open) return;
+    const scrollArea = messagesScrollRef.current;
+    if (!scrollArea) return;
+    scrollArea.scrollTo({ top: scrollArea.scrollHeight, behavior: "smooth" });
+  }, [messages, open]);
   useEffect(() => { if (open) setTimeout(() => textareaRef.current?.focus(), 150); }, [open]);
   useEffect(() => () => { abortRef.current?.abort(); }, []);
 
@@ -506,7 +514,7 @@ export default function ChatWidget() {
     <>
       <style>{`
         .cw-panel {
-          position: relative;
+          position: fixed;
           min-width: 320px;
           min-height: 420px;
           max-width: calc(100vw - 16px);
@@ -743,6 +751,7 @@ export default function ChatWidget() {
 
             {/* ── MESSAGES AREA ───────────────────── */}
             <div
+              ref={messagesScrollRef}
               className={`flex-1 overflow-y-auto cw-scroll flex flex-col ${compactPanel ? "px-3 py-3" : "px-4 py-4"}`}
               style={{ background: "#fafbf8" }}
             >
@@ -982,8 +991,6 @@ export default function ChatWidget() {
                       )}
                     </motion.div>
                   ))}
-
-                  <div ref={messagesEndRef} />
                 </div>
               )}
             </div>
