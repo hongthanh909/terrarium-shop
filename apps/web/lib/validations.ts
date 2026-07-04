@@ -56,6 +56,10 @@ export const createProductSchema = z.object({
   moss: z.string().optional().nullable(),
   driftwood: z.string().optional().nullable(),
   accessories: z.string().optional().nullable(),
+  setupStatus: z.enum(["READY_TO_DISPLAY", "DIY_KIT", "CUSTOM_ORDER"]).optional().nullable(),
+  careLevel: z.enum(["EASY", "MEDIUM", "ADVANCED"]).optional().nullable(),
+  chatTags: z.array(z.string().trim().min(1)).optional().default([]),
+  shortConsultNote: z.string().max(500).optional().nullable(),
   displayRating: z.number().min(0).max(5).optional().nullable(),
   displayReviewCount: z.number().int().min(0).optional().default(0),
 });

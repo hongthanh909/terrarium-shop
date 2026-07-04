@@ -184,6 +184,10 @@ model Product {
   moss          String?        // Loại rêu
   driftwood     String?        // Bố cục lũa
   accessories   String?        // Phụ kiện
+  setupStatus   String?        // READY_TO_DISPLAY, DIY_KIT, CUSTOM_ORDER
+  careLevel     String?        // EASY, MEDIUM, ADVANCED
+  chatTags      String[]       @default([]) // Tag tư vấn cho chatbox
+  shortConsultNote String?     // Ghi chú tư vấn ngắn cho chatbox
   displayRating Decimal?       @db.Decimal(2, 1)
   displayReviewCount Int       @default(0)
   createdAt     DateTime       @default(now())

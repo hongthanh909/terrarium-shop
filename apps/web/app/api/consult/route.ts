@@ -64,6 +64,7 @@ async function getProductCatalogText(): Promise<string | null> {
       select: {
         name: true, slug: true, basePrice: true, salePrice: true,
         inventory: true, featured: true,
+        setupStatus: true, careLevel: true, chatTags: true, shortConsultNote: true,
         category: { select: { name: true } },
       },
       orderBy: [{ featured: "desc" }, { createdAt: "desc" }],
@@ -77,7 +78,10 @@ async function getProductCatalogText(): Promise<string | null> {
         : `${Number(p.basePrice).toLocaleString("vi-VN")}₫`;
       const stock = p.inventory > 0 ? "còn hàng" : "hết hàng";
       const star = p.featured ? " ⭐" : "";
-      return `• ${p.name}${star} — ${price} — ${p.category.name} — ${stock} — Link: /products/${p.slug}`;
+      const setup = getSetupStatusLabel(p.setupStatus);
+      const care = getCareLevelLabel(p.careLevel);
+      const tags = [setup, care, p.shortConsultNote, ...p.chatTags].filter(Boolean).join("; ");
+      return `• ${p.name}${star} — ${price} — ${p.category.name} — ${stock}${tags ? ` — ${tags}` : ""} — Link: /products/${p.slug}`;
     }).join("\n");
 
     productCatalogCache = { text, fetchedAt: now };
@@ -116,6 +120,11 @@ interface KnowledgeHit {
   priority: number;
   score: number;
 }
+
+type OrderLookupResult = {
+  text: string;
+  found: boolean;
+};
 
 function getProductConsultNotes(normalizedMessage: string): string[] {
   const notes: string[] = [];
@@ -380,6 +389,182 @@ function tokenizeForKnowledge(str: string): string[] {
 
 function hasAnyPattern(text: string, patterns: RegExp[]): boolean {
   return patterns.some((pattern) => pattern.test(text));
+}
+
+function normalizePhone(phone: string): string {
+  const digits = phone.replace(/\D/g, "");
+  if (digits.startsWith("84") && digits.length >= 10) return `0${digits.slice(2)}`;
+  return digits;
+}
+
+function extractPhone(message: string): string | null {
+  const phoneMatch = message.match(/(?:\+?84|0)(?:[\s.-]?\d){8,10}/);
+  if (!phoneMatch) return null;
+
+  const normalized = normalizePhone(phoneMatch[0]);
+  return normalized.length >= 9 && normalized.length <= 11 ? normalized : null;
+}
+
+function isOrderLookupIntent(message: string, history: { role: string; content: string }[] = []): boolean {
+  const normalized = normalizeVN(message);
+  const hasOrderKeyword = hasAnyPattern(normalized, [
+    /\bdon hang\b/,
+    /\bma don\b/,
+    /\bkiem tra don\b/,
+    /\btra cuu don\b/,
+    /\btinh trang don\b/,
+    /\btrang thai don\b/,
+    /\bdon cua toi\b/,
+    /\bdon minh\b/,
+    /\bhang cua toi\b/,
+    /\bda giao chua\b/,
+    /\bgiao den dau\b/,
+  ]);
+
+  if (hasOrderKeyword) return true;
+
+  const hasPhone = Boolean(extractPhone(message));
+  if (!hasPhone) return false;
+
+  const recentOrderContext = history
+    .slice(-4)
+    .map((item) => item.content)
+    .join(" ");
+
+  return hasAnyPattern(normalizeVN(recentOrderContext), [
+    /\bdon hang\b/,
+    /\bso dien thoai\b/,
+    /\bsdt\b/,
+    /\btra cuu don\b/,
+    /\btinh trang don\b/,
+    /\btrang thai don\b/,
+  ]);
+}
+
+function getOrderStatusLabel(status: string): string {
+  const labels: Record<string, string> = {
+    PENDING: "Chờ xử lý",
+    CONFIRMED: "Đã xác nhận",
+    PROCESSING: "Đang chuẩn bị hàng",
+    SHIPPING: "Đang giao hàng",
+    SHIPPED: "Đã gửi đơn vị vận chuyển",
+    DELIVERED: "Đã giao thành công",
+    CANCELLED: "Đã hủy",
+    REFUNDED: "Đã hoàn tiền",
+  };
+
+  return labels[status] || status;
+}
+
+function getPaymentStatusLabel(status: string): string {
+  const labels: Record<string, string> = {
+    PENDING: "Chờ thanh toán",
+    PAID: "Đã thanh toán",
+    FAILED: "Thanh toán thất bại",
+    REFUNDED: "Đã hoàn tiền",
+  };
+
+  return labels[status] || status;
+}
+
+function getSetupStatusLabel(status?: string | null): string | null {
+  const labels: Record<string, string> = {
+    READY_TO_DISPLAY: "đã setup sẵn",
+    DIY_KIT: "bộ tự làm DIY",
+    CUSTOM_ORDER: "đặt custom",
+  };
+
+  return status ? labels[status] || null : null;
+}
+
+function getCareLevelLabel(level?: string | null): string | null {
+  const labels: Record<string, string> = {
+    EASY: "dễ chăm",
+    MEDIUM: "cần chăm mức vừa",
+    ADVANCED: "cần kinh nghiệm",
+  };
+
+  return level ? labels[level] || null : null;
+}
+
+function formatOrderDate(date: Date): string {
+  return new Intl.DateTimeFormat("vi-VN", {
+    timeZone: "Asia/Ho_Chi_Minh",
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  }).format(date);
+}
+
+async function lookupOrdersByPhone(message: string): Promise<OrderLookupResult> {
+  const phone = extractPhone(message);
+
+  if (!phone) {
+    return {
+      found: false,
+      text: "Dạ anh/chị gửi giúp em **SĐT đã dùng khi đặt hàng** để em tra cứu trạng thái đơn nhé. Em chỉ hiển thị trạng thái đơn, không hiển thị địa chỉ/SĐT/thông tin nhạy cảm ạ.",
+    };
+  }
+
+  const phoneTail = phone.slice(-6);
+  const shippingInfos = await prisma.shippingInfo.findMany({
+    where: {
+      OR: [
+        { phone: { contains: phone } },
+        { phone: { contains: phoneTail } },
+      ],
+    },
+    include: {
+      order: {
+        include: {
+          items: {
+            select: {
+              productName: true,
+              quantity: true,
+            },
+          },
+        },
+      },
+    },
+    orderBy: { order: { createdAt: "desc" } },
+    take: 10,
+  });
+
+  const matchedOrders = shippingInfos
+    .filter((info) => normalizePhone(info.phone || "") === phone)
+    .map((info) => info.order)
+    .slice(0, 3);
+
+  if (matchedOrders.length === 0) {
+    return {
+      found: false,
+      text: "Dạ em chưa tìm thấy đơn hàng theo SĐT này. Anh/chị kiểm tra lại SĐT đã dùng khi đặt hàng, hoặc nhắn shop trên Facebook/Zalo để Rêu kiểm tra thủ công nhé.",
+    };
+  }
+
+  const lines = matchedOrders.map((order, index) => {
+    const products = order.items
+      .slice(0, 3)
+      .map((item) => `${item.productName} x${item.quantity}`)
+      .join(", ");
+    const moreCount = Math.max(0, order.items.length - 3);
+    const productText = products
+      ? `${products}${moreCount > 0 ? `, +${moreCount} sản phẩm khác` : ""}`
+      : "Chưa có chi tiết sản phẩm";
+
+    return [
+      `**${index + 1}. Đơn ${order.orderNumber}**`,
+      `• Ngày đặt: ${formatOrderDate(order.createdAt)}`,
+      `• Trạng thái đơn: **${getOrderStatusLabel(order.status)}**`,
+      `• Thanh toán: **${getPaymentStatusLabel(order.paymentStatus)}**`,
+      `• Sản phẩm: ${productText}`,
+    ].join("\n");
+  });
+
+  return {
+    found: true,
+    text: `Dạ em tìm thấy ${matchedOrders.length} đơn hàng theo SĐT anh/chị cung cấp:\n\n${lines.join("\n\n")}\n\nEm đã ẩn địa chỉ, SĐT, tổng tiền và tracking link để bảo mật thông tin đơn hàng ạ.`,
+  };
 }
 
 function isWateringGuideIntent(messageNorm: string): boolean {
@@ -1076,6 +1261,7 @@ async function queryProducts(message: string): Promise<{ text: string; products:
       select: {
         name: true, slug: true, basePrice: true, salePrice: true,
         images: true, category: { select: { name: true } }, featured: true,
+        setupStatus: true, careLevel: true, chatTags: true, shortConsultNote: true,
       },
       take: 6,
       orderBy,
@@ -1088,9 +1274,18 @@ async function queryProducts(message: string): Promise<{ text: string; products:
         select: {
           name: true, slug: true, basePrice: true, salePrice: true,
           images: true, category: { select: { name: true } }, featured: true,
+          setupStatus: true, careLevel: true, chatTags: true, shortConsultNote: true,
         },
         take: 6,
         orderBy,
+      });
+    }
+
+    if (setupReadyIntent) {
+      products = [...products].sort((a, b) => {
+        const aReady = a.setupStatus === "READY_TO_DISPLAY" || a.chatTags.includes("setup-san");
+        const bReady = b.setupStatus === "READY_TO_DISPLAY" || b.chatTags.includes("setup-san");
+        return Number(bReady) - Number(aReady);
       });
     }
 
@@ -1121,8 +1316,24 @@ async function queryProducts(message: string): Promise<{ text: string; products:
     }));
 
     const consultNotes = getProductConsultNotes(n);
-    const noteText = consultNotes.length > 0
-      ? `\n\nEm chọn theo nhu cầu của anh/chị:\n${consultNotes.map((note) => `• ${note}`).join("\n")}`
+    const productNotes = products
+      .filter((p) => p.shortConsultNote || p.setupStatus || p.careLevel || p.chatTags.length > 0)
+      .slice(0, 3)
+      .map((p) => {
+        const tags = [
+          getSetupStatusLabel(p.setupStatus),
+          getCareLevelLabel(p.careLevel),
+          p.shortConsultNote,
+        ].filter(Boolean);
+        return tags.length > 0 ? `• ${p.name}: ${tags.join("; ")}` : null;
+      })
+      .filter(Boolean);
+    const noteParts = [
+      consultNotes.length > 0 ? `Em chọn theo nhu cầu của anh/chị:\n${consultNotes.map((note) => `• ${note}`).join("\n")}` : "",
+      productNotes.length > 0 ? `Ghi chú từ dữ liệu shop:\n${productNotes.join("\n")}` : "",
+    ].filter(Boolean);
+    const noteText = noteParts.length > 0
+      ? `\n\n${noteParts.join("\n\n")}`
       : "";
 
     let intro = "\u{1F33F} D\u1EA1, \u0111\u00e2y l\u00e0 m\u1ed9t s\u1ed1 s\u1ea3n ph\u1ea9m n\u1ed5i b\u1eadt t\u1ea1i Ti\u1ec7m R\u00eau:";
@@ -1265,7 +1476,19 @@ export async function POST(request: Request) {
       return NextResponse.json({ response: OFF_TOPIC_RESPONSE, source: "guardrail" });
     }
 
-    // ── 2. PRODUCT INTENT: DB realtime query + thumbnails ──────────
+    // ── 2. ORDER INTENT: DB lookup by phone, privacy-safe ──────────
+    if (isOrderLookupIntent(trimmed, history)) {
+      console.log(`[CONSULT] 📦 Order lookup intent detected`);
+      const orderResult = await lookupOrdersByPhone(trimmed);
+      return NextResponse.json({
+        response: orderResult.text,
+        source: "db",
+        orderLookup: true,
+        found: orderResult.found,
+      });
+    }
+
+    // ── 3. PRODUCT INTENT: DB realtime query + thumbnails ──────────
     if (isProductIntent(trimmed)) {
       console.log(`[CONSULT] 🛒 Product intent detected`);
       const productResult = await queryProducts(trimmed);
@@ -1278,7 +1501,7 @@ export async function POST(request: Request) {
       }
     }
 
-    // ── 3. DETERMINISTIC CARE KB ──────────────────────────
+    // ── 4. DETERMINISTIC CARE KB ──────────────────────────
     // Các case chăm sóc rõ ràng cần trả lời nhanh và chắc, không chờ Ollama
     // và không phụ thuộc KB admin cũ có thể match nhiễu.
     if (hasStrongKnowledgeIntent(trimmed)) {
@@ -1288,7 +1511,7 @@ export async function POST(request: Request) {
       }
     }
 
-    // ── 4. ADMIN KNOWLEDGE BASE RAG ───────────────────────
+    // ── 5. ADMIN KNOWLEDGE BASE RAG ───────────────────────
     // Dữ liệu admin nhập ở /tiem-nho-nth24/ai-knowledge là nguồn chính thức.
     // Nếu match, đưa context vào Ollama để diễn giải tự nhiên; nếu Ollama offline thì trả lời trực tiếp từ KB.
     const knowledgeSearchQuery = buildKnowledgeSearchQuery(trimmed, history);
@@ -1328,17 +1551,17 @@ export async function POST(request: Request) {
       });
     }
 
-    // ── 5. INSTANT KB: Greeting + hard-coded fallback policies ─────
+    // ── 6. INSTANT KB: Greeting + hard-coded fallback policies ─────
     const instant = getInstantResponse(trimmed);
     if (instant) {
       console.log(`[CONSULT] ⚡ Instant KB hit`);
       return NextResponse.json({ response: instant, source: "knowledge" });
     }
 
-    // ── 6. SKIP isOnTopic — Để Ollama tự xử lý câu hỏi không rõ ─
+    // ── 7. SKIP isOnTopic — Để Ollama tự xử lý câu hỏi không rõ ─
     // (isOnTopic() quá strict → chặn nhầm câu hỏi hợp lệ)
 
-    // ── 7. OLLAMA AI — Xử lý mọi câu hỏi terrarium ──────
+    // ── 8. OLLAMA AI — Xử lý mọi câu hỏi terrarium ──────
     console.log(`[CONSULT] 🧠 Sending to Ollama...`);
     const stream = await streamFromAI(trimmed, history, pageContext);
     if (stream) {
@@ -1351,14 +1574,14 @@ export async function POST(request: Request) {
       });
     }
 
-    // ── 8. OLLAMA OFFLINE → Fallback KB ───────────────────
+    // ── 9. OLLAMA OFFLINE → Fallback KB ───────────────────
     console.log(`[CONSULT] ⚠️ Ollama offline, trying fallback KB`);
     const fallback = getOfflineFallback(knowledgeSearchQuery);
     if (fallback) {
       return NextResponse.json({ response: fallback, source: "knowledge" });
     }
 
-    // ── 9. PRODUCT FALLBACK (last resort) ─────────────────
+    // ── 10. PRODUCT FALLBACK (last resort) ─────────────────
     if (isProductIntent(trimmed)) {
       const fallbackProducts = await queryProducts(trimmed);
       if (fallbackProducts) {
@@ -1370,7 +1593,7 @@ export async function POST(request: Request) {
       }
     }
 
-    // ── 10. FINAL FALLBACK ─────────────────────────────────
+    // ── 11. FINAL FALLBACK ─────────────────────────────────
     return NextResponse.json({
       response: "Dạ em tạm thời chưa thể trả lời câu hỏi này. Anh/chị có thể hỏi em về:\n\n• 🌿 **Kiến thức terrarium** (cách làm, chăm sóc, xử lý sự cố)\n• 🛒 **Sản phẩm** (gợi ý, giá cả, so sánh)\n• 📦 **Chính sách** (ship, đổi trả, thanh toán)\n\nHoặc liên hệ Zalo/Facebook Tiệm Rêu để được hỗ trợ trực tiếp nhé! 😊",
       source: "fallback",

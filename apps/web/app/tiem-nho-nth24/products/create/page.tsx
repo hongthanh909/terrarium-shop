@@ -48,9 +48,33 @@ const DEFAULT_FORM_DATA = {
   moss: "",
   driftwood: "",
   accessories: "",
+  setupStatus: "",
+  careLevel: "",
+  chatTags: "",
+  shortConsultNote: "",
   displayRating: 4.8,
   displayReviewCount: 24,
 };
+
+const SETUP_STATUS_OPTIONS = [
+  { label: "Chưa phân loại", value: "" },
+  { label: "Đã setup sẵn", value: "READY_TO_DISPLAY" },
+  { label: "Bộ tự làm DIY", value: "DIY_KIT" },
+  { label: "Đặt custom", value: "CUSTOM_ORDER" },
+];
+
+const CARE_LEVEL_OPTIONS = [
+  { label: "Chưa phân loại", value: "" },
+  { label: "Dễ chăm", value: "EASY" },
+  { label: "Trung bình", value: "MEDIUM" },
+  { label: "Cần kinh nghiệm", value: "ADVANCED" },
+];
+
+const parseChatTags = (value: string) =>
+  value
+    .split(",")
+    .map((tag) => tag.trim())
+    .filter(Boolean);
 
 export default function CreateProductPage() {
   const router = useRouter();
@@ -373,6 +397,10 @@ export default function CreateProductPage() {
         moss: formData.moss || null,
         driftwood: formData.driftwood || null,
         accessories: formData.accessories || null,
+        setupStatus: formData.setupStatus || null,
+        careLevel: formData.careLevel || null,
+        chatTags: parseChatTags(formData.chatTags),
+        shortConsultNote: formData.shortConsultNote || null,
         careGuideData: {
           watering: careGuide.watering,
           sunlight: careGuide.sunlight,
@@ -604,6 +632,14 @@ export default function CreateProductPage() {
             <SuggestionInput label="Bố cục lũa" value={formData.driftwood} onChange={(val) => setFormData({ ...formData, driftwood: val })} placeholder="VD: Lũa linh sam, lũa đỗ quyên" suggestions={suggestions.driftwood} />
             <div className="md:col-span-2">
               <SuggestionInput label="Phụ kiện kèm theo" multiline rows={2} value={formData.accessories} onChange={(val) => setFormData({ ...formData, accessories: val })} placeholder="VD: Đèn LED, tượng trang trí, nhíp gắp" suggestions={suggestions.accessories} />
+            </div>
+            <FormSelect label="Trạng thái setup cho chatbox" value={formData.setupStatus} onChange={(e) => setFormData({ ...formData, setupStatus: e.target.value })} options={SETUP_STATUS_OPTIONS} />
+            <FormSelect label="Mức độ chăm sóc" value={formData.careLevel} onChange={(e) => setFormData({ ...formData, careLevel: e.target.value })} options={CARE_LEVEL_OPTIONS} />
+            <div className="md:col-span-2">
+              <FormField label="Tag chatbox" type="text" value={formData.chatTags} onChange={(e) => setFormData({ ...formData, chatTags: e.target.value })} placeholder="VD: setup-san, de-cham, qua-tang, ban-lam-viec" />
+            </div>
+            <div className="md:col-span-2">
+              <FormField label="Ghi chú tư vấn ngắn cho chatbox" multiline rows={2} value={formData.shortConsultNote} onChange={(e) => setFormData({ ...formData, shortConsultNote: e.target.value })} placeholder="VD: Phù hợp người mới, nhận về trưng ngay, đặt nơi sáng nhẹ." />
             </div>
           </div>
         </div>
