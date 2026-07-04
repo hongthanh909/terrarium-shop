@@ -47,6 +47,7 @@ async function ProductsData({
           _count: { select: { reviews: true } },
         },
         orderBy: [
+          { category: { sortOrder: "asc" } },
           { category: { name: "asc" } },
           { salePrice: { sort: "asc", nulls: "last" } },
           { createdAt: "desc" },
@@ -56,7 +57,10 @@ async function ProductsData({
       }),
       prisma.category.findMany({
         where: { status: "ACTIVE" },
-        orderBy: { name: "asc" },
+        orderBy: [
+          { sortOrder: "asc" },
+          { name: "asc" },
+        ],
       }),
       prisma.product.count({ where }),
     ]);

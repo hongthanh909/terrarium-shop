@@ -6,7 +6,7 @@ import Link from "next/link";
 import { ImageWrapper } from "@/components/ui/ImageWrapper";
 import {
   Plus, Edit, Trash2, Search, ChevronDown, ChevronRight,
-  Package, ExternalLink,
+  Package, ExternalLink, GripVertical,
 } from "lucide-react";
 import { showToast } from "@/components/ui/custom-toast";
 
@@ -17,6 +17,7 @@ interface Category {
   metaDescription: string | null;
   parentId: string | null;
   status: string;
+  sortOrder?: number;
   _count?: { products: number };
   parent?: { id: string; name: string };
 }
@@ -30,6 +31,11 @@ interface Product {
   status: string;
 }
 
+type CategoriesQueryData = {
+  categories: Category[];
+  totalPages: number;
+};
+
 /** Accordion row: shows products when expanded */
 function CategoryRow({
   category,
@@ -38,6 +44,11 @@ function CategoryRow({
   onDelete,
   deletingId,
   children,
+  dragHandleProps,
+  onDragOver,
+  onDrop,
+  isDragging = false,
+  isDragOver = false,
 }: {
   category: Category;
   selectedIds: string[];
@@ -45,6 +56,16 @@ function CategoryRow({
   onDelete: (id: string) => void;
   deletingId: string | null;
   children?: React.ReactNode;
+  dragHandleProps?: {
+    draggable: boolean;
+    disabled?: boolean;
+    onDragStart: (event: React.DragEvent<HTMLButtonElement>) => void;
+    onDragEnd: () => void;
+  };
+  onDragOver?: (event: React.DragEvent<HTMLDivElement>) => void;
+  onDrop?: (event: React.DragEvent<HTMLDivElement>) => void;
+  isDragging?: boolean;
+  isDragOver?: boolean;
 }) {
   const [expanded, setExpanded] = useState(false);
   const count = category._count?.products ?? 0;
@@ -62,10 +83,14 @@ function CategoryRow({
 
   return (
     <div
+      onDragOver={onDragOver}
+      onDrop={onDrop}
       className={`bg-white rounded-2xl border transition-all duration-200 overflow-hidden ${
         selectedIds.includes(category.id)
           ? "border-[#425733] shadow-md"
           : "border-gray-200 shadow-sm"
+      } ${isDragging ? "opacity-60 scale-[0.995]" : ""} ${
+        isDragOver ? "border-[#425733] ring-2 ring-[#425733]/15" : ""
       }`}
     >
       {/* Header row */}
@@ -76,6 +101,15 @@ function CategoryRow({
           onChange={() => onSelect(category.id)}
           className="w-4 h-4 rounded border-gray-300 text-[#425733] focus:ring-[#425733] flex-shrink-0"
         />
+
+        <button
+          type="button"
+          {...dragHandleProps}
+          className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-300 hover:text-[#425733] hover:bg-[#e3ebdd] transition-colors cursor-grab active:cursor-grabbing disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-gray-300"
+          title="Kéo để đổi vị trí danh mục"
+        >
+          <GripVertical className="w-4 h-4" />
+        </button>
 
         {/* Expand toggle */}
         <button
@@ -220,11 +254,14 @@ export default function AdminCategoriesPage() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [page, setPage] = useState(1);
-  const [limit] = useState(20);
+  const [limit] = useState(200);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [bulkDeleting, setBulkDeleting] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [draggingId, setDraggingId] = useState<string | null>(null);
+  const [dragOverId, setDragOverId] = useState<string | null>(null);
+  const [reordering, setReordering] = useState(false);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -249,6 +286,7 @@ export default function AdminCategoriesPage() {
   const categories = categoriesData?.categories ?? [];
   const parentCategories = categories.filter((c) => !c.parentId);
   const totalPages = categoriesData?.totalPages ?? 1;
+  const canReorder = !searchQuery.trim() && totalPages <= 1 && !loading && !reordering;
 
   const filteredCategories = parentCategories.filter(
     (c) =>
@@ -257,6 +295,71 @@ export default function AdminCategoriesPage() {
   );
 
   const getChildren = (parentId: string) => categories.filter((c) => c.parentId === parentId);
+
+  const moveCategory = (items: Category[], activeId: string, overId: string) => {
+    const fromIndex = items.findIndex((item) => item.id === activeId);
+    const toIndex = items.findIndex((item) => item.id === overId);
+    if (fromIndex < 0 || toIndex < 0 || fromIndex === toIndex) return items;
+    const next = [...items];
+    const [moved] = next.splice(fromIndex, 1);
+    next.splice(toIndex, 0, moved);
+    return next.map((item, index) => ({ ...item, sortOrder: index }));
+  };
+
+  const handleDropCategory = async (overId: string) => {
+    if (!draggingId || draggingId === overId || !canReorder) {
+      setDraggingId(null);
+      setDragOverId(null);
+      return;
+    }
+
+    const nextParents = moveCategory(parentCategories, draggingId, overId);
+    if (nextParents === parentCategories) {
+      setDraggingId(null);
+      setDragOverId(null);
+      return;
+    }
+
+    const previousData = queryClient.getQueryData<CategoriesQueryData>(["admin-categories", page, limit]);
+    const childCategories = categories.filter((category) => category.parentId);
+    queryClient.setQueryData<CategoriesQueryData>(["admin-categories", page, limit], (old) => {
+      if (!old) return old;
+      return {
+        ...old,
+        categories: [...nextParents, ...childCategories],
+      };
+    });
+
+    setReordering(true);
+    setDraggingId(null);
+    setDragOverId(null);
+
+    try {
+      const res = await fetch("/api/categories", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          parentId: null,
+          orderedIds: nextParents.map((category) => category.id),
+        }),
+      });
+
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || "Không thể lưu thứ tự danh mục");
+      }
+
+      showToast.success("Đã cập nhật thứ tự danh mục");
+      queryClient.invalidateQueries({ queryKey: ["admin-categories"] });
+    } catch (err: any) {
+      if (previousData) {
+        queryClient.setQueryData(["admin-categories", page, limit], previousData);
+      }
+      showToast.error(err.message || "Không thể lưu thứ tự danh mục");
+    } finally {
+      setReordering(false);
+    }
+  };
 
   const handleSelect = (id: string) =>
     setSelectedIds((prev) => (prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]));
@@ -386,14 +489,23 @@ export default function AdminCategoriesPage() {
 
       {/* Select all */}
       {!loading && filteredCategories.length > 0 && (
-        <div className="flex items-center gap-2 mb-3 px-1">
-          <input
-            type="checkbox"
-            checked={selectedIds.length === filteredCategories.length && filteredCategories.length > 0}
-            onChange={handleSelectAll}
-            className="w-4 h-4 rounded border-gray-300 text-[#425733] focus:ring-[#425733]"
-          />
-          <span className="text-sm text-gray-500">Chọn tất cả ({filteredCategories.length})</span>
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-3 px-1">
+          <label className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={selectedIds.length === filteredCategories.length && filteredCategories.length > 0}
+              onChange={handleSelectAll}
+              className="w-4 h-4 rounded border-gray-300 text-[#425733] focus:ring-[#425733]"
+            />
+            <span className="text-sm text-gray-500">Chọn tất cả ({filteredCategories.length})</span>
+          </label>
+          <span className="text-xs text-gray-400">
+            {reordering
+              ? "Đang lưu thứ tự..."
+              : canReorder
+                ? "Kéo biểu tượng tay nắm để đổi vị trí danh mục"
+                : "Tắt tìm kiếm hoặc chuyển về một trang để sắp xếp"}
+          </span>
         </div>
       )}
 
@@ -420,6 +532,32 @@ export default function AdminCategoriesPage() {
                 onSelect={handleSelect}
                 onDelete={handleDelete}
                 deletingId={deletingId}
+                dragHandleProps={{
+                  draggable: canReorder,
+                  disabled: !canReorder,
+                  onDragStart: (event) => {
+                    if (!canReorder) return;
+                    event.dataTransfer.effectAllowed = "move";
+                    event.dataTransfer.setData("text/plain", cat.id);
+                    setDraggingId(cat.id);
+                  },
+                  onDragEnd: () => {
+                    setDraggingId(null);
+                    setDragOverId(null);
+                  },
+                }}
+                onDragOver={(event) => {
+                  if (!canReorder || !draggingId || draggingId === cat.id) return;
+                  event.preventDefault();
+                  event.dataTransfer.dropEffect = "move";
+                  setDragOverId(cat.id);
+                }}
+                onDrop={(event) => {
+                  event.preventDefault();
+                  handleDropCategory(cat.id);
+                }}
+                isDragging={draggingId === cat.id}
+                isDragOver={dragOverId === cat.id && draggingId !== cat.id}
               >
                 {children.length > 0 && (
                   <div className="space-y-2">
