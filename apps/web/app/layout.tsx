@@ -91,7 +91,7 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
       </head>
       <body
-        className={`${inter.className} antialiased min-h-screen flex flex-col`}
+        className={`${inter.className} antialiased min-h-[100dvh] flex flex-col`}
       >
         <AuthProvider>
           <QueryProvider>

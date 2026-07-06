@@ -141,6 +141,15 @@ export default function ChatWidget() {
 
   // ── Free drag (absolute position) ──────────────
   const [bubblePos, setBubblePos] = useState<{ right: number; bottom: number }>({ right: 16, bottom: 92 });
+  const hasMovedRef = useRef(false);
+
+  useEffect(() => {
+    if (!hasMovedRef.current) {
+      const isProduct = pathname.match(/^\/products\/[\w-]+$/);
+      setBubblePos(prev => ({ ...prev, bottom: isProduct ? 172 : 92 }));
+    }
+  }, [pathname]);
+
   const dragState = useRef<{ dragging: boolean; moved: boolean; startX: number; startY: number; startRight: number; startBottom: number } | null>(null);
   // Panel anchored from bottom-right (same as bubble) — avoids scroll-jump on open
   const [panelRect, setPanelRect] = useState({ right: 16, bottom: 160, ...DEFAULT_PANEL_SIZE });
@@ -196,7 +205,10 @@ export default function ChatWidget() {
     if (!ds || !ds.dragging) return;
     const dx = ds.startX - e.clientX;
     const dy = ds.startY - e.clientY;
-    if (Math.abs(dx) > 3 || Math.abs(dy) > 3) ds.moved = true;
+    if (Math.abs(dx) > 3 || Math.abs(dy) > 3) {
+      ds.moved = true;
+      hasMovedRef.current = true;
+    }
     if (!ds.moved) return;
 
     const newRight = Math.max(0, Math.min(window.innerWidth - 60, ds.startRight + dx));

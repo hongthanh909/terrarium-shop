@@ -431,7 +431,7 @@ export function ProductDetailClient({
     finally { setIsVoting(false); }
   };
 
-  if (loading) return <main className="min-h-screen flex items-center justify-center"><p className="text-muted-foreground">Đang tải...</p></main>;
+  if (loading) return <main className="min-h-[100dvh] flex items-center justify-center"><p className="text-muted-foreground">Đang tải...</p></main>;
   if (!product) return null;
 
   const { price: finalPrice, base: originalPrice, isSale } = getPriceWithVariants();
@@ -446,7 +446,7 @@ export function ProductDetailClient({
   const dbVariants = (product.variantOptions || []).filter((v: any) => v.variantType !== LAMP_VARIANT_TYPE);
 
   return (
-    <main className="min-h-screen bg-background pb-28 lg:pb-0">
+    <main className="min-h-[100dvh] bg-background pb-28 lg:pb-0">
 
       {/* ── Lightbox ──────────────────────────────────────────────────────── */}
       {lightboxOpen && product?.images && (
@@ -1317,18 +1317,21 @@ export function ProductDetailClient({
         )}
       </div>
 
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-[#d8e4cf] bg-white/95 px-4 py-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] shadow-[0_-12px_30px_rgba(26,46,18,0.10)] backdrop-blur lg:hidden">
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-[#d8e4cf] bg-white/95 px-4 py-2.5 pb-[calc(env(safe-area-inset-bottom)+0.65rem)] shadow-[0_-12px_30px_rgba(26,46,18,0.10)] backdrop-blur lg:hidden">
         <div className="mx-auto flex max-w-7xl items-center gap-3">
           <div className="min-w-0 flex-1">
             <p className="truncate text-xs font-semibold text-[#526248]">{product.name}</p>
-            <p className="text-lg font-extrabold text-[#425733]">{finalPrice.toLocaleString("vi-VN")}â‚«</p>
+            <p className="whitespace-nowrap text-[clamp(1.05rem,5vw,1.25rem)] font-extrabold leading-tight text-[#425733]">
+              {finalPrice.toLocaleString("vi-VN")}₫
+            </p>
           </div>
           <Button
-            className="h-12 min-w-[132px] rounded-xl bg-[#425733] px-4 text-sm font-bold text-white hover:bg-[#364a29]"
+            className="h-12 min-w-[122px] shrink-0 rounded-xl bg-[#425733] px-3 text-sm font-bold text-white hover:bg-[#364a29] min-[380px]:min-w-[140px] min-[380px]:px-4"
             onClick={handleAddToCart}
             disabled={product.inventory <= 0}
           >
-            ThĂªm giá»
+            <ShoppingBag className="mr-1.5 h-4 w-4" />
+            Thêm giỏ
           </Button>
         </div>
       </div>

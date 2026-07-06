@@ -52,7 +52,7 @@ export default function CheckoutSuccessPage() {
 
   if (loadingOrder) {
     return (
-      <main className="min-h-screen bg-[#f4f8f0] flex items-center justify-center px-4">
+      <main className="min-h-[100dvh] bg-[#f4f8f0] flex items-center justify-center px-4">
         <div className="w-full max-w-md text-center">
           <div className="w-12 h-12 border-4 border-[#425733] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
           <p className="text-gray-500 text-sm">Đang tải thông tin đơn hàng...</p>
@@ -62,7 +62,7 @@ export default function CheckoutSuccessPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[#f4f8f0] flex items-center justify-center px-4 py-12">
+    <main className="min-h-[100dvh] bg-[#f4f8f0] flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-lg">
         <div className="bg-white rounded-3xl shadow-xl overflow-hidden">
           <div className="h-1.5 bg-gradient-to-r from-[#425733] via-[#6aad4a] to-[#425733]" />

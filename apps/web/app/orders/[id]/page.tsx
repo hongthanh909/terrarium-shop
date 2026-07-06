@@ -55,7 +55,7 @@ export default function OrderDetailPage() {
 
   if (sessionStatus === "loading" || isLoading) {
     return (
-      <main className="min-h-screen flex items-center justify-center bg-gray-50">
+      <main className="min-h-[100dvh] flex items-center justify-center bg-gray-50">
         <div className="text-center">
           <div className="w-10 h-10 border-4 border-[#425733] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
           <p className="text-gray-500">Đang tải đơn hàng...</p>
@@ -71,7 +71,7 @@ export default function OrderDetailPage() {
 
   if (error || !order) {
     return (
-      <main className="min-h-screen bg-gray-50 py-8 px-6">
+      <main className="min-h-[100dvh] bg-gray-50 py-8 px-6">
         <div className="max-w-3xl mx-auto text-center">
           <Package className="w-16 h-16 mx-auto text-gray-300 mb-4" />
           <h2 className="text-xl font-semibold text-gray-700 mb-2">Không tìm thấy đơn hàng</h2>
@@ -112,7 +112,7 @@ export default function OrderDetailPage() {
   };
 
   return (
-    <main className="min-h-screen bg-gray-50 py-8">
+    <main className="min-h-[100dvh] bg-gray-50 py-8">
       <div className="max-w-3xl mx-auto px-6">
         {/* Back */}
         <Link href="/orders" className="inline-flex items-center text-gray-500 hover:text-[#425733] mb-6 text-sm">

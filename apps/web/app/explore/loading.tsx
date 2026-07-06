@@ -1,6 +1,6 @@
 export default function ExploreLoading() {
   return (
-    <main className="min-h-screen bg-[hsl(0,0%,100%)] py-8 px-6">
+    <main className="min-h-[100dvh] bg-[hsl(0,0%,100%)] py-8 px-6">
       <div className="max-w-7xl mx-auto">
         {/* Hero skeleton */}
         <div className="rounded-2xl bg-gradient-to-br from-[#e3ebdd] to-[#c8d5be] p-8 mb-12 animate-pulse">

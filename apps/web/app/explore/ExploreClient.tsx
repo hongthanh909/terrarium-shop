@@ -111,7 +111,7 @@ export function ExploreClient({ featured, pinned, topVoted, newArrivals, weeklyF
 
   return (
     <PageTransition>
-      <main className="min-h-screen bg-[#fafbf8]">
+      <main className="min-h-[100dvh] bg-[#fafbf8]">
 
         {/* ═══ 1. HERO — Blurred Background + Product Card Gallery ════════ */}
         <section className="relative w-full min-h-[540px] overflow-hidden bg-[#1a2e12] flex items-center">

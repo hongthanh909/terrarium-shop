@@ -42,7 +42,7 @@ export default async function PolicyDetailPage({ params }: Props) {
   const safeContent = sanitizeHtml(policy.content);
 
   return (
-    <main className="min-h-screen bg-[hsl(0,0%,100%)] py-8 px-6">
+    <main className="min-h-[100dvh] bg-[hsl(0,0%,100%)] py-8 px-6">
       <div className="max-w-3xl mx-auto">
         {/* Back Link */}
         <Link

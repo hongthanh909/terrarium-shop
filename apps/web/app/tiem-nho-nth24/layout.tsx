@@ -20,7 +20,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   // If we are on the admin login page, render children directly without the sidebar & header
   if (pathname === "/tiem-nho-nth24/login") {
     return (
-      <div className="min-h-screen bg-[#fafbf8]">
+      <div className="min-h-[100dvh] bg-[#fafbf8]">
 
         {children}
       </div>
@@ -52,7 +52,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   };
 
   return (
-    <div className="min-h-screen bg-[#fafbf8]">
+    <div className="min-h-[100dvh] bg-[#fafbf8]">
 
 
       {/* Sidebar */}
@@ -124,7 +124,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       </aside>
 
       {/* Main Content */}
-      <div className="ml-60 min-h-screen flex flex-col">
+      <div className="ml-60 min-h-[100dvh] flex flex-col">
         <header className="bg-white shadow-[0_1px_8px_rgba(66,87,51,0.06)] border-b border-[#e3ebdd] px-8 py-3.5 sticky top-0 z-10 flex items-center justify-between">
           <div>
             <h1 className="text-lg font-semibold text-gray-800">

@@ -68,7 +68,7 @@ export default function ContactPage() {
   const workingHours = contactInfo.filter((c) => c.type === "working_hours");
 
   return (
-    <main className="min-h-screen bg-[hsl(0,0%,100%)] py-12 px-6">
+    <main className="min-h-[100dvh] bg-[hsl(0,0%,100%)] py-12 px-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="text-center mb-12">

@@ -293,31 +293,38 @@ export default async function Home() {
         id="about"
         className="relative overflow-hidden bg-[#ECEEE5]"
       >
-        <div className="relative min-h-[calc(100dvh-96px)] w-full">
+        <div className="relative min-h-[clamp(620px,calc(100dvh-96px),780px)] w-full sm:min-h-[calc(100dvh-96px)]">
           <img
             src="/home-hero-full-banner.png"
             alt="Banner terrarium Tiệm Rêu Décor với sản phẩm rêu decor và lời giới thiệu"
-            className="block h-[calc(100dvh-96px)] w-full select-none object-cover object-center"
+            className="absolute inset-0 block h-full w-full select-none object-cover object-[58%_center] blur-sm scale-[1.03] sm:hidden"
+            fetchPriority="high"
+            aria-hidden="true"
+          />
+          <img
+            src="/home-hero-full-banner.png"
+            alt="Banner terrarium Tiệm Rêu Décor với sản phẩm rêu decor và lời giới thiệu"
+            className="absolute inset-0 block h-full w-full select-none object-contain object-center sm:object-cover"
             fetchPriority="high"
           />
-          <div className="absolute left-6 right-6 top-[15%] z-10 sm:left-[5.8%] sm:right-auto sm:top-[19%] sm:w-[39%] lg:w-[36%]">
-            <h1 className="max-w-[11ch] font-serif text-4xl font-semibold leading-[1.08] tracking-[0] text-[#263b20] drop-shadow-[0_1px_0_rgba(255,255,255,0.35)] sm:text-5xl lg:text-6xl">
+          <div className="absolute left-5 right-5 top-[12%] z-10 sm:left-[5.8%] sm:right-auto sm:top-[19%] sm:w-[39%] lg:w-[36%]">
+            <h1 className="max-w-[10.5ch] font-serif text-[clamp(2.1rem,10vw,3rem)] font-semibold leading-[1.08] tracking-[0] text-[#263b20] drop-shadow-[0_1px_0_rgba(255,255,255,0.35)] sm:max-w-[11ch] sm:text-5xl lg:text-6xl">
               Một chút rêu - một chút xanh
             </h1>
-            <p className="mt-4 max-w-xl text-base font-medium leading-relaxed text-[#2f3f2b] sm:text-lg lg:text-xl">
+            <p className="mt-3 max-w-[24rem] text-sm font-medium leading-relaxed text-[#2f3f2b] sm:mt-4 sm:max-w-xl sm:text-lg lg:text-xl">
               Một góc xanh nhỏ, một khoảng bình yên riêng
             </p>
-            <div className="mt-6 flex flex-wrap items-center gap-3 sm:mt-8">
+            <div className="mt-5 flex max-w-full flex-wrap items-center gap-3 sm:mt-8">
               <Link
                 href="/products"
-                className="group relative flex h-11 min-w-[124px] items-center justify-center overflow-hidden rounded-full bg-[#3f5d33] px-6 text-sm font-semibold text-white shadow-[0_8px_18px_rgba(39,59,33,0.16)] ring-1 ring-white/15 transition-all duration-300 ease-out hover:-translate-y-0.5 hover:bg-[#314d28] hover:shadow-[0_12px_24px_rgba(39,59,33,0.22)] focus:outline-none focus:ring-2 focus:ring-[#3f5d33] focus:ring-offset-2 active:translate-y-0 active:scale-[0.985] sm:h-12 sm:min-w-[148px] sm:px-8"
+                className="group relative flex h-11 min-w-[118px] items-center justify-center overflow-hidden rounded-full bg-[#3f5d33] px-5 text-sm font-semibold text-white shadow-[0_8px_18px_rgba(39,59,33,0.16)] ring-1 ring-white/15 transition-all duration-300 ease-out hover:-translate-y-0.5 hover:bg-[#314d28] hover:shadow-[0_12px_24px_rgba(39,59,33,0.22)] focus:outline-none focus:ring-2 focus:ring-[#3f5d33] focus:ring-offset-2 active:translate-y-0 active:scale-[0.985] sm:h-12 sm:min-w-[148px] sm:px-8"
               >
                 <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/16 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
                 <span className="relative">Mua ngay</span>
               </Link>
               <Link
                 href="/explore"
-                className="group flex h-11 min-w-[190px] items-center justify-center rounded-full border border-[#3f5d33]/20 bg-[#fffaf0] px-5 text-[13px] font-semibold text-[#263b20] shadow-[0_5px_14px_rgba(55,70,44,0.08)] transition-all duration-300 ease-out hover:-translate-y-0.5 hover:border-[#3f5d33]/35 hover:bg-white hover:shadow-[0_10px_22px_rgba(39,59,33,0.12)] focus:outline-none focus:ring-2 focus:ring-[#3f5d33] focus:ring-offset-2 active:translate-y-0 active:scale-[0.985] sm:h-12 sm:min-w-[216px] sm:bg-[#fffaf0]/92 sm:px-7 sm:text-sm sm:backdrop-blur-[2px]"
+                className="group flex h-11 min-w-0 max-w-full flex-1 basis-[178px] items-center justify-center rounded-full border border-[#3f5d33]/20 bg-[#fffaf0] px-4 text-[13px] font-semibold text-[#263b20] shadow-[0_5px_14px_rgba(55,70,44,0.08)] transition-all duration-300 ease-out hover:-translate-y-0.5 hover:border-[#3f5d33]/35 hover:bg-white hover:shadow-[0_10px_22px_rgba(39,59,33,0.12)] focus:outline-none focus:ring-2 focus:ring-[#3f5d33] focus:ring-offset-2 active:translate-y-0 active:scale-[0.985] sm:h-12 sm:min-w-[216px] sm:flex-none sm:bg-[#fffaf0]/92 sm:px-7 sm:text-sm sm:backdrop-blur-[2px]"
               >
                 Khám phá bộ sưu tập
                 <ArrowRight className="ml-2 h-4 w-4 stroke-[1.8] transition-transform duration-300 group-hover:translate-x-1" />
@@ -336,11 +343,11 @@ export default async function Home() {
                   <Link
                     href="/policies"
                     key={item.title}
-                    className={`group flex min-h-[58px] flex-col items-center justify-center gap-1 px-2 py-2 text-center transition-all duration-300 hover:bg-white/8 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70 active:scale-[0.985] sm:min-h-[66px] sm:flex-row sm:gap-3 sm:px-5 sm:text-left ${index > 0 ? "border-l border-white/20 sm:border-white/28" : ""}`}
+                    className={`group flex min-h-[58px] flex-col items-center justify-center gap-1 px-1 py-2 text-center transition-all duration-300 hover:bg-white/8 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70 active:scale-[0.985] sm:min-h-[66px] sm:flex-row sm:gap-3 sm:px-5 sm:text-left ${index > 0 ? "border-l border-white/20 sm:border-white/28" : ""}`}
                   >
-                    <Icon className="h-5 w-5 shrink-0 stroke-[1.55] text-white/90 transition-transform duration-300 group-hover:-translate-y-0.5 sm:h-6 sm:w-6" />
+                    <Icon className="h-4 w-4 shrink-0 stroke-[1.55] text-white/90 transition-transform duration-300 group-hover:-translate-y-0.5 sm:h-6 sm:w-6" />
                     <span className="min-w-0">
-                      <span className="block text-[11px] font-semibold leading-tight tracking-[0] sm:text-[15px]">{item.title}</span>
+                      <span className="block text-[10px] sm:text-[15px] font-semibold leading-tight tracking-[0]">{item.title}</span>
                       <span className="mt-0.5 hidden text-xs leading-snug text-white/78 sm:block">{item.subtitle}</span>
                     </span>
                   </Link>

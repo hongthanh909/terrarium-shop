@@ -49,7 +49,7 @@ export default function PointsHistoryPage() {
 
   if (status === "loading" || (loading && !data)) {
     return (
-      <main className="min-h-screen flex items-center justify-center bg-gray-50">
+      <main className="min-h-[100dvh] flex items-center justify-center bg-gray-50">
         <div className="w-10 h-10 border-4 border-[#425733] border-t-transparent rounded-full animate-spin" />
       </main>
     );
@@ -74,7 +74,7 @@ export default function PointsHistoryPage() {
   };
 
   return (
-    <main className="min-h-screen bg-gray-50 py-8">
+    <main className="min-h-[100dvh] bg-gray-50 py-8">
       <div className="max-w-3xl mx-auto px-4">
         <Link href="/profile" className="inline-flex items-center text-gray-500 hover:text-[#425733] mb-6 text-sm">
           <ArrowLeft className="w-4 h-4 mr-1" /> Quay lại tài khoản

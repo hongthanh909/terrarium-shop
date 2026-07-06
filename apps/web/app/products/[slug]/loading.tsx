@@ -1,6 +1,6 @@
 export default function ProductLoading() {
   return (
-    <main className="min-h-screen bg-background animate-pulse">
+    <main className="min-h-[100dvh] bg-background animate-pulse">
       {/* Back link skeleton */}
       <div className="max-w-7xl mx-auto px-6 py-4">
         <div className="h-5 w-32 bg-muted rounded-full" />

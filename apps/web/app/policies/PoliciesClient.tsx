@@ -77,7 +77,7 @@ export function PoliciesClient({
 
   return (
     <motion.main
-      className="min-h-screen bg-[#fafbf8] py-12 px-6"
+      className="min-h-[100dvh] bg-[#fafbf8] py-12 px-6"
       initial={prefersReducedMotion ? false : { opacity: 0, y: 18 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.45 }}

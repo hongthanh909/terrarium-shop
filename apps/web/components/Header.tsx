@@ -241,75 +241,77 @@ export default function Header() {
             {/* Separator 2 — desktop only */}
             <div className="hidden md:block w-px h-5 bg-[#c5d4b5]/80 mx-1" />
 
-            {/* User */}
-            {session ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button
-                    className="flex items-center gap-1.5 hover:bg-[#eceee5] transition-colors focus:outline-none py-1 px-2.5 rounded-full flex-shrink-0 text-[#293a20] border border-[#c5d4b5]/60"
-                    aria-label="Mở menu tài khoản"
-                    title={session.user?.name || "Tài khoản"}
-                  >
-                    <div className="w-6 h-6 rounded-full overflow-hidden bg-[#dde8d0] flex items-center justify-center relative flex-shrink-0 text-[#2d4520] font-bold text-xs">
-                      {session.user?.image ? (
-                        <img src={session.user.image} alt={session.user.name || "Avatar"} className="w-full h-full object-cover" />
-                      ) : (
-                        <span>{(session.user?.name || "U").substring(0, 1).toUpperCase()}</span>
+            {/* User - desktop only */}
+            <div className="hidden md:flex items-center">
+              {session ? (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button
+                      className="flex items-center gap-1.5 hover:bg-[#eceee5] transition-colors focus:outline-none py-1 px-2.5 rounded-full flex-shrink-0 text-[#293a20] border border-[#c5d4b5]/60"
+                      aria-label="Mở menu tài khoản"
+                      title={session.user?.name || "Tài khoản"}
+                    >
+                      <div className="w-6 h-6 rounded-full overflow-hidden bg-[#dde8d0] flex items-center justify-center relative flex-shrink-0 text-[#2d4520] font-bold text-xs">
+                        {session.user?.image ? (
+                          <img src={session.user.image} alt={session.user.name || "Avatar"} className="w-full h-full object-cover" />
+                        ) : (
+                          <span>{(session.user?.name || "U").substring(0, 1).toUpperCase()}</span>
+                        )}
+                      </div>
+                      <span className="hidden sm:inline-block text-xs font-semibold max-w-[100px] truncate text-[#293a20] leading-none">
+                        {session.user?.name}
+                      </span>
+                      <ChevronDown className="w-3.5 h-3.5 text-[#4a5e38]/70 flex-shrink-0" />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="rounded-xl shadow-lg border border-[#e3ebdd] bg-white min-w-[185px]">
+                    <div className="px-3 py-2.5">
+                      <p className="font-semibold text-sm text-gray-800 truncate">{session.user?.name}</p>
+                      <p className="text-xs text-gray-400 truncate">{session.user?.email}</p>
+                      {(session.user as any)?.role === "ADMIN" && (
+                        <span className="inline-block mt-1 text-[10px] font-bold uppercase tracking-wider bg-[#425733] text-white px-2 py-0.5 rounded-full">Admin</span>
                       )}
                     </div>
-                    <span className="hidden sm:inline-block text-xs font-semibold max-w-[100px] truncate text-[#293a20] leading-none">
-                      {session.user?.name}
-                    </span>
-                    <ChevronDown className="w-3.5 h-3.5 text-[#4a5e38]/70 flex-shrink-0" />
-                  </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="rounded-xl shadow-lg border border-[#e3ebdd] bg-white min-w-[185px]">
-                  <div className="px-3 py-2.5">
-                    <p className="font-semibold text-sm text-gray-800 truncate">{session.user?.name}</p>
-                    <p className="text-xs text-gray-400 truncate">{session.user?.email}</p>
+                    <DropdownMenuSeparator />
                     {(session.user as any)?.role === "ADMIN" && (
-                      <span className="inline-block mt-1 text-[10px] font-bold uppercase tracking-wider bg-[#425733] text-white px-2 py-0.5 rounded-full">Admin</span>
+                      <DropdownMenuItem asChild>
+                        <Link href="/tiem-nho-nth24" className="cursor-pointer flex items-center gap-2 text-[#425733] font-semibold focus:bg-[#e3ebdd]">
+                          <LayoutDashboard className="w-4 h-4" /> Quản lý
+                        </Link>
+                      </DropdownMenuItem>
                     )}
-                  </div>
-                  <DropdownMenuSeparator />
-                  {(session.user as any)?.role === "ADMIN" && (
                     <DropdownMenuItem asChild>
-                      <Link href="/tiem-nho-nth24" className="cursor-pointer flex items-center gap-2 text-[#425733] font-semibold focus:bg-[#e3ebdd]">
-                        <LayoutDashboard className="w-4 h-4" /> Quản lý
+                      <Link href="/profile" className="cursor-pointer flex items-center gap-2"><User className="w-4 h-4" /> Tài khoản</Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link href="/orders" className="cursor-pointer flex items-center gap-2"><Package className="w-4 h-4" /> Đơn hàng</Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link href="/profile/favorites" className="cursor-pointer flex items-center gap-2">
+                        <Heart className="w-4 h-4 fill-red-400 text-red-400" /> Yêu thích
                       </Link>
                     </DropdownMenuItem>
-                  )}
-                  <DropdownMenuItem asChild>
-                    <Link href="/profile" className="cursor-pointer flex items-center gap-2"><User className="w-4 h-4" /> Tài khoản</Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link href="/orders" className="cursor-pointer flex items-center gap-2"><Package className="w-4 h-4" /> Đơn hàng</Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link href="/profile/favorites" className="cursor-pointer flex items-center gap-2">
-                      <Heart className="w-4 h-4 fill-red-400 text-red-400" /> Yêu thích
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    onClick={() => { useCartStore.getState().clearCart(); signOut({ callbackUrl: "/" }); }}
-                    className="cursor-pointer text-red-500 focus:text-red-600 focus:bg-red-50 flex items-center gap-2"
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onClick={() => { useCartStore.getState().clearCart(); signOut({ callbackUrl: "/" }); }}
+                      className="cursor-pointer text-red-500 focus:text-red-600 focus:bg-red-50 flex items-center gap-2"
+                    >
+                      <LogOut className="w-4 h-4" /> Đăng xuất
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              ) : (
+                <Link href="/login">
+                  <button
+                    className="w-9 h-9 flex items-center justify-center rounded-full text-[#4a5e38]/80 hover:text-[#293a20] hover:bg-[#eceee5] transition-colors flex-shrink-0"
+                    aria-label="Đăng nhập"
+                    title="Đăng nhập"
                   >
-                    <LogOut className="w-4 h-4" /> Đăng xuất
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            ) : (
-              <Link href="/login">
-                <button
-                  className="w-11 h-11 md:w-9 md:h-9 flex items-center justify-center rounded-full text-[#4a5e38]/80 hover:text-[#293a20] hover:bg-[#eceee5] transition-colors flex-shrink-0"
-                  aria-label="Đăng nhập"
-                  title="Đăng nhập"
-                >
-                  <User className="w-5 h-5" />
-                </button>
-              </Link>
-            )}
+                    <User className="w-5 h-5" />
+                  </button>
+                </Link>
+              )}
+            </div>
           </div>
         </div>
 

@@ -53,7 +53,7 @@ export default function ConsultPage() {
   };
 
   return (
-    <main className="min-h-screen bg-[hsl(0,0%,100%)] py-8 px-6">
+    <main className="min-h-[100dvh] bg-[hsl(0,0%,100%)] py-8 px-6">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8">

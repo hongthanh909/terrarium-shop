@@ -211,7 +211,7 @@ export default function ProfilePage() {
 
   if (status === "loading" || loading) {
     return (
-      <main className="min-h-screen flex items-center justify-center">
+      <main className="min-h-[100dvh] flex items-center justify-center">
         <div className="text-center">
           <div className="w-10 h-10 border-4 border-[#425733] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
           <p className="text-gray-500">Đang tải...</p>
@@ -229,7 +229,7 @@ export default function ProfilePage() {
     : 100;
 
   return (
-    <main className="min-h-screen bg-gray-50 py-8">
+    <main className="min-h-[100dvh] bg-gray-50 py-8">
       <div className="max-w-4xl mx-auto px-4">
         {/* Back */}
         <Link href="/" className="inline-flex items-center text-gray-500 hover:text-[#425733] mb-6 text-sm">

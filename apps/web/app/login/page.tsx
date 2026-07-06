@@ -13,7 +13,7 @@ import { ShimmerButton } from "@/components/ui/shimmer-button";
 export default function AuthPageWrapper() {
   return (
     <Suspense fallback={
-      <main className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#e3ebdd] to-[#f5f7f4]">
+      <main className="min-h-[100dvh] flex items-center justify-center bg-gradient-to-br from-[#e3ebdd] to-[#f5f7f4]">
         <div className="w-10 h-10 border-4 border-[#425733] border-t-transparent rounded-full animate-spin" />
       </main>
     }>
@@ -87,7 +87,7 @@ function AuthPage() {
   };
 
   return (
-    <main className="min-h-screen relative flex items-center justify-center overflow-hidden bg-gradient-to-br from-[#dce5d5] via-[#e8efe2] to-[#f0f4ee]">
+    <main className="min-h-[100dvh] relative flex items-center justify-center overflow-hidden bg-gradient-to-br from-[#dce5d5] via-[#e8efe2] to-[#f0f4ee]">
       {/* Soft background blobs */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div

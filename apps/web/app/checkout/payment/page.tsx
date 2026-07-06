@@ -11,7 +11,7 @@ export default function CheckoutPaymentPage() {
   const orderNumber = searchParams.get("order");
 
   return (
-    <main className="min-h-screen bg-background py-12 px-6">
+    <main className="min-h-[100dvh] bg-background py-12 px-6">
       <div className="max-w-lg mx-auto space-y-6">
         <Card className="text-center border-yellow-200">
           <CardHeader>

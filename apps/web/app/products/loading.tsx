@@ -1,6 +1,6 @@
 export default function ProductsLoading() {
   return (
-    <main className="min-h-screen bg-[hsl(0,0%,100%)] py-8 px-6">
+    <main className="min-h-[100dvh] bg-[hsl(0,0%,100%)] py-8 px-6">
       <div className="max-w-7xl mx-auto">
         {/* Title skeleton */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">

@@ -131,7 +131,7 @@ export function ProductsClient({
 
   return (
     <PageTransition>
-      <main className="min-h-screen bg-[#fafbf8] py-6 px-4 sm:py-10 sm:px-6">
+      <main className="min-h-[100dvh] bg-[#fafbf8] py-6 px-4 sm:py-10 sm:px-6">
         <div className="max-w-7xl mx-auto">
 
           {/* Header */}

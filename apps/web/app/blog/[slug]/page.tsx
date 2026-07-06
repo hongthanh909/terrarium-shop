@@ -38,7 +38,7 @@ export default async function BlogPostPage({ params }: Props) {
   const safeContent = sanitizeHtml(post.content);
 
   return (
-    <main className="min-h-screen bg-[#fafbf8] py-8 px-6">
+    <main className="min-h-[100dvh] bg-[#fafbf8] py-8 px-6">
       <div className="max-w-3xl mx-auto">
         {/* Back Link */}
         <Link

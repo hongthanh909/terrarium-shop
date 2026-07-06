@@ -40,7 +40,7 @@ export function BlogClient({
 
   return (
     <PageTransition>
-      <main className="min-h-screen bg-[#fafbf8] py-10 px-6">
+      <main className="min-h-[100dvh] bg-[#fafbf8] py-10 px-6">
         <div className="max-w-7xl mx-auto">
 
           {/* Hero */}
