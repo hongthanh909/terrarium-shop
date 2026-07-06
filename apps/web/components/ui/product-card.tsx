@@ -62,15 +62,18 @@ export function ProductCard({
     salePrice < basePrice &&
     (saleEndDate == null || new Date(saleEndDate) > new Date());
 
-  const discountPct = isOnSale
-    ? Math.round(((basePrice - salePrice!) / basePrice) * 100)
-    : 0;
-
   const pkgPriceAdjustment = isBểProduct
     ? (selectedPackage === "standard" ? 150000 : selectedPackage === "advanced" ? 180000 : 0)
     : 0;
 
-  const displayPrice = (isOnSale ? salePrice! : basePrice) + pkgPriceAdjustment;
+  const adjustedBase = basePrice + pkgPriceAdjustment;
+  const adjustedSale = (salePrice ?? basePrice) + pkgPriceAdjustment;
+
+  const discountPct = isOnSale
+    ? Math.round(((adjustedBase - adjustedSale) / adjustedBase) * 100)
+    : 0;
+
+  const displayPrice = adjustedSale;
 
   const prefersReducedMotion = useReducedMotion();
 

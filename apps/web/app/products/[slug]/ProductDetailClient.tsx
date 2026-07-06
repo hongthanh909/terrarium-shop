@@ -370,10 +370,14 @@ export function ProductDetailClient({
     // Package adjustment for Bể products (replaces old lamp toggle)
     if (isBểProduct) {
       const pkg = PACKAGES.find(p => p.key === selectedPackage);
-      if (pkg) price += pkg.priceAdj;
+      if (pkg) {
+        price += pkg.priceAdj;
+        base += pkg.priceAdj;
+      }
     } else if (selectedVariants[LAMP_VARIANT_TYPE] === LAMP_COMBO_OPTION) {
       // Fallback: keep old logic for non-Bể with lamp variant
       price += LAMP_PRICE_ADJUSTMENT;
+      base += LAMP_PRICE_ADJUSTMENT;
     }
 
     // DB variants
