@@ -124,7 +124,7 @@ async function FeaturedProductsSection() {
             </div>
           </ScrollReveal>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
             {products.map((product: any, index: number) => {
               const ratingSummary = getProductRatingSummary(product);
               return (
@@ -242,7 +242,7 @@ function ProductsSkeleton() {
     <section className="py-24 px-6 bg-white">
       <div className="max-w-7xl mx-auto">
         <div className="h-8 w-52 bg-[#f0f4ec] rounded-lg animate-pulse mb-16" />
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
           {Array.from({ length: 4 }).map((_, i) => (
             <div key={i} className="rounded-2xl bg-white border border-[#e3ebdd] overflow-hidden shadow-sm">
               <div className="aspect-[4/3] bg-[#f0f4ec] animate-pulse" />

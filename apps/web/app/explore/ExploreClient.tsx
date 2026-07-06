@@ -164,7 +164,7 @@ export function ExploreClient({ featured, pinned, topVoted, newArrivals, weeklyF
             </motion.div>
 
             {hasHero ? (
-              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+              <div className="grid grid-cols-2 gap-3 sm:gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
                 {heroItems.map((item, idx) => {
                   const ratingSummary = getProductRatingSummary(item.product);
                   return (
@@ -212,7 +212,7 @@ export function ExploreClient({ featured, pinned, topVoted, newArrivals, weeklyF
                 subtitle="Được yêu thích và lựa chọn nhiều nhất"
               />
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
                 {allFeatured.slice(0, 8).map(product => {
                   const ratingSummary = getProductRatingSummary(product);
                   return (
@@ -248,7 +248,7 @@ export function ExploreClient({ featured, pinned, topVoted, newArrivals, weeklyF
                 title="Được Yêu Thích"
                 subtitle="Bình chọn cao nhất từ cộng đồng"
               />
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
                 {topVoted.slice(0, 8).map(product => {
                   const ratingSummary = getProductRatingSummary(product);
                   return (
@@ -284,7 +284,7 @@ export function ExploreClient({ featured, pinned, topVoted, newArrivals, weeklyF
                 title="Mới Rời Xưởng"
                 subtitle="Vừa ra mắt, sẵn sàng khám phá"
               />
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
                 {newArrivals.slice(0, 8).map(product => {
                   const ratingSummary = getProductRatingSummary(product);
                   return (

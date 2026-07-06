@@ -763,7 +763,7 @@ export function ProductDetailClient({
             {isBểProduct && (
               <div className="mb-5">
                 <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2.5">Chọn phiên bản</p>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                <div className="grid grid-cols-3 gap-1 sm:gap-2">
                   {PACKAGES.map((pkg) => {
                     const isSelected = selectedPackage === pkg.key;
                     return (
