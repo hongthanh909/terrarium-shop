@@ -47,6 +47,7 @@ function checkRateLimit(ip: string): boolean {
 let activeAiRequests = 0;
 const MAX_CONCURRENT_AI = 2;
 const DB_QUERY_TIMEOUT_MS = 8_000;
+const AI_COMPLETION_TIMEOUT_MS = 16_000;
 
 async function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise<T | null> {
   let timeoutId: ReturnType<typeof setTimeout> | undefined;
@@ -1413,6 +1414,52 @@ async function completeFromAI(
   }
 }
 
+async function completeCareFromAI(
+  message: string,
+  history: { role: string; content: string }[]
+): Promise<string | null> {
+  if (activeAiRequests >= MAX_CONCURRENT_AI) {
+    console.log("[AI] Care completion concurrency limit reached");
+    return null;
+  }
+  activeAiRequests++;
+
+  const systemPrompt = `Bạn là "Rêu", trợ lý tư vấn chăm sóc terrarium của Tiệm Rêu Décor.
+Nhiệm vụ của bạn: trả lời linh hoạt về chăm sóc cây, rêu, terrarium, nhiệt độ, độ ẩm, ánh sáng, tưới nước, dấu hiệu cây/rêu bất thường.
+
+Quy tắc:
+- Xưng "em", gọi khách "anh/chị", giọng thân thiện, tự nhiên.
+- Trả lời như người tư vấn chăm sóc thực tế, không đọc y nguyên Knowledge Base.
+- Ưu tiên giải thích: nguyên nhân có thể xảy ra -> cách kiểm tra -> cách xử lý.
+- Nếu thiếu dữ kiện, hỏi lại ngắn gọn: bể kín/mở, đặt ở đâu, có máy lạnh không, tưới lần cuối khi nào.
+- Không tự bịa giá, tồn kho, chính sách, bảo hành, phí ship, đơn hàng.
+- Nếu khách hỏi giá/sản phẩm/chính sách, nói phần đó Rêu sẽ tra từ dữ liệu shop.
+- Không cam kết cây/rêu chắc chắn hồi phục; nếu nặng thì khuyên gửi ảnh/video cho shop kiểm tra.
+- Câu đơn giản trả 3-6 câu; câu xử lý sự cố dùng bullet ngắn.`;
+
+  try {
+    const answer = await withTimeout(
+      completeFromOpenAI({
+        systemPrompt,
+        messages: [
+          ...history.slice(-4),
+          { role: "user", content: message },
+        ],
+        model: process.env.OPENAI_MODEL || "gpt-5-mini",
+      }),
+      AI_COMPLETION_TIMEOUT_MS,
+      "Care AI completion"
+    );
+
+    return answer;
+  } catch (err) {
+    console.error("[AI] care completion error:", err);
+    return null;
+  } finally {
+    activeAiRequests--;
+  }
+}
+
 // =============================================
 // 7. DB PRODUCT QUERY — Cards với thumbnail
 // =============================================
@@ -1778,7 +1825,7 @@ export async function POST(request: Request) {
         knowledgeSearchQuery === trimmed
           ? trimmed
           : `${trimmed}\n\nNgữ cảnh hội thoại gần đây để hiểu câu hỏi nối tiếp:\n${knowledgeSearchQuery}`;
-      const careAnswer = await completeFromAI(aiMessage, history, pageContext);
+      const careAnswer = await completeCareFromAI(aiMessage, history);
       if (careAnswer) {
         return NextResponse.json({
           response: careAnswer,
