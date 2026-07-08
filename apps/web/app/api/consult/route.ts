@@ -77,7 +77,7 @@ async function getProductCatalogText(): Promise<string | null> {
     return productCatalogCache.text;
   }
   try {
-    const products = await prisma.product.findMany({
+    const products = await withTimeout(prisma.product.findMany({
       where: { status: "ACTIVE" },
       select: {
         name: true, slug: true, basePrice: true, salePrice: true,
@@ -87,7 +87,8 @@ async function getProductCatalogText(): Promise<string | null> {
       },
       orderBy: [{ featured: "desc" }, { createdAt: "desc" }],
       take: 15,
-    });
+    }), DB_QUERY_TIMEOUT_MS, "Product catalog query");
+    if (!products) return null;
     if (products.length === 0) return null;
 
     const text = products.map((p) => {
@@ -1708,6 +1709,12 @@ export async function POST(request: Request) {
           products: productResult.products,
         });
       }
+    }
+
+    const earlyInstant = getInstantResponse(trimmed);
+    if ((policyFactIntent || customFactIntent) && earlyInstant) {
+      console.log(`[CONSULT] ⚡ Fact instant hit`);
+      return NextResponse.json({ response: earlyInstant, source: "knowledge" });
     }
 
     // ── 4. ADMIN KNOWLEDGE BASE RAG ───────────────────────
