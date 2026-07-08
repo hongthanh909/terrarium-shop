@@ -190,6 +190,11 @@ jobs:
               --data '{"message":"reu vang xu ly sao","history":[]}' \
               | tee /tmp/consult-care.json
             grep -q '"source"' /tmp/consult-care.json
+            curl -sf -m 20 http://127.0.0.1:3000/api/consult \
+              -H 'Content-Type: application/json' \
+              --data '{"message":"reu co de cham hon khong","history":[]}' \
+              | tee /tmp/consult-care-easy.json
+            grep -q '"source"' /tmp/consult-care-easy.json
 
             # ── Lưu PM2 process list ──────────────────────────────────────────
             pm2 save

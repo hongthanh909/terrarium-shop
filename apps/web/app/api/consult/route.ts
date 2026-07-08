@@ -1835,8 +1835,13 @@ export async function POST(request: Request) {
 
       const careFallback = getOfflineFallback(knowledgeSearchQuery);
       if (careFallback) {
-        return NextResponse.json({ response: careFallback, source: "knowledge" });
+        return NextResponse.json({ response: careFallback, source: "fallback" });
       }
+
+      return NextResponse.json({
+        response: "Dạ câu này thuộc phần chăm sóc cây/rêu nên Rêu sẽ tư vấn theo hướng thực tế nhé. Với terrarium có rêu, bể thường dễ ổn định độ ẩm hơn, nhưng không có nghĩa là không cần chăm. Anh/chị vẫn nên đặt bể nơi sáng gián tiếp, tránh nắng trực tiếp, quan sát độ ẩm và mở nắp thoáng nếu bể đọng sương quá nhiều. Nếu anh/chị cho Rêu biết bể kín hay bể mở, đang đặt ở đâu và có máy lạnh không, Rêu sẽ hướng dẫn cụ thể hơn ạ.",
+        source: "fallback",
+      });
     }
 
     // ── 6. ADMIN KNOWLEDGE BASE FOR NON-CARE ──────────────
