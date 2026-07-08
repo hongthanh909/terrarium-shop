@@ -374,6 +374,15 @@ function isCareAiIntent(message: string): boolean {
   if (hasStrongKnowledgeIntent(message)) return true;
 
   return hasAnyPattern(n, [
+    /\bde cham\b/,
+    /\bkho cham\b/,
+    /\bit cham\b/,
+    /\bcham hon\b/,
+    /\bcham nhu the nao\b/,
+    /\bco can cham\b/,
+    /\breu\b.*\b(de cham|kho cham|cham hon|can cham|song tot|song khoe)\b/,
+    /\b(co reu|nhieu reu|it reu)\b.*\b(de cham|kho cham|cham hon|tot hon)\b/,
+    /\bterrarium\b.*\b(de cham|kho cham|cham hon)\b/,
     /\bcham soc\b/,
     /\bcach cham\b/,
     /\btuoi nuoc\b/,
@@ -866,9 +875,33 @@ function shouldAnswerKnowledgeDirectly(hits: KnowledgeHit[]): boolean {
   const top = hits[0];
   if (!top) return false;
 
-  // KB là nguồn chính thức và đã được admin duyệt. Với match rõ ràng, trả lời trực tiếp
-  // giúp chat nhanh hơn rất nhiều so với chờ Ollama diễn giải lại.
-  return top.score >= 8 || ["policy", "shipping", "greeting"].includes(top.category);
+  const category = normalizeVN(top.category);
+  const keyword = normalizeVN(top.keyword);
+  const directFactCategory = hasAnyPattern(category, [
+    /\bgreeting\b/,
+    /\bpolicy\b/,
+    /\bshipping\b/,
+    /\bpayment\b/,
+    /\bwarranty\b/,
+    /\border\b/,
+    /\bcustom\b/,
+    /\bcontact\b/,
+  ]);
+  const directFactKeyword = hasAnyPattern(keyword, [
+    /\bchinh sach\b/,
+    /\bbao hanh\b/,
+    /\bdoi tra\b/,
+    /\bship\b/,
+    /\bgiao hang\b/,
+    /\bvan chuyen\b/,
+    /\bthanh toan\b/,
+    /\bcod\b/,
+    /\bvoucher\b/,
+    /\bcustom\b/,
+    /\blien he\b/,
+  ]);
+
+  return directFactCategory || directFactKeyword;
 }
 
 function scoreKnowledgeEntry(messageTokens: string[], messageNorm: string, currentMessageNorm: string, entry: {
@@ -1737,20 +1770,19 @@ export async function POST(request: Request) {
     }
 
     // ── 5. CARE AI ────────────────────────────────────────
-    // Chăm sóc cây/rêu/terrarium và sự cố cây được GPT/Ollama trả lời linh hoạt.
-    // KB chỉ làm context/guardrail; không ép trả y nguyên KB nếu câu hỏi cần tư vấn mềm.
+    // Chăm sóc cây/rêu/terrarium và câu hỏi khó phải để GPT trả lời linh hoạt.
+    // KB không trả lời trực tiếp nhóm này; KB chỉ dành cho fact shop/chính sách/sản phẩm.
     if (careAiIntent) {
       console.log(`[CONSULT] 🌿 Care AI intent detected`);
       const aiMessage =
         knowledgeSearchQuery === trimmed
           ? trimmed
           : `${trimmed}\n\nNgữ cảnh hội thoại gần đây để hiểu câu hỏi nối tiếp:\n${knowledgeSearchQuery}`;
-      const careAnswer = await completeFromAI(aiMessage, history, pageContext, knowledgeContext);
+      const careAnswer = await completeFromAI(aiMessage, history, pageContext);
       if (careAnswer) {
         return NextResponse.json({
           response: careAnswer,
-          source: knowledgeHits.length > 0 ? "rag" : "ai",
-          knowledgeIds: knowledgeHits.map((hit) => hit.id),
+          source: "ai",
         });
       }
 
