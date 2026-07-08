@@ -180,6 +180,16 @@ jobs:
               --data '{"message":"chính sách bảo hành như thế nào","history":[]}' \
               | tee /tmp/consult-policy.json
             grep -q '"source"' /tmp/consult-policy.json
+            curl -sf -m 20 http://127.0.0.1:3000/api/consult \
+              -H 'Content-Type: application/json' \
+              --data '{"message":"san pham be mini con hang","history":[]}' \
+              | tee /tmp/consult-product.json
+            grep -q '"source":"db"' /tmp/consult-product.json
+            curl -sf -m 20 http://127.0.0.1:3000/api/consult \
+              -H 'Content-Type: application/json' \
+              --data '{"message":"reu vang xu ly sao","history":[]}' \
+              | tee /tmp/consult-care.json
+            grep -q '"source"' /tmp/consult-care.json
 
             # ── Lưu PM2 process list ──────────────────────────────────────────
             pm2 save
