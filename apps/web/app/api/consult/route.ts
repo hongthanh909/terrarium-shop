@@ -1,11 +1,11 @@
 ﻿/**
- * AI Consultation API Route — v11 (Ollama-first + Guardrails + Deep Knowledge)
+ * AI Consultation API Route — v12 (DB/KB facts + GPT care advisor)
  *
- * THIẾT KẾ MỚI:
- * - KB chỉ xử lý: greeting, cảm ơn, tạm biệt, chính sách shop (instant)
- * - MỌI câu hỏi kiến thức terrarium → Ollama (model có kiến thức sâu)
- * - Guardrail: chặn câu hỏi off-topic trước khi gửi Ollama
- * - Product intent → DB query kèm thumbnail ảnh thật
+ * FLOW:
+ * - DB xử lý sản phẩm, giá, tồn kho, đơn hàng
+ * - KB chỉ xử lý chính sách/shop facts
+ * - GPT xử lý chăm sóc cây/rêu/terrarium và câu hỏi khó
+ * - Guardrail: chặn câu hỏi off-topic trước khi gọi AI
  *
  * POST /api/consult
  * Body: { message, history?, pageContext? }
@@ -47,7 +47,7 @@ function checkRateLimit(ip: string): boolean {
 let activeAiRequests = 0;
 const MAX_CONCURRENT_AI = 2;
 const DB_QUERY_TIMEOUT_MS = 8_000;
-const AI_COMPLETION_TIMEOUT_MS = 8_000;
+const AI_COMPLETION_TIMEOUT_MS = 14_000;
 
 async function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise<T | null> {
   let timeoutId: ReturnType<typeof setTimeout> | undefined;
@@ -882,6 +882,8 @@ function shouldAnswerKnowledgeDirectly(hits: KnowledgeHit[]): boolean {
   const top = hits[0];
   if (!top) return false;
 
+  if (!isShopFactKnowledgeHit(top)) return false;
+
   const category = normalizeVN(top.category);
   const keyword = normalizeVN(top.keyword);
   const directFactCategory = hasAnyPattern(category, [
@@ -909,6 +911,54 @@ function shouldAnswerKnowledgeDirectly(hits: KnowledgeHit[]): boolean {
   ]);
 
   return directFactCategory || directFactKeyword;
+}
+
+function isShopFactKnowledgeHit(hit: KnowledgeHit): boolean {
+  const category = normalizeVN(hit.category);
+  const keyword = normalizeVN(hit.keyword);
+  const haystack = `${category} ${keyword}`;
+
+  const shopFactCategory = hasAnyPattern(category, [
+    /\bgreeting\b/,
+    /\bpolicy\b/,
+    /\bshipping\b/,
+    /\bpayment\b/,
+    /\bwarranty\b/,
+    /\border\b/,
+    /\bcustom\b/,
+    /\bcontact\b/,
+    /\bproduct\b/,
+    /\bshop\b/,
+  ]);
+
+  const shopFactKeyword = hasAnyPattern(haystack, [
+    /\bbao hanh\b/,
+    /\bdoi tra\b/,
+    /\bhoan hang\b/,
+    /\bvan chuyen\b/,
+    /\bgiao hang\b/,
+    /\bship\b/,
+    /\bfreeship\b/,
+    /\bthanh toan\b/,
+    /\bchuyen khoan\b/,
+    /\bcod\b/,
+    /\bdon hang\b/,
+    /\btracking\b/,
+    /\bma van don\b/,
+    /\bcustom\b/,
+    /\btheo yeu cau\b/,
+    /\blien he\b/,
+    /\bdia chi\b/,
+    /\bzalo\b/,
+    /\bfacebook\b/,
+    /\binstagram\b/,
+    /\btiktok\b/,
+    /\bgia\b/,
+    /\bsan pham\b/,
+    /\bton kho\b/,
+  ]);
+
+  return shopFactCategory || shopFactKeyword;
 }
 
 function scoreKnowledgeEntry(messageTokens: string[], messageNorm: string, currentMessageNorm: string, entry: {
@@ -1445,18 +1495,19 @@ Quy tắc:
 
   try {
     const models = Array.from(new Set([
+      process.env.OPENAI_CARE_MODEL,
       process.env.OPENAI_MODEL || "gpt-5-mini",
       process.env.OPENAI_FALLBACK_MODEL || "gpt-4o-mini",
-    ]));
+    ].filter(Boolean))) as string[];
 
     for (const model of models) {
       const answer = await withTimeout(
         completeFromOpenAI({
-        systemPrompt,
-        messages: [
-          ...history.slice(-4),
-          { role: "user", content: message },
-        ],
+          systemPrompt,
+          messages: [
+            ...history.slice(-4),
+            { role: "user", content: message },
+          ],
           model,
         }),
         AI_COMPLETION_TIMEOUT_MS,
@@ -1464,6 +1515,7 @@ Quy tắc:
       );
 
       if (answer) return answer;
+      console.log(`[AI] Care model did not return answer: ${model}`);
     }
 
     return null;
@@ -1819,8 +1871,7 @@ export async function POST(request: Request) {
     const knowledgeHits = await searchOfficialKnowledge(knowledgeSearchQuery, trimmed);
     const factKnowledgeHits = (policyFactIntent || customFactIntent)
       ? filterFactKnowledgeHits(trimmed, knowledgeHits)
-      : knowledgeHits;
-    const knowledgeContext = knowledgeHits.length > 0 ? formatKnowledgeContext(knowledgeHits) : undefined;
+      : knowledgeHits.filter(isShopFactKnowledgeHit);
 
     if ((policyFactIntent || customFactIntent) && factKnowledgeHits.length > 0) {
       console.log(`[CONSULT] 📚 Fact KB hit: ${factKnowledgeHits.map((hit) => hit.keyword).join(" | ")}`);
@@ -1860,19 +1911,19 @@ export async function POST(request: Request) {
     }
 
     // ── 6. ADMIN KNOWLEDGE BASE FOR NON-CARE ──────────────
-    if (knowledgeHits.length > 0) {
-      console.log(`[CONSULT] 📚 KB RAG hit: ${knowledgeHits.map((hit) => hit.keyword).join(" | ")}`);
+    if (factKnowledgeHits.length > 0) {
+      console.log(`[CONSULT] 📚 KB fact hit: ${factKnowledgeHits.map((hit) => hit.keyword).join(" | ")}`);
 
-      if (shouldAnswerKnowledgeDirectly(knowledgeHits)) {
+      if (shouldAnswerKnowledgeDirectly(factKnowledgeHits)) {
         return NextResponse.json({
-          response: buildKnowledgeFallback(knowledgeHits, trimmed),
+          response: buildKnowledgeFallback(factKnowledgeHits, trimmed),
           source: "knowledge",
-          knowledgeIds: knowledgeHits.map((hit) => hit.id),
+          knowledgeIds: factKnowledgeHits.map((hit) => hit.id),
         });
       }
 
       return NextResponse.json({
-        response: buildKnowledgeFallback(knowledgeHits, trimmed),
+        response: buildKnowledgeFallback(factKnowledgeHits, trimmed),
         source: "fallback",
       });
     }

@@ -92,6 +92,16 @@ jobs:
             else
               echo "OPENAI_MODEL=gpt-5-mini" >> .env
             fi
+            if grep -q "^OPENAI_CARE_MODEL=" .env 2>/dev/null; then
+              sed -i "s|^OPENAI_CARE_MODEL=.*|OPENAI_CARE_MODEL=gpt-4o-mini|" .env
+            else
+              echo "OPENAI_CARE_MODEL=gpt-4o-mini" >> .env
+            fi
+            if grep -q "^OPENAI_FALLBACK_MODEL=" .env 2>/dev/null; then
+              sed -i "s|^OPENAI_FALLBACK_MODEL=.*|OPENAI_FALLBACK_MODEL=gpt-4o-mini|" .env
+            else
+              echo "OPENAI_FALLBACK_MODEL=gpt-4o-mini" >> .env
+            fi
             if grep -q "^AI_PROVIDER=" .env 2>/dev/null; then
               sed -i "s|^AI_PROVIDER=.*|AI_PROVIDER=openai|" .env
             else
@@ -189,12 +199,12 @@ jobs:
               -H 'Content-Type: application/json' \
               --data '{"message":"reu vang xu ly sao","history":[]}' \
               | tee /tmp/consult-care.json
-            grep -q '"source"' /tmp/consult-care.json
+            grep -q '"source":"ai"' /tmp/consult-care.json
             curl -sf -m 20 http://127.0.0.1:3000/api/consult \
               -H 'Content-Type: application/json' \
               --data '{"message":"reu co de cham hon khong","history":[]}' \
               | tee /tmp/consult-care-easy.json
-            grep -q '"source"' /tmp/consult-care-easy.json
+            grep -q '"source":"ai"' /tmp/consult-care-easy.json
 
             # ── Lưu PM2 process list ──────────────────────────────────────────
             pm2 save
