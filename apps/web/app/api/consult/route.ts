@@ -396,6 +396,12 @@ function isCareAiIntent(message: string): boolean {
     /\bdieu hoa\b/,
     /\bmo nap\b/,
     /\bthong khi\b/,
+    /\bdong suong\b/,
+    /\bkinh mo\b/,
+    /\bkinh uot\b/,
+    /\bhoi nuoc\b/,
+    /\bqua am\b/,
+    /\bbi am\b/,
     /\bve sinh kinh\b/,
     /\bcat tia\b/,
     /\b7 ngay dau\b/,
@@ -1856,26 +1862,9 @@ export async function POST(request: Request) {
         });
       }
 
-      const aiMessage =
-        knowledgeSearchQuery === trimmed
-          ? trimmed
-          : `${trimmed}\n\nNgữ cảnh hội thoại gần đây để hiểu câu hỏi nối tiếp:\n${knowledgeSearchQuery}`;
-      const stream = await streamFromAI(aiMessage, history, pageContext, knowledgeContext);
-      if (stream) {
-        return new Response(stream, {
-          headers: {
-            "Content-Type": "text/event-stream",
-            "Cache-Control": "no-cache",
-            Connection: "keep-alive",
-            "X-Consult-Source": "rag",
-          },
-        });
-      }
-
       return NextResponse.json({
         response: buildKnowledgeFallback(knowledgeHits, trimmed),
-        source: "knowledge",
-        knowledgeIds: knowledgeHits.map((hit) => hit.id),
+        source: "fallback",
       });
     }
 
@@ -1897,24 +1886,18 @@ export async function POST(request: Request) {
     // ── 8. SKIP isOnTopic — Để Ollama tự xử lý câu hỏi không rõ ─
     // (isOnTopic() quá strict → chặn nhầm câu hỏi hợp lệ)
 
-    // ── 9. OLLAMA/GPT AI — Xử lý câu hỏi terrarium không thuộc fact cứng ──────
-    console.log(`[CONSULT] 🧠 Sending to Ollama...`);
-    const stream = await streamFromAI(trimmed, history, pageContext);
-    if (stream) {
-      return new Response(stream, {
-        headers: {
-          "Content-Type": "text/event-stream",
-          "Cache-Control": "no-cache",
-          Connection: "keep-alive",
-        },
-      });
+    // ── 9. GPT CARE FALLBACK — câu terrarium chưa phân loại ──────
+    console.log(`[CONSULT] 🧠 Sending to care GPT fallback...`);
+    const generalCareAnswer = await completeCareFromAI(trimmed, history);
+    if (generalCareAnswer) {
+      return NextResponse.json({ response: generalCareAnswer, source: "ai" });
     }
 
-    // ── 10. AI OFFLINE → Fallback KB ──────────────────────
-    console.log(`[CONSULT] ⚠️ Ollama offline, trying fallback KB`);
+    // ── 10. AI OFFLINE → Fallback an toàn ──────────────────────
+    console.log(`[CONSULT] ⚠️ Care GPT unavailable, trying fallback`);
     const fallback = getOfflineFallback(knowledgeSearchQuery);
     if (fallback) {
-      return NextResponse.json({ response: fallback, source: "knowledge" });
+      return NextResponse.json({ response: fallback, source: "fallback" });
     }
 
     // ── 11. PRODUCT FALLBACK (last resort) ─────────────────
