@@ -46,6 +46,24 @@ function checkRateLimit(ip: string): boolean {
 // =============================================
 let activeAiRequests = 0;
 const MAX_CONCURRENT_AI = 2;
+const DB_QUERY_TIMEOUT_MS = 8_000;
+
+async function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise<T | null> {
+  let timeoutId: ReturnType<typeof setTimeout> | undefined;
+  try {
+    return await Promise.race([
+      promise,
+      new Promise<null>((resolve) => {
+        timeoutId = setTimeout(() => {
+          console.error(`[CONSULT] ${label} timed out after ${ms}ms`);
+          resolve(null);
+        }, ms);
+      }),
+    ]);
+  } finally {
+    if (timeoutId) clearTimeout(timeoutId);
+  }
+}
 
 // =============================================
 // PRODUCT CATALOG CACHE (cho Ollama system prompt)
@@ -452,6 +470,33 @@ function isCustomFactIntent(message: string): boolean {
     /\bbao gia custom\b/,
     /\blam rieng\b/,
   ]);
+}
+
+function filterFactKnowledgeHits(message: string, hits: KnowledgeHit[]): KnowledgeHit[] {
+  const n = normalizeVN(message);
+  const wantedPatterns: RegExp[] = [];
+
+  if (/\bbao hanh\b|\bdoi tra\b|\bhoan hang\b|\bloi\b/.test(n)) {
+    wantedPatterns.push(/\bbao hanh\b/, /\bdoi tra\b/, /\bhoan hang\b/, /\bwarranty\b/, /\bpolicy\b/);
+  }
+  if (/\bship\b|\bgiao hang\b|\bvan chuyen\b|\bfreeship\b|\bhoa toc\b|\bphi ship\b|\btracking\b|\bma van don\b/.test(n)) {
+    wantedPatterns.push(/\bship\b/, /\bgiao hang\b/, /\bvan chuyen\b/, /\bfreeship\b/, /\btracking\b/, /\bshipping\b/);
+  }
+  if (/\bthanh toan\b|\bcod\b|\bchuyen khoan\b|\bvoucher\b|\bma giam\b|\bgiam gia\b|\bkhuyen mai\b/.test(n)) {
+    wantedPatterns.push(/\bthanh toan\b/, /\bcod\b/, /\bchuyen khoan\b/, /\bvoucher\b/, /\bma giam\b/, /\bpayment\b/);
+  }
+  if (/\bcustom\b|\btheo yeu cau\b|\bmau rieng\b|\bsize rieng\b|\bconcept\b|\bdat coc\b|\bbao gia custom\b|\blam rieng\b/.test(n)) {
+    wantedPatterns.push(/\bcustom\b/, /\btheo yeu cau\b/, /\bmau rieng\b/, /\bdat coc\b/, /\bbao gia\b/);
+  }
+
+  if (wantedPatterns.length === 0) return hits;
+
+  const filtered = hits.filter((hit) => {
+    const haystack = normalizeVN(`${hit.category} ${hit.keyword} ${hit.response.slice(0, 220)}`);
+    return wantedPatterns.some((pattern) => pattern.test(haystack));
+  });
+
+  return filtered.length > 0 ? filtered : [];
 }
 
 function isSetupReadyProductIntent(message: string): boolean {
@@ -1249,8 +1294,9 @@ async function streamFromAI(
       ...history.slice(-4),
       { role: "user", content: message },
     ];
-    const provider = (process.env.AI_PROVIDER || "ollama").toLowerCase();
-    const preferOpenAI = provider === "openai";
+    const provider = (process.env.AI_PROVIDER || (process.env.OPENAI_API_KEY ? "openai" : "ollama")).toLowerCase();
+    const preferOpenAI = provider === "openai" || provider === "hybrid";
+    const allowOllama = provider === "ollama" || provider === "hybrid";
 
     if (preferOpenAI) {
       const openAiStream = await streamFromOpenAI({
@@ -1267,7 +1313,17 @@ async function streamFromAI(
         return openAiStream;
       }
 
-      console.log("[AI] OpenAI unavailable, trying Ollama fallback");
+      console.log(allowOllama ? "[AI] OpenAI unavailable, trying Ollama fallback" : "[AI] OpenAI unavailable");
+      if (!allowOllama) {
+        activeAiRequests--;
+        return null;
+      }
+    }
+
+    if (!allowOllama) {
+      console.log("[AI] Ollama disabled by provider");
+      activeAiRequests--;
+      return null;
     }
 
     const stream = await streamFromOllama(aiMessages);
@@ -1361,7 +1417,7 @@ async function queryProducts(message: string): Promise<{ text: string; products:
       ];
     }
 
-    let products = await prisma.product.findMany({
+    let products = await withTimeout(prisma.product.findMany({
       where: baseWhere,
       select: {
         name: true, slug: true, basePrice: true, salePrice: true,
@@ -1370,11 +1426,18 @@ async function queryProducts(message: string): Promise<{ text: string; products:
       },
       take: 6,
       orderBy,
-    });
+    }), DB_QUERY_TIMEOUT_MS, "Product query");
+
+    if (!products) {
+      return {
+        text: "Dạ hiện hệ thống sản phẩm đang phản hồi hơi chậm. Anh/chị thử lại sau ít phút hoặc vào mục Sản phẩm để xem trực tiếp nhé.",
+        products: [],
+      };
+    }
 
     if (products.length === 0 && categoryKeyword) {
       const { category, ...broadWhere } = baseWhere;
-      products = await prisma.product.findMany({
+      const broadProducts = await withTimeout(prisma.product.findMany({
         where: broadWhere,
         select: {
           name: true, slug: true, basePrice: true, salePrice: true,
@@ -1383,7 +1446,8 @@ async function queryProducts(message: string): Promise<{ text: string; products:
         },
         take: 6,
         orderBy,
-      });
+      }), DB_QUERY_TIMEOUT_MS, "Broad product query");
+      products = broadProducts || [];
     }
 
     if (setupReadyIntent) {
@@ -1465,7 +1529,7 @@ async function queryProducts(message: string): Promise<{ text: string; products:
     }
 
     return {
-      text: `${intro}${noteText}\n\n💡 Bấm vào sản phẩm để xem chi tiết. Freeship đơn từ 500.000₫ ạ!`,
+      text: `${intro}${noteText}\n\n💡 Bấm vào sản phẩm để xem chi tiết. Với freeship/chính sách vận chuyển, Rêu sẽ trả theo chính sách hiện tại của shop khi anh/chị hỏi cụ thể ạ.`,
       products: productCards,
     };
   } catch (error) {
@@ -1614,14 +1678,17 @@ export async function POST(request: Request) {
     // Fact query (policy/custom) phải bám KB/DB; care query có thể đưa KB làm nền để AI diễn giải linh hoạt.
     const knowledgeSearchQuery = buildKnowledgeSearchQuery(trimmed, history);
     const knowledgeHits = await searchOfficialKnowledge(knowledgeSearchQuery, trimmed);
+    const factKnowledgeHits = (policyFactIntent || customFactIntent)
+      ? filterFactKnowledgeHits(trimmed, knowledgeHits)
+      : knowledgeHits;
     const knowledgeContext = knowledgeHits.length > 0 ? formatKnowledgeContext(knowledgeHits) : undefined;
 
-    if ((policyFactIntent || customFactIntent) && knowledgeHits.length > 0) {
-      console.log(`[CONSULT] 📚 Fact KB hit: ${knowledgeHits.map((hit) => hit.keyword).join(" | ")}`);
+    if ((policyFactIntent || customFactIntent) && factKnowledgeHits.length > 0) {
+      console.log(`[CONSULT] 📚 Fact KB hit: ${factKnowledgeHits.map((hit) => hit.keyword).join(" | ")}`);
       return NextResponse.json({
-        response: buildKnowledgeFallback(knowledgeHits, trimmed),
+        response: buildKnowledgeFallback(factKnowledgeHits, trimmed),
         source: "knowledge",
-        knowledgeIds: knowledgeHits.map((hit) => hit.id),
+        knowledgeIds: factKnowledgeHits.map((hit) => hit.id),
       });
     }
 
