@@ -199,12 +199,20 @@ jobs:
               -H 'Content-Type: application/json' \
               --data '{"message":"reu vang xu ly sao","history":[]}' \
               | tee /tmp/consult-care.json
-            grep -q '"source":"ai"' /tmp/consult-care.json
+            if ! grep -q '"source":"ai"' /tmp/consult-care.json; then
+              echo "❌ Care consult did not use GPT source. Recent PM2 logs:"
+              pm2 logs terrarium-shop --lines 120 --nostream || true
+              exit 1
+            fi
             curl -sf -m 20 http://127.0.0.1:3000/api/consult \
               -H 'Content-Type: application/json' \
               --data '{"message":"reu co de cham hon khong","history":[]}' \
               | tee /tmp/consult-care-easy.json
-            grep -q '"source":"ai"' /tmp/consult-care-easy.json
+            if ! grep -q '"source":"ai"' /tmp/consult-care-easy.json; then
+              echo "❌ Easy care consult did not use GPT source. Recent PM2 logs:"
+              pm2 logs terrarium-shop --lines 120 --nostream || true
+              exit 1
+            fi
 
             # ── Lưu PM2 process list ──────────────────────────────────────────
             pm2 save

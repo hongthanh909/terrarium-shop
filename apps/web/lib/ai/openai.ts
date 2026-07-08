@@ -188,7 +188,13 @@ export async function completeFromOpenAI({
     }
 
     const payload = await res.json();
-    return extractResponseText(payload) || null;
+    const text = extractResponseText(payload);
+    if (!text) {
+      console.error(`[AI] OpenAI completion empty response for model ${model}; status=${payload?.status || "unknown"}`);
+      return null;
+    }
+
+    return text;
   } catch (err) {
     clearTimeout(timeout);
     console.error("[AI] OpenAI completion fetch error:", err);
