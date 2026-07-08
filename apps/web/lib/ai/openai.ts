@@ -135,3 +135,63 @@ export async function streamFromOpenAI({
     return null;
   }
 }
+
+function extractResponseText(payload: any): string {
+  if (typeof payload?.output_text === "string") return payload.output_text.trim();
+
+  const chunks: string[] = [];
+  for (const item of payload?.output || []) {
+    for (const content of item?.content || []) {
+      if (typeof content?.text === "string") chunks.push(content.text);
+    }
+  }
+
+  return chunks.join("").trim();
+}
+
+export async function completeFromOpenAI({
+  systemPrompt,
+  messages,
+  model = "gpt-5-mini",
+  apiKey = process.env.OPENAI_API_KEY,
+}: Omit<StreamFromOpenAIOptions, "onDone">): Promise<string | null> {
+  if (!apiKey) {
+    console.log("[AI] OpenAI completion skipped: missing OPENAI_API_KEY");
+    return null;
+  }
+
+  const abortCtrl = new AbortController();
+  const timeout = setTimeout(() => abortCtrl.abort(), 14_000);
+
+  try {
+    const res = await fetch("https://api.openai.com/v1/responses", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model,
+        instructions: systemPrompt,
+        input: toResponsesInput(messages),
+        stream: false,
+        max_output_tokens: 420,
+      }),
+      signal: abortCtrl.signal,
+    });
+    clearTimeout(timeout);
+
+    if (!res.ok) {
+      const details = await res.text().catch(() => "");
+      console.error(`[AI] OpenAI completion error: ${res.status} ${details.slice(0, 240)}`);
+      return null;
+    }
+
+    const payload = await res.json();
+    return extractResponseText(payload) || null;
+  } catch (err) {
+    clearTimeout(timeout);
+    console.error("[AI] OpenAI completion fetch error:", err);
+    return null;
+  }
+}

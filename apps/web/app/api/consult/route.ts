@@ -13,7 +13,7 @@
 
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { streamFromOpenAI } from "@/lib/ai/openai";
+import { completeFromOpenAI, streamFromOpenAI } from "@/lib/ai/openai";
 
 // =============================================
 // RATE LIMITING
@@ -475,9 +475,13 @@ function isCustomFactIntent(message: string): boolean {
 function filterFactKnowledgeHits(message: string, hits: KnowledgeHit[]): KnowledgeHit[] {
   const n = normalizeVN(message);
   const wantedPatterns: RegExp[] = [];
+  const wantsWarranty = /\bbao hanh\b|\bdoi tra\b|\bhoan hang\b/.test(n);
+  const wantsGenericPolicy = /\bchinh sach\b/.test(n) && !wantsWarranty;
 
-  if (/\bbao hanh\b|\bdoi tra\b|\bhoan hang\b|\bloi\b/.test(n)) {
-    wantedPatterns.push(/\bbao hanh\b/, /\bdoi tra\b/, /\bhoan hang\b/, /\bwarranty\b/, /\bpolicy\b/);
+  if (wantsWarranty) {
+    wantedPatterns.push(/\bbao hanh\b/, /\bdoi tra\b/, /\bhoan hang\b/, /\bwarranty\b/);
+  } else if (wantsGenericPolicy) {
+    wantedPatterns.push(/\bchinh sach\b/, /\bpolicy\b/);
   }
   if (/\bship\b|\bgiao hang\b|\bvan chuyen\b|\bfreeship\b|\bhoa toc\b|\bphi ship\b|\btracking\b|\bma van don\b/.test(n)) {
     wantedPatterns.push(/\bship\b/, /\bgiao hang\b/, /\bvan chuyen\b/, /\bfreeship\b/, /\btracking\b/, /\bshipping\b/);
@@ -1342,6 +1346,39 @@ async function streamFromAI(
   }
 }
 
+async function completeFromAI(
+  message: string,
+  history: { role: string; content: string }[],
+  pageContext?: PageContext,
+  knowledgeContext?: string
+): Promise<string | null> {
+  if (activeAiRequests >= MAX_CONCURRENT_AI) {
+    console.log("[AI] Completion concurrency limit reached");
+    return null;
+  }
+  activeAiRequests++;
+
+  try {
+    const systemPrompt = await buildSystemPrompt(pageContext, knowledgeContext);
+    const aiMessages = [
+      { role: "system", content: systemPrompt },
+      ...history.slice(-4),
+      { role: "user", content: message },
+    ];
+
+    return await completeFromOpenAI({
+      systemPrompt,
+      messages: aiMessages,
+      model: process.env.OPENAI_MODEL || "gpt-5-mini",
+    });
+  } catch (err) {
+    console.error("[AI] completion error:", err);
+    return null;
+  } finally {
+    activeAiRequests--;
+  }
+}
+
 // =============================================
 // 7. DB PRODUCT QUERY — Cards với thumbnail
 // =============================================
@@ -1701,15 +1738,12 @@ export async function POST(request: Request) {
         knowledgeSearchQuery === trimmed
           ? trimmed
           : `${trimmed}\n\nNgữ cảnh hội thoại gần đây để hiểu câu hỏi nối tiếp:\n${knowledgeSearchQuery}`;
-      const stream = await streamFromAI(aiMessage, history, pageContext, knowledgeContext);
-      if (stream) {
-        return new Response(stream, {
-          headers: {
-            "Content-Type": "text/event-stream",
-            "Cache-Control": "no-cache",
-            Connection: "keep-alive",
-            "X-Consult-Source": knowledgeHits.length > 0 ? "care-rag" : "care-ai",
-          },
+      const careAnswer = await completeFromAI(aiMessage, history, pageContext, knowledgeContext);
+      if (careAnswer) {
+        return NextResponse.json({
+          response: careAnswer,
+          source: knowledgeHits.length > 0 ? "rag" : "ai",
+          knowledgeIds: knowledgeHits.map((hit) => hit.id),
         });
       }
 
