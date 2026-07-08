@@ -57,6 +57,8 @@ jobs:
             echo "📦 Pulling latest code..."
             git fetch origin main
             git reset --hard origin/main
+            DEPLOY_COMMIT=$(git rev-parse --short HEAD)
+            echo "Deploy commit: $DEPLOY_COMMIT"
 
             # ── Cài dependencies (toàn bộ monorepo) ──────────────────────────
             echo "📚 Installing dependencies..."
@@ -99,6 +101,11 @@ jobs:
               sed -i "s|^AI_CHAT_ENABLED=.*|AI_CHAT_ENABLED=true|" .env
             else
               echo "AI_CHAT_ENABLED=true" >> .env
+            fi
+            if grep -q "^APP_VERSION=" .env 2>/dev/null; then
+              sed -i "s|^APP_VERSION=.*|APP_VERSION=$DEPLOY_COMMIT|" .env
+            else
+              echo "APP_VERSION=$DEPLOY_COMMIT" >> .env
             fi
             # Giữ Ollama config làm fallback tạm thời
             if grep -q "^OLLAMA_URL=" .env 2>/dev/null; then
@@ -150,8 +157,24 @@ jobs:
 
             # ── Reload app với PM2 (zero downtime) ───────────────────────────
             echo "🔁 Reloading PM2..."
-            pm2 reload ecosystem.config.js --env production \
-              || pm2 start ecosystem.config.js --env production
+            pm2 delete terrarium-shop 2>/dev/null || true
+            pm2 start ecosystem.config.js --env production
+            pm2 list
+
+            echo "Running local smoke tests..."
+            for i in 1 2 3 4 5; do
+              if curl -sf http://127.0.0.1:3000/api/health | tee /tmp/health.json; then
+                break
+              fi
+              echo "Waiting for app health... ($i/5)"
+              sleep 5
+            done
+            grep -q "$DEPLOY_COMMIT" /tmp/health.json
+            curl -sf -m 20 http://127.0.0.1:3000/api/consult \
+              -H 'Content-Type: application/json' \
+              --data '{"message":"chính sách bảo hành như thế nào","history":[]}' \
+              | tee /tmp/consult-policy.json
+            grep -q '"source"' /tmp/consult-policy.json
 
             # ── Lưu PM2 process list ──────────────────────────────────────────
             pm2 save
