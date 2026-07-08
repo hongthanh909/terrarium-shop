@@ -267,22 +267,22 @@ function getInstantResponse(message: string): string | null {
 
   // ── Chính sách shop (cần trả lời chính xác, không nên để AI bịa) ──
   if (/ship|giao hàng|vận chuyển|freeship|phí ship|phí giao|bao lâu.*nhận|nhận.*bao lâu|giao.*nhanh/i.test(q))
-    return "🚚 **Chính sách vận chuyển Tiệm Rêu:**\n\n• **Freeship** cho đơn hàng từ 500.000₫\n• Phí ship tiêu chuẩn: 25.000₫ - 40.000₫ (tùy khu vực)\n• **Nội thành HCM:** Giao trong 1-2 ngày\n• **Tỉnh khác:** 3-5 ngày làm việc\n• Đóng gói cẩn thận, bảo vệ cây an toàn\n• Hỗ trợ ship nhanh (phí phát sinh)";
+    return "🚚 Dạ phần vận chuyển/phí ship cần trả theo chính sách hiện tại của shop và khu vực nhận hàng.\n\nAnh/chị cho Rêu biết khu vực nhận hàng và sản phẩm muốn đặt, Rêu sẽ hướng theo thông tin shop đã chốt. Nếu là đơn đã đặt, anh/chị gửi SĐT đặt hàng để Rêu tra trạng thái, nhưng Rêu sẽ không hiển thị tracking link/tổng tiền/địa chỉ trong chatbox.";
 
   if (/đổi trả|trả hàng|bảo hành|hỏng|vỡ|bể.*vỡ|lỗi/i.test(q))
-    return "🔄 **Chính sách đổi trả & bảo hành:**\n\n• **Đổi trả trong 3 ngày** nếu sản phẩm lỗi do vận chuyển.\n• **Bảo hành 7 ngày** cho cây bị hư hại không do người dùng.\n• Cần quay video khi mở hàng để làm bằng chứng.\n• Liên hệ Zalo/Facebook để được hỗ trợ đổi trả.\n• Không áp dụng cho trường hợp chăm sóc sai cách.";
+    return "🔄 Dạ phần bảo hành/đổi trả cần kiểm tra theo chính sách hiện tại và tình trạng thực tế.\n\nAnh/chị mô tả vấn đề, gửi ảnh/video nếu có, và cho biết thời điểm nhận hàng. Rêu có thể hướng dẫn bước đầu, nhưng kết luận bảo hành/đổi trả cần shop xác nhận.";
 
   if (/thanh toán|trả tiền|chuyển khoản|cod|payment|momo/i.test(q))
-    return "💳 **Phương thức thanh toán:**\n\n• **COD** (thanh toán khi nhận hàng) — nhận hàng mới trả tiền, hoàn toàn an toàn ✅\n\n💡 Đặt hàng trên website → chọn sản phẩm → thêm vào giỏ → thanh toán COD khi nhận hàng!";
+    return "💳 Dạ phần thanh toán sẽ theo phương thức đang bật ở bước checkout hoặc xác nhận trực tiếp từ shop.\n\nRêu không tự gửi số tài khoản, QR hay link thanh toán trong chatbox để tránh nhầm thông tin. Với đơn custom/đặt cọc, shop cần xác nhận riêng.";
 
   if (/khuyến mãi|voucher|mã giảm|discount|sale|giảm giá/i.test(q))
-    return "🎉 **Khuyến mãi tại Tiệm Rêu:**\n\n• **Freeship** đơn từ 500.000₫\n• Theo dõi Tiệm Rêu trên Facebook/Zalo để nhận mã giảm giá.\n• Các chương trình khuyến mãi được cập nhật thường xuyên trên website.\n\nAnh/chị muốn xem sản phẩm đang giảm giá không ạ?";
+    return "🎉 Dạ voucher/khuyến mãi cần kiểm tra theo chương trình đang áp dụng trên website hoặc xác nhận từ shop.\n\nNếu anh/chị có mã giảm giá, hãy thử ở bước thanh toán để hệ thống kiểm tra điều kiện áp dụng.";
 
   if (/liên hệ|hotline|zalo|facebook|điện thoại|sdt|phone|email/i.test(q))
     return "📞 **Liên hệ Tiệm Rêu:**\n\n• **Facebook:** Tiệm Rêu Décor\n• **Zalo:** Tìm 'Tiệm Rêu'\n• **Website:** tiemreudecor.com\n• Giờ hỗ trợ: 8:00 - 21:00 hàng ngày\n\nHoặc anh/chị cứ chat với em ở đây, em hỗ trợ 24/7 ạ! 🌿";
 
   if (/đặt hàng.*sao|mua.*sao|cách.*mua|cách.*đặt|order.*sao/i.test(q))
-    return "🛒 **Cách đặt hàng tại Tiệm Rêu:**\n\n1. Chọn sản phẩm yêu thích trên website\n2. Nhấn **\"Thêm vào giỏ\"**\n3. Vào **Giỏ hàng** → kiểm tra\n4. Nhấn **\"Thanh toán\"** → điền thông tin giao hàng\n5. Chọn phương thức thanh toán\n6. Xác nhận đơn hàng!\n\n💡 Freeship cho đơn từ 500.000₫ ạ!";
+    return "🛒 Dạ anh/chị có thể đặt hàng trực tiếp trên website: chọn sản phẩm, thêm vào giỏ, vào thanh toán và điền thông tin nhận hàng.\n\nNếu là mẫu custom/đặt theo yêu cầu, shop cần xác nhận riêng về mẫu, thời gian làm và thanh toán.";
 
   // Không match → return null → flow tiếp tục tới Ollama
   return null;
@@ -347,6 +347,111 @@ function isProductIntent(message: string): boolean {
     /\b(setup|set up|san|lam san|trung ngay|full set)\b.*\b(be|terrarium|mau|san pham)\b/,
   ];
   return productPatterns.some(p => p.test(q)) || normalizedProductPatterns.some((p) => p.test(n));
+}
+
+function isCareAiIntent(message: string): boolean {
+  const n = normalizeVN(message);
+
+  if (hasStrongKnowledgeIntent(message)) return true;
+
+  return hasAnyPattern(n, [
+    /\bcham soc\b/,
+    /\bcach cham\b/,
+    /\btuoi nuoc\b/,
+    /\btuoi cay\b/,
+    /\bphun suong\b/,
+    /\banh sang\b/,
+    /\bnhiet do\b/,
+    /\bdo am\b/,
+    /\bmay lanh\b/,
+    /\bdieu hoa\b/,
+    /\bmo nap\b/,
+    /\bthong khi\b/,
+    /\bve sinh kinh\b/,
+    /\bcat tia\b/,
+    /\b7 ngay dau\b/,
+    /\bmoi nhan\b/,
+    /\breu vang\b/,
+    /\breu kho\b/,
+    /\breu moc\b/,
+    /\bmoc trang\b/,
+    /\bcay heo\b/,
+    /\bla heo\b/,
+    /\bcay ru\b/,
+    /\bla ru\b/,
+    /\bla vang\b/,
+    /\brung la\b/,
+    /\bung re\b/,
+    /\bthoi re\b/,
+    /\bthoi goc\b/,
+    /\bcam nhung\b/,
+    /\bfittonia\b/,
+    /\bduong si\b/,
+    /\bduong xi\b/,
+    /\bdua phung\b/,
+    /\bsen da\b/,
+    /\bxuong rong\b/,
+    /\bsucculent\b/,
+    /\bcactus\b/,
+    /\bfern\b/,
+    /\bmoss\b/,
+    /\bplant care\b/,
+    /\bwatering\b/,
+    /\bgrow light\b/,
+  ]);
+}
+
+function isPolicyFactIntent(message: string): boolean {
+  const n = normalizeVN(message);
+  return hasAnyPattern(n, [
+    /\bbao hanh\b/,
+    /\bdoi tra\b/,
+    /\bhoan hang\b/,
+    /\bchinh sach\b/,
+    /\bvan chuyen\b/,
+    /\bgiao hang\b/,
+    /\bphi ship\b/,
+    /\bfreeship\b/,
+    /\bhoa toc\b/,
+    /\btracking\b/,
+    /\bma van don\b/,
+    /\bthanh toan\b/,
+    /\bcod\b/,
+    /\bchuyen khoan\b/,
+    /\bvoucher\b/,
+    /\bma giam\b/,
+    /\bgiam gia\b/,
+    /\bkhuyen mai\b/,
+    /\bdat hang\b/,
+    /\bhuy don\b/,
+    /\bdoi dia chi\b/,
+    /\bdoi sdt\b/,
+    /\blien he\b/,
+    /\bhotline\b/,
+    /\bfacebook\b/,
+    /\binstagram\b/,
+    /\btiktok\b/,
+  ]);
+}
+
+function isCustomFactIntent(message: string): boolean {
+  const n = normalizeVN(message);
+  return hasAnyPattern(n, [
+    /\bcustom\b/,
+    /\btheo yeu cau\b/,
+    /\bmau rieng\b/,
+    /\bsize rieng\b/,
+    /\bconcept\b/,
+    /\bchu de\b/,
+    /\bphong thuy\b/,
+    /\btai loc\b/,
+    /\btheo menh\b/,
+    /\banh mau\b/,
+    /\bpinterest\b/,
+    /\bdat coc\b/,
+    /\bbao gia custom\b/,
+    /\blam rieng\b/,
+  ]);
 }
 
 function isSetupReadyProductIntent(message: string): boolean {
@@ -1469,6 +1574,9 @@ export async function POST(request: Request) {
     }
 
     console.log(`[CONSULT] "${trimmed.slice(0, 60)}..." from ${ip}`);
+    const careAiIntent = isCareAiIntent(trimmed);
+    const policyFactIntent = isPolicyFactIntent(trimmed);
+    const customFactIntent = isCustomFactIntent(trimmed);
 
     // ── 1. GUARDRAIL: Chặn off-topic ──────────────────────
     if (isOffTopic(trimmed)) {
@@ -1501,21 +1609,50 @@ export async function POST(request: Request) {
       }
     }
 
-    // ── 4. DETERMINISTIC CARE KB ──────────────────────────
-    // Các case chăm sóc rõ ràng cần trả lời nhanh và chắc, không chờ Ollama
-    // và không phụ thuộc KB admin cũ có thể match nhiễu.
-    if (hasStrongKnowledgeIntent(trimmed)) {
-      const careFallback = getOfflineFallback(trimmed);
+    // ── 4. ADMIN KNOWLEDGE BASE RAG ───────────────────────
+    // Dữ liệu admin nhập ở /tiem-nho-nth24/ai-knowledge là nguồn chính thức.
+    // Fact query (policy/custom) phải bám KB/DB; care query có thể đưa KB làm nền để AI diễn giải linh hoạt.
+    const knowledgeSearchQuery = buildKnowledgeSearchQuery(trimmed, history);
+    const knowledgeHits = await searchOfficialKnowledge(knowledgeSearchQuery, trimmed);
+    const knowledgeContext = knowledgeHits.length > 0 ? formatKnowledgeContext(knowledgeHits) : undefined;
+
+    if ((policyFactIntent || customFactIntent) && knowledgeHits.length > 0) {
+      console.log(`[CONSULT] 📚 Fact KB hit: ${knowledgeHits.map((hit) => hit.keyword).join(" | ")}`);
+      return NextResponse.json({
+        response: buildKnowledgeFallback(knowledgeHits, trimmed),
+        source: "knowledge",
+        knowledgeIds: knowledgeHits.map((hit) => hit.id),
+      });
+    }
+
+    // ── 5. CARE AI ────────────────────────────────────────
+    // Chăm sóc cây/rêu/terrarium và sự cố cây được GPT/Ollama trả lời linh hoạt.
+    // KB chỉ làm context/guardrail; không ép trả y nguyên KB nếu câu hỏi cần tư vấn mềm.
+    if (careAiIntent) {
+      console.log(`[CONSULT] 🌿 Care AI intent detected`);
+      const aiMessage =
+        knowledgeSearchQuery === trimmed
+          ? trimmed
+          : `${trimmed}\n\nNgữ cảnh hội thoại gần đây để hiểu câu hỏi nối tiếp:\n${knowledgeSearchQuery}`;
+      const stream = await streamFromAI(aiMessage, history, pageContext, knowledgeContext);
+      if (stream) {
+        return new Response(stream, {
+          headers: {
+            "Content-Type": "text/event-stream",
+            "Cache-Control": "no-cache",
+            Connection: "keep-alive",
+            "X-Consult-Source": knowledgeHits.length > 0 ? "care-rag" : "care-ai",
+          },
+        });
+      }
+
+      const careFallback = getOfflineFallback(knowledgeSearchQuery);
       if (careFallback) {
         return NextResponse.json({ response: careFallback, source: "knowledge" });
       }
     }
 
-    // ── 5. ADMIN KNOWLEDGE BASE RAG ───────────────────────
-    // Dữ liệu admin nhập ở /tiem-nho-nth24/ai-knowledge là nguồn chính thức.
-    // Nếu match, đưa context vào Ollama để diễn giải tự nhiên; nếu Ollama offline thì trả lời trực tiếp từ KB.
-    const knowledgeSearchQuery = buildKnowledgeSearchQuery(trimmed, history);
-    const knowledgeHits = await searchOfficialKnowledge(knowledgeSearchQuery, trimmed);
+    // ── 6. ADMIN KNOWLEDGE BASE FOR NON-CARE ──────────────
     if (knowledgeHits.length > 0) {
       console.log(`[CONSULT] 📚 KB RAG hit: ${knowledgeHits.map((hit) => hit.keyword).join(" | ")}`);
 
@@ -1527,7 +1664,6 @@ export async function POST(request: Request) {
         });
       }
 
-      const knowledgeContext = formatKnowledgeContext(knowledgeHits);
       const aiMessage =
         knowledgeSearchQuery === trimmed
           ? trimmed
@@ -1551,17 +1687,25 @@ export async function POST(request: Request) {
       });
     }
 
-    // ── 6. INSTANT KB: Greeting + hard-coded fallback policies ─────
+    // ── 7. INSTANT KB: Greeting + hard-coded fallback policies ─────
     const instant = getInstantResponse(trimmed);
     if (instant) {
       console.log(`[CONSULT] ⚡ Instant KB hit`);
       return NextResponse.json({ response: instant, source: "knowledge" });
     }
 
-    // ── 7. SKIP isOnTopic — Để Ollama tự xử lý câu hỏi không rõ ─
+    if (policyFactIntent || customFactIntent) {
+      const safeFactFallback = customFactIntent
+        ? "Dạ phần custom/đặt theo yêu cầu cần shop xác nhận theo mẫu, ngân sách, thời gian và độ phức tạp. Anh/chị gửi giúp Rêu nhu cầu chính: size/vị trí đặt, chủ đề, ngân sách, thời gian cần nhận và ảnh mẫu nếu có. Rêu sẽ ghi nhận để shop tư vấn chính xác hơn, chứ không tự chốt giá/cọc/lịch làm trong chatbox ạ."
+        : "Dạ phần này cần trả theo thông tin chính sách hiện tại của shop. Rêu chưa có đủ dữ liệu chắc chắn để tự kết luận, nên anh/chị cho Rêu thêm ngữ cảnh hoặc liên hệ shop để xác nhận chính xác nhé. Nếu liên quan đơn hàng, anh/chị gửi SĐT đặt hàng để Rêu tra trạng thái nhưng vẫn ẩn thông tin nhạy cảm ạ.";
+
+      return NextResponse.json({ response: safeFactFallback, source: "guardrail" });
+    }
+
+    // ── 8. SKIP isOnTopic — Để Ollama tự xử lý câu hỏi không rõ ─
     // (isOnTopic() quá strict → chặn nhầm câu hỏi hợp lệ)
 
-    // ── 8. OLLAMA AI — Xử lý mọi câu hỏi terrarium ──────
+    // ── 9. OLLAMA/GPT AI — Xử lý câu hỏi terrarium không thuộc fact cứng ──────
     console.log(`[CONSULT] 🧠 Sending to Ollama...`);
     const stream = await streamFromAI(trimmed, history, pageContext);
     if (stream) {
@@ -1574,14 +1718,14 @@ export async function POST(request: Request) {
       });
     }
 
-    // ── 9. OLLAMA OFFLINE → Fallback KB ───────────────────
+    // ── 10. AI OFFLINE → Fallback KB ──────────────────────
     console.log(`[CONSULT] ⚠️ Ollama offline, trying fallback KB`);
     const fallback = getOfflineFallback(knowledgeSearchQuery);
     if (fallback) {
       return NextResponse.json({ response: fallback, source: "knowledge" });
     }
 
-    // ── 10. PRODUCT FALLBACK (last resort) ─────────────────
+    // ── 11. PRODUCT FALLBACK (last resort) ─────────────────
     if (isProductIntent(trimmed)) {
       const fallbackProducts = await queryProducts(trimmed);
       if (fallbackProducts) {
@@ -1593,7 +1737,7 @@ export async function POST(request: Request) {
       }
     }
 
-    // ── 11. FINAL FALLBACK ─────────────────────────────────
+    // ── 12. FINAL FALLBACK ─────────────────────────────────
     return NextResponse.json({
       response: "Dạ em tạm thời chưa thể trả lời câu hỏi này. Anh/chị có thể hỏi em về:\n\n• 🌿 **Kiến thức terrarium** (cách làm, chăm sóc, xử lý sự cố)\n• 🛒 **Sản phẩm** (gợi ý, giá cả, so sánh)\n• 📦 **Chính sách** (ship, đổi trả, thanh toán)\n\nHoặc liên hệ Zalo/Facebook Tiệm Rêu để được hỗ trợ trực tiếp nhé! 😊",
       source: "fallback",

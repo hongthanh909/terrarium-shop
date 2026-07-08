@@ -5689,3 +5689,3548 @@ Nếu lá vừa nhạt vừa mềm nhũn/thâm gốc, đó có thể không ch�
   Dạ riêng dứa phụng nhạt màu thì không nên xử lý bằng cách tưới nhiều hơn.
 
   Màu hồng của cây phụ thuộc khá nhiều vào ánh sáng. Nếu tưới thêm trong khi nền vẫn ẩm, cây có thể bị dư nước mà màu vẫn không cải thiện.
+
+### Case: troubleshooting_mold_white
+
+- `caseId`: `troubleshooting_mold_white`
+- `group`: `Xử lý Sự cố Cây/Rêu`
+- `category`: `mold_troubleshooting`
+- `intent`: user hỏi mốc trắng, mốc trên rêu/đất/gỗ/đá, mảng trắng li ti trong bể.
+- `trainingFlow`:
+  - `subIntents`:
+    - `lightMold`: mốc trắng ít, mới xuất hiện ở gỗ/đất/rêu.
+    - `spreadingMold`: mốc lan nhanh, phủ mảng lớn.
+    - `humidityCause`: mốc do dư ẩm, bí khí, kính đọng nước cả ngày.
+    - `organicMaterial`: mốc trên gỗ/lá mục/vụn hữu cơ.
+  - `mustAnswer`: mốc trắng nhẹ có thể gặp ở bể mới/ẩm cao; xử lý bằng giảm ẩm, gắp bỏ phần mốc, tăng thông khí nhẹ; không dùng thuốc/hóa chất mạnh trong bể.
+  - `askIfNeeded`: hỏi mốc ở đâu, lan nhanh không, bể kín/mở, kính có ướt cả ngày không, có mùi hôi không.
+  - `doNotSay`: không khuyên xịt thuốc nấm mạnh, cồn, oxy già trực tiếp vào toàn bể.
+
+`keywords`:
+
+  - mốc trắng
+  - moc trang
+  - bể bị mốc
+  - be bi moc
+  - rêu bị mốc
+  - reu bi moc
+  - đất bị mốc
+  - dat bi moc
+  - gỗ bị mốc
+  - go bi moc
+  - mốc trên rêu
+  - moc tren reu
+  - mốc lan
+  - moc lan
+  - mốc trắng li ti
+  - moc trang li ti
+  - white mold
+  - mold in terrarium
+  - fungus in terrarium
+  - fuzzy mold
+  - be moc trang
+  - moc trong be
+
+`response`:
+
+Dạ **mốc trắng** trong terrarium thường liên quan tới **dư ẩm, bí khí hoặc vật liệu hữu cơ đang phân hủy** như lá mục/gỗ/rêu quá ướt.
+
+Phân biệt nhanh:
+- Mốc ít, mới xuất hiện ở một điểm: thường xử lý được bằng cách giảm ẩm và gắp bỏ.
+- Mốc lan nhanh, phủ nhiều mảng, có mùi hôi: bể đang quá ẩm/bí hoặc có phần cây/lá mục cần xử lý kỹ hơn.
+- Kính ướt cả ngày + đất sũng: khả năng dư ẩm cao, không nên tưới thêm.
+
+Cách xử lý an toàn:
+1. Ngưng tưới vài ngày nếu bể đang ẩm/sũng.
+2. Mở nắp thoáng ngắn nếu là bể kín, tránh nắng/gió mạnh.
+3. Dùng nhíp/tăm bông lấy phần mốc và lá mục ra khỏi bể.
+4. Giảm lượng nước tưới lần sau, chỉ phun sương rất nhẹ.
+5. Nếu mốc lan rộng hoặc có mùi hôi, gửi ảnh/video cho shop kiểm tra.
+
+Không nên xịt hóa chất mạnh trực tiếp vào bể vì dễ ảnh hưởng cây/rêu.
+
+`responseVariants`:
+
+- `lightMold`:
+
+  Dạ nếu chỉ có một ít mốc trắng li ti, anh/chị gắp bỏ phần mốc/lá mục, mở thoáng nhẹ và ngưng tưới thêm. Đây thường là dấu hiệu bể đang ẩm hơi nhiều.
+
+- `spreadingMold`:
+
+  Dạ nếu mốc lan nhanh hoặc có mùi hôi, mình cần xử lý như sự cố dư ẩm. Anh/chị không tưới thêm, mở thoáng, lấy phần mục/mốc ra và gửi ảnh cho shop nếu mốc vẫn lan sau khi giảm ẩm.
+
+### Case: troubleshooting_bad_smell
+
+- `caseId`: `troubleshooting_bad_smell`
+- `group`: `Xử lý Sự cố Cây/Rêu`
+- `category`: `environment_troubleshooting`
+- `intent`: user hỏi bể có mùi hôi, mùi úng, mùi thối, mùi lạ.
+- `trainingFlow`:
+  - `subIntents`:
+    - `normalEarthSmell`: mùi đất/rêu nhẹ sau tưới hoặc mới nhận.
+    - `rottenSmell`: mùi hôi thối/úng.
+    - `stagnantHumidity`: mùi bí do đọng nước, thiếu thoáng.
+    - `decaySource`: lá mục, rễ thối, thức hữu cơ phân hủy.
+  - `mustAnswer`: mùi đất/rêu nhẹ là bình thường; mùi hôi nặng thường do dư ẩm, lá mục, úng rễ hoặc bể bí.
+  - `askIfNeeded`: hỏi mùi nhẹ hay hôi nặng, xuất hiện khi nào, bể có sũng/mốc/lá mục không.
+  - `doNotSay`: không khuyên xịt nước hoa/tinh dầu/khử mùi vào bể.
+
+`keywords`:
+
+  - bể có mùi
+  - be co mui
+  - bể hôi
+  - be hoi
+  - mùi hôi
+  - mui hoi
+  - mùi úng
+  - mui ung
+  - mùi thối
+  - mui thoi
+  - mùi đất
+  - mui dat
+  - mùi rêu
+  - mui reu
+  - terrarium smells bad
+  - bad smell terrarium
+  - rotten smell
+  - musty smell
+  - be bi mui
+  - be hoi qua
+
+`response`:
+
+Dạ nếu bể chỉ có **mùi đất/rêu nhẹ** thì thường bình thường, nhất là sau khi tưới hoặc mới nhận bể.
+
+Nhưng nếu bể có mùi hôi, úng hoặc thối rõ thì cần kiểm tra:
+- Đất/nền có đang sũng nước không.
+- Kính có đọng nước cả ngày không.
+- Có lá mục/cành mục nằm trong bể không.
+- Có mốc trắng hoặc gốc cây mềm/thâm không.
+
+Cách xử lý:
+1. Ngưng tưới nếu bể đang ẩm nhiều.
+2. Mở nắp thoáng ngắn để thoát mùi và giảm ẩm.
+3. Gắp bỏ lá mục, phần cây hư, mốc nhìn thấy.
+4. Đặt bể nơi sáng gián tiếp, mát, không nắng trực tiếp.
+5. Nếu mùi vẫn nặng hoặc gốc cây thối, gửi ảnh/video cho shop.
+
+Không nên xịt nước hoa, tinh dầu hoặc hóa chất khử mùi vào bể.
+
+`responseVariants`:
+
+- `normalEarthSmell`:
+
+  Dạ mùi đất/rêu nhẹ, tự nhiên thì thường không sao. Mình chỉ cần giữ bể thoáng vừa, không tưới quá tay và lấy lá mục ra nếu có.
+
+- `rottenSmell`:
+
+  Dạ mùi thối/úng là dấu hiệu cần kiểm tra dư ẩm hoặc phần cây bị mục. Anh/chị ngưng tưới, mở thoáng và gắp bỏ phần mục trước; nếu mùi không giảm thì nên gửi ảnh/video cho shop.
+
+### Case: troubleshooting_overwatering_root_rot
+
+- `caseId`: `troubleshooting_overwatering_root_rot`
+- `group`: `Xử lý Sự cố Cây/Rêu`
+- `category`: `watering_troubleshooting`
+- `intent`: user hỏi tưới quá nhiều, đất sũng, úng rễ, cây mềm nhũn, gốc thâm.
+- `trainingFlow`:
+  - `subIntents`:
+    - `overwatered`: lỡ tưới nhiều, nước đọng đáy.
+    - `rootRotSigns`: gốc thâm, mềm nhũn, lá vàng mềm.
+    - `closedTankTooWet`: bể kín đọng nước cả ngày.
+    - `savePlant`: hỏi cây còn cứu được không.
+  - `mustAnswer`: ngưng tưới, giảm ẩm, mở thoáng; phân biệt úng với thiếu nước; nếu gốc thối nặng cần ảnh/video.
+  - `askIfNeeded`: hỏi đất sũng bao lâu, nước có đọng đáy không, lá mềm hay khô, gốc có thâm/mùi không.
+  - `doNotSay`: không khuyên phơi nắng gắt để làm khô nhanh.
+
+`keywords`:
+
+  - tưới nhiều quá
+  - tuoi nhieu qua
+  - lỡ tưới nhiều
+  - lo tuoi nhieu
+  - đất sũng
+  - dat sung
+  - nền sũng
+  - nen sung
+  - úng rễ
+  - ung re
+  - thối rễ
+  - thoi re
+  - cây mềm nhũn
+  - cay mem nhun
+  - lá vàng mềm
+  - la vang mem
+  - gốc thâm
+  - goc tham
+  - root rot
+  - overwatered terrarium
+  - soggy soil
+  - waterlogged
+  - be uot qua
+  - be bi ung
+
+`response`:
+
+Dạ nếu bể bị tưới nhiều, đất/nền sũng hoặc cây mềm nhũn thì ưu tiên là **ngưng tưới và giảm ẩm từ từ**.
+
+Dấu hiệu dư nước/úng:
+- Đất sũng, có nước đọng đáy.
+- Kính ướt cả ngày.
+- Lá vàng mềm, trong nước hoặc rũ nhưng nền vẫn ướt.
+- Gốc cây thâm/mềm, có mùi hôi.
+
+Cách xử lý:
+1. Ngưng tưới ngay.
+2. Mở nắp thoáng vài giờ nếu là bể kín.
+3. Đặt bể nơi sáng gián tiếp, mát, không phơi nắng gắt.
+4. Gắp bỏ lá mục/lá mềm hư.
+5. Theo dõi gốc cây; nếu gốc thối nặng cần gửi ảnh/video để shop kiểm tra.
+
+Không nên đem bể ra nắng mạnh để “hong khô” vì kính có thể hấp nhiệt làm cây sốc thêm.
+
+`responseVariants`:
+
+- `justOverwatered`:
+
+  Dạ nếu vừa lỡ tưới nhiều nhưng cây chưa hư, anh/chị ngưng tưới, mở thoáng nhẹ và để bể ở nơi sáng gián tiếp. Sau đó chỉ tưới lại khi nền đã giảm ẩm rõ.
+
+- `rootRotSigns`:
+
+  Dạ nếu gốc đã thâm mềm, lá vàng nhũn hoặc có mùi hôi thì có thể đã bị úng/thối. Trường hợp này nên gửi ảnh/video để shop xem còn cứu phần cây nào không.
+
+### Case: troubleshooting_underwatering_dry_moss
+
+- `caseId`: `troubleshooting_underwatering_dry_moss`
+- `group`: `Xử lý Sự cố Cây/Rêu`
+- `category`: `watering_troubleshooting`
+- `intent`: user hỏi thiếu nước, rêu khô nâu/giòn, đất khô, lá khô mép.
+- `trainingFlow`:
+  - `subIntents`:
+    - `dryMoss`: rêu khô, nâu, giòn, co lại.
+    - `drySoil`: đất/nền khô trắng, bể mở mất ẩm nhanh.
+    - `airconDry`: máy lạnh/gió làm khô.
+    - `recoverDryTank`: hỏi có cứu được không.
+  - `mustAnswer`: cấp ẩm lại từ từ bằng phun sương nhẹ; tránh đổ nước ào; dời khỏi gió/nắng.
+  - `askIfNeeded`: hỏi rêu khô nhẹ hay nâu giòn, bể mở/kín, phòng máy lạnh/nắng không.
+  - `doNotSay`: không hứa rêu nâu giòn sẽ xanh lại hoàn toàn.
+
+`keywords`:
+
+  - thiếu nước
+  - thieu nuoc
+  - bể khô quá
+  - be kho qua
+  - rêu khô
+  - reu kho
+  - rêu khô nâu
+  - reu kho nau
+  - rêu giòn
+  - reu gion
+  - đất khô
+  - dat kho
+  - lá khô mép
+  - la kho mep
+  - dry moss
+  - moss dried out
+  - dry terrarium
+  - underwatered
+  - be thieu am
+  - reu bi kho
+
+`response`:
+
+Dạ nếu bể bị khô, mình nên **cấp ẩm lại từ từ**, không đổ nước nhiều một lần.
+
+Dấu hiệu thiếu ẩm:
+- Rêu nhạt màu, co lại, khô nhẹ.
+- Rêu nâu/giòn là mức nặng hơn, có phần có thể khó hồi xanh hoàn toàn.
+- Đất/nền khô rõ.
+- Lá khô mép, rũ nhưng nền cũng đang khô.
+
+Cách xử lý:
+1. Dời bể khỏi nắng, quạt hoặc luồng máy lạnh.
+2. Phun sương nhẹ nhiều nhịp, để nước thấm từ từ.
+3. Không đổ nước ào vào một điểm.
+4. Theo dõi 1-2 ngày; phần còn xanh/ẩm lại thường hồi tốt hơn phần đã nâu giòn.
+5. Điều chỉnh lịch kiểm tra ẩm thường xuyên hơn, nhất là bể mở.
+
+`responseVariants`:
+
+- `dryMossRecover`:
+
+  Dạ rêu khô nhẹ còn cơ hội hồi nếu cấp ẩm đúng cách. Anh/chị phun sương mỏng đều, đặt nơi mát sáng gián tiếp và tránh gió máy lạnh.
+
+- `brownCrispyMoss`:
+
+  Dạ nếu rêu đã nâu giòn nhiều thì phần đó có thể khó xanh lại hoàn toàn. Mình vẫn cấp ẩm từ từ, theo dõi phần còn xanh; nếu mảng hư rộng nên gửi ảnh để shop tư vấn thay/chỉnh rêu.
+
+### Case: troubleshooting_yellow_leaves_general
+
+- `caseId`: `troubleshooting_yellow_leaves_general`
+- `group`: `Xử lý Sự cố Cây/Rêu`
+- `category`: `plant_troubleshooting`
+- `intent`: user hỏi lá vàng nói chung, cây vàng lá, vàng vài lá hay vàng nhiều.
+- `trainingFlow`:
+  - `subIntents`:
+    - `oldLeaves`: vàng vài lá già tự nhiên.
+    - `overwatering`: vàng mềm do dư ẩm/úng.
+    - `lowLight`: vàng/nhạt do thiếu sáng.
+    - `heatStress`: vàng do nóng/nắng.
+    - `shippingShock`: vàng nhẹ sau vận chuyển.
+  - `mustAnswer`: lá vàng có nhiều nguyên nhân; hỏi vàng mềm hay khô, nền khô hay sũng, ánh sáng/nhiệt.
+  - `askIfNeeded`: hỏi số lượng lá vàng, màu vàng mềm/khô, vị trí cây, độ ẩm nền.
+  - `doNotSay`: không quy mọi lá vàng là thiếu nước.
+
+`keywords`:
+
+  - lá vàng
+  - la vang
+  - cây vàng lá
+  - cay vang la
+  - lá bị vàng
+  - la bi vang
+  - vàng lá
+  - vang la
+  - lá vàng mềm
+  - la vang mem
+  - lá vàng khô
+  - la vang kho
+  - yellow leaves
+  - plant yellowing
+  - yellow leaf terrarium
+  - cay bi vang
+  - la vang co sao khong
+
+`response`:
+
+Dạ **lá vàng** chưa chắc chỉ do một nguyên nhân. Mình cần nhìn lá vàng kiểu nào:
+
+- Vàng vài lá già ở dưới gốc: có thể là thay lá tự nhiên, chỉ cần cắt bỏ lá hư.
+- Vàng mềm, lá nhũn, đất sũng: thường nghiêng về dư ẩm/úng.
+- Vàng khô, mép nâu, nền khô: có thể thiếu ẩm hoặc khô gió.
+- Vàng/cháy ở phía hứng sáng: có thể nắng gắt/nhiệt cao.
+- Nhạt màu, cây yếu/vươn dài: có thể thiếu sáng.
+
+Cách xử lý an toàn là kiểm tra nền trước khi tưới, cắt lá vàng hư, đặt bể ở nơi sáng gián tiếp và theo dõi thêm. Nếu vàng lan nhanh hoặc kèm gốc mềm/mùi hôi, anh/chị gửi ảnh/video cho shop.
+
+`responseVariants`:
+
+- `fewOldLeaves`:
+
+  Dạ nếu chỉ vàng vài lá già, cây vẫn đứng khỏe và lá non ổn thì thường không đáng lo. Anh/chị cắt bỏ lá vàng và lấy ra khỏi bể để tránh mốc.
+
+- `yellowSoftLeaves`:
+
+  Dạ lá vàng mềm kèm nền ướt/sũng thường nghiêng về dư ẩm. Mình khoan tưới thêm, mở thoáng nhẹ và kiểm tra gốc cây.
+
+### Case: troubleshooting_brown_black_leaves
+
+- `caseId`: `troubleshooting_brown_black_leaves`
+- `group`: `Xử lý Sự cố Cây/Rêu`
+- `category`: `plant_troubleshooting`
+- `intent`: user hỏi lá nâu, lá đen, cháy mép, thâm lá, đốm đen.
+- `trainingFlow`:
+  - `subIntents`:
+    - `sunburn`: cháy lá do nắng/nhiệt.
+    - `dryEdges`: mép nâu do khô gió/thiếu ẩm.
+    - `rotBlack`: đen mềm do úng/thối.
+    - `spotting`: đốm nâu/đen cần theo dõi lan.
+  - `mustAnswer`: phân biệt nâu khô/cháy với đen mềm/úng; xử lý theo độ khô/ướt của nền.
+  - `askIfNeeded`: hỏi lá khô giòn hay mềm nhũn, nằm phía nắng hay toàn cây, nền khô hay sũng.
+  - `doNotSay`: không khuyên cắt toàn bộ cây nếu chỉ vài lá hư.
+
+`keywords`:
+
+  - lá nâu
+  - la nau
+  - lá đen
+  - la den
+  - cháy lá
+  - chay la
+  - cháy mép lá
+  - chay mep la
+  - lá thâm
+  - la tham
+  - đốm đen
+  - dom den
+  - đốm nâu
+  - dom nau
+  - brown leaves
+  - black leaves
+  - leaf burn
+  - burnt leaves
+  - leaf spots
+  - la bi chay
+  - la bi tham
+
+`response`:
+
+Dạ lá nâu/đen cần phân biệt theo cảm giác lá:
+
+- **Nâu khô, cháy mép**: thường do nắng gắt, nhiệt cao, thiếu ẩm hoặc gió máy lạnh.
+- **Đen mềm, nhũn**: thường nghiêng về dư ẩm/úng hoặc phần lá bị mục.
+- **Đốm nâu/đen lan nhanh**: cần theo dõi kỹ, có thể liên quan ẩm bí hoặc nấm.
+
+Cách xử lý:
+1. Cắt bỏ lá hư bằng kéo sạch.
+2. Lấy vụn lá ra khỏi bể.
+3. Dời bể khỏi nắng trực tiếp/gió lạnh.
+4. Kiểm tra nền: khô thì phun nhẹ, sũng thì ngưng tưới và mở thoáng.
+5. Nếu đốm lan nhanh hoặc gốc cây thâm mềm, gửi ảnh/video cho shop.
+
+`responseVariants`:
+
+- `sunburnDry`:
+
+  Dạ nếu lá bị nâu khô ở phía hứng nắng, khả năng là cháy lá/sốc nhiệt. Anh/chị dời bể vào nơi sáng gián tiếp và cắt phần lá cháy nặng.
+
+- `blackSoftRot`:
+
+  Dạ nếu lá đen mềm hoặc nhũn, mình nên nghĩ tới dư ẩm/mục lá. Khoan tưới thêm, lấy lá hư ra và mở thoáng nhẹ nếu bể đang quá ẩm.
+
+### Case: troubleshooting_plant_death
+
+- `caseId`: `troubleshooting_plant_death`
+- `group`: `Xử lý Sự cố Cây/Rêu`
+- `category`: `plant_troubleshooting`
+- `intent`: user hỏi cây chết, cây lụi, cây không cứu được không, cây hư nặng.
+- `trainingFlow`:
+  - `subIntents`:
+    - `partlyAlive`: còn lá/gốc xanh, có thể phục hồi.
+    - `fullyDead`: toàn cây khô giòn/thối mềm.
+    - `fastDecline`: chết nhanh sau nhận/chăm.
+    - `warrantyBoundary`: cần chuyển chính sách/bảo hành nếu liên quan thời điểm nhận.
+  - `mustAnswer`: kiểm tra gốc/lá non/mùi; không kết luận nếu chưa có ảnh; hướng gửi ảnh/video khi nặng.
+  - `askIfNeeded`: hỏi cây chết toàn bộ hay một phần, mới nhận bao lâu, gốc xanh hay thâm, nền khô/sũng.
+  - `doNotSay`: không hứa chắc cứu được.
+
+`keywords`:
+
+  - cây chết
+  - cay chet
+  - cây lụi
+  - cay lui
+  - cây hư
+  - cay hu
+  - cây không cứu được
+  - cay khong cuu duoc
+  - cây chết nhanh
+  - cay chet nhanh
+  - cây khô hết
+  - cay kho het
+  - cây thối hết
+  - cay thoi het
+  - dead plant
+  - plant died
+  - dying plant
+  - can it be saved
+  - cay sap chet
+  - cứu cây
+  - cuu cay
+
+`response`:
+
+Dạ để biết cây còn cứu được không, mình kiểm tra 3 điểm:
+
+- Gốc/thân còn xanh, còn cứng: vẫn có cơ hội hồi.
+- Lá non còn xanh hoặc chồi mới còn khỏe: tín hiệu tốt.
+- Gốc thâm mềm, mùi hôi, toàn cây nhũn hoặc khô giòn: khả năng hư nặng hơn.
+
+Cách xử lý tạm thời:
+1. Cắt bỏ phần lá/cành đã hư.
+2. Kiểm tra nền khô hay sũng trước khi tưới.
+3. Đặt bể nơi sáng gián tiếp, mát.
+4. Không thay đất/tháo bố cục ngay nếu chưa rõ nguyên nhân.
+
+Nếu cây chết nhanh, hư toàn bộ hoặc mới nhận đã có vấn đề, anh/chị gửi ảnh/video và thời điểm nhận bể để shop kiểm tra theo chính sách phù hợp.
+
+`responseVariants`:
+
+- `partlyAlive`:
+
+  Dạ nếu cây còn phần gốc/chồi xanh, mình vẫn có thể thử cứu bằng cách cắt phần hư, chỉnh lại độ ẩm và đặt nơi sáng gián tiếp.
+
+- `warrantyBoundary`:
+
+  Dạ nếu cây hư ngay khi mới nhận hoặc trong thời gian rất ngắn, anh/chị nên giữ hiện trạng, chụp ảnh/video và gửi shop kiểm tra. Phần kết luận bảo hành sẽ theo chính sách shop.
+
+### Case: troubleshooting_pests_insects
+
+- `caseId`: `troubleshooting_pests_insects`
+- `group`: `Xử lý Sự cố Cây/Rêu`
+- `category`: `pest_troubleshooting`
+- `intent`: user hỏi côn trùng nhỏ, ruồi nấm, kiến, bọ li ti, sâu trong bể.
+- `trainingFlow`:
+  - `subIntents`:
+    - `fungusGnats`: ruồi nhỏ bay quanh bể.
+    - `tinyBugs`: bọ li ti trên đất/rêu.
+    - `ants`: kiến vào bể.
+    - `severePest`: nhiều côn trùng hoặc cây bị ăn/hư.
+  - `mustAnswer`: không dùng thuốc mạnh tùy tiện; giảm ẩm, gắp bỏ lá mục, vệ sinh quanh bể; gửi ảnh nếu nhiều.
+  - `askIfNeeded`: hỏi côn trùng bay hay bò, số lượng, có lá mục/mốc/đất sũng không.
+  - `doNotSay`: không khuyên xịt thuốc trừ sâu mạnh trực tiếp vào bể.
+
+`keywords`:
+
+  - có côn trùng
+  - co con trung
+  - bọ li ti
+  - bo li ti
+  - ruồi nấm
+  - ruoi nam
+  - ruồi nhỏ
+  - ruoi nho
+  - kiến trong bể
+  - kien trong be
+  - sâu trong bể
+  - sau trong be
+  - bug in terrarium
+  - tiny bugs
+  - fungus gnats
+  - ants in terrarium
+  - insects terrarium
+  - be co bo
+  - be co ruoi
+
+`response`:
+
+Dạ nếu trong bể có côn trùng, mình cần xem là loại bay hay bò và số lượng nhiều không.
+
+Nguyên nhân hay gặp:
+- Nền quá ẩm, lá mục/mốc thu hút ruồi nấm/bọ nhỏ.
+- Bể đặt gần khu vực có kiến/côn trùng.
+- Vật liệu hữu cơ trong bể đang phân hủy.
+
+Cách xử lý nhẹ trước:
+1. Gắp bỏ lá mục, phần mốc hoặc vật hữu cơ hư.
+2. Giảm tưới nếu nền đang ẩm/sũng.
+3. Mở thoáng ngắn nếu bể kín quá ẩm.
+4. Lau sạch khu vực đặt bể, tránh đồ ngọt/thức ăn gần bể.
+5. Nếu côn trùng nhiều hoặc cây bị ăn/hư, gửi ảnh/video cho shop.
+
+Không nên xịt thuốc trừ sâu mạnh trực tiếp vào bể vì có thể làm hại cây/rêu.
+
+`responseVariants`:
+
+- `fungusGnats`:
+
+  Dạ ruồi nhỏ bay quanh bể thường liên quan nền ẩm và lá mục. Anh/chị giảm tưới, lấy lá mục ra và giữ khu vực quanh bể sạch trước.
+
+- `ants`:
+
+  Dạ nếu có kiến, anh/chị kiểm tra khu vực đặt bể có thức ăn/đồ ngọt không và lau sạch bên ngoài. Không nên đổ thuốc kiến vào trong bể.
+
+### Case: troubleshooting_condensation_too_much
+
+- `caseId`: `troubleshooting_condensation_too_much`
+- `group`: `Xử lý Sự cố Cây/Rêu`
+- `category`: `humidity_troubleshooting`
+- `intent`: user hỏi kính đọng nước cả ngày, quá nhiều sương, bể quá ẩm.
+- `trainingFlow`:
+  - `subIntents`:
+    - `normalMist`: sương nhẹ buổi sáng.
+    - `tooWetGlass`: kính ướt đặc cả ngày.
+    - `waterDrops`: giọt nước chảy xuống kính.
+    - `moldRisk`: kèm mốc/mùi/lá vàng mềm.
+  - `mustAnswer`: sương nhẹ bình thường; đọng nước cả ngày là dư ẩm, cần mở thoáng, giảm tưới.
+  - `askIfNeeded`: hỏi kính mờ lúc nào, kéo dài bao lâu, có mốc/mùi/đất sũng không.
+  - `doNotSay`: không khuyên lau kính liên tục thay cho xử lý ẩm.
+
+`keywords`:
+
+  - kính đọng nước
+  - kinh dong nuoc
+  - kính ướt cả ngày
+  - kinh uot ca ngay
+  - đọng sương nhiều
+  - dong suong nhieu
+  - quá nhiều sương
+  - qua nhieu suong
+  - bể quá ẩm
+  - be qua am
+  - kính mờ cả ngày
+  - kinh mo ca ngay
+  - condensation too much
+  - too much condensation
+  - foggy glass all day
+  - water drops glass
+  - be dong nuoc
+  - kinh uot nhieu
+
+`response`:
+
+Dạ bể kín có **sương nhẹ buổi sáng** là bình thường. Nhưng nếu kính ướt/mờ cả ngày hoặc có giọt nước chảy xuống liên tục thì bể đang dư ẩm.
+
+Cách xử lý:
+1. Ngưng tưới thêm.
+2. Mở nắp thoáng vài giờ ở nơi mát, tránh nắng/gió mạnh.
+3. Lau nhẹ kính nếu cần quan sát, nhưng vẫn phải xử lý nguyên nhân dư ẩm.
+4. Gắp lá mục nếu có.
+5. Nếu kèm mốc/mùi hôi/lá vàng mềm, chuyển sang xử lý mốc hoặc úng.
+
+Sau khi bể ổn lại, lần tưới sau chỉ phun sương rất nhẹ.
+
+`responseVariants`:
+
+- `normalMist`:
+
+  Dạ sương nhẹ buổi sáng rồi giảm dần trong ngày thường là bình thường, không cần mở nắp lâu.
+
+- `tooWetGlass`:
+
+  Dạ kính ướt cả ngày là dấu hiệu dư ẩm. Anh/chị ngưng tưới, mở thoáng vài giờ và kiểm tra lá mục/mốc trong bể.
+
+### Case: troubleshooting_heat_stress
+
+- `caseId`: `troubleshooting_heat_stress`
+- `group`: `Xử lý Sự cố Cây/Rêu`
+- `category`: `environment_troubleshooting`
+- `intent`: user hỏi bể bị nóng, nắng chiếu, nhiệt cao, cây/rêu sốc nhiệt.
+- `trainingFlow`:
+  - `subIntents`:
+    - `directSunHeat`: nắng chiếu vào kính.
+    - `roomTooHot`: phòng trên 30°C, bí nóng.
+    - `afterHeatDamage`: cây héo/rêu vàng sau khi nóng.
+    - `safeTemperature`: hỏi nhiệt độ bao nhiêu ổn.
+  - `mustAnswer`: 22-28°C ổn; trên 30°C dễ stress; tránh nắng trực tiếp qua kính.
+  - `askIfNeeded`: hỏi nhiệt độ phòng, có nắng chiếu không, triệu chứng lá/rêu.
+  - `doNotSay`: không khuyên phơi nắng để cây khỏe.
+
+`keywords`:
+
+  - bể bị nóng
+  - be bi nong
+  - nóng quá
+  - nong qua
+  - nắng chiếu vào bể
+  - nang chieu vao be
+  - sốc nhiệt
+  - soc nhiet
+  - nhiệt độ cao
+  - nhiet do cao
+  - trên 30 độ
+  - tren 30 do
+  - heat stress
+  - terrarium too hot
+  - direct sun terrarium
+  - hot room
+  - cay bi nong
+  - reu bi nong
+
+`response`:
+
+Dạ terrarium rất dễ bị **sốc nhiệt** nếu nắng chiếu trực tiếp vào kính hoặc phòng quá nóng.
+
+Mốc nhiệt tham khảo:
+- 22-28°C: tương đối ổn cho đa số bể cây/rêu.
+- Trên 30°C: cây/rêu dễ stress, rêu vàng, cẩm nhung héo, lá cháy.
+- Nắng chiếu qua kính có thể làm nhiệt trong bể cao hơn nhiệt phòng.
+
+Cách xử lý:
+1. Dời bể khỏi nắng trực tiếp/cửa kính nóng.
+2. Đặt nơi sáng gián tiếp, mát, thoáng nhẹ.
+3. Không tưới ào ngay nếu nền vẫn ẩm; kiểm tra nền trước.
+4. Cắt lá cháy/hư nếu có.
+5. Theo dõi 1-2 ngày; nếu héo/vàng lan nhanh thì gửi ảnh/video.
+
+`responseVariants`:
+
+- `directSunHeat`:
+
+  Dạ nắng chiếu vào bể kính là rủi ro lớn vì bể có thể bị hấp nhiệt. Anh/chị nên chuyển sang vị trí sáng gián tiếp thay vì phơi nắng.
+
+- `safeTemperature`:
+
+  Dạ nhiệt độ dễ chăm thường khoảng 22-28°C. Nếu phòng thường xuyên trên 30°C, mình cần tránh nắng, tăng thoáng nhẹ và kiểm tra ẩm thường xuyên hơn.
+
+### Case: troubleshooting_low_light_symptoms
+
+- `caseId`: `troubleshooting_low_light_symptoms`
+- `group`: `Xử lý Sự cố Cây/Rêu`
+- `category`: `light_troubleshooting`
+- `intent`: user hỏi thiếu sáng, cây vươn dài, nhạt màu, lá yếu, dứa phụng mất màu.
+- `trainingFlow`:
+  - `subIntents`:
+    - `leggyGrowth`: cây vươn dài/ngả về phía sáng.
+    - `colorFade`: cây nhạt màu, dứa phụng mất hồng.
+    - `weakLeaves`: lá nhỏ/yếu/rụng do thiếu sáng.
+    - `useGrowLight`: dùng đèn hỗ trợ.
+  - `mustAnswer`: thiếu sáng làm cây yếu/nhạt/vươn; tăng ánh sáng gián tiếp hoặc đèn hỗ trợ, không phơi nắng gắt.
+  - `askIfNeeded`: hỏi bể đặt ở đâu, có cửa sổ/đèn không, sáng mấy giờ mỗi ngày.
+  - `doNotSay`: không khuyên đưa ra nắng trưa.
+
+`keywords`:
+
+  - thiếu sáng
+  - thieu sang
+  - phòng tối
+  - phong toi
+  - cây vươn dài
+  - cay vuon dai
+  - cây nhạt màu
+  - cay nhat mau
+  - lá yếu
+  - la yeu
+  - cây nghiêng về sáng
+  - cay nghieng ve sang
+  - low light symptoms
+  - not enough light
+  - leggy plant
+  - plant stretching
+  - color fading plant
+  - can dung den khong
+  - dùng đèn được không
+  - dung den duoc khong
+
+`response`:
+
+Dạ thiếu sáng thường không làm cây chết ngay, nhưng sẽ làm cây yếu dần.
+
+Dấu hiệu thiếu sáng:
+- Cây vươn dài, nghiêng về phía có sáng.
+- Lá nhạt màu, lá nhỏ/yếu hơn.
+- Dứa phụng/dứa cảnh hồng chuyển nhạt.
+- Rêu/cây nhìn kém xanh, phát triển chậm.
+
+Cách xử lý:
+1. Chuyển bể tới nơi sáng gián tiếp hơn.
+2. Tránh nắng trực tiếp qua kính.
+3. Nếu phòng tối, dùng đèn LED/grow light nhẹ theo chu kỳ ổn định.
+4. Theo dõi lá mới trong vài tuần, vì màu/sức cây cải thiện từ từ.
+
+`responseVariants`:
+
+- `useGrowLight`:
+
+  Dạ nếu phòng thiếu sáng, dùng đèn hỗ trợ là hợp lý. Anh/chị chọn ánh sáng vừa phải, bật đều mỗi ngày và tránh đặt đèn quá sát làm nóng bể.
+
+- `leggyGrowth`:
+
+  Dạ cây vươn dài/nghiêng về một phía thường là dấu hiệu đang tìm sáng. Mình tăng ánh sáng gián tiếp, không cắt quá mạnh ngay nếu cây còn yếu.
+
+### Case: troubleshooting_after_shipping_shock
+
+- `caseId`: `troubleshooting_after_shipping_shock`
+- `group`: `Xử lý Sự cố Cây/Rêu`
+- `category`: `post_shipping_troubleshooting`
+- `intent`: user hỏi cây/rêu hơi rũ, vàng nhẹ, xô nhẹ sau vận chuyển/mới nhận.
+- `trainingFlow`:
+  - `subIntents`:
+    - `mildShock`: rũ nhẹ, vài lá vàng sau nhận.
+    - `severeDamage`: vỡ/xô lệch nặng/cây bật gốc.
+    - `firstDayCare`: chăm 1-2 ngày đầu.
+    - `policyBoundary`: cần ảnh/video nếu vấn đề lúc nhận.
+  - `mustAnswer`: sốc nhẹ có thể gặp; đặt ổn định, không tưới nhiều; hư nặng cần giữ hiện trạng và gửi ảnh/video.
+  - `askIfNeeded`: hỏi mới nhận bao lâu, tình trạng nặng hay nhẹ, có ảnh/video mở hàng không.
+  - `doNotSay`: không khuyên tự tháo sửa nếu hư nặng lúc nhận.
+
+`keywords`:
+
+  - sốc vận chuyển
+  - soc van chuyen
+  - mới nhận cây rũ
+  - moi nhan cay ru
+  - mới nhận cây héo
+  - moi nhan cay heo
+  - mới nhận rêu vàng
+  - moi nhan reu vang
+  - sau vận chuyển
+  - sau van chuyen
+  - shipping shock
+  - transport shock
+  - plant shock after shipping
+  - just received plant drooping
+  - moi nhan be co van de
+  - vua nhan bi hu
+
+`response`:
+
+Dạ sau vận chuyển, cây/rêu có thể hơi rũ nhẹ hoặc xuống màu nhẹ do đổi môi trường.
+
+Nếu tình trạng nhẹ:
+- Đặt bể nơi sáng gián tiếp, mát.
+- Không tưới nhiều ngay.
+- Quan sát 1-2 ngày.
+- Chỉ phun sương nhẹ nếu nền thật sự khô.
+
+Nếu tình trạng nặng như bể vỡ/nứt, đất/rêu đổ nhiều, cây bật gốc nhiều, cây hư rõ ngay lúc nhận, anh/chị nên giữ hiện trạng và gửi ảnh/video cho shop kiểm tra theo chính sách.
+
+`responseVariants`:
+
+- `mildShock`:
+
+  Dạ rũ nhẹ sau vận chuyển có thể hồi khi bể ổn định lại. Anh/chị đặt nơi mát sáng gián tiếp và tránh can thiệp mạnh trong 1-2 ngày đầu.
+
+- `severeDamage`:
+
+  Dạ nếu hư nặng ngay lúc nhận, anh/chị không nên tự chỉnh nhiều trước. Hãy giữ hiện trạng, chụp ảnh/video và gửi shop để kiểm tra.
+
+### Case: troubleshooting_shifted_layout_after_care
+
+- `caseId`: `troubleshooting_shifted_layout_after_care`
+- `group`: `Xử lý Sự cố Cây/Rêu`
+- `category`: `layout_troubleshooting`
+- `intent`: user hỏi bố cục xô lệch sau khi tưới/lau/tỉa, cây bật nhẹ, rêu bung nhẹ.
+- `trainingFlow`:
+  - `subIntents`:
+    - `minorShift`: xô lệch nhẹ sau chăm.
+    - `plantLoose`: cây bật gốc nhẹ.
+    - `mossLoose`: rêu bung mảng nhỏ.
+    - `severeShift`: bố cục đổ/tung nhiều.
+  - `mustAnswer`: chỉnh nhẹ bằng nhíp sạch nếu nhẹ; hư nặng gửi ảnh; tránh tưới/xịt mạnh.
+  - `askIfNeeded`: hỏi xô nhẹ hay nặng, cây có bật gốc không, bể mới nhận hay do tự chăm.
+  - `doNotSay`: không khuyên tháo toàn bộ bố cục.
+
+`keywords`:
+
+  - bố cục xô lệch
+  - bo cuc xo lech
+  - bể bị lệch
+  - be bi lech
+  - cây bật gốc
+  - cay bat goc
+  - rêu bung
+  - reu bung
+  - rêu lệch
+  - reu lech
+  - tưới làm lệch
+  - tuoi lam lech
+  - lau kính bị lệch
+  - lau kinh bi lech
+  - shifted layout
+  - terrarium layout shifted
+  - plant loose
+  - moss loose
+  - be bi xo
+  - cay bi bat
+
+`response`:
+
+Dạ nếu bố cục chỉ xô lệch nhẹ sau khi tưới/lau/tỉa, anh/chị có thể chỉnh rất nhẹ bằng nhíp sạch.
+
+Cách làm:
+1. Rửa/lau sạch nhíp hoặc dụng cụ nhỏ.
+2. Đỡ nhẹ cây/rêu về vị trí cũ, không kéo mạnh.
+3. Nếu rêu bung mảng nhỏ, đặt lại nhẹ lên nền ẩm vừa.
+4. Không xịt nước mạnh sau khi chỉnh.
+5. Nếu cây bật gốc nhiều hoặc bố cục tung nặng, nên gửi ảnh/video cho shop.
+
+Lần sau nên phun sương nhẹ, tránh xịt trực diện mạnh vào cây/rêu.
+
+`responseVariants`:
+
+- `minorShift`:
+
+  Dạ lệch nhẹ thì mình chỉnh bằng nhíp sạch được. Làm từ từ, giữ nền vừa ẩm để rêu/cây bám lại tốt hơn.
+
+- `severeShift`:
+
+  Dạ nếu bố cục đổ nhiều, cây bật gốc hoặc rêu tung mảng lớn, anh/chị gửi ảnh/video trước để shop hướng dẫn, tránh tự tháo toàn bộ.
+
+### Case: troubleshooting_when_to_contact_shop
+
+- `caseId`: `troubleshooting_when_to_contact_shop`
+- `group`: `Xử lý Sự cố Cây/Rêu`
+- `category`: `support_boundary`
+- `intent`: user hỏi khi nào tự xử lý, khi nào cần gửi shop, khi nào bảo hành.
+- `trainingFlow`:
+  - `subIntents`:
+    - `selfCareOk`: sự cố nhẹ tự xử lý được.
+    - `sendPhoto`: cần gửi ảnh/video.
+    - `warrantyCheck`: liên quan bảo hành/chính sách.
+    - `urgentCase`: hư nặng, lan nhanh, mùi hôi, cây chết.
+  - `mustAnswer`: nêu ngưỡng tự xử lý và ngưỡng liên hệ shop; không tự kết luận bảo hành trong chatbox.
+  - `askIfNeeded`: hỏi thời điểm mua/nhận, triệu chứng, ảnh/video.
+  - `doNotSay`: không cam kết đổi/bảo hành khi chưa kiểm tra chính sách và ảnh.
+
+`keywords`:
+
+  - khi nào liên hệ shop
+  - khi nao lien he shop
+  - có cần gửi shop không
+  - co can gui shop khong
+  - có cần bảo hành không
+  - co can bao hanh khong
+  - tự xử lý được không
+  - tu xu ly duoc khong
+  - gửi ảnh cho shop
+  - gui anh cho shop
+  - gửi video
+  - gui video
+  - need support
+  - contact shop
+  - warranty check
+  - send photo
+  - can shop xem khong
+  - shop kiểm tra
+  - shop kiem tra
+
+`response`:
+
+Dạ anh/chị có thể tự xử lý nếu vấn đề nhẹ như:
+- Một ít mốc trắng mới xuất hiện.
+- Vài lá già vàng.
+- Bể hơi khô hoặc hơi ẩm, chưa có mùi.
+- Bố cục lệch nhẹ sau khi chăm.
+
+Nên gửi ảnh/video cho shop nếu:
+- Mốc lan nhanh, có mùi hôi.
+- Cây mềm nhũn, gốc thâm, chết nhanh.
+- Rêu vàng/nâu lan rộng.
+- Bể vỡ/nứt, xô lệch nặng lúc nhận.
+- Vấn đề xuất hiện ngay sau khi nhận bể hoặc liên quan bảo hành.
+
+Trong chatbox, Rêu có thể hướng dẫn kiểm tra và xử lý bước đầu, nhưng kết luận bảo hành/đổi trả cần shop xem ảnh/video và đối chiếu chính sách.
+
+`responseVariants`:
+
+- `selfCareOk`:
+
+  Dạ nếu chỉ là dấu hiệu nhẹ, mình có thể xử lý trước bằng cách chỉnh ánh sáng, giảm/tăng ẩm đúng cách, lấy lá mục/mốc nhỏ ra và theo dõi 1-2 ngày.
+
+- `sendPhoto`:
+
+  Dạ nếu triệu chứng lan nhanh, hư nặng hoặc anh/chị không chắc nguyên nhân, gửi ảnh/video sẽ tốt hơn để shop xem đúng tình trạng thay vì đoán mò.
+
+## Group 8: Kiến thức Terrarium
+
+### Phạm vi group
+
+- Giải thích kiến thức nền về terrarium: terrarium là gì, bể kín/mở khác nhau thế nào, các lớp nền, vòng tuần hoàn nước, ánh sáng, cây/rêu/phụ kiện trong bể.
+- Ưu tiên trả lời dễ hiểu, thân thiện, không quá học thuật.
+- Nếu user hỏi mua mẫu cụ thể, giá, còn hàng: chuyển Group 5/DB sản phẩm.
+- Nếu user hỏi chăm thực tế: chuyển Group 6.
+- Nếu user hỏi triệu chứng xấu/mốc/vàng/héo/chết cây: chuyển Group 7.
+- Nếu user hỏi làm theo mẫu riêng/chủ đề/size/phong thủy: chuyển Group 9.
+
+### Case: terrarium_what_is_it
+
+- `caseId`: `terrarium_what_is_it`
+- `group`: `Kiến thức Terrarium`
+- `category`: `terrarium_knowledge`
+- `intent`: user hỏi terrarium là gì, bể cây/bể rêu/vườn trong lọ là gì.
+- `trainingFlow`:
+  - `subIntents`:
+    - `basicDefinition`: hỏi định nghĩa terrarium.
+    - `miniEcosystem`: hỏi hệ sinh thái mini trong lọ/bể kính.
+    - `giftDecorContext`: hỏi terrarium dùng để làm gì.
+    - `careDifficulty`: hỏi terrarium có khó chăm không.
+    - `realPlants`: hỏi cây/rêu trong bể là thật hay giả.
+  - `mustAnswer`: terrarium là mô hình cây/rêu trong bể kính/lọ, tạo tiểu cảnh xanh nhỏ; có loại kín/mở; dùng decor/quà tặng/thư giãn.
+  - `routeToProductConsult`: nếu user hỏi nên mua bể nào, chuyển Group 5.
+  - `doNotSay`: không nói terrarium hoàn toàn không cần chăm.
+
+`keywords`:
+
+  - terrarium là gì
+  - terrarium la gi
+  - bể terrarium là gì
+  - be terrarium la gi
+  - bể cây là gì
+  - be cay la gi
+  - bể rêu là gì
+  - be reu la gi
+  - vườn trong lọ
+  - vuon trong lo
+  - hệ sinh thái mini
+  - he sinh thai mini
+  - tiểu cảnh trong kính
+  - tieu canh trong kinh
+  - mini garden
+  - glass garden
+  - what is terrarium
+  - terrarium meaning
+  - terrarium la cai gi
+  - terrarium dùng để làm gì
+  - terrarium dung de lam gi
+  - terrarium có khó chăm không
+  - terrarium co kho cham khong
+  - terrarium dễ chăm không
+  - terrarium de cham khong
+  - cây trong bể thật không
+  - cay trong be that khong
+  - rêu trong bể thật không
+  - reu trong be that khong
+  - bể cây decor
+  - be cay decor
+  - desk terrarium
+  - terrarium for desk
+
+`response`:
+
+Dạ **terrarium** là một tiểu cảnh cây/rêu được sắp trong bể kính hoặc lọ kính, giống một “khu vườn mini” để decor, thư giãn hoặc làm quà tặng.
+
+Terrarium thường có:
+- Lớp nền/sỏi/đất để giữ cấu trúc và thoát ẩm.
+- Rêu/cây nhỏ phù hợp với môi trường trong bể.
+- Đá, gỗ, phụ kiện hoặc bố cục tiểu cảnh.
+
+Terrarium có loại **bể kín** và **bể mở**. Bể kín giữ ẩm tốt hơn, hợp rêu/cây ưa ẩm; bể mở thoáng hơn, hợp một số cây cần khô/thoáng như sen đá hoặc xương rồng.
+
+Terrarium vẫn cần chăm đúng cách: đặt nơi sáng gián tiếp, kiểm tra độ ẩm và tránh nắng trực tiếp.
+
+`responseVariants`:
+
+- `miniEcosystem`:
+
+  Dạ có thể hiểu terrarium là một hệ sinh thái mini trong kính. Bên trong có cây/rêu, đất, độ ẩm và ánh sáng phối hợp với nhau để tạo môi trường sống nhỏ.
+
+- `notZeroCare`:
+
+  Dạ terrarium dễ chăm hơn nhiều chậu cây thường, nhưng không phải hoàn toàn “không cần chăm”. Mình vẫn cần đặt đúng ánh sáng, kiểm tra ẩm và xử lý khi có dấu hiệu bất thường.
+
+- `careDifficulty`:
+
+  Dạ terrarium thường khá dễ chăm nếu đặt đúng chỗ: sáng gián tiếp, không nắng gắt, không tưới quá tay. Phần khó nhất là giữ cân bằng ẩm: thiếu ẩm thì rêu/cây khô, dư ẩm thì dễ mốc/úng.
+
+- `realPlantContext`:
+
+  Dạ tùy từng sản phẩm, nhưng nếu là bể cây/rêu thật thì cây và rêu là thành phần sống. Vì vậy bể vẫn cần ánh sáng, độ ẩm phù hợp và quan sát định kỳ.
+
+### Case: terrarium_closed_vs_open
+
+- `caseId`: `terrarium_closed_vs_open`
+- `group`: `Kiến thức Terrarium`
+- `category`: `terrarium_knowledge`
+- `intent`: user hỏi bể kín/bể mở khác nhau thế nào, nên chọn loại nào về mặt kiến thức.
+- `trainingFlow`:
+  - `subIntents`:
+    - `closedDefinition`: hỏi bể kín/hệ kín.
+    - `openDefinition`: hỏi bể mở/hệ mở.
+    - `compareProsCons`: so sánh kín/mở.
+    - `plantFit`: loại cây nào hợp kín/mở.
+    - `maintenanceDifference`: khác nhau về tưới, mở nắp, độ ẩm.
+    - `beginnerChoice`: người mới nên hiểu ưu nhược điểm trước khi chọn.
+  - `mustAnswer`: bể kín giữ ẩm, ít tưới hơn, hợp cây/rêu ưa ẩm; bể mở thoáng, khô nhanh hơn, hợp cây cần thoáng.
+  - `routeToCare`: nếu hỏi cách chăm/tưới từng loại, chuyển Group 6.
+  - `routeToProductConsult`: nếu hỏi nên mua loại nào theo nhu cầu, chuyển Group 5.
+  - `doNotSay`: không nói bể kín luôn tốt hơn hoặc bể mở luôn dễ hơn trong mọi trường hợp.
+
+`keywords`:
+
+  - bể kín bể mở
+  - be kin be mo
+  - bể kín là gì
+  - be kin la gi
+  - bể mở là gì
+  - be mo la gi
+  - hệ kín hệ mở
+  - he kin he mo
+  - closed terrarium
+  - open terrarium
+  - sealed terrarium
+  - open tank
+  - kín hay mở
+  - kin hay mo
+  - nên chọn bể kín hay mở
+  - nen chon be kin hay mo
+  - be co nap khac be khong nap
+  - bể có nắp khác bể không nắp
+  - bể có nắp
+  - be co nap
+  - bể không nắp
+  - be khong nap
+  - bể nào dễ chăm hơn
+  - be nao de cham hon
+  - bể nào ít tưới hơn
+  - be nao it tuoi hon
+  - bể kín có bí không
+  - be kin co bi khong
+  - bể mở có dễ khô không
+  - be mo co de kho khong
+  - closed vs open terrarium
+  - sealed vs open terrarium
+
+`response`:
+
+Dạ bể kín và bể mở khác nhau chủ yếu ở **độ ẩm và độ thoáng**.
+
+**Bể kín**:
+- Giữ ẩm tốt, ít phải tưới hơn.
+- Hợp rêu, dương sỉ mini, cẩm nhung và nhóm cây ưa ẩm.
+- Cần tránh dư ẩm, kính đọng nước cả ngày hoặc bí khí.
+
+**Bể mở**:
+- Thoáng hơn, khô nhanh hơn.
+- Cần kiểm tra ẩm thường xuyên hơn.
+- Hợp cây cần thoáng hơn, đặc biệt sen đá/xương rồng nên ưu tiên bể mở.
+
+Nếu anh/chị hỏi để chọn mẫu phù hợp nhu cầu/ngân sách/vị trí đặt, Rêu sẽ chuyển sang phần tư vấn sản phẩm để lọc theo DB.
+
+`responseVariants`:
+
+- `closedSimple`:
+
+  Dạ bể kín giống một môi trường giữ ẩm nhỏ. Vì có nắp nên nước bay hơi rồi ngưng tụ lại, giúp bể ít cần tưới hơn nhưng phải tránh bị quá ẩm.
+
+- `openSimple`:
+
+  Dạ bể mở thoáng hơn nên khô nhanh hơn. Mình dễ can thiệp hơn, nhưng cũng cần kiểm tra ẩm thường xuyên hơn bể kín.
+
+- `beginnerChoice`:
+
+  Dạ với người mới, không có loại nào “luôn dễ hơn”. Bể kín ít tưới hơn nhưng phải tránh dư ẩm; bể mở dễ quan sát/can thiệp hơn nhưng khô nhanh hơn. Nếu anh/chị muốn chọn mẫu cụ thể, Rêu sẽ lọc theo nhu cầu và vị trí đặt.
+
+- `maintenanceDifference`:
+
+  Dạ chăm khác nhau chủ yếu ở nước: bể kín tưới rất ít và theo dõi sương/kính; bể mở kiểm tra mặt nền/rêu thường xuyên hơn vì thoát ẩm nhanh.
+
+### Case: terrarium_layers_explained
+
+- `caseId`: `terrarium_layers_explained`
+- `group`: `Kiến thức Terrarium`
+- `category`: `terrarium_knowledge`
+- `intent`: user hỏi các lớp trong terrarium để làm gì: sỏi, than hoạt tính, đất, rêu.
+- `trainingFlow`:
+  - `subIntents`:
+    - `drainageLayer`: lớp sỏi/đáy.
+    - `charcoalLayer`: than hoạt tính.
+    - `soilLayer`: đất/nền trồng.
+    - `mossLayer`: rêu trang trí/giữ ẩm.
+    - `layerOrder`: thứ tự các lớp.
+    - `mandatoryLayer`: hỏi lớp nào bắt buộc/không bắt buộc.
+    - `noDrainHole`: hỏi vì sao cần lớp thoát nước khi bể không có lỗ.
+  - `mustAnswer`: giải thích từng lớp theo chức năng; không biến thành hướng dẫn DIY quá chi tiết nếu user chỉ hỏi kiến thức.
+  - `routeToDiy`: nếu user hỏi tự làm chi tiết, chuyển `terrarium_diy_basic`.
+  - `doNotSay`: không nói lớp nào cũng bắt buộc tuyệt đối cho mọi thiết kế.
+
+`keywords`:
+
+  - lớp nền terrarium
+  - lop nen terrarium
+  - các lớp trong bể
+  - cac lop trong be
+  - sỏi để làm gì
+  - soi de lam gi
+  - than hoạt tính
+  - than hoat tinh
+  - đất terrarium
+  - dat terrarium
+  - lớp sỏi
+  - lop soi
+  - lớp than
+  - lop than
+  - drainage layer
+  - activated charcoal
+  - terrarium layers
+  - substrate layer
+  - be co nhung lop nao
+  - bể có những lớp nào
+  - thứ tự lớp nền
+  - thu tu lop nen
+  - sỏi có bắt buộc không
+  - soi co bat buoc khong
+  - than có bắt buộc không
+  - than co bat buoc khong
+  - có cần than hoạt tính không
+  - co can than hoat tinh khong
+  - bể không có lỗ thoát nước
+  - be khong co lo thoat nuoc
+  - why charcoal in terrarium
+  - why drainage layer
+  - terrarium substrate
+
+`response`:
+
+Dạ các lớp trong terrarium thường có vai trò khác nhau:
+
+- **Lớp sỏi/đá nhỏ dưới đáy**: tạo khoảng thoát nước, hạn chế nền bị sũng.
+- **Than hoạt tính**: hỗ trợ giảm mùi, giữ môi trường sạch hơn ở mức cơ bản.
+- **Lớp đất/nền trồng**: nơi cây bám rễ và lấy ẩm.
+- **Rêu/lớp phủ mặt**: giữ ẩm nhẹ, tạo cảm giác xanh tự nhiên và hoàn thiện bố cục.
+- **Đá/gỗ/phụ kiện**: tạo cảnh quan và điểm nhấn.
+
+Tùy kiểu bể và loại cây, cấu trúc lớp có thể thay đổi. Bể kín ưa ẩm sẽ khác bể mở cho sen đá/xương rồng.
+
+`responseVariants`:
+
+- `charcoalSimple`:
+
+  Dạ than hoạt tính không phải “thuốc thần”, nhưng có thể hỗ trợ giảm mùi và giữ nền sạch hơn trong môi trường kính nhỏ.
+
+- `drainageSimple`:
+
+  Dạ lớp sỏi dưới đáy giúp nước dư không nằm trực tiếp quanh rễ quá lâu. Tuy vậy mình vẫn phải tưới ít, vì terrarium không có lỗ thoát nước như chậu thường.
+
+- `mandatoryLayer`:
+
+  Dạ không phải thiết kế nào cũng giống nhau 100%. Nhưng với terrarium cơ bản, lớp đáy/nền phù hợp rất quan trọng vì bể thường không có lỗ thoát nước. Nếu thiếu lớp thoát ẩm mà tưới nhiều, nền dễ sũng và cây dễ úng.
+
+- `layerOrder`:
+
+  Dạ thứ tự phổ biến là đá/sỏi dưới đáy, than hoạt tính nếu dùng, lớp đất/nền, rồi tới cây/rêu và phụ kiện. Tùy loại bể/cây, shop hoặc người setup có thể điều chỉnh cho phù hợp.
+
+### Case: terrarium_water_cycle_closed
+
+- `caseId`: `terrarium_water_cycle_closed`
+- `group`: `Kiến thức Terrarium`
+- `category`: `terrarium_knowledge`
+- `intent`: user hỏi bể kín tự tuần hoàn nước thế nào, vì sao ít tưới, sương/ngưng tụ là gì.
+- `trainingFlow`:
+  - `subIntents`:
+    - `waterCycle`: vòng tuần hoàn nước trong bể kín.
+    - `condensation`: hơi sương/ngưng tụ trên kính.
+    - `lessWatering`: vì sao bể kín ít tưới hơn.
+    - `tooMuchCondensationBoundary`: khi nào sương là quá nhiều.
+    - `noCondensation`: bể kín không có sương có sao không.
+    - `sealedTooLong`: hỏi bể kín đóng lâu có bí/chết không.
+  - `mustAnswer`: nước bay hơi -> ngưng tụ -> rơi lại nền; sương nhẹ bình thường; đọng nước cả ngày chuyển Group 7.
+  - `routeToCare`: nếu hỏi mở nắp/tưới, chuyển Group 6.
+  - `routeToTroubleshooting`: nếu kính ướt cả ngày/mốc/mùi, chuyển Group 7.
+  - `doNotSay`: không nói bể kín tự sống mãi không cần kiểm tra.
+
+`keywords`:
+
+  - bể kín tuần hoàn
+  - be kin tuan hoan
+  - tự tuần hoàn nước
+  - tu tuan hoan nuoc
+  - bể kín ít tưới
+  - be kin it tuoi
+  - hơi nước trong bể
+  - hoi nuoc trong be
+  - sương trên kính
+  - suong tren kinh
+  - ngưng tụ
+  - ngung tu
+  - condensation cycle
+  - closed terrarium water cycle
+  - self watering terrarium
+  - water cycle terrarium
+  - be kin tu song
+  - bể kín tự sống
+  - bể kín không có sương
+  - be kin khong co suong
+  - bể kín hết sương
+  - be kin het suong
+  - bể kín đóng lâu
+  - be kin dong lau
+  - bể kín có bí không
+  - be kin co bi khong
+  - vì sao bể kín ít tưới
+  - vi sao be kin it tuoi
+  - no mist closed terrarium
+  - sealed jar condensation
+
+`response`:
+
+Dạ bể kín ít cần tưới hơn vì bên trong có một vòng tuần hoàn nước nhỏ.
+
+Cách hiểu đơn giản:
+1. Nước trong đất/rêu bay hơi.
+2. Hơi nước gặp thành kính mát hơn và ngưng tụ thành sương/giọt nhỏ.
+3. Nước rơi lại xuống nền, tiếp tục giữ ẩm cho cây/rêu.
+
+Vì vậy bể kín thường không cần tưới thường xuyên như chậu cây thường. Tuy nhiên vẫn cần kiểm tra:
+- Sương nhẹ buổi sáng: thường bình thường.
+- Kính ướt cả ngày, giọt nước chảy liên tục: có thể dư ẩm.
+- Có mốc/mùi/lá vàng mềm: chuyển sang xử lý sự cố.
+
+`responseVariants`:
+
+- `notForever`:
+
+  Dạ bể kín có vòng tuần hoàn ẩm, nhưng không có nghĩa là tự sống mãi mà không cần quan sát. Mình vẫn cần kiểm tra ánh sáng, độ ẩm và tình trạng cây/rêu.
+
+- `condensationNormal`:
+
+  Dạ sương nhẹ trên kính là dấu hiệu bể đang có độ ẩm. Chỉ khi kính ướt đặc cả ngày hoặc kèm mốc/mùi thì mới cần xử lý dư ẩm.
+
+- `noCondensation`:
+
+  Dạ bể kín không có sương chưa chắc là thiếu nước ngay. Anh/chị nên kiểm tra mặt rêu/đất: nếu vẫn ẩm thì chưa cần tưới; nếu khô rõ thì phun sương rất nhẹ.
+
+- `sealedTooLong`:
+
+  Dạ bể kín có thể đóng nắp lâu nếu độ ẩm cân bằng. Nhưng nếu kính ướt cả ngày, có mùi, mốc hoặc lá vàng mềm thì cần mở thoáng và xử lý dư ẩm.
+
+### Case: terrarium_no_direct_sun_reason
+
+- `caseId`: `terrarium_no_direct_sun_reason`
+- `group`: `Kiến thức Terrarium`
+- `category`: `terrarium_knowledge`
+- `intent`: user hỏi vì sao không được để terrarium dưới nắng trực tiếp.
+- `trainingFlow`:
+  - `subIntents`:
+    - `glassHeat`: kính hấp nhiệt.
+    - `plantBurn`: cháy lá/sốc nhiệt.
+    - `mossYellow`: rêu vàng do nóng/nắng.
+    - `safeLight`: ánh sáng phù hợp.
+    - `morningSunQuestion`: hỏi nắng sáng/nắng nhẹ có được không.
+    - `lightVsSun`: phân biệt sáng và nắng trực tiếp.
+  - `mustAnswer`: kính làm nhiệt tăng nhanh; nắng trực tiếp gây sốc nhiệt, cháy lá, rêu vàng; dùng ánh sáng gián tiếp.
+  - `routeToTroubleshooting`: nếu đã héo/cháy/rêu vàng, chuyển Group 7.
+  - `doNotSay`: không khuyên phơi nắng để diệt mốc hoặc làm cây khỏe.
+
+`keywords`:
+
+  - vì sao không để nắng
+  - vi sao khong de nang
+  - terrarium có cần nắng không
+  - terrarium co can nang khong
+  - để nắng trực tiếp
+  - de nang truc tiep
+  - nắng chiếu vào kính
+  - nang chieu vao kinh
+  - bể kính bị nóng
+  - be kinh bi nong
+  - direct sunlight terrarium
+  - why no direct sun
+  - terrarium sunlight
+  - glass heat
+  - phoi nang terrarium
+  - phơi nắng terrarium
+  - có cần phơi nắng không
+  - co can phoi nang khong
+  - nắng sáng được không
+  - nang sang duoc khong
+  - nắng nhẹ được không
+  - nang nhe duoc khong
+  - để gần cửa sổ nắng
+  - de gan cua so nang
+  - sáng khác nắng không
+  - sang khac nang khong
+  - indirect light vs sunlight
+  - morning sun terrarium
+
+`response`:
+
+Dạ terrarium không nên để dưới nắng trực tiếp vì bể kính có thể **hấp nhiệt rất nhanh**.
+
+Khi nắng chiếu vào kính:
+- Nhiệt bên trong bể có thể cao hơn nhiệt phòng.
+- Cây dễ héo, cháy lá hoặc sốc nhiệt.
+- Rêu dễ vàng/nâu, mất xanh.
+- Bể kín có thể đọng ẩm nóng, làm môi trường bí và dễ mốc.
+
+Ánh sáng phù hợp hơn là **ánh sáng gián tiếp**: gần cửa sổ có rèm, bàn/kệ sáng nhẹ, hoặc dùng đèn hỗ trợ nếu phòng tối.
+
+`responseVariants`:
+
+- `sunburnBoundary`:
+
+  Dạ nếu bể đã bị nắng làm héo/cháy lá/rêu vàng, đó là sự cố. Anh/chị dời bể ngay vào nơi sáng gián tiếp và xử lý theo triệu chứng ở Group 7.
+
+- `morningLight`:
+
+  Dạ nắng rất nhẹ buổi sáng có thể đỡ gắt hơn, nhưng với bể kính vẫn nên cẩn thận. An toàn nhất là ánh sáng tán xạ/gián tiếp.
+
+- `lightVsSun`:
+
+  Dạ terrarium cần **sáng**, nhưng không nên bị **nắng chiếu trực tiếp**. Sáng gián tiếp là phòng/kệ/bàn đủ sáng để cây quang hợp nhẹ, còn nắng trực tiếp là tia nắng hắt thẳng vào kính làm bể nóng lên.
+
+- `windowPlacement`:
+
+  Dạ đặt gần cửa sổ được nếu có rèm hoặc ánh sáng tán xạ. Nếu nắng chiếu thẳng vào bể, nên lùi bể vào trong hoặc đổi vị trí.
+
+### Case: terrarium_plants_suitable
+
+- `caseId`: `terrarium_plants_suitable`
+- `group`: `Kiến thức Terrarium`
+- `category`: `terrarium_knowledge`
+- `intent`: user hỏi cây nào hợp terrarium, cây nào không nên dùng, cây ưa ẩm/ưa khô.
+- `trainingFlow`:
+  - `subIntents`:
+    - `closedPlants`: cây hợp bể kín.
+    - `openPlants`: cây hợp bể mở.
+    - `avoidPlants`: cây không nên cho vào bể kín.
+    - `succulentCactus`: sen đá/xương rồng trong terrarium.
+    - `mixingPlants`: hỏi có trộn cây ưa ẩm và ưa khô được không.
+    - `plantSize`: cây lớn/cây phát triển nhanh có hợp không.
+  - `mustAnswer`: cây hợp tùy bể kín/mở; rêu/cẩm nhung/dương sỉ mini hợp ẩm; sen đá/xương rồng ưu tiên bể mở.
+  - `routeToProductConsult`: nếu user hỏi chọn mẫu/cây cụ thể shop có bán, chuyển Group 5/DB.
+  - `doNotSay`: không nói cây nào cũng trồng được trong bể kín.
+
+`keywords`:
+
+  - cây nào hợp terrarium
+  - cay nao hop terrarium
+  - cây trồng trong terrarium
+  - cay trong trong terrarium
+  - cây hợp bể kín
+  - cay hop be kin
+  - cây hợp bể mở
+  - cay hop be mo
+  - cây ưa ẩm
+  - cay ua am
+  - cây ưa khô
+  - cay ua kho
+  - plants for terrarium
+  - best terrarium plants
+  - closed terrarium plants
+  - open terrarium plants
+  - sen đá trong terrarium
+  - sen da trong terrarium
+  - xương rồng trong terrarium
+  - xuong rong trong terrarium
+  - cây nào không hợp terrarium
+  - cay nao khong hop terrarium
+  - trộn sen đá với rêu
+  - tron sen da voi reu
+  - sen đá chung với rêu
+  - sen da chung voi reu
+  - cây lớn trong bể
+  - cay lon trong be
+  - cây phát triển nhanh
+  - cay phat trien nhanh
+  - can mix succulents and moss
+  - plants to avoid terrarium
+
+`response`:
+
+Dạ cây hợp terrarium phụ thuộc bể kín hay bể mở.
+
+**Bể kín/ẩm** thường hợp:
+- Rêu.
+- Cẩm nhung.
+- Dương sỉ mini.
+- Một số cây lá nhỏ ưa ẩm, chịu sáng gián tiếp.
+
+**Bể mở/thoáng** thường hợp:
+- Sen đá.
+- Xương rồng.
+- Một số cây cần nền khô nhanh và ánh sáng tốt hơn.
+
+Không nên đưa cây ưa khô vào bể kín ẩm lâu, vì dễ úng/thối gốc. Ngược lại, cây/rêu ưa ẩm đặt trong bể mở hoặc phòng máy lạnh có thể khô nhanh hơn.
+
+Nếu anh/chị muốn chọn sản phẩm cụ thể đang có sẵn, Rêu sẽ lọc theo DB sản phẩm.
+
+`responseVariants`:
+
+- `closedPlants`:
+
+  Dạ bể kín hợp nhóm cây/rêu thích ẩm, lá nhỏ, chịu ánh sáng gián tiếp. Ví dụ rêu, cẩm nhung, dương sỉ mini.
+
+- `succulentCactus`:
+
+  Dạ sen đá/xương rồng vẫn có thể dùng trong terrarium, nhưng nên ưu tiên bể mở vì cần thoáng và khô nhanh hơn bể rêu kín.
+
+- `mixingPlants`:
+
+  Dạ không nên trộn cây có nhu cầu quá khác nhau trong cùng một bể. Ví dụ rêu/cẩm nhung thích ẩm, còn sen đá/xương rồng thích thoáng và khô hơn; trộn chung sẽ khó chăm ổn định.
+
+- `avoidPlants`:
+
+  Dạ nên tránh cây phát triển quá nhanh, lá quá lớn hoặc cây cần nắng gắt trong bể nhỏ. Những cây này dễ phá bố cục, chạm kính hoặc không hợp độ ẩm trong terrarium.
+
+### Case: terrarium_moss_role
+
+- `caseId`: `terrarium_moss_role`
+- `group`: `Kiến thức Terrarium`
+- `category`: `terrarium_knowledge`
+- `intent`: user hỏi rêu trong terrarium để làm gì, rêu có phải cây chính không, rêu sống thế nào.
+- `trainingFlow`:
+  - `subIntents`:
+    - `mossFunction`: rêu làm đẹp/giữ ẩm/phủ nền.
+    - `mossCareBasic`: rêu cần ẩm và sáng gián tiếp.
+    - `mossNotGrass`: rêu khác cỏ/cây lá.
+    - `mossTypes`: hỏi có nhiều loại rêu không.
+    - `mossFakeBoundary`: hỏi rêu thật/giả trong sản phẩm cụ thể.
+  - `mustAnswer`: rêu giúp phủ nền, giữ ẩm nhẹ, tạo cảm giác tự nhiên; cần ẩm vừa, tránh nắng/nóng/dư ẩm bí.
+  - `routeToCare`: nếu hỏi chăm rêu, chuyển Group 6.
+  - `routeToTroubleshooting`: nếu hỏi rêu vàng/mốc/khô nâu, chuyển Group 7.
+  - `doNotSay`: không nói rêu chỉ là trang trí giả.
+
+`keywords`:
+
+  - rêu để làm gì
+  - reu de lam gi
+  - rêu trong terrarium
+  - reu trong terrarium
+  - rêu có sống không
+  - reu co song khong
+  - rêu thật hay giả
+  - reu that hay gia
+  - moss in terrarium
+  - what does moss do
+  - live moss
+  - moss role
+  - reu co can tuoi khong
+  - rêu có cần tưới không
+  - rêu có phải cỏ không
+  - reu co phai co khong
+  - rêu có rễ không
+  - reu co re khong
+  - rêu giữ ẩm
+  - reu giu am
+  - các loại rêu
+  - cac loai reu
+  - moss types
+  - moss vs grass
+  - preserved moss
+
+`response`:
+
+Dạ rêu trong terrarium thường có vài vai trò:
+
+- Phủ nền, giúp bể nhìn xanh và tự nhiên hơn.
+- Giữ ẩm nhẹ cho bề mặt.
+- Tạo cảm giác “rừng mini” hoặc thảm xanh.
+- Hỗ trợ bố cục mềm hơn giữa đá, gỗ và cây.
+
+Nếu là rêu thật, rêu vẫn cần môi trường phù hợp: sáng gián tiếp, ẩm vừa, tránh nắng trực tiếp và tránh bị bí nóng. Rêu quá khô có thể nâu/giòn; quá ẩm bí có thể vàng/mốc.
+
+`responseVariants`:
+
+- `mossCareBoundary`:
+
+  Dạ nếu anh/chị hỏi rêu vàng, rêu khô nâu hoặc rêu mốc thì đó là xử lý sự cố, Rêu sẽ chuyển sang Group 7 để phân biệt nguyên nhân.
+
+- `liveMoss`:
+
+  Dạ nếu bể dùng rêu thật thì rêu là thành phần sống, không chỉ là decor. Vì vậy cần ánh sáng và độ ẩm phù hợp.
+
+- `mossNotGrass`:
+
+  Dạ rêu khác cỏ/cây lá thông thường. Rêu thường phủ bề mặt, thích ẩm nhẹ và không cần chăm theo kiểu tưới đẫm như chậu cây.
+
+- `mossFakeBoundary`:
+
+  Dạ nếu anh/chị hỏi một sản phẩm cụ thể dùng rêu thật hay rêu bảo quản/giả, Rêu nên kiểm tra DB sản phẩm hoặc để shop xác nhận, không đoán theo ảnh.
+
+### Case: terrarium_springtails_isopods
+
+- `caseId`: `terrarium_springtails_isopods`
+- `group`: `Kiến thức Terrarium`
+- `category`: `terrarium_knowledge`
+- `intent`: user hỏi springtails/isopods/bọ nhảy/cuốn chiếu nhỏ trong terrarium có tác dụng gì.
+- `trainingFlow`:
+  - `subIntents`:
+    - `springtailsRole`: bọ nhảy/springtails giúp ăn mốc/vật hữu cơ mục.
+    - `isopodsRole`: isopods/cuốn chiếu nhỏ như đội dọn nền trong bioactive setup.
+    - `shopBoundary`: shop có dùng không thì cần kiểm tra theo sản phẩm cụ thể.
+    - `pestBoundary`: nếu user thấy côn trùng lạ trong bể, chuyển Group 7.
+    - `beneficialVsPest`: phân biệt sinh vật có lợi với côn trùng gây phiền.
+    - `addCleanupCrew`: hỏi có nên tự thả thêm vào bể không.
+  - `mustAnswer`: giải thích trung tính; không khẳng định mọi bể shop đều có springtails/isopods nếu DB chưa có.
+  - `routeToTroubleshooting`: nếu user đang gặp bọ/côn trùng không rõ, chuyển Group 7.
+  - `doNotSay`: không bảo khách tự thả sinh vật vào bể nếu chưa hiểu hệ bể.
+
+`keywords`:
+
+  - springtails
+  - bọ nhảy
+  - bo nhay
+  - isopods
+  - cuốn chiếu
+  - cuon chieu
+  - bọ dọn bể
+  - bo don be
+  - bioactive terrarium
+  - cleanup crew
+  - sinh vật trong bể
+  - sinh vat trong be
+  - con nhỏ trong bể
+  - con nho trong be
+  - terrarium bugs
+  - isopod terrarium
+  - springtail terrarium
+  - bọ có lợi
+  - bo co loi
+  - bọ trong bể có sao không
+  - bo trong be co sao khong
+  - có nên thả bọ nhảy
+  - co nen tha bo nhay
+  - thả springtails
+  - tha springtails
+  - thả isopods
+  - tha isopods
+  - beneficial bugs terrarium
+  - add springtails terrarium
+  - cleanup crew terrarium
+
+`response`:
+
+Dạ trong một số terrarium kiểu bioactive, người ta có thể dùng **springtails/bọ nhảy** hoặc **isopods** như “đội dọn nền”.
+
+Vai trò thường là:
+- Ăn mốc nhẹ, lá mục hoặc chất hữu cơ phân hủy.
+- Hỗ trợ nền sạch hơn.
+- Giúp hệ bể cân bằng hơn nếu được setup đúng.
+
+Tuy nhiên không phải bể nào cũng cần hoặc cũng có các sinh vật này. Với sản phẩm cụ thể của shop, Rêu không nên tự khẳng định có/không nếu DB sản phẩm chưa ghi rõ.
+
+Nếu anh/chị đang thấy côn trùng lạ trong bể và không biết có hại không, đó là tình huống xử lý sự cố ở Group 7.
+
+`responseVariants`:
+
+- `doNotAddRandomly`:
+
+  Dạ mình không nên tự thả sinh vật vào bể nếu chưa rõ loại bể, độ ẩm và cây bên trong. Thả sai có thể làm hệ bể mất cân bằng.
+
+- `pestBoundary`:
+
+  Dạ nếu anh/chị thấy bọ lạ xuất hiện ngoài ý muốn, Rêu cần xem đó là bọ bay/bò, số lượng nhiều không và có mốc/lá mục không để xử lý theo Group 7.
+
+- `beneficialVsPest`:
+
+  Dạ không phải sinh vật nhỏ nào trong bể cũng xấu. Một số setup chủ động dùng bọ nhảy/isopods để dọn mốc/lá mục. Nhưng nếu côn trùng xuất hiện ngoài ý muốn, bay nhiều, bò nhiều hoặc làm cây hư thì nên xem như sự cố.
+
+- `shopBoundary`:
+
+  Dạ với sản phẩm cụ thể của Tiệm Rêu, Rêu không nên tự nói bể có springtails/isopods nếu dữ liệu sản phẩm chưa ghi rõ. Trường hợp này nên kiểm tra mô tả sản phẩm hoặc hỏi shop.
+
+### Case: terrarium_diy_basic
+
+- `caseId`: `terrarium_diy_basic`
+- `group`: `Kiến thức Terrarium`
+- `category`: `terrarium_knowledge`
+- `intent`: user hỏi tự làm terrarium cơ bản, DIY terrarium, cần chuẩn bị gì.
+- `trainingFlow`:
+  - `subIntents`:
+    - `materials`: cần chuẩn bị bể, sỏi, than, đất, cây/rêu, dụng cụ.
+    - `basicSteps`: các bước tổng quan.
+    - `beginnerWarning`: lưu ý người mới.
+    - `customBoundary`: nếu muốn shop làm theo mẫu, chuyển Group 9.
+    - `closedDiy`: tự làm bể kín.
+    - `openDiy`: tự làm bể mở.
+    - `commonMistakes`: lỗi DIY hay gặp.
+    - `toolsNeeded`: dụng cụ cần có.
+  - `mustAnswer`: hướng dẫn tổng quan, an toàn; không thay thế tư vấn custom chi tiết; nhắc chọn cây theo bể kín/mở.
+  - `routeToCustom`: nếu user muốn shop làm theo yêu cầu, chuyển Group 9.
+  - `doNotSay`: không đưa hướng dẫn quá chắc cho mọi loại cây/nền.
+
+`keywords`:
+
+  - tự làm terrarium
+  - tu lam terrarium
+  - diy terrarium
+  - làm terrarium
+  - lam terrarium
+  - cách làm bể terrarium
+  - cach lam be terrarium
+  - cần gì để làm terrarium
+  - can gi de lam terrarium
+  - nguyên liệu terrarium
+  - nguyen lieu terrarium
+  - terrarium kit
+  - kit terrarium
+  - make terrarium
+  - build terrarium
+  - tu setup be
+  - tự setup bể
+  - tự làm bể kín
+  - tu lam be kin
+  - tự làm bể mở
+  - tu lam be mo
+  - làm bể rêu
+  - lam be reu
+  - setup bể rêu
+  - setup be reu
+  - dụng cụ làm terrarium
+  - dung cu lam terrarium
+  - lỗi khi làm terrarium
+  - loi khi lam terrarium
+  - diy closed terrarium
+  - diy open terrarium
+  - terrarium supplies
+
+`response`:
+
+Dạ để tự làm terrarium cơ bản, anh/chị thường cần:
+
+- Bể/lọ kính phù hợp.
+- Sỏi/đá nhỏ cho lớp đáy.
+- Than hoạt tính nếu dùng cho setup nền.
+- Đất/nền phù hợp loại cây.
+- Cây/rêu theo kiểu bể kín hoặc bể mở.
+- Nhíp, bình phun sương, khăn lau kính.
+- Đá/gỗ/phụ kiện nếu muốn tạo bố cục.
+
+Các bước tổng quan:
+1. Làm sạch bể.
+2. Tạo lớp đáy và nền.
+3. Đặt cây/rêu theo bố cục.
+4. Phun sương nhẹ để ổn định độ ẩm.
+5. Đặt nơi sáng gián tiếp và theo dõi vài ngày đầu.
+
+Lưu ý quan trọng: bể kín hợp cây/rêu ưa ẩm; sen đá/xương rồng nên ưu tiên bể mở. Nếu anh/chị muốn shop làm theo chủ đề/size/mẫu riêng, Rêu sẽ chuyển sang Group 9 custom.
+
+`responseVariants`:
+
+- `beginnerWarning`:
+
+  Dạ người mới nên bắt đầu với bố cục đơn giản, ít loại cây và cây có nhu cầu giống nhau. Trộn cây ưa ẩm với cây ưa khô trong cùng bể rất dễ khó chăm.
+
+- `customBoundary`:
+
+  Dạ nếu anh/chị muốn làm theo mẫu riêng nhưng không muốn tự setup, phần đó nên chuyển sang custom theo yêu cầu để shop tư vấn kích thước, cây và thời gian làm.
+
+- `commonMistakes`:
+
+  Dạ lỗi DIY hay gặp là chọn cây không cùng nhu cầu, tưới quá nhiều, đặt nắng trực tiếp, nền không thoát ẩm tốt hoặc dùng bể quá nhỏ cho cây phát triển nhanh.
+
+- `closedDiy`:
+
+  Dạ nếu tự làm bể kín, anh/chị nên ưu tiên cây/rêu ưa ẩm, ánh sáng gián tiếp và tưới rất ít sau khi setup. Bể kín dễ dư ẩm hơn thiếu ẩm nên cần quan sát sương/kính.
+
+- `openDiy`:
+
+  Dạ nếu tự làm bể mở, mình có thể chọn cây cần thoáng hơn, nhưng phải kiểm tra ẩm thường xuyên hơn vì bể mở khô nhanh.
+
+### Case: terrarium_vs_potted_plant
+
+- `caseId`: `terrarium_vs_potted_plant`
+- `group`: `Kiến thức Terrarium`
+- `category`: `terrarium_knowledge`
+- `intent`: user hỏi terrarium khác chậu cây thường, hồ cá/aquarium, bonsai, tiểu cảnh thế nào.
+- `trainingFlow`:
+  - `subIntents`:
+    - `vsPottedPlant`: khác chậu cây thường.
+    - `vsAquarium`: khác hồ cá/aquarium.
+    - `decorUse`: dùng decor hơn là trồng cây năng suất.
+    - `vsPaludarium`: khác paludarium/bán cạn.
+    - `careDifference`: khác cách tưới/chăm.
+    - `giftDecor`: khác ở giá trị decor/quà tặng.
+  - `mustAnswer`: terrarium là tiểu cảnh cây trong kính, giữ ẩm khác chậu cây; không phải hồ cá nếu không có nước/cá; chăm theo hệ kín/mở.
+  - `doNotSay`: không đánh đồng terrarium với aquarium.
+
+`keywords`:
+
+  - terrarium khác chậu cây
+  - terrarium khac chau cay
+  - khác chậu cây thường
+  - khac chau cay thuong
+  - terrarium khác aquarium
+  - terrarium khac aquarium
+  - terrarium và aquarium
+  - terrarium va aquarium
+  - terrarium có phải hồ cá không
+  - terrarium co phai ho ca khong
+  - terrarium vs potted plant
+  - terrarium vs aquarium
+  - glass plant vs pot plant
+  - be cay khac chau cay
+  - bể cây khác chậu cây
+  - terrarium khác paludarium
+  - terrarium khac paludarium
+  - paludarium là gì
+  - paludarium la gi
+  - terrarium có nước không
+  - terrarium co nuoc khong
+  - khác bonsai không
+  - khac bonsai khong
+  - khác tiểu cảnh không
+  - khac tieu canh khong
+  - terrarium vs paludarium
+  - terrarium vs bonsai
+
+`response`:
+
+Dạ terrarium khác chậu cây thường ở chỗ cây/rêu được đặt trong **không gian kính** với độ ẩm và bố cục tiểu cảnh riêng.
+
+So sánh nhanh:
+- **Chậu cây thường**: thường có lỗ thoát nước, đất thoáng hơn, tưới theo kiểu chậu.
+- **Terrarium**: thường không có lỗ thoát nước, cần tưới ít và kiểm tra độ ẩm kỹ hơn.
+- **Aquarium/hồ cá**: là môi trường nước cho cá/thủy sinh; terrarium thường là tiểu cảnh cây trên cạn trong kính.
+
+Vì vậy terrarium cần chăm theo nguyên tắc riêng: ánh sáng gián tiếp, tránh nắng trực tiếp, tưới/phun sương vừa đủ.
+
+`responseVariants`:
+
+- `vsPottedPlant`:
+
+  Dạ chậu cây thường thoát nước tốt hơn, còn terrarium giữ ẩm trong kính nên dễ dư nước nếu tưới như chậu cây.
+
+- `vsAquarium`:
+
+  Dạ terrarium không phải hồ cá. Nếu có nước/cá/thủy sinh thì đó là hướng aquarium/paludarium khác, không nên chăm giống bể rêu trên cạn.
+
+- `vsPaludarium`:
+
+  Dạ paludarium thường là dạng bán cạn, có cả phần nước và phần cây trên cạn. Terrarium của shop thường được hiểu là bể cây/rêu trên cạn trong kính, nên cách chăm sẽ khác bể có nước.
+
+- `careDifference`:
+
+  Dạ điểm khác lớn nhất là nước. Chậu cây thường có lỗ thoát nước, còn terrarium thường giữ ẩm trong kính nên cần tưới ít hơn và kiểm tra kỹ hơn.
+
+### Case: terrarium_common_myths
+
+- `caseId`: `terrarium_common_myths`
+- `group`: `Kiến thức Terrarium`
+- `category`: `terrarium_knowledge`
+- `intent`: user hỏi hoặc tin các hiểu nhầm: không cần chăm, tưới mỗi ngày, phơi nắng, bể kín không bao giờ hư.
+- `trainingFlow`:
+  - `subIntents`:
+    - `zeroCareMyth`: terrarium không cần chăm.
+    - `dailyWaterMyth`: phải tưới mỗi ngày.
+    - `sunMyth`: cây cần phơi nắng trực tiếp.
+    - `sealedForeverMyth`: bể kín tự sống mãi.
+    - `allPlantsFitMyth`: cây nào cũng cho vào bể được.
+    - `moldMeansDeadMyth`: thấy mốc là bể hỏng hẳn.
+    - `moreWaterBetterMyth`: tưới nhiều thì cây càng xanh.
+  - `mustAnswer`: chỉnh hiểu lầm nhẹ nhàng; terrarium dễ chăm nhưng cần đúng ánh sáng/ẩm; không tưới mỗi ngày; không phơi nắng trực tiếp.
+  - `routeToCare`: nếu user hỏi cách chăm cụ thể, chuyển Group 6.
+  - `doNotSay`: không phản bác gay gắt.
+
+`keywords`:
+
+  - terrarium không cần chăm
+  - terrarium khong can cham
+  - bể tự sống
+  - be tu song
+  - bể kín không cần tưới
+  - be kin khong can tuoi
+  - tưới mỗi ngày
+  - tuoi moi ngay
+  - phơi nắng cho khỏe
+  - phoi nang cho khoe
+  - terrarium myths
+  - zero care terrarium
+  - self sustaining terrarium
+  - water every day terrarium
+  - be kin tu song mai
+  - bể kín tự sống mãi
+  - cây nào cũng trồng được
+  - cay nao cung trong duoc
+  - cây nào cũng bỏ vào bể được
+  - cay nao cung bo vao be duoc
+  - mốc là hỏng bể
+  - moc la hong be
+  - có mốc là bỏ luôn
+  - co moc la bo luon
+  - tưới nhiều cho xanh
+  - tuoi nhieu cho xanh
+  - càng ẩm càng tốt
+  - cang am cang tot
+  - terrarium misconceptions
+  - terrarium mistakes
+
+`response`:
+
+Dạ có vài hiểu nhầm khá thường gặp về terrarium:
+
+- **“Terrarium không cần chăm”**: chưa đúng. Bể dễ chăm hơn, nhưng vẫn cần ánh sáng và độ ẩm phù hợp.
+- **“Tưới mỗi ngày cho xanh”**: thường sai, nhất là bể kín vì dễ dư ẩm/mốc/úng.
+- **“Cây cần phơi nắng trực tiếp”**: với bể kính rất rủi ro vì dễ hấp nhiệt, cháy lá, rêu vàng.
+- **“Bể kín tự sống mãi”**: bể kín có vòng tuần hoàn ẩm, nhưng vẫn cần quan sát và xử lý khi mất cân bằng.
+
+Nguyên tắc an toàn là: sáng gián tiếp, tưới ít nhưng đúng lúc, kiểm tra độ ẩm thực tế và tránh can thiệp quá tay.
+
+`responseVariants`:
+
+- `zeroCareMyth`:
+
+  Dạ mình có thể xem terrarium là “dễ chăm”, nhưng không phải “bỏ quên hoàn toàn”. Chỉ cần đặt sai nắng hoặc tưới quá nhiều là bể vẫn có thể gặp vấn đề.
+
+- `dailyWaterMyth`:
+
+  Dạ tưới mỗi ngày thường không phù hợp với terrarium, đặc biệt bể kín. Mình nên kiểm tra nền/rêu trước rồi mới phun sương nhẹ khi cần.
+
+- `allPlantsFitMyth`:
+
+  Dạ không phải cây nào cũng hợp terrarium. Cây ưa ẩm hợp bể kín hơn, còn sen đá/xương rồng cần thoáng và khô hơn nên ưu tiên bể mở.
+
+- `moldMeansDeadMyth`:
+
+  Dạ thấy một ít mốc trắng không có nghĩa là bể hỏng hoàn toàn. Nếu mốc nhẹ, mình có thể giảm ẩm, gắp bỏ phần mốc/lá mục và theo dõi. Nếu mốc lan nhanh hoặc có mùi thì chuyển xử lý sự cố.
+
+- `moreWaterBetterMyth`:
+
+  Dạ terrarium không phải càng ẩm càng tốt. Dư ẩm là nguyên nhân lớn gây mốc, vàng lá và úng rễ. Mình nên giữ ẩm vừa, không để nền sũng.
+
+## Group 9: Custom Theo Yêu Cầu
+
+### Phạm vi group
+
+- Xử lý các câu hỏi về đặt terrarium theo yêu cầu: mẫu riêng, size riêng, chủ đề, phong thủy, quà tặng, doanh nghiệp, ngân sách, ảnh tham khảo.
+- Chatbox được phép thu thập nhu cầu, gợi ý thông tin cần gửi, giải thích quy trình ở mức tổng quan.
+- Chatbox không tự chốt báo giá, không tự nhận cọc, không tự cam kết ngày giao chính xác nếu chưa có xác nhận từ shop.
+- Nếu user hỏi giá/tồn kho sản phẩm có sẵn: chuyển DB/Group 5.
+- Nếu user hỏi chăm sau khi nhận bể custom: chuyển Group 6.
+- Nếu user báo lỗi/hư sau khi nhận: chuyển Group 7 hoặc Group 2 tùy chính sách.
+
+### Tổng quan case Group 9
+
+Group 9 nên có **14 case chính**:
+
+1. `custom_general_request`: hỏi shop có nhận custom/làm theo yêu cầu không.
+2. `custom_process_flow`: quy trình đặt custom từ trao đổi đến nhận bể.
+3. `custom_required_info`: khách cần cung cấp thông tin gì.
+4. `custom_budget_quote`: ngân sách, khoảng giá, báo giá.
+5. `custom_size_shape`: size, hình dáng bể, vị trí đặt.
+6. `custom_theme_concept`: chủ đề/concept/mood/style.
+7. `custom_reference_image`: gửi ảnh mẫu, làm giống ảnh, ảnh Pinterest/Instagram.
+8. `custom_phong_thuy_meaning`: phong thủy, tài lộc, mệnh, ý nghĩa quà tặng.
+9. `custom_plant_material_selection`: chọn cây/rêu/phụ kiện, độ dễ chăm.
+10. `custom_timeline_complexity`: thời gian làm, đặt trước, gấp.
+11. `custom_deposit_payment_boundary`: đặt cọc/thanh toán custom.
+12. `custom_change_cancel_after_confirm`: đổi ý, sửa mẫu, hủy sau khi chốt.
+13. `custom_bulk_corporate_gifts`: đặt số lượng nhiều, quà doanh nghiệp/sự kiện.
+14. `custom_delivery_care_boundary`: giao bể custom và chăm sau khi nhận.
+
+### Case: custom_general_request
+
+- `caseId`: `custom_general_request`
+- `group`: `Custom Theo Yêu Cầu`
+- `category`: `custom_order`
+- `intent`: user hỏi shop có nhận custom, thiết kế theo yêu cầu, làm mẫu riêng không.
+- `trainingFlow`:
+  - `subIntents`:
+    - `askCustomAvailable`: hỏi có nhận custom không.
+    - `customOwnIdea`: muốn làm theo ý tưởng riêng.
+    - `customGift`: muốn làm quà riêng cho người nhận.
+    - `customInsteadAvailable`: không chọn mẫu có sẵn, muốn mẫu riêng.
+    - `unclearCustom`: user chỉ nhắn "custom được không", "làm riêng được không".
+    - `hardRequestBoundary`: yêu cầu quá đặc biệt cần shop xem khả thi.
+  - `mustAnswer`: shop có thể tư vấn custom theo nhu cầu; cần shop xác nhận chi tiết về mẫu, thời gian, giá; hỏi tiếp nhu cầu cơ bản.
+  - `askIfNeeded`: hỏi mục đích, size, ngân sách, chủ đề, vị trí đặt, thời gian cần nhận.
+  - `doNotSay`: không tự cam kết nhận mọi yêu cầu hoặc báo giá ngay.
+
+`keywords`:
+
+  - custom
+  - đặt custom
+  - dat custom
+  - làm theo yêu cầu
+  - lam theo yeu cau
+  - thiết kế theo yêu cầu
+  - thiet ke theo yeu cau
+  - đặt mẫu riêng
+  - dat mau rieng
+  - làm mẫu riêng
+  - lam mau rieng
+  - làm theo ý tưởng
+  - lam theo y tuong
+  - shop có nhận custom không
+  - shop co nhan custom khong
+  - custom terrarium
+  - custom order
+  - custom design
+  - personalized terrarium
+  - bespoke terrarium
+  - be theo yeu cau
+  - bể theo yêu cầu
+  - custom được không
+  - custom duoc khong
+  - custom dc k
+  - custom dc ko
+  - làm riêng được không
+  - lam rieng duoc khong
+  - làm riêng dc k
+  - lam rieng dc ko
+  - đặt theo ý mình
+  - dat theo y minh
+  - làm bể riêng
+  - lam be rieng
+  - custom ntn
+  - custom sao
+  - can i customize
+  - made to order terrarium
+
+`response`:
+
+Dạ có thể tư vấn làm terrarium theo yêu cầu ạ. Với mẫu custom, Rêu nên lấy nhu cầu trước rồi shop sẽ xác nhận chi tiết về khả năng làm, thời gian và báo giá.
+
+Anh/chị cho Rêu xin vài thông tin:
+- Mục đích: dùng cá nhân, decor, quà tặng hay sự kiện.
+- Kích thước/vị trí đặt mong muốn.
+- Chủ đề hoặc phong cách thích.
+- Ngân sách dự kiến.
+- Thời gian cần nhận.
+- Có ảnh mẫu/tham khảo không.
+
+Sau khi có thông tin, shop sẽ tư vấn mẫu phù hợp hơn thay vì Rêu tự chốt giá hoặc lịch làm trong chatbox.
+
+`responseVariants`:
+
+- `quickCustomIntro`:
+
+  Dạ được ạ. Anh/chị gửi giúp Rêu size mong muốn, ngân sách, chủ đề và thời gian cần nhận; shop sẽ xem khả năng làm và báo lại phương án phù hợp.
+
+- `notAllRequestsGuaranteed`:
+
+  Dạ mẫu custom cần kiểm tra độ khả thi theo cây/rêu, vật liệu, kích thước và thời gian. Rêu có thể nhận nhu cầu trước, còn phần chốt mẫu/báo giá sẽ để shop xác nhận.
+
+- `unclearCustom`:
+
+  Dạ được ạ, anh/chị đang muốn custom theo hướng nào: size riêng, chủ đề riêng, làm quà tặng hay làm giống ảnh mẫu? Nếu chưa rõ, cứ gửi ngân sách và vị trí đặt trước, Rêu sẽ hỏi tiếp từng phần.
+
+- `hardRequestBoundary`:
+
+  Dạ với yêu cầu đặc biệt như size lớn, nhiều phụ kiện, cây hiếm hoặc concept rất chi tiết, shop cần xem khả thi trước. Rêu không nên hứa nhận ngay khi chưa kiểm tra vật liệu và lịch làm.
+
+### Case: custom_process_flow
+
+- `caseId`: `custom_process_flow`
+- `group`: `Custom Theo Yêu Cầu`
+- `category`: `custom_order`
+- `intent`: user hỏi quy trình đặt custom diễn ra như thế nào.
+- `trainingFlow`:
+  - `subIntents`:
+    - `stepByStep`: hỏi từng bước đặt custom.
+    - `fromIdeaToDelivery`: từ ý tưởng đến giao hàng.
+    - `approvalFlow`: có duyệt mẫu/báo giá trước không.
+    - `chatToHuman`: khi nào cần shop tư vấn trực tiếp.
+    - `revisionFlow`: có chỉnh phương án trước khi làm không.
+  - `mustAnswer`: quy trình tổng quan: nhận nhu cầu -> tư vấn phương án -> báo giá/lịch -> xác nhận -> làm mẫu -> giao/nhận.
+  - `doNotSay`: không nói quy trình cố định tuyệt đối cho mọi đơn.
+
+`keywords`:
+
+  - quy trình custom
+  - quy trinh custom
+  - đặt custom như thế nào
+  - dat custom nhu the nao
+  - đặt theo yêu cầu sao
+  - dat theo yeu cau sao
+  - custom flow
+  - custom process
+  - quy trình đặt mẫu riêng
+  - quy trinh dat mau rieng
+  - làm custom mất mấy bước
+  - lam custom mat may buoc
+  - từ ý tưởng đến sản phẩm
+  - tu y tuong den san pham
+  - custom làm sao
+  - custom lam sao
+  - custom ntn
+  - các bước custom
+  - cac buoc custom
+  - duyệt mẫu trước không
+  - duyet mau truoc khong
+  - có xem mẫu trước không
+  - co xem mau truoc khong
+  - quy trinh lam rieng
+  - custom step by step
+
+`response`:
+
+Dạ quy trình custom thường đi theo các bước:
+
+1. Anh/chị gửi nhu cầu: size, chủ đề, ngân sách, thời gian cần nhận, ảnh tham khảo nếu có.
+2. Shop tư vấn phương án phù hợp với cây/rêu/vật liệu.
+3. Shop xác nhận khoảng giá và thời gian làm.
+4. Nếu hai bên thống nhất, shop tiến hành làm theo phương án đã chốt.
+5. Khi hoàn thiện, shop giao/khách nhận theo lịch đã xác nhận.
+
+Với đơn phức tạp, shop có thể cần trao đổi thêm để tránh mẫu đẹp trên ảnh nhưng khó chăm hoặc không bền trong terrarium thật.
+
+`responseVariants`:
+
+- `approvalFlow`:
+
+  Dạ trước khi làm, shop nên xác nhận lại concept, size, ngân sách và thời gian. Chatbox không tự chốt thay shop, nhưng có thể giúp anh/chị chuẩn bị thông tin đầy đủ.
+
+- `revisionFlow`:
+
+  Dạ trước khi shop bắt đầu làm, anh/chị có thể trao đổi để chỉnh hướng concept/ngân sách/size. Sau khi đã chốt và chuẩn bị vật liệu, việc đổi có thể cần shop xác nhận lại thời gian hoặc chi phí.
+
+- `chatToHuman`:
+
+  Dạ nếu đơn custom có nhiều chi tiết, ảnh mẫu phức tạp hoặc cần chốt cọc/lịch làm, Rêu nên chuyển thông tin cho shop xác nhận trực tiếp thay vì tự trả lời thay.
+
+### Case: custom_required_info
+
+- `caseId`: `custom_required_info`
+- `group`: `Custom Theo Yêu Cầu`
+- `category`: `custom_order`
+- `intent`: user hỏi cần gửi thông tin gì để shop tư vấn custom.
+- `trainingFlow`:
+  - `subIntents`:
+    - `infoChecklist`: checklist thông tin cần gửi.
+    - `missingInfo`: user chỉ nói muốn custom nhưng chưa rõ.
+    - `recipientInfo`: thông tin người nhận nếu làm quà.
+    - `referenceAndConstraints`: ảnh mẫu + điều kiện đặt bể.
+    - `carePreference`: ưu tiên dễ chăm hay đẹp nổi bật.
+  - `mustAnswer`: cần mục đích, size/vị trí, ngân sách, chủ đề, thời gian, ảnh mẫu, yêu cầu chăm sóc.
+  - `doNotSay`: không bắt khách cung cấp thông tin nhạy cảm không cần thiết.
+
+`keywords`:
+
+  - cần gửi gì để custom
+  - can gui gi de custom
+  - custom cần thông tin gì
+  - custom can thong tin gi
+  - thông tin đặt mẫu riêng
+  - thong tin dat mau rieng
+  - gửi yêu cầu custom
+  - gui yeu cau custom
+  - custom checklist
+  - info for custom order
+  - cần chuẩn bị gì
+  - can chuan bi gi
+  - đặt theo yêu cầu cần gì
+  - dat theo yeu cau can gi
+  - gửi gì cho shop
+  - gui gi cho shop
+  - cần thông tin gì
+  - can thong tin gi
+  - muốn custom cần gì
+  - muon custom can gi
+  - custom gửi ảnh gì
+  - custom gui anh gi
+  - yêu cầu custom gồm gì
+  - yeu cau custom gom gi
+  - custom form
+  - custom brief
+  - custom requirements
+
+`response`:
+
+Dạ để shop tư vấn custom nhanh và đúng hơn, anh/chị gửi giúp Rêu các thông tin này:
+
+- Mục đích: decor, quà tặng, sinh nhật, tân gia, văn phòng...
+- Vị trí đặt: bàn làm việc, phòng khách, phòng ngủ, văn phòng máy lạnh...
+- Kích thước hoặc khoảng không gian đặt.
+- Chủ đề/phong cách: rừng xanh, tối giản, cute, sang, tài lộc...
+- Ngân sách dự kiến.
+- Thời gian cần nhận.
+- Ảnh mẫu/tham khảo nếu có.
+- Muốn dễ chăm hay ưu tiên bố cục nổi bật.
+
+Nếu chưa rõ hết, anh/chị chỉ cần gửi mục đích + ngân sách + vị trí đặt trước, shop sẽ hỏi tiếp phần còn thiếu.
+
+`responseVariants`:
+
+- `minimalInfo`:
+
+  Dạ nếu chưa biết bắt đầu từ đâu, anh/chị gửi trước 3 ý: dùng để làm gì, ngân sách khoảng bao nhiêu, đặt ở đâu. Từ đó shop sẽ tư vấn tiếp.
+
+- `giftRecipientInfo`:
+
+  Dạ nếu làm quà, anh/chị gửi thêm dịp tặng, người nhận là ai, gu màu/phong cách của người nhận và có cần thiệp/lời nhắn không.
+
+- `carePreference`:
+
+  Dạ anh/chị nên nói rõ ưu tiên: dễ chăm, xanh nhiều, rêu nhiều, sang tối giản hay thật nổi bật. Ưu tiên này ảnh hưởng cách shop chọn cây/rêu và bố cục.
+
+### Case: custom_budget_quote
+
+- `caseId`: `custom_budget_quote`
+- `group`: `Custom Theo Yêu Cầu`
+- `category`: `custom_order`
+- `intent`: user hỏi giá custom, ngân sách bao nhiêu, có báo giá trước không.
+- `trainingFlow`:
+  - `subIntents`:
+    - `askPrice`: hỏi giá custom.
+    - `budgetRange`: user đưa ngân sách.
+    - `quoteBeforeMaking`: hỏi có báo giá trước không.
+    - `cheapCustom`: muốn custom giá rẻ.
+    - `fixedBudget`: user có ngân sách cố định.
+    - `highExpectationLowBudget`: muốn nhiều yêu cầu nhưng ngân sách thấp.
+    - `compareReadyMade`: so custom với mẫu có sẵn trong tầm giá.
+  - `mustAnswer`: giá phụ thuộc size, vật liệu, cây/rêu, độ phức tạp; shop cần xác nhận báo giá; chatbox không tự chốt giá.
+  - `routeToDb`: nếu hỏi sản phẩm có sẵn theo giá, chuyển Group 5/DB.
+  - `doNotSay`: không tự bịa khoảng giá nếu chưa được shop chốt.
+
+`keywords`:
+
+  - custom bao nhiêu tiền
+  - custom bao nhieu tien
+  - giá custom
+  - gia custom
+  - báo giá custom
+  - bao gia custom
+  - custom tầm giá
+  - custom tam gia
+  - ngân sách custom
+  - ngan sach custom
+  - custom giá rẻ
+  - custom gia re
+  - quote custom terrarium
+  - custom price
+  - custom cost
+  - làm theo yêu cầu bao nhiêu
+  - lam theo yeu cau bao nhieu
+  - custom bn
+  - custom bao nhiu
+  - custom dưới 1tr
+  - custom duoi 1tr
+  - custom dưới 500k
+  - custom duoi 500k
+  - custom 1tr được không
+  - custom 1tr duoc khong
+  - custom 2tr
+  - custom 500k
+  - báo giá trước
+  - bao gia truoc
+  - có báo giá trước không
+  - co bao gia truoc khong
+  - custom expensive
+  - cheap custom terrarium
+
+`response`:
+
+Dạ giá custom sẽ phụ thuộc vào kích thước bể, loại cây/rêu, vật liệu, phụ kiện và độ phức tạp của bố cục.
+
+Rêu có thể ghi nhận ngân sách dự kiến của anh/chị để shop tư vấn phương án phù hợp. Tuy nhiên chatbox không nên tự chốt giá custom; phần báo giá cuối cùng cần shop xác nhận sau khi có đủ yêu cầu.
+
+Anh/chị cho Rêu xin:
+- Ngân sách khoảng bao nhiêu.
+- Size/vị trí đặt.
+- Chủ đề mong muốn.
+- Có ảnh mẫu không.
+
+`responseVariants`:
+
+- `budgetGiven`:
+
+  Dạ với ngân sách anh/chị đưa, Rêu sẽ dùng làm mốc để shop tư vấn bố cục phù hợp hơn. Nếu muốn xem sản phẩm có sẵn trong tầm giá, Rêu có thể chuyển sang lọc DB sản phẩm.
+
+- `quoteBeforeMaking`:
+
+  Dạ nên có bước shop xác nhận phương án và báo giá trước khi làm, nhất là với đơn custom có size/chủ đề riêng.
+
+- `fixedBudget`:
+
+  Dạ nếu anh/chị có ngân sách cố định, Rêu sẽ ghi nhận làm mốc để shop tư vấn size/bố cục phù hợp. Nếu ngân sách chưa đủ cho concept mong muốn, shop có thể đề xuất phương án giản lược hơn.
+
+- `highExpectationLowBudget`:
+
+  Dạ nếu muốn size lớn, nhiều phụ kiện, nhiều cây/rêu hoặc làm giống ảnh phức tạp thì chi phí có thể cao hơn. Với ngân sách thấp, mình nên ưu tiên concept gọn, dễ chăm và ít chi tiết hơn.
+
+- `readyMadeAlternative`:
+
+  Dạ nếu anh/chị ưu tiên giá tốt và nhận nhanh, sản phẩm có sẵn trong DB có thể phù hợp hơn custom. Custom hợp khi anh/chị cần size/chủ đề/ý nghĩa riêng.
+
+### Case: custom_size_shape
+
+- `caseId`: `custom_size_shape`
+- `group`: `Custom Theo Yêu Cầu`
+- `category`: `custom_order`
+- `intent`: user hỏi làm size riêng, bể to/nhỏ, hình dáng bể theo vị trí đặt.
+- `trainingFlow`:
+  - `subIntents`:
+    - `sizeCustom`: size riêng.
+    - `shapeCustom`: hình dáng bể/lọ.
+    - `placementFit`: fit bàn/kệ/quầy/văn phòng.
+    - `largeTankBoundary`: bể lớn cần shop xác nhận độ khả thi.
+    - `dimensionUnknown`: user chưa biết size, chỉ biết vị trí.
+    - `deskSmall`: bể nhỏ để bàn.
+    - `counterLarge`: bể lớn đặt quầy/phòng khách.
+  - `mustAnswer`: cần kích thước vị trí đặt, mong muốn kín/mở, mục đích; size ảnh hưởng giá/thời gian/chăm sóc.
+  - `doNotSay`: không tự cam kết làm mọi size/hình dáng.
+
+`keywords`:
+
+  - size riêng
+  - size rieng
+  - kích thước riêng
+  - kich thuoc rieng
+  - làm bể to
+  - lam be to
+  - làm bể mini
+  - lam be mini
+  - bể để bàn
+  - be de ban
+  - bể đặt kệ
+  - be dat ke
+  - bể tròn
+  - be tron
+  - bể vuông
+  - be vuong
+  - custom size
+  - custom shape
+  - large terrarium
+  - mini terrarium custom
+  - be theo kich thuoc
+  - làm theo size
+  - lam theo size
+  - size theo bàn
+  - size theo ban
+  - vừa bàn làm việc
+  - vua ban lam viec
+  - đặt quầy lễ tân
+  - dat quay le tan
+  - bể dài
+  - be dai
+  - bể cao
+  - be cao
+  - bể thấp
+  - be thap
+  - custom for desk
+  - custom for counter
+
+`response`:
+
+Dạ với size/hình dáng riêng, shop cần xem kích thước thực tế và mục đích đặt bể.
+
+Anh/chị gửi giúp:
+- Vị trí đặt: bàn, kệ, quầy, phòng khách, văn phòng...
+- Kích thước tối đa hoặc khoảng không gian đặt.
+- Muốn bể kín, bể mở hay chưa rõ.
+- Chủ đề/phong cách mong muốn.
+- Thời gian cần nhận.
+
+Size càng lớn hoặc hình dáng càng đặc biệt thì thời gian, chi phí và cách chăm có thể khác mẫu có sẵn. Shop sẽ xác nhận độ khả thi trước khi chốt.
+
+`responseVariants`:
+
+- `placementFit`:
+
+  Dạ nếu đặt trên bàn làm việc/kệ nhỏ, mình nên ưu tiên size gọn, dễ quan sát và dễ chăm. Nếu đặt quầy/phòng khách, có thể chọn bố cục nổi bật hơn nhưng cần shop xem không gian.
+
+- `dimensionUnknown`:
+
+  Dạ nếu chưa biết size, anh/chị có thể chụp vị trí đặt hoặc gửi kích thước khoảng trống: ngang, sâu, cao. Shop sẽ tư vấn size bể hợp hơn.
+
+- `largeTankBoundary`:
+
+  Dạ bể lớn/custom hình dáng đặc biệt cần shop xem độ ổn định bố cục, khả năng đóng gói và vận chuyển. Rêu chỉ nên ghi nhận nhu cầu trước, không tự chốt nhận ngay.
+
+### Case: custom_theme_concept
+
+- `caseId`: `custom_theme_concept`
+- `group`: `Custom Theo Yêu Cầu`
+- `category`: `custom_order`
+- `intent`: user muốn custom theo chủ đề/concept/phong cách/mood.
+- `trainingFlow`:
+  - `subIntents`:
+    - `forestTheme`: rừng xanh/rêu tự nhiên.
+    - `minimalTheme`: tối giản/sang.
+    - `cuteTheme`: cute/mini nhân vật.
+    - `seasonalTheme`: lễ/tết/sinh nhật/tân gia.
+    - `brandTheme`: màu thương hiệu/doanh nghiệp.
+    - `tooManyThemes`: user muốn nhồi quá nhiều concept.
+    - `colorPalette`: hỏi theo tông màu.
+    - `recipientStyle`: theo gu người nhận.
+  - `mustAnswer`: nhận chủ đề, hỏi thêm màu sắc, người nhận, vị trí, ngân sách, ảnh mẫu; shop xác nhận khả thi.
+  - `doNotSay`: không hứa làm giống tuyệt đối concept phức tạp.
+
+`keywords`:
+
+  - custom theo chủ đề
+  - custom theo chu de
+  - làm theo concept
+  - lam theo concept
+  - concept rừng
+  - concept rung
+  - rừng xanh
+  - rung xanh
+  - tối giản
+  - toi gian
+  - cute
+  - phong cách sang
+  - phong cach sang
+  - chủ đề sinh nhật
+  - chu de sinh nhat
+  - chủ đề tân gia
+  - chu de tan gia
+  - theme terrarium
+  - concept terrarium
+  - custom theme
+  - moodboard
+  - làm theo màu
+  - lam theo mau
+  - tone xanh
+  - tông xanh
+  - tong xanh
+  - tone trắng
+  - tone trang
+  - tone đen
+  - tone den
+  - tối giản sang
+  - toi gian sang
+  - kiểu rừng mưa
+  - kieu rung mua
+  - fairy garden
+  - japanese garden
+  - zen garden
+  - natural forest
+
+`response`:
+
+Dạ làm theo chủ đề/concept được tư vấn theo hướng đó ạ. Để shop lên phương án sát hơn, anh/chị gửi thêm:
+
+- Chủ đề mong muốn: rừng xanh, tối giản, cute, sang, tài lộc, sinh nhật...
+- Tông màu hoặc cảm giác muốn có.
+- Người nhận hoặc không gian đặt.
+- Ngân sách dự kiến.
+- Ảnh mẫu/moodboard nếu có.
+
+Shop sẽ xem concept nào hợp với cây/rêu thật và môi trường terrarium, vì có mẫu nhìn đẹp trên ảnh nhưng khó giữ ổn định lâu dài.
+
+`responseVariants`:
+
+- `notExactCopy`:
+
+  Dạ shop có thể lấy cảm hứng từ concept/ảnh mẫu, nhưng không nên hứa giống 100% vì vật liệu, cây/rêu và kích thước bể thực tế có thể khác.
+
+- `colorPalette`:
+
+  Dạ nếu muốn làm theo tông màu, anh/chị gửi tông chính và tông cần tránh. Shop sẽ xem màu đó thể hiện qua cây/rêu, đá, gỗ, phụ kiện hay nền bể.
+
+- `tooManyThemes`:
+
+  Dạ nếu đưa quá nhiều chủ đề trong một bể nhỏ, bố cục có thể bị rối và khó chăm. Shop có thể giúp chọn 1-2 ý chính để bể nhìn rõ concept hơn.
+
+### Case: custom_reference_image
+
+- `caseId`: `custom_reference_image`
+- `group`: `Custom Theo Yêu Cầu`
+- `category`: `custom_order`
+- `intent`: user muốn gửi ảnh mẫu, làm giống ảnh, copy mẫu Pinterest/Instagram.
+- `trainingFlow`:
+  - `subIntents`:
+    - `sendReference`: hỏi có gửi ảnh được không.
+    - `copyExact`: muốn làm y hệt ảnh.
+    - `multipleReferences`: nhiều ảnh tham khảo.
+    - `photoBoundary`: chatbox không phân tích ảnh sâu nếu chưa có mô tả.
+    - `copyrightExactCopy`: không cam kết copy y hệt thiết kế của bên khác.
+    - `realisticAdaptation`: chuyển ảnh mẫu thành phiên bản khả thi.
+  - `mustAnswer`: có thể gửi ảnh tham khảo; shop dùng để hiểu style, không cam kết giống tuyệt đối; cần thêm size/ngân sách/thời gian.
+  - `doNotSay`: không khẳng định làm giống y ảnh.
+
+`keywords`:
+
+  - gửi ảnh mẫu
+  - gui anh mau
+  - làm giống ảnh
+  - lam giong anh
+  - copy mẫu này
+  - copy mau nay
+  - mẫu pinterest
+  - mau pinterest
+  - mẫu instagram
+  - mau instagram
+  - ảnh tham khảo
+  - anh tham khao
+  - reference image
+  - inspo
+  - pinterest terrarium
+  - instagram terrarium
+  - làm theo hình
+  - lam theo hinh
+  - làm y chang ảnh
+  - lam y chang anh
+  - làm giống 100%
+  - lam giong 100%
+  - copy y hình
+  - copy y hinh
+  - ảnh trên mạng
+  - anh tren mang
+  - mẫu nước ngoài
+  - mau nuoc ngoai
+  - làm giống pinterest
+  - lam giong pinterest
+  - exact copy terrarium
+  - copy this design
+
+`response`:
+
+Dạ anh/chị có thể gửi ảnh mẫu/tham khảo. Ảnh giúp shop hiểu phong cách, bố cục, tông màu và cảm giác anh/chị muốn.
+
+Tuy nhiên với terrarium thật, shop cần xem lại:
+- Size bể thực tế.
+- Loại cây/rêu phù hợp.
+- Vật liệu/phụ kiện có sẵn.
+- Độ bền và độ dễ chăm.
+- Ngân sách và thời gian làm.
+
+Shop có thể làm theo tinh thần/ý tưởng của ảnh, nhưng không nên cam kết giống 100% từng chi tiết nếu vật liệu hoặc cây không giống mẫu.
+
+`responseVariants`:
+
+- `multipleReferences`:
+
+  Dạ nếu có nhiều ảnh, anh/chị gửi 2-3 ảnh rõ nhất và nói giúp Rêu thích điểm nào ở từng ảnh: bố cục, màu sắc, cây/rêu hay phụ kiện.
+
+- `exactCopyBoundary`:
+
+  Dạ shop có thể làm theo tinh thần/ý tưởng của ảnh, nhưng không nên hứa copy y hệt 100%. Cây/rêu là vật liệu sống, mỗi bể sẽ có khác biệt tự nhiên.
+
+- `realisticAdaptation`:
+
+  Dạ nếu ảnh mẫu dùng vật liệu/cây không phù hợp khí hậu hoặc khó chăm, shop có thể đề xuất phiên bản gần vibe hơn nhưng ổn định hơn khi dùng thật.
+
+### Case: custom_phong_thuy_meaning
+
+- `caseId`: `custom_phong_thuy_meaning`
+- `group`: `Custom Theo Yêu Cầu`
+- `category`: `custom_order`
+- `intent`: user muốn custom theo phong thủy, tài lộc, mệnh, ý nghĩa quà tặng.
+- `trainingFlow`:
+  - `subIntents`:
+    - `fengShuiGeneral`: phong thủy/tài lộc.
+    - `byElement`: theo mệnh/tuổi/màu.
+    - `giftMeaning`: ý nghĩa khi tặng.
+    - `boundary`: tư vấn phong thủy ở mức tham khảo, không cam kết kết quả.
+    - `avoidOverclaim`: tránh khẳng định đổi vận/tài lộc chắc chắn.
+    - `symbolicDesign`: thiết kế theo biểu tượng/màu sắc.
+  - `mustAnswer`: có thể tư vấn định hướng màu/chủ đề/ý nghĩa; không cam kết tài lộc/vận mệnh; hỏi người nhận, màu thích, mục đích, ngân sách.
+  - `doNotSay`: không hứa mang lại tài lộc chắc chắn.
+
+`keywords`:
+
+  - phong thủy
+  - phong thuy
+  - tài lộc
+  - tai loc
+  - theo mệnh
+  - theo menh
+  - mệnh mộc
+  - menh moc
+  - mệnh thủy
+  - menh thuy
+  - mệnh hỏa
+  - menh hoa
+  - mệnh kim
+  - menh kim
+  - mệnh thổ
+  - menh tho
+  - quà ý nghĩa
+  - qua y nghia
+  - feng shui terrarium
+  - lucky terrarium
+  - prosperity gift
+  - custom tài lộc
+  - custom tai loc
+  - hợp mệnh
+  - hop menh
+  - theo tuổi
+  - theo tuoi
+  - mệnh gì hợp màu gì
+  - menh gi hop mau gi
+  - may mắn
+  - may man
+  - bình an
+  - binh an
+  - khai trương
+  - khai truong
+  - tân gia phong thủy
+  - tan gia phong thuy
+  - fengshui
+  - lucky gift
+
+`response`:
+
+Dạ có thể tư vấn custom theo hướng phong thủy/ý nghĩa quà tặng ở mức tham khảo.
+
+Rêu có thể ghi nhận:
+- Người nhận là ai, dịp gì.
+- Mệnh/tuổi nếu anh/chị muốn tham khảo.
+- Tông màu thích hoặc cần tránh.
+- Chủ đề: tài lộc, bình an, xanh mát, tối giản, sang...
+- Ngân sách và thời gian cần nhận.
+
+Lưu ý nhỏ: Rêu không nên cam kết chắc chắn về tài lộc/vận mệnh. Shop có thể thiết kế theo ý nghĩa biểu tượng, màu sắc và cảm giác phù hợp để làm quà/decor.
+
+`responseVariants`:
+
+- `giftMeaning`:
+
+  Dạ nếu làm quà, mình có thể đi theo ý nghĩa xanh mát, bình an, may mắn hoặc khởi đầu mới. Anh/chị cho Rêu biết dịp tặng và người nhận để shop tư vấn concept phù hợp.
+
+- `symbolicDesign`:
+
+  Dạ phong thủy trong custom nên hiểu theo hướng biểu tượng, màu sắc và cảm giác của món quà. Ví dụ xanh mát cho sự bình an, bố cục vươn lên cho khởi đầu mới, đá/gỗ tạo cảm giác vững chãi.
+
+- `avoidOverclaim`:
+
+  Dạ Rêu không nên khẳng định mẫu bể sẽ đem lại tài lộc hay thay đổi vận mệnh chắc chắn. Shop có thể thiết kế theo ý nghĩa tốt đẹp để làm quà/decor.
+
+### Case: custom_plant_material_selection
+
+- `caseId`: `custom_plant_material_selection`
+- `group`: `Custom Theo Yêu Cầu`
+- `category`: `custom_order`
+- `intent`: user muốn chọn cây/rêu/phụ kiện/vật liệu trong mẫu custom.
+- `trainingFlow`:
+  - `subIntents`:
+    - `choosePlants`: chọn cây/rêu.
+    - `easyCare`: muốn dễ chăm.
+    - `materials`: đá, gỗ, phụ kiện, đèn.
+    - `compatibility`: cây có hợp chung không.
+    - `rarePlantBoundary`: cây hiếm/cây khách yêu cầu riêng.
+    - `petChildSafety`: nhà có trẻ nhỏ/thú cưng.
+    - `maintenanceTradeoff`: càng nhiều chi tiết càng cần chăm kỹ hơn.
+  - `mustAnswer`: chọn cây/vật liệu cần theo môi trường bể kín/mở, ánh sáng, độ ẩm; shop xác nhận vật liệu có sẵn.
+  - `routeToKnowledge`: nếu hỏi kiến thức cây hợp bể, Group 8.
+  - `doNotSay`: không hứa mọi cây/phụ kiện đều dùng được.
+
+`keywords`:
+
+  - chọn cây custom
+  - chon cay custom
+  - chọn rêu custom
+  - chon reu custom
+  - thêm phụ kiện
+  - them phu kien
+  - thêm đèn
+  - them den
+  - chọn đá gỗ
+  - chon da go
+  - custom dễ chăm
+  - custom de cham
+  - cây dễ chăm
+  - cay de cham
+  - plant selection custom
+  - terrarium materials
+  - custom accessories
+  - choose plants
+  - be custom de cham
+  - chọn phụ kiện custom
+  - chon phu kien custom
+  - thêm mô hình
+  - them mo hinh
+  - thêm tượng
+  - them tuong
+  - thêm led
+  - them led
+  - cây hiếm
+  - cay hiem
+  - cây theo yêu cầu
+  - cay theo yeu cau
+  - nhà có mèo
+  - nha co meo
+  - nhà có trẻ nhỏ
+  - nha co tre nho
+  - low maintenance custom
+  - rare plants custom
+
+`response`:
+
+Dạ với mẫu custom, cây/rêu và vật liệu cần chọn theo môi trường bể để bể đẹp mà vẫn dễ chăm.
+
+Shop sẽ cân nhắc:
+- Bể kín hay mở.
+- Vị trí đặt có sáng/máy lạnh/nóng không.
+- Anh/chị muốn dễ chăm hay nổi bật.
+- Cây/rêu có cùng nhu cầu độ ẩm không.
+- Phụ kiện/đá/gỗ có phù hợp size bể không.
+
+Nếu anh/chị ưu tiên dễ chăm, nên nói rõ ngay từ đầu để shop chọn cây/rêu ổn định hơn, tránh bố cục đẹp nhưng khó giữ lâu.
+
+`responseVariants`:
+
+- `easyCare`:
+
+  Dạ nếu muốn custom dễ chăm, shop nên ưu tiên cây/rêu có nhu cầu tương đồng, bố cục thoáng vừa và không quá nhiều chi tiết khó vệ sinh.
+
+- `rarePlantBoundary`:
+
+  Dạ nếu anh/chị muốn dùng cây hiếm hoặc cây chỉ định riêng, shop cần kiểm tra cây đó có hợp môi trường terrarium không và có sẵn nguồn vật liệu không.
+
+- `maintenanceTradeoff`:
+
+  Dạ mẫu càng nhiều chi tiết/phụ kiện/cây khác nhau thì càng nổi bật, nhưng cũng có thể khó vệ sinh và khó giữ ổn định hơn. Nếu ưu tiên bền/dễ chăm, nên giữ bố cục gọn hơn.
+
+- `petChildSafety`:
+
+  Dạ nếu nhà có trẻ nhỏ hoặc thú cưng, anh/chị nên báo trước để shop tư vấn vị trí đặt, kiểu bể và phụ kiện an toàn hơn.
+
+### Case: custom_timeline_complexity
+
+- `caseId`: `custom_timeline_complexity`
+- `group`: `Custom Theo Yêu Cầu`
+- `category`: `custom_order`
+- `intent`: user hỏi thời gian làm custom, đặt trước bao lâu, cần gấp có được không.
+- `trainingFlow`:
+  - `subIntents`:
+    - `normalTimeline`: thời gian làm thông thường.
+    - `complexTimeline`: mẫu phức tạp.
+    - `urgentOrder`: cần gấp/hỏa tốc.
+    - `preorder`: đặt trước cho dịp cụ thể.
+    - `sameDayBoundary`: hỏi làm trong ngày/giao ngay.
+    - `holidayPeak`: dịp lễ/tết/sự kiện có thể cần đặt sớm.
+  - `mustAnswer`: thời gian tùy độ phức tạp; HCM sản phẩm đặt trước/custom thường 3-5 ngày hoặc tùy yêu cầu đã chốt; cần shop xác nhận.
+  - `doNotSay`: không cam kết chắc chắn ngày nếu chưa shop xác nhận.
+
+`keywords`:
+
+  - custom mất bao lâu
+  - custom mat bao lau
+  - làm custom bao lâu
+  - lam custom bao lau
+  - đặt trước bao lâu
+  - dat truoc bao lau
+  - cần gấp custom
+  - can gap custom
+  - custom gấp
+  - custom gap
+  - thời gian làm custom
+  - thoi gian lam custom
+  - custom timeline
+  - rush custom order
+  - preorder custom
+  - 3-5 ngày custom
+  - 3-5 ngay custom
+  - làm trong ngày
+  - lam trong ngay
+  - giao ngay hôm nay
+  - giao ngay hom nay
+  - custom hôm nay được không
+  - custom hom nay duoc khong
+  - kịp sinh nhật không
+  - kip sinh nhat khong
+  - kịp tân gia không
+  - kip tan gia khong
+  - cần trước cuối tuần
+  - can truoc cuoi tuan
+  - same day custom
+  - custom today
+  - urgent terrarium
+
+`response`:
+
+Dạ thời gian làm custom phụ thuộc vào độ phức tạp, size, vật liệu và lịch hiện tại của shop.
+
+Mốc tham khảo đã chốt cho sản phẩm đặt trước/custom tại HCM là khoảng **3-5 ngày**, tùy mức độ phức tạp của yêu cầu. Nếu cần gấp, shop cần kiểm tra khả năng làm và phương án giao.
+
+Anh/chị cho Rêu biết:
+- Ngày cần nhận.
+- Khu vực nhận hàng.
+- Mẫu đơn giản hay phức tạp.
+- Có ảnh mẫu không.
+
+Chatbox không nên tự cam kết ngày giao chính xác trước khi shop xác nhận.
+
+`responseVariants`:
+
+- `urgentOrder`:
+
+  Dạ nếu cần gấp, anh/chị nói rõ ngày/giờ cần nhận và khu vực giao. Shop sẽ xem có làm kịp không; nếu cần giao hỏa tốc có thể dùng đơn vị thứ ba như Grab/Lalamove khi phù hợp.
+
+- `sameDayBoundary`:
+
+  Dạ custom trong ngày thường cần shop kiểm tra rất kỹ vì còn vật liệu, cây/rêu, thời gian setup và giao hàng. Nếu không kịp custom, shop có thể gợi ý mẫu có sẵn phù hợp hơn.
+
+- `holidayPeak`:
+
+  Dạ với dịp sinh nhật, tân gia, khai trương, lễ/tết hoặc đơn số lượng nhiều, anh/chị nên đặt sớm hơn để shop có thời gian chuẩn bị và giảm rủi ro giao trễ.
+
+### Case: custom_deposit_payment_boundary
+
+- `caseId`: `custom_deposit_payment_boundary`
+- `group`: `Custom Theo Yêu Cầu`
+- `category`: `custom_order`
+- `intent`: user hỏi đặt cọc, thanh toán custom, chuyển khoản, giữ lịch làm.
+- `trainingFlow`:
+  - `subIntents`:
+    - `depositRequired`: có cần đặt cọc không.
+    - `paymentMethod`: thanh toán bằng gì.
+    - `paymentLinkBoundary`: xin tài khoản/QR/link.
+    - `holdSlot`: giữ lịch làm custom.
+    - `refundBoundary`: hỏi hoàn cọc/hủy cọc.
+    - `codBoundary`: hỏi COD cho custom.
+  - `mustAnswer`: phần đặt cọc/thanh toán custom cần shop xác nhận riêng; chatbox không gửi số tài khoản/QR/link thanh toán.
+  - `routeToPayment`: nếu hỏi thanh toán đơn có sẵn, Group 4.
+  - `doNotSay`: không tự gửi thông tin thanh toán.
+
+`keywords`:
+
+  - custom có cần cọc không
+  - custom co can coc khong
+  - đặt cọc custom
+  - dat coc custom
+  - cọc bao nhiêu
+  - coc bao nhieu
+  - thanh toán custom
+  - thanh toan custom
+  - chuyển khoản custom
+  - chuyen khoan custom
+  - giữ lịch custom
+  - giu lich custom
+  - deposit custom
+  - custom payment
+  - payment for custom order
+  - gửi qr custom
+  - gui qr custom
+  - qr custom
+  - stk custom
+  - số tài khoản custom
+  - so tai khoan custom
+  - hoàn cọc
+  - hoan coc
+  - mất cọc không
+  - mat coc khong
+  - cod custom
+  - custom cod
+  - nhận hàng trả tiền custom
+  - nhan hang tra tien custom
+  - refund deposit
+  - custom deposit refund
+
+`response`:
+
+Dạ với đơn custom, phần đặt cọc/thanh toán cần shop xác nhận riêng theo mẫu, thời gian và mức độ phức tạp.
+
+Rêu có thể ghi nhận nhu cầu của anh/chị, nhưng chatbox không tự gửi số tài khoản, QR hoặc link thanh toán để tránh nhầm thông tin.
+
+Anh/chị nên chờ shop xác nhận:
+- Phương án custom.
+- Báo giá.
+- Thời gian làm.
+- Có cần cọc không và cách thanh toán nếu có.
+
+`responseVariants`:
+
+- `paymentSafety`:
+
+  Dạ để an toàn, mọi thông tin chuyển khoản/đặt cọc custom nên do shop xác nhận trực tiếp, không lấy từ câu trả lời tự động của chatbox.
+
+- `refundBoundary`:
+
+  Dạ phần hoàn cọc/mất cọc khi hủy hoặc đổi đơn custom cần shop xác nhận theo tình trạng đơn đã chuẩn bị tới đâu. Rêu không tự kết luận trong chatbox.
+
+- `codBoundary`:
+
+  Dạ với đơn custom, phương thức thanh toán/COD hay đặt cọc cần shop xác nhận riêng. Nếu là sản phẩm có sẵn, Rêu sẽ chuyển về Group 4 để xem quy trình thanh toán hiện tại.
+
+### Case: custom_change_cancel_after_confirm
+
+- `caseId`: `custom_change_cancel_after_confirm`
+- `group`: `Custom Theo Yêu Cầu`
+- `category`: `custom_order`
+- `intent`: user hỏi đổi ý, sửa mẫu, đổi size/chủ đề, hủy sau khi đã chốt custom.
+- `trainingFlow`:
+  - `subIntents`:
+    - `changeBeforeConfirm`: đổi trước khi shop làm.
+    - `changeAfterConfirm`: đổi sau khi đã chốt/làm.
+    - `cancelCustom`: hủy đơn custom.
+    - `extraCost`: thay đổi có thể phát sinh phí/thời gian.
+    - `changeAfterMaterials`: đã mua/chọn vật liệu.
+    - `changeDeliveryDate`: đổi ngày nhận/giao.
+  - `mustAnswer`: thay đổi càng sớm càng dễ; sau khi chốt/làm cần shop xác nhận khả năng, phí, thời gian.
+  - `doNotSay`: không tự đồng ý hủy/sửa mọi đơn.
+
+`keywords`:
+
+  - đổi mẫu custom
+  - doi mau custom
+  - sửa mẫu custom
+  - sua mau custom
+  - đổi size custom
+  - doi size custom
+  - hủy custom
+  - huy custom
+  - đổi ý custom
+  - doi y custom
+  - sửa concept
+  - sua concept
+  - change custom order
+  - cancel custom order
+  - modify custom order
+  - đổi sau khi chốt
+  - doi sau khi chot
+  - đổi ngày nhận
+  - doi ngay nhan
+  - đổi ngày giao
+  - doi ngay giao
+  - đổi concept sau khi cọc
+  - doi concept sau khi coc
+  - hủy sau khi cọc
+  - huy sau khi coc
+  - sửa sau khi làm
+  - sua sau khi lam
+  - đổi cây custom
+  - doi cay custom
+  - cancel after deposit
+  - change after deposit
+
+`response`:
+
+Dạ nếu muốn đổi/sửa đơn custom, anh/chị nên báo càng sớm càng tốt.
+
+- Trước khi shop chốt/làm: thường dễ điều chỉnh hơn.
+- Sau khi đã chốt concept, chuẩn bị vật liệu hoặc bắt đầu làm: cần shop xác nhận có đổi được không, có phát sinh chi phí/thời gian không.
+- Nếu muốn hủy: shop cần kiểm tra tình trạng đơn custom trước khi trả lời.
+
+Rêu không nên tự đồng ý hủy/sửa thay shop, nhưng có thể ghi nhận nội dung anh/chị muốn thay đổi để shop kiểm tra.
+
+`responseVariants`:
+
+- `changeEarly`:
+
+  Dạ nếu shop chưa bắt đầu làm, anh/chị gửi ngay phần muốn đổi: size, màu, chủ đề, cây/rêu hoặc thời gian nhận. Shop sẽ xác nhận lại.
+
+- `changeAfterMaterials`:
+
+  Dạ nếu shop đã chuẩn bị cây/rêu/vật liệu hoặc bắt đầu setup, việc đổi concept/size có thể phát sinh thêm thời gian hoặc chi phí. Phần này cần shop xác nhận.
+
+- `changeDeliveryDate`:
+
+  Dạ nếu chỉ đổi ngày nhận/giao, anh/chị báo càng sớm càng tốt để shop xem lịch chăm giữ bể và lịch giao. Rêu không tự cam kết đổi lịch thay shop.
+
+### Case: custom_bulk_corporate_gifts
+
+- `caseId`: `custom_bulk_corporate_gifts`
+- `group`: `Custom Theo Yêu Cầu`
+- `category`: `custom_order`
+- `intent`: user hỏi đặt custom số lượng nhiều, quà doanh nghiệp, sự kiện, workshop.
+- `trainingFlow`:
+  - `subIntents`:
+    - `bulkOrder`: đặt nhiều bể.
+    - `corporateGift`: quà công ty/khách hàng/đối tác.
+    - `eventTheme`: sự kiện/workshop.
+    - `logoBranding`: logo, màu thương hiệu, thiệp.
+    - `quantityTier`: số lượng ảnh hưởng thời gian/giá.
+    - `packagingCards`: bao bì, thiệp, tag tên.
+    - `deliveryMultipleAddresses`: giao nhiều địa chỉ.
+  - `mustAnswer`: cần số lượng, ngân sách/bộ, thời gian, branding, địa điểm giao; shop xác nhận khả năng.
+  - `doNotSay`: không tự chiết khấu/báo giá số lượng lớn.
+
+`keywords`:
+
+  - đặt số lượng nhiều
+  - dat so luong nhieu
+  - quà doanh nghiệp
+  - qua doanh nghiep
+  - quà công ty
+  - qua cong ty
+  - quà khách hàng
+  - qua khach hang
+  - quà đối tác
+  - qua doi tac
+  - custom số lượng lớn
+  - custom so luong lon
+  - workshop terrarium
+  - corporate gift
+  - bulk order
+  - event gift
+  - branding terrarium
+  - logo công ty
+  - logo cong ty
+  - đặt 10 bể
+  - dat 10 be
+  - đặt 20 bể
+  - dat 20 be
+  - đặt 50 bể
+  - dat 50 be
+  - quà sự kiện
+  - qua su kien
+  - quà khai trương
+  - qua khai truong
+  - thiệp cảm ơn
+  - thiep cam on
+  - tag tên
+  - tag ten
+  - giao nhiều địa chỉ
+  - giao nhieu dia chi
+  - bulk terrarium gifts
+  - corporate terrarium gifts
+
+`response`:
+
+Dạ với đơn custom số lượng nhiều/quà doanh nghiệp, shop cần thêm thông tin để kiểm tra khả năng làm và thời gian.
+
+Anh/chị gửi giúp:
+- Số lượng dự kiến.
+- Ngân sách mỗi phần quà.
+- Dịp/sự kiện sử dụng.
+- Có cần logo, thiệp, màu thương hiệu không.
+- Thời gian cần nhận.
+- Địa điểm giao.
+
+Rêu không tự báo giá/chiết khấu số lượng lớn trong chatbox; shop sẽ xác nhận sau khi có đủ thông tin.
+
+`responseVariants`:
+
+- `branding`:
+
+  Dạ nếu cần logo/màu thương hiệu/thiệp, anh/chị gửi file hoặc mô tả nhận diện thương hiệu để shop xem cách tích hợp phù hợp với bể.
+
+- `quantityTier`:
+
+  Dạ số lượng càng nhiều thì shop càng cần biết sớm để chuẩn bị cây/rêu, bể, phụ kiện và lịch làm. Rêu không tự chốt chiết khấu, nhưng sẽ ghi nhận số lượng để shop báo lại.
+
+- `packagingCards`:
+
+  Dạ nếu cần thiệp, tag tên, lời chúc hoặc bao bì riêng, anh/chị gửi nội dung và phong cách mong muốn để shop xem khả năng chuẩn bị.
+
+- `multipleAddresses`:
+
+  Dạ nếu giao nhiều địa chỉ, anh/chị cần gửi danh sách khu vực/địa chỉ sau khi shop xác nhận nhận đơn. Chatbox không hiển thị hay xử lý chi tiết thông tin nhạy cảm công khai.
+
+### Case: custom_delivery_care_boundary
+
+- `caseId`: `custom_delivery_care_boundary`
+- `group`: `Custom Theo Yêu Cầu`
+- `category`: `custom_order`
+- `intent`: user hỏi giao bể custom, chăm sau khi nhận, custom có dễ hư khi ship không.
+- `trainingFlow`:
+  - `subIntents`:
+    - `customShipping`: giao custom.
+    - `careAfterCustom`: chăm sau khi nhận.
+    - `shippingRisk`: xô lệch/vỡ/cây ảnh hưởng khi ship.
+    - `afterReceiveBoundary`: lỗi sau khi nhận chuyển chính sách/sự cố.
+    - `provinceCustom`: giao tỉnh cho bể custom.
+    - `openingVideo`: quay video mở hàng.
+    - `aftercareFirstWeek`: chăm 7 ngày đầu cho custom.
+  - `mustAnswer`: bể custom vẫn theo nguyên tắc đóng gói/giao terrarium; chăm sau nhận chuyển Group 6; hư/xô lệch chuyển Group 2/3/7 tùy tình huống.
+  - `doNotSay`: không cam kết không có rủi ro tuyệt đối khi vận chuyển.
+
+`keywords`:
+
+  - giao bể custom
+  - giao be custom
+  - ship custom
+  - vận chuyển custom
+  - van chuyen custom
+  - custom có dễ vỡ không
+  - custom co de vo khong
+  - custom bị xô lệch
+  - custom bi xo lech
+  - chăm bể custom
+  - cham be custom
+  - sau khi nhận custom
+  - sau khi nhan custom
+  - custom shipping
+  - custom care
+  - delivery custom terrarium
+  - custom aftercare
+  - custom giao tỉnh
+  - custom giao tinh
+  - custom đi tỉnh
+  - custom di tinh
+  - custom ship tỉnh
+  - custom ship tinh
+  - quay video custom
+  - quay video mo hang custom
+  - chăm 7 ngày custom
+  - cham 7 ngay custom
+  - custom bị vỡ
+  - custom bi vo
+  - custom bị hư khi nhận
+  - custom bi hu khi nhan
+  - custom province shipping
+  - custom opening video
+
+`response`:
+
+Dạ bể custom vẫn là terrarium có kính, cây/rêu và bố cục bên trong nên khi giao cần đóng gói kỹ và khách nên kiểm tra khi nhận.
+
+Lưu ý:
+- Thời gian giao/custom cần shop xác nhận theo mẫu.
+- Khi nhận nên quay video mở hàng và kiểm tra bể.
+- Nếu hỏi chăm sau khi nhận, Rêu sẽ chuyển sang Group 6.
+- Nếu bể vỡ/xô lệch nặng lúc nhận, chuyển theo chính sách/vận chuyển Group 2/3.
+- Nếu sau vài ngày cây/rêu có dấu hiệu héo/vàng/mốc, chuyển Group 7 để xử lý theo triệu chứng.
+
+`responseVariants`:
+
+- `aftercare`:
+
+  Dạ sau khi nhận bể custom, anh/chị vẫn chăm theo nguyên tắc chung: đặt nơi sáng gián tiếp, không tưới nhiều ngay, tránh nắng trực tiếp và quan sát 7 ngày đầu.
+
+- `provinceCustom`:
+
+  Dạ bể custom giao tỉnh cần shop kiểm tra kích thước, bố cục và khả năng đóng gói. Với terrarium, luôn nên quay video mở hàng để có cơ sở hỗ trợ nếu có vấn đề vận chuyển.
+
+- `openingVideo`:
+
+  Dạ khi nhận bể custom, anh/chị nên quay video mở hàng và kiểm tra kính, bố cục, cây/rêu ngay lúc nhận. Nếu có vỡ/xô lệch nặng, giữ hiện trạng và gửi shop kiểm tra.
+
+## Group 10: Quy tắc An toàn Cho Chatbox
+
+### Phạm vi group
+
+- Đây là nhóm rule nội bộ cho chatbox, dùng để điều hướng giữa DB, KB và GPT.
+- Không nên hiển thị nguyên văn các rule kỹ thuật như “GPT/DB/KB/Ollama” cho khách nếu không cần.
+- Mục tiêu: trả lời đúng nguồn dữ liệu, không bịa thông tin, bảo mật đơn hàng, không tư vấn vượt phạm vi, và biết khi nào cần chuyển shop/người thật.
+
+### Tổng quan case Group 10
+
+Group 10 có **12 case rule chính**:
+
+1. `safety_source_routing_db_kb_gpt`: DB/KB/GPT dùng khi nào theo flow mới.
+2. `safety_product_price_stock_db_only`: giá, tồn kho, sản phẩm phải lấy DB.
+3. `safety_order_privacy_lookup`: tra đơn bằng SĐT nhưng ẩn thông tin nhạy cảm.
+4. `safety_no_tracking_total_address`: không trả tracking, tổng tiền, địa chỉ, SĐT đầy đủ.
+5. `safety_no_external_web_search`: không search web ngoài; dồn vào DB/KB/GPT.
+6. `safety_unclear_question_handling`: câu mơ hồ thì hỏi lại hoặc lấy KB gần nhất cho GPT diễn giải.
+7. `safety_no_medical_chemical_strong_advice`: không hướng dẫn hóa chất/thuốc mạnh trong bể.
+8. `safety_no_warranty_overpromise`: không cam kết bảo hành/đổi trả ngoài chính sách.
+9. `safety_no_custom_payment_commitment`: không tự chốt cọc/QR/STK/báo giá custom.
+10. `safety_image_video_boundary`: thiếu ảnh thì không chẩn đoán chắc.
+11. `safety_sensitive_personal_data`: hạn chế yêu cầu/lặp lại dữ liệu cá nhân.
+12. `safety_handoff_to_shop`: khi nào chuyển shop/người thật.
+
+### Case: safety_source_routing_db_kb_gpt
+
+- `caseId`: `safety_source_routing_db_kb_gpt`
+- `group`: `Quy tắc An toàn Cho Chatbox`
+- `category`: `chat_safety`
+- `visibility`: `internal`
+- `intent`: rule xác định DB, KB, GPT dùng khi nào theo flow mới: care đi GPT, facts đi DB/KB.
+- `trainingFlow`:
+  - `dbUse`: dùng DB cho sản phẩm, giá, salePrice, tồn kho, danh mục, trạng thái đơn hàng.
+  - `kbUse`: dùng KB cho chính sách, vận chuyển, thanh toán, custom, rule an toàn và facts đã chốt.
+  - `gptUse`: GPT trả lời chính cho chăm sóc cây/rêu/terrarium, tưới nước, ánh sáng, nhiệt độ, độ ẩm, sự cố cây/rêu; KB chỉ làm nền/guardrail nếu có.
+  - `saleAdvice`: tư vấn sale về chăm sóc dùng DB sản phẩm thật + GPT diễn giải cách chăm, không bịa giá/tồn kho.
+  - `mustAnswer`: luôn ưu tiên nguồn có thẩm quyền: DB cho dữ liệu động, KB cho facts/chính sách, GPT cho care advice linh hoạt.
+  - `doNotSay`: không giải thích kỹ thuật nội bộ cho khách trừ khi khách hỏi cách chatbox hoạt động.
+
+`keywords`:
+
+  - flow chatbox
+  - luồng chatbox
+  - luong chatbox
+  - db kb gpt
+  - kb trước hay gpt trước
+  - kb truoc hay gpt truoc
+  - gpt trả lời gì
+  - gpt tra loi gi
+  - ai trả lời
+  - ai tra loi
+  - nguồn trả lời
+  - nguon tra loi
+  - knowledge base dùng khi nào
+  - chatbot flow
+  - source routing
+
+`response`:
+
+Rule nội bộ:
+
+- DB trả dữ liệu động: sản phẩm, giá, sale, tồn kho, danh mục, đơn hàng.
+- KB trả facts đã chốt: chính sách, vận chuyển, thanh toán, custom, rule an toàn.
+- GPT trả lời chính cho chăm sóc cây/rêu/terrarium: tưới nước, ánh sáng, nhiệt độ, độ ẩm, xử lý héo/vàng/mốc/rụng lá.
+- Sale advice dùng DB sản phẩm thật + GPT diễn giải cách chăm/phù hợp nhu cầu.
+- Nếu DB/KB không có dữ liệu chắc chắn, không bịa; hỏi thêm hoặc chuyển shop.
+
+`responseVariants`:
+
+- `customerFriendly`:
+
+  Dạ Rêu sẽ kiểm tra thông tin shop/hệ thống cho các phần như giá, sản phẩm, đơn hàng và chính sách. Riêng câu hỏi chăm sóc cây/rêu, Rêu sẽ tư vấn linh hoạt hơn nhưng vẫn giữ các nguyên tắc an toàn và hỏi thêm khi chưa đủ rõ.
+
+### Case: safety_product_price_stock_db_only
+
+- `caseId`: `safety_product_price_stock_db_only`
+- `group`: `Quy tắc An toàn Cho Chatbox`
+- `category`: `chat_safety`
+- `visibility`: `internal`
+- `intent`: rule không bịa giá/tồn kho/sản phẩm; phải lấy từ DB.
+- `trainingFlow`:
+  - `mustAnswer`: mọi câu hỏi về giá, sale, còn hàng, số lượng, sản phẩm nổi bật, danh mục phải truy vấn DB trước.
+  - `fallback`: nếu DB không có hoặc lỗi, nói chưa kiểm tra được và đề nghị xem trang sản phẩm/liên hệ shop.
+  - `doNotSay`: không tự tạo sản phẩm, giá, tồn kho, bestseller.
+
+`keywords`:
+
+  - giá sản phẩm
+  - gia san pham
+  - còn hàng
+  - con hang
+  - hết hàng
+  - het hang
+  - tồn kho
+  - ton kho
+  - sale price
+  - product price
+  - stock
+  - inventory
+  - bestseller
+  - sản phẩm nổi bật
+  - san pham noi bat
+  - db only
+
+`response`:
+
+Rule nội bộ:
+
+- Không trả giá/tồn kho từ trí nhớ hoặc KB.
+- Luôn lấy từ DB sản phẩm hiện tại.
+- Nếu user hỏi theo ngân sách, lọc DB theo giá/salePrice/tồn kho.
+- Nếu DB không trả được dữ liệu, nói chưa kiểm tra được thông tin hiện tại, không bịa.
+
+`responseVariants`:
+
+- `customerFriendly`:
+
+  Dạ phần giá/còn hàng Rêu sẽ kiểm tra theo dữ liệu sản phẩm hiện tại để tránh báo sai. Nếu chưa kiểm tra được, anh/chị xem trực tiếp ở trang sản phẩm hoặc để shop xác nhận giúp mình.
+
+### Case: safety_order_privacy_lookup
+
+- `caseId`: `safety_order_privacy_lookup`
+- `group`: `Quy tắc An toàn Cho Chatbox`
+- `category`: `chat_safety`
+- `visibility`: `internal`
+- `intent`: rule tra cứu đơn hàng bằng SĐT và trả trạng thái tiếng Việt nhưng bảo mật.
+- `trainingFlow`:
+  - `mustAnswer`: cho phép tra đơn bằng SĐT đã đặt hàng; chỉ hiển thị trạng thái đơn tiếng Việt và mã/trạng thái cần thiết nếu được phép.
+  - `hide`: địa chỉ, SĐT đầy đủ, email, tổng tiền, tracking link, mã vận đơn.
+  - `doNotSay`: không đọc lại toàn bộ thông tin đơn hàng.
+
+`keywords`:
+
+  - tra đơn
+  - tra don
+  - kiểm tra đơn
+  - kiem tra don
+  - tra cứu đơn
+  - tra cuu don
+  - tìm đơn bằng sđt
+  - tim don bang sdt
+  - order lookup
+  - phone lookup
+  - order privacy
+  - trạng thái đơn
+  - trang thai don
+  - lookup by phone
+
+`response`:
+
+Rule nội bộ:
+
+- Có thể yêu cầu SĐT đã dùng khi đặt hàng để tra trạng thái.
+- Trạng thái đơn phải hiển thị bằng tiếng Việt, dễ hiểu.
+- Không hiển thị địa chỉ, SĐT đầy đủ, email, tổng tiền, tracking link hoặc mã vận đơn.
+- Nếu không tìm thấy đơn, hướng dẫn kiểm tra lại SĐT hoặc liên hệ shop.
+
+`responseVariants`:
+
+- `customerFriendly`:
+
+  Dạ anh/chị gửi SĐT đã dùng khi đặt hàng, Rêu sẽ kiểm tra trạng thái đơn. Để bảo mật, Rêu chỉ báo trạng thái cần thiết và không hiển thị địa chỉ, tổng tiền hay tracking link trong chatbox.
+
+### Case: safety_no_tracking_total_address
+
+- `caseId`: `safety_no_tracking_total_address`
+- `group`: `Quy tắc An toàn Cho Chatbox`
+- `category`: `chat_safety`
+- `visibility`: `internal`
+- `intent`: rule không trả tracking link, tổng tiền, địa chỉ, mã vận đơn trong chatbox.
+- `trainingFlow`:
+  - `mustAnswer`: từ chối nhẹ và giải thích vì bảo mật; có thể báo trạng thái đơn ở mức cần thiết.
+  - `doNotSay`: không hiển thị tracking link, mã vận đơn, địa chỉ, SĐT đầy đủ, email, tổng tiền.
+
+`keywords`:
+
+  - tracking link
+  - mã vận đơn
+  - ma van don
+  - tổng tiền đơn
+  - tong tien don
+  - địa chỉ giao hàng
+  - dia chi giao hang
+  - số điện thoại đầy đủ
+  - so dien thoai day du
+  - cho xin tracking
+  - cho xin ma van don
+  - order total
+  - shipping address
+  - tracking boundary
+
+`response`:
+
+Dạ để bảo mật thông tin đơn hàng, Rêu không hiển thị tracking link, mã vận đơn, địa chỉ, SĐT đầy đủ, email hoặc tổng tiền trong chatbox.
+
+Nếu anh/chị muốn kiểm tra đơn đang ở trạng thái nào, anh/chị gửi SĐT đã đặt hàng. Rêu sẽ tra cứu và chỉ báo trạng thái tiếng Việt ở mức cần thiết.
+
+### Case: safety_no_external_web_search
+
+- `caseId`: `safety_no_external_web_search`
+- `group`: `Quy tắc An toàn Cho Chatbox`
+- `category`: `chat_safety`
+- `visibility`: `internal`
+- `intent`: rule không dùng web search bên ngoài cho chatbox; dồn vào DB/KB/GPT.
+- `trainingFlow`:
+  - `mustAnswer`: chatbox không search web ngoài để trả lời khách; kiến thức lấy từ DB/KB, GPT diễn giải.
+  - `fallback`: nếu ngoài phạm vi KB/DB, từ chối nhẹ hoặc chuyển shop.
+  - `doNotSay`: không viện dẫn nguồn web không kiểm chứng.
+
+`keywords`:
+
+  - search web
+  - tìm trên mạng
+  - tim tren mang
+  - google giúp
+  - google giup
+  - tra internet
+  - external search
+  - web search
+  - internet answer
+  - kiến thức ngoài
+  - kien thuc ngoai
+  - không search web
+  - khong search web
+
+`response`:
+
+Rule nội bộ:
+
+- Chatbox không dùng web search ngoài để trả lời khách.
+- DB xử lý dữ liệu shop/đơn/sản phẩm.
+- KB xử lý chính sách, chăm sóc, sự cố, kiến thức, custom.
+- GPT chỉ diễn giải từ DB/KB.
+- Nếu câu hỏi ngoài phạm vi terrarium/shop, từ chối nhẹ và kéo về nội dung Rêu hỗ trợ được.
+
+`responseVariants`:
+
+- `customerFriendly`:
+
+  Dạ phần này nằm ngoài phạm vi thông tin Rêu được shop cung cấp. Rêu có thể hỗ trợ tốt nhất các nội dung về sản phẩm, đơn hàng, chính sách và chăm sóc terrarium của Tiệm Rêu.
+
+### Case: safety_unclear_question_handling
+
+- `caseId`: `safety_unclear_question_handling`
+- `group`: `Quy tắc An toàn Cho Chatbox`
+- `category`: `chat_safety`
+- `visibility`: `internal`
+- `intent`: rule xử lý câu mơ hồ, thiếu ngữ cảnh, viết tắt khó hiểu.
+- `trainingFlow`:
+  - `mustAnswer`: nếu nhận diện được nhóm gần nhất thì trả lời theo KB liên quan và hỏi thêm; nếu quá mơ hồ thì hỏi lại 1-2 câu ngắn.
+  - `doNotSay`: không đoán chắc khi câu có thể thuộc nhiều intent quan trọng.
+
+`keywords`:
+
+  - câu mơ hồ
+  - cau mo ho
+  - không hiểu câu hỏi
+  - khong hieu cau hoi
+  - hỏi không rõ
+  - hoi khong ro
+  - ambiguous
+  - unclear question
+  - vague question
+  - user intent unclear
+  - ntn
+  - sao vậy
+  - sao vay
+
+`response`:
+
+Rule nội bộ:
+
+- Nếu câu mơ hồ nhưng có keyword gần đúng, chọn KB gần nhất và hỏi thêm thông tin còn thiếu.
+- Nếu câu có thể dẫn tới nhiều hướng khác nhau, hỏi lại ngắn gọn thay vì đoán.
+- Với chăm sóc/sự cố: hỏi loại bể, triệu chứng, độ ẩm, ánh sáng, thời gian xảy ra.
+- Với đơn hàng: hỏi SĐT đã đặt hàng.
+- Với custom: hỏi mục đích, ngân sách, size/chủ đề.
+
+`responseVariants`:
+
+- `customerFriendly`:
+
+  Dạ Rêu cần thêm một chút thông tin để trả lời đúng hơn. Anh/chị đang hỏi về sản phẩm, đơn hàng, chăm sóc bể hay muốn custom theo yêu cầu ạ?
+
+### Case: safety_no_medical_chemical_strong_advice
+
+- `caseId`: `safety_no_medical_chemical_strong_advice`
+- `group`: `Quy tắc An toàn Cho Chatbox`
+- `category`: `chat_safety`
+- `visibility`: `internal`
+- `intent`: rule không hướng dẫn thuốc/hóa chất mạnh trong bể.
+- `trainingFlow`:
+  - `mustAnswer`: ưu tiên xử lý nhẹ: giảm/tăng ẩm, mở thoáng, gắp lá mục/mốc, đổi vị trí; không khuyên thuốc/hóa chất mạnh.
+  - `routeToShop`: nếu sự cố nặng, gửi ảnh/video cho shop.
+  - `doNotSay`: không khuyên xịt thuốc trừ sâu, thuốc nấm mạnh, cồn, nước lau kính, oxy già trực tiếp vào toàn bể.
+
+`keywords`:
+
+  - thuốc trị nấm
+  - thuoc tri nam
+  - thuốc sâu
+  - thuoc sau
+  - xịt thuốc
+  - xit thuoc
+  - hóa chất
+  - hoa chat
+  - cồn
+  - con
+  - oxy già
+  - oxy gia
+  - pesticide
+  - fungicide
+  - chemical treatment
+  - strong chemical
+  - thuốc mạnh
+  - thuoc manh
+
+`response`:
+
+Dạ với terrarium, mình không nên tự xịt thuốc/hóa chất mạnh vào bể vì dễ ảnh hưởng cây, rêu và môi trường bên trong.
+
+Rêu sẽ ưu tiên hướng xử lý an toàn hơn:
+- Gắp bỏ lá mục/mốc nhìn thấy.
+- Điều chỉnh độ ẩm.
+- Mở thoáng nhẹ nếu bể quá ẩm.
+- Đổi vị trí nếu quá nóng/nắng/gió máy lạnh.
+- Gửi ảnh/video cho shop nếu tình trạng nặng hoặc lan nhanh.
+
+### Case: safety_no_warranty_overpromise
+
+- `caseId`: `safety_no_warranty_overpromise`
+- `group`: `Quy tắc An toàn Cho Chatbox`
+- `category`: `chat_safety`
+- `visibility`: `internal`
+- `intent`: rule không cam kết bảo hành/đổi trả ngoài chính sách.
+- `trainingFlow`:
+  - `mustAnswer`: giải thích cần shop kiểm tra theo chính sách; yêu cầu ảnh/video/thời điểm nhận nếu cần.
+  - `doNotSay`: không hứa đổi mới, hoàn tiền, bảo hành chắc chắn khi chưa đủ điều kiện.
+
+`keywords`:
+
+  - có bảo hành không
+  - co bao hanh khong
+  - đổi mới được không
+  - doi moi duoc khong
+  - hoàn tiền
+  - hoan tien
+  - shop đền không
+  - shop den khong
+  - warranty promise
+  - refund promise
+  - replacement promise
+  - bảo hành chắc không
+  - bao hanh chac khong
+
+`response`:
+
+Dạ phần bảo hành/đổi trả cần shop kiểm tra theo chính sách và tình trạng thực tế.
+
+Anh/chị nên gửi ảnh/video, thời điểm nhận hàng và mô tả vấn đề. Rêu có thể hướng dẫn bước đầu, nhưng không tự cam kết đổi mới, hoàn tiền hoặc bảo hành chắc chắn khi shop chưa xác nhận.
+
+### Case: safety_no_custom_payment_commitment
+
+- `caseId`: `safety_no_custom_payment_commitment`
+- `group`: `Quy tắc An toàn Cho Chatbox`
+- `category`: `chat_safety`
+- `visibility`: `internal`
+- `intent`: rule không tự chốt cọc, QR, số tài khoản, báo giá/lịch custom.
+- `trainingFlow`:
+  - `mustAnswer`: custom cần shop xác nhận báo giá, đặt cọc, lịch làm, phương thức thanh toán.
+  - `doNotSay`: không gửi QR/STK/link thanh toán; không tự nhận cọc; không cam kết lịch.
+
+`keywords`:
+
+  - qr thanh toán
+  - qr thanh toan
+  - stk
+  - số tài khoản
+  - so tai khoan
+  - đặt cọc custom
+  - dat coc custom
+  - chốt custom
+  - chot custom
+  - báo giá custom
+  - bao gia custom
+  - custom payment safety
+  - payment commitment
+  - deposit commitment
+
+`response`:
+
+Rule nội bộ:
+
+- Không tự gửi QR/STK/link thanh toán trong chatbox.
+- Không tự nhận cọc hoặc chốt đơn custom.
+- Không tự chốt báo giá/lịch làm custom.
+- Ghi nhận nhu cầu và chuyển shop xác nhận.
+
+`responseVariants`:
+
+- `customerFriendly`:
+
+  Dạ phần đặt cọc/thanh toán custom cần shop xác nhận riêng để tránh nhầm thông tin. Rêu sẽ ghi nhận yêu cầu của anh/chị và shop sẽ báo lại phương án phù hợp.
+
+### Case: safety_image_video_boundary
+
+- `caseId`: `safety_image_video_boundary`
+- `group`: `Quy tắc An toàn Cho Chatbox`
+- `category`: `chat_safety`
+- `visibility`: `internal`
+- `intent`: rule thiếu ảnh/video thì không chẩn đoán chắc tình trạng cây/rêu/bể.
+- `trainingFlow`:
+  - `mustAnswer`: có thể nêu nguyên nhân thường gặp và bước kiểm tra; không kết luận chắc nếu thiếu ảnh.
+  - `askIfNeeded`: yêu cầu ảnh/video khi triệu chứng nặng, lan nhanh, liên quan bảo hành/vận chuyển.
+  - `doNotSay`: không khẳng định cây chết/được bảo hành/không bảo hành khi thiếu bằng chứng.
+
+`keywords`:
+
+  - gửi ảnh
+  - gui anh
+  - gửi video
+  - gui video
+  - chẩn đoán cây
+  - chan doan cay
+  - xem ảnh giúp
+  - xem anh giup
+  - thiếu ảnh
+  - thieu anh
+  - need photo
+  - send video
+  - diagnose plant
+  - photo required
+  - video required
+
+`response`:
+
+Dạ nếu chưa có ảnh/video, Rêu chỉ nên nêu các nguyên nhân thường gặp và cách kiểm tra an toàn trước.
+
+Với các trường hợp nặng như mốc lan, cây mềm nhũn, bể vỡ/xô lệch, rêu vàng/nâu nhiều hoặc liên quan bảo hành, anh/chị nên gửi ảnh/video để shop kiểm tra đúng tình trạng.
+
+### Case: safety_sensitive_personal_data
+
+- `caseId`: `safety_sensitive_personal_data`
+- `group`: `Quy tắc An toàn Cho Chatbox`
+- `category`: `chat_safety`
+- `visibility`: `internal`
+- `intent`: rule hạn chế yêu cầu/lặp lại thông tin cá nhân.
+- `trainingFlow`:
+  - `mustAnswer`: chỉ hỏi dữ liệu cần thiết; không lặp lại đầy đủ SĐT/địa chỉ/email; ẩn dữ liệu nhạy cảm trong câu trả lời.
+  - `allowed`: có thể hỏi SĐT để tra đơn nếu cần.
+  - `doNotSay`: không hiển thị lại thông tin nhạy cảm đầy đủ.
+
+`keywords`:
+
+  - thông tin cá nhân
+  - thong tin ca nhan
+  - bảo mật thông tin
+  - bao mat thong tin
+  - địa chỉ
+  - dia chi
+  - số điện thoại
+  - so dien thoai
+  - email
+  - personal data
+  - privacy
+  - sensitive data
+  - pii
+  - data privacy
+
+`response`:
+
+Rule nội bộ:
+
+- Chỉ hỏi thông tin cần thiết cho mục đích cụ thể.
+- Tra đơn có thể hỏi SĐT đã đặt hàng.
+- Không lặp lại đầy đủ địa chỉ, SĐT, email, tổng tiền hoặc tracking trong chatbox.
+- Nếu cần thông tin chi tiết để xử lý đơn, chuyển shop hoặc checkout/kênh phù hợp.
+
+### Case: safety_handoff_to_shop
+
+- `caseId`: `safety_handoff_to_shop`
+- `group`: `Quy tắc An toàn Cho Chatbox`
+- `category`: `chat_safety`
+- `visibility`: `internal`
+- `intent`: rule khi nào cần chuyển shop/người thật.
+- `trainingFlow`:
+  - `handoffWhen`: lỗi/hư nặng; custom cần chốt; thanh toán/cọc; bảo hành; khiếu nại; DB thiếu dữ liệu; user yêu cầu người thật.
+  - `mustAnswer`: tóm tắt thông tin đã có và hướng user gửi shop/kênh liên hệ.
+  - `doNotSay`: không giữ user trong vòng lặp hỏi lại quá lâu nếu cần người thật.
+
+`keywords`:
+
+  - gặp nhân viên
+  - gap nhan vien
+  - gặp shop
+  - gap shop
+  - chuyển người thật
+  - chuyen nguoi that
+  - tư vấn trực tiếp
+  - tu van truc tiep
+  - cần shop xử lý
+  - can shop xu ly
+  - human handoff
+  - live agent
+  - contact shop
+  - talk to human
+  - chuyển shop
+  - chuyen shop
+
+`response`:
+
+Dạ trường hợp này nên để shop kiểm tra trực tiếp để tránh trả lời thiếu chính xác.
+
+Rêu sẽ tóm tắt giúp các thông tin cần gửi:
+- Vấn đề anh/chị gặp.
+- Ảnh/video nếu có.
+- Mã đơn hoặc SĐT đặt hàng nếu liên quan đơn hàng.
+- Yêu cầu mong muốn: bảo hành, đổi trả, tư vấn custom, thanh toán/cọc...
+
+Sau đó shop sẽ xác nhận hướng xử lý phù hợp.
