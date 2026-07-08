@@ -47,7 +47,7 @@ function checkRateLimit(ip: string): boolean {
 let activeAiRequests = 0;
 const MAX_CONCURRENT_AI = 2;
 const DB_QUERY_TIMEOUT_MS = 8_000;
-const AI_COMPLETION_TIMEOUT_MS = 16_000;
+const AI_COMPLETION_TIMEOUT_MS = 8_000;
 
 async function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise<T | null> {
   let timeoutId: ReturnType<typeof setTimeout> | undefined;
@@ -1444,20 +1444,29 @@ Quy tắc:
 - Câu đơn giản trả 3-6 câu; câu xử lý sự cố dùng bullet ngắn.`;
 
   try {
-    const answer = await withTimeout(
-      completeFromOpenAI({
+    const models = Array.from(new Set([
+      process.env.OPENAI_MODEL || "gpt-5-mini",
+      process.env.OPENAI_FALLBACK_MODEL || "gpt-4o-mini",
+    ]));
+
+    for (const model of models) {
+      const answer = await withTimeout(
+        completeFromOpenAI({
         systemPrompt,
         messages: [
           ...history.slice(-4),
           { role: "user", content: message },
         ],
-        model: process.env.OPENAI_MODEL || "gpt-5-mini",
-      }),
-      AI_COMPLETION_TIMEOUT_MS,
-      "Care AI completion"
-    );
+          model,
+        }),
+        AI_COMPLETION_TIMEOUT_MS,
+        `Care AI completion (${model})`
+      );
 
-    return answer;
+      if (answer) return answer;
+    }
+
+    return null;
   } catch (err) {
     console.error("[AI] care completion error:", err);
     return null;
