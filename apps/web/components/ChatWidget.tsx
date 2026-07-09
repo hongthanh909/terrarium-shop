@@ -4,7 +4,7 @@ import { useState, useRef, useEffect, useLayoutEffect, useMemo, useCallback } fr
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, X, Maximize2, Minimize2, ExternalLink, Package, Truck, ShieldCheck, Sparkles, RotateCcw } from "lucide-react";
+import { Bot, Send, X, Maximize2, Minimize2, ExternalLink, Package, Truck, ShieldCheck, Sparkles, RotateCcw } from "lucide-react";
 
 // ── Types ────────────────────────────────────────────
 interface ProductCard {
@@ -46,12 +46,6 @@ const CATEGORY_ITEMS = [
 ];
 
 // ── Quick suggestion pills ──────────────────────────
-const SUGGESTION_PILLS = [
-  "Sản phẩm giá rẻ",
-  "Cách chăm sóc bể",
-  "Gợi ý thêm nhiều sản phẩm",
-];
-
 // ── Helpers ──────────────────────────────────────────
 function extractProductLinks(text: string) {
   const products: { name: string; slug: string; price: string; image?: string }[] = [];
@@ -133,10 +127,18 @@ export default function ChatWidget() {
   // ── Viewport dimensions ────────────────────────
   const [viewport, setViewport] = useState({ w: 0, h: 0 });
   useEffect(() => {
-    const update = () => setViewport({ w: window.innerWidth, h: window.innerHeight });
+    const update = () => setViewport({
+      w: document.documentElement.clientWidth,
+      h: document.documentElement.clientHeight,
+    });
     update();
+    const viewportObserver = new ResizeObserver(update);
+    viewportObserver.observe(document.documentElement);
     window.addEventListener("resize", update);
-    return () => window.removeEventListener("resize", update);
+    return () => {
+      viewportObserver.disconnect();
+      window.removeEventListener("resize", update);
+    };
   }, []);
 
   // ── Free drag (absolute position) ──────────────
@@ -165,8 +167,8 @@ export default function ChatWidget() {
   } | null>(null);
 
   const clampPanelRect = useCallback((rect: typeof panelRect) => {
-    const vw = viewport.w || window.innerWidth;
-    const vh = viewport.h || window.innerHeight;
+    const vw = viewport.w || document.documentElement.clientWidth;
+    const vh = viewport.h || document.documentElement.clientHeight;
     const width = Math.max(MIN_PANEL_SIZE.width, Math.min(rect.width, vw - 16));
     const height = Math.max(MIN_PANEL_SIZE.height, Math.min(rect.height, vh - 16));
     return {
@@ -178,8 +180,8 @@ export default function ChatWidget() {
   }, [viewport.h, viewport.w]);
 
   const getPanelRectNearBubble = useCallback((size = DEFAULT_PANEL_SIZE) => {
-    const vw = viewport.w || window.innerWidth;
-    const vh = viewport.h || window.innerHeight;
+    const vw = viewport.w || document.documentElement.clientWidth;
+    const vh = viewport.h || document.documentElement.clientHeight;
     const width = Math.min(size.width, vw - 16);
     const height = Math.min(size.height, vh - 16);
     // Anchor panel above the bubble using the same right/bottom coordinate system
@@ -522,7 +524,16 @@ export default function ChatWidget() {
     if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(message); }
   };
 
-  const panelScale = Math.max(0.88, Math.min(1.08, panelRect.width / DEFAULT_PANEL_SIZE.width));
+  const panelScale = Math.max(
+    0.8,
+    Math.min(
+      1.2,
+      Math.min(
+        panelRect.width / DEFAULT_PANEL_SIZE.width,
+        panelRect.height / DEFAULT_PANEL_SIZE.height,
+      ),
+    ),
+  );
   const compactPanel = panelRect.width < 370 || panelRect.height < 500;
   const textareaMaxHeight = Math.max(72, Math.min(120, panelRect.height * 0.22));
 
@@ -536,14 +547,14 @@ export default function ChatWidget() {
           position: fixed;
           min-width: 320px;
           min-height: 420px;
-          max-width: calc(100vw - 16px);
+          max-width: calc(100% - 16px);
           max-height: calc(100dvh - 16px);
         }
         @media (max-width: 639px) {
           .cw-panel {
             border-radius: 18px !important;
-            min-width: min(320px, calc(100vw - 16px));
-            max-width: calc(100vw - 16px);
+            min-width: min(320px, calc(100% - 16px));
+            max-width: calc(100% - 16px);
             max-height: calc(100dvh - 16px);
           }
         }
@@ -583,6 +594,21 @@ export default function ChatWidget() {
         .cw-fluid-text { font-size: calc(13px * var(--cw-scale)); }
         .cw-fluid-small { font-size: calc(12px * var(--cw-scale)); }
         .cw-fluid-gap { gap: calc(12px * var(--cw-scale)); }
+        .cw-fluid-header { gap: calc(12px * var(--cw-scale)); padding: calc(12px * var(--cw-scale)) calc(16px * var(--cw-scale)); }
+        .cw-fluid-avatar { width: calc(36px * var(--cw-scale)); height: calc(36px * var(--cw-scale)); }
+        .cw-fluid-action { width: calc(32px * var(--cw-scale)); height: calc(32px * var(--cw-scale)); }
+        .cw-fluid-action svg { width: calc(14px * var(--cw-scale)); height: calc(14px * var(--cw-scale)); }
+        .cw-fluid-body { padding: calc(16px * var(--cw-scale)); }
+        .cw-fluid-welcome { gap: calc(20px * var(--cw-scale)); }
+        .cw-fluid-welcome-card { padding: calc(16px * var(--cw-scale)) calc(20px * var(--cw-scale)); }
+        .cw-fluid-category-grid { gap: calc(10px * var(--cw-scale)); }
+        .cw-fluid-category-card { gap: calc(8px * var(--cw-scale)); padding: calc(16px * var(--cw-scale)) calc(12px * var(--cw-scale)); }
+        .cw-fluid-category-icon { width: calc(40px * var(--cw-scale)); height: calc(40px * var(--cw-scale)); }
+        .cw-fluid-category-icon svg { width: calc(20px * var(--cw-scale)); height: calc(20px * var(--cw-scale)); }
+        .cw-fluid-category-label { font-size: calc(12px * var(--cw-scale)); }
+        .cw-fluid-input-wrap { gap: calc(8px * var(--cw-scale)); padding: calc(8px * var(--cw-scale)) calc(14px * var(--cw-scale)); }
+        .cw-fluid-send { width: calc(44px * var(--cw-scale)); height: calc(44px * var(--cw-scale)); }
+        .cw-fluid-send svg { width: calc(14px * var(--cw-scale)); height: calc(14px * var(--cw-scale)); }
         .cw-scroll::-webkit-scrollbar { width: 3px; }
         .cw-scroll::-webkit-scrollbar-track { background: transparent; }
         .cw-scroll::-webkit-scrollbar-thumb { background: rgba(66,87,51,0.15); border-radius: 99px; }
@@ -599,18 +625,6 @@ export default function ChatWidget() {
         .cw-category-card:active {
           transform: translateY(0) scale(0.97);
         }
-        .cw-suggestion-pill {
-          transition: transform 0.18s cubic-bezier(0.4,0,0.2,1), box-shadow 0.18s cubic-bezier(0.4,0,0.2,1), border-color 0.18s cubic-bezier(0.4,0,0.2,1), background-color 0.18s cubic-bezier(0.4,0,0.2,1), color 0.18s cubic-bezier(0.4,0,0.2,1);
-          cursor: pointer;
-        }
-        .cw-suggestion-pill:hover {
-          background: #2d4a22 !important;
-          color: white !important;
-          border-color: #2d4a22 !important;
-          transform: translateY(-1px);
-          box-shadow: 0 4px 12px rgba(45,74,34,0.2);
-        }
-        .cw-suggestion-pill:active { transform: translateY(0) scale(0.97); }
         .cw-product-card {
           transition: transform 0.25s cubic-bezier(0.4,0,0.2,1), box-shadow 0.25s cubic-bezier(0.4,0,0.2,1), border-color 0.25s cubic-bezier(0.4,0,0.2,1);
         }
@@ -694,7 +708,7 @@ export default function ChatWidget() {
 
             {/* ── HEADER — "Chat với Rêu" ────────── */}
             <div
-              className={`cw-panel-header flex-shrink-0 flex items-center ${compactPanel ? "gap-2 px-3 py-2.5" : "gap-3 px-4 py-3"}`}
+              className="cw-panel-header cw-fluid-header flex-shrink-0 flex items-center"
               onPointerDown={onPanelDragStart}
               onPointerMove={onPanelDragMove}
               onPointerUp={onPanelDragEnd}
@@ -706,7 +720,7 @@ export default function ChatWidget() {
             >
               {/* Avatar */}
               <div
-                className={`${compactPanel ? "w-8 h-8" : "w-9 h-9"} rounded-full overflow-hidden flex-shrink-0`}
+                className="cw-fluid-avatar rounded-full overflow-hidden flex-shrink-0"
                 style={{ border: "1.5px solid rgba(255,255,255,0.25)", background: "rgba(255,255,255,0.08)" }}
               >
                 <img
@@ -729,7 +743,7 @@ export default function ChatWidget() {
                   <button
                     onClick={resetChat}
                     title="TrĂ² chuyá»‡n láº¡i"
-                    className={`${compactPanel ? "w-8 h-8" : "w-10 h-10 sm:w-8 sm:h-8"} rounded-lg flex items-center justify-center transition-colors`}
+                    className="cw-fluid-action rounded-lg flex items-center justify-center transition-colors"
                     style={{ border: "none", cursor: "pointer", color: "rgba(255,255,255,0.6)" }}
                     onMouseEnter={e => (e.currentTarget.style.background = "rgba(255,255,255,0.1)")}
                     onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
@@ -748,7 +762,7 @@ export default function ChatWidget() {
                     }));
                   }}
                   title={expanded ? "Thu nhỏ" : "Mở rộng"}
-                  className={`${compactPanel ? "w-8 h-8" : "w-10 h-10 sm:w-8 sm:h-8"} rounded-lg flex items-center justify-center transition-colors`}
+                  className="cw-fluid-action rounded-lg flex items-center justify-center transition-colors"
                   style={{ border: "none", cursor: "pointer", color: "rgba(255,255,255,0.6)" }}
                   onMouseEnter={e => (e.currentTarget.style.background = "rgba(255,255,255,0.1)")}
                   onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
@@ -758,7 +772,7 @@ export default function ChatWidget() {
                 <button
                   onClick={() => setOpen(false)}
                   title="Đóng"
-                  className={`${compactPanel ? "w-8 h-8" : "w-10 h-10 sm:w-8 sm:h-8"} rounded-lg flex items-center justify-center transition-colors`}
+                  className="cw-fluid-action rounded-lg flex items-center justify-center transition-colors"
                   style={{ border: "none", cursor: "pointer", color: "rgba(255,255,255,0.6)" }}
                   onMouseEnter={e => (e.currentTarget.style.background = "rgba(255,255,255,0.1)")}
                   onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
@@ -771,24 +785,24 @@ export default function ChatWidget() {
             {/* ── MESSAGES AREA ───────────────────── */}
             <div
               ref={messagesScrollRef}
-              className={`min-h-0 flex-1 overflow-y-auto cw-scroll flex flex-col ${compactPanel ? "px-3 py-3" : "px-4 py-4"}`}
+              className="cw-fluid-body min-h-0 flex-1 overflow-y-auto cw-scroll flex flex-col"
               style={{ background: "#fafbf8" }}
             >
               {/* ─── WELCOME SCREEN (initial state) ─── */}
               {showWelcomeScreen ? (
-                <div className="flex flex-col gap-5">
+                <div className="cw-fluid-welcome flex flex-col">
                   {/* Welcome card */}
                   <div
-                    className="rounded-2xl px-5 py-4"
+                    className="cw-fluid-welcome-card rounded-2xl"
                     style={{ background: "linear-gradient(135deg, #eef5ea 0%, #f4f9f1 100%)", border: "1px solid #dde8d7" }}
                   >
-                    <p className="text-[15px] font-semibold leading-snug" style={{ color: "#1e3319" }}>
+                    <p className="font-semibold leading-snug" style={{ color: "#1e3319", fontSize: "calc(15px * var(--cw-scale))" }}>
                       {WELCOME_MESSAGE}
                     </p>
                   </div>
 
                   {/* ── 4 Category Cards (2×2 grid) ─── */}
-                  <div className="grid grid-cols-2 gap-2.5">
+                  <div className="cw-fluid-category-grid grid grid-cols-2">
                     {CATEGORY_ITEMS.map((item, idx) => {
                       const Icon = item.icon;
                       return (
@@ -798,19 +812,19 @@ export default function ChatWidget() {
                           animate={{ opacity: 1, y: 0, scale: 1 }}
                           transition={{ delay: 0.05 + idx * 0.06, type: "spring", stiffness: 420, damping: 28 }}
                           onClick={() => handleCategoryClick(item.action)}
-                          className="cw-category-card flex flex-col items-center gap-2 py-4 px-3 rounded-xl text-center"
+                          className="cw-category-card cw-fluid-category-card flex flex-col items-center rounded-xl text-center"
                           style={{
                             background: "#ffffff",
                             border: "1px solid #e3ebdd",
                           }}
                         >
                           <div
-                            className="w-10 h-10 rounded-xl flex items-center justify-center"
+                            className="cw-fluid-category-icon rounded-xl flex items-center justify-center"
                             style={{ background: `${item.color}12`, color: item.color }}
                           >
                             <Icon size={20} strokeWidth={1.8} />
                           </div>
-                          <span className="text-[12px] font-semibold leading-tight" style={{ color: "#2d4a22" }}>
+                          <span className="cw-fluid-category-label font-semibold leading-tight" style={{ color: "#2d4a22" }}>
                             {item.label}
                           </span>
                         </motion.button>
@@ -819,31 +833,6 @@ export default function ChatWidget() {
                   </div>
 
                   {/* ── "Bạn muốn hỏi về:" ─────────── */}
-                  <div>
-                    <p className="text-[13px] font-semibold mb-2.5" style={{ color: "#5a6d52" }}>
-                      Bạn muốn hỏi về:
-                    </p>
-                    <div className="flex flex-col gap-2">
-                      {SUGGESTION_PILLS.map((pill, idx) => (
-                        <motion.button
-                          key={pill}
-                          initial={{ opacity: 0, x: -8 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: 0.3 + idx * 0.06, type: "spring", stiffness: 400, damping: 28 }}
-                          onClick={() => sendMessage(pill)}
-                          className="cw-suggestion-pill text-left text-[13px] font-medium px-4 py-2.5 rounded-xl"
-                          style={{
-                            background: "#ffffff",
-                            border: "1px solid #dde8d7",
-                            color: "#2d4a22",
-                          }}
-                        >
-                          {pill}
-                        </motion.button>
-                      ))}
-                    </div>
-                  </div>
-
                   {/* ── "Trò chuyện lại với Rêu" ───── */}
                   <div style={{ borderTop: "1px solid #e8ede4", paddingTop: 16 }}>
                     <button
@@ -1020,8 +1009,8 @@ export default function ChatWidget() {
             </div>
 
             {/* ── INPUT ────────────────────────────── */}
-            <div className={`flex-shrink-0 ${compactPanel ? "px-2.5 py-2" : "px-3 py-2.5"} pb-[calc(env(safe-area-inset-bottom)+0.625rem)]`} style={{ borderTop: "1px solid #e3ebdd", background: "#ffffff" }}>
-              <div className={`flex items-end gap-2 rounded-2xl ${compactPanel ? "px-3 py-1.5" : "px-3.5 py-2"}`} style={{ background: "#f5f8f3", border: "1px solid #e3ebdd" }}>
+              <div className="flex-shrink-0 px-[calc(12px*var(--cw-scale))] pt-[calc(10px*var(--cw-scale))] pb-[calc(env(safe-area-inset-bottom)+0.625rem)]" style={{ borderTop: "1px solid #e3ebdd", background: "#ffffff" }}>
+              <div className="cw-fluid-input-wrap flex items-end rounded-2xl" style={{ background: "#f5f8f3", border: "1px solid #e3ebdd" }}>
                 <div className="flex-1 relative">
                   <textarea
                     ref={textareaRef}
@@ -1048,7 +1037,7 @@ export default function ChatWidget() {
                 <button
                   onClick={() => sendMessage(message)}
                   disabled={isSending || isCooldown || !message.trim() || userMsgCount >= MAX_MESSAGES}
-                  className={`${compactPanel ? "w-10 h-10" : "w-11 h-11"} rounded-full flex items-center justify-center flex-shrink-0 transition-colors`}
+                  className="cw-fluid-send rounded-full flex items-center justify-center flex-shrink-0 transition-colors"
                   style={{
                     background: message.trim() && !isSending && !isCooldown
                       ? "linear-gradient(135deg, #3a5229, #4a6a35)"
@@ -1064,7 +1053,7 @@ export default function ChatWidget() {
               <div className="text-center pt-1.5 pb-0.5">
                 <Link
                   href="/products"
-                  className="inline-flex items-center gap-1 text-xs font-medium no-underline transition-colors"
+                  className="cw-fluid-small inline-flex items-center gap-1 font-medium no-underline transition-colors"
                   style={{ color: "#526248" }}
                   onMouseEnter={e => (e.currentTarget.style.color = "#2d4a22")}
                   onMouseLeave={e => (e.currentTarget.style.color = "#526248")}
@@ -1105,7 +1094,7 @@ export default function ChatWidget() {
                   boxShadow: "0 2px 14px rgba(45,74,34,0.14), 0 0 0 1px rgba(220,235,215,0.8)",
                 }}
               >
-                Chat với Rêu 🌿
+                Chat với Rêu
               </motion.div>
 
               {/* Bubble — forest gradient */}
@@ -1116,12 +1105,7 @@ export default function ChatWidget() {
                   transition: "transform 0.2s ease",
                 }}
               >
-                {/* Leaf icon */}
-                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M12 2C6.5 2 4 6 4 10C4 14.5 7.5 18 12 20C16.5 18 20 14.5 20 10C20 6 17.5 2 12 2Z" fill="rgba(255,255,255,0.9)" />
-                  <path d="M12 20V22" stroke="rgba(255,255,255,0.7)" strokeWidth="1.5" strokeLinecap="round" />
-                  <path d="M12 10C10 12 9 14 9 16" stroke="rgba(45,74,34,0.5)" strokeWidth="1" strokeLinecap="round" />
-                </svg>
+                <Bot size={27} strokeWidth={1.9} color="rgba(255,255,255,0.94)" aria-hidden="true" />
                 {/* Status dot */}
                 <span
                   className="cw-status-dot absolute -top-0.5 -right-0.5 w-3.5 h-3.5 rounded-full"
