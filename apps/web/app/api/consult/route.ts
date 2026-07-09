@@ -19,7 +19,7 @@ import { completeFromOpenAI, streamFromOpenAI } from "@/lib/ai/openai";
 // RATE LIMITING
 // =============================================
 const RATE_LIMIT_WINDOW_MS = 60_000;
-const RATE_LIMIT_MAX = 8;
+const RATE_LIMIT_MAX = 20;
 const rateLimitMap = new Map<string, { count: number; windowStart: number }>();
 
 setInterval(() => {
@@ -47,7 +47,7 @@ function checkRateLimit(ip: string): boolean {
 let activeAiRequests = 0;
 // OpenAI runs remotely, so a limit of 2 causes valid customer requests to
 // fall back immediately during small traffic bursts.
-const MAX_CONCURRENT_AI = 8;
+const MAX_CONCURRENT_AI = 12;
 const DB_QUERY_TIMEOUT_MS = 8_000;
 const AI_COMPLETION_TIMEOUT_MS = 20_000;
 
