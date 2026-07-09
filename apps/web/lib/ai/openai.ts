@@ -161,7 +161,7 @@ export async function completeFromOpenAI({
   }
 
   const abortCtrl = new AbortController();
-  const timeout = setTimeout(() => abortCtrl.abort(), 14_000);
+  const timeout = setTimeout(() => abortCtrl.abort(), 20_000);
 
   try {
     const res = await fetch("https://api.openai.com/v1/responses", {

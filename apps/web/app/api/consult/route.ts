@@ -45,9 +45,11 @@ function checkRateLimit(ip: string): boolean {
 // CONCURRENCY
 // =============================================
 let activeAiRequests = 0;
-const MAX_CONCURRENT_AI = 2;
+// OpenAI runs remotely, so a limit of 2 causes valid customer requests to
+// fall back immediately during small traffic bursts.
+const MAX_CONCURRENT_AI = 8;
 const DB_QUERY_TIMEOUT_MS = 8_000;
-const AI_COMPLETION_TIMEOUT_MS = 14_000;
+const AI_COMPLETION_TIMEOUT_MS = 20_000;
 
 async function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise<T | null> {
   let timeoutId: ReturnType<typeof setTimeout> | undefined;
