@@ -484,7 +484,8 @@ function isCustomFactIntent(message: string): boolean {
 function filterFactKnowledgeHits(message: string, hits: KnowledgeHit[]): KnowledgeHit[] {
   const n = normalizeVN(message);
   const wantedPatterns: RegExp[] = [];
-  const wantsWarranty = /\bbao hanh\b|\bdoi tra\b|\bhoan hang\b/.test(n);
+  const wantsWarranty =
+    /\bbao hanh\b|\bdoi tra\b|\bhoan hang\b|\b(vo|be|hong|loi|nut|roi vo|xo lech)\b/.test(n);
   const wantsGenericPolicy = /\bchinh sach\b/.test(n) && !wantsWarranty;
 
   if (wantsWarranty) {
@@ -1513,6 +1514,53 @@ Quy tắc:
   }
 }
 
+async function completeFactFromAI(
+  message: string,
+  history: { role: string; content: string }[],
+  knowledgeHits: KnowledgeHit[]
+): Promise<string | null> {
+  if (activeAiRequests >= MAX_CONCURRENT_AI || knowledgeHits.length === 0) {
+    return null;
+  }
+  activeAiRequests++;
+
+  const officialFacts = formatKnowledgeContext(knowledgeHits.slice(0, 3));
+  const systemPrompt = `Bạn là "Rêu", trợ lý của Tiệm Rêu Décor.
+Chỉ trả lời câu hỏi hiện tại bằng dữ liệu trong NGUỒN KB CHÍNH THỨC bên dưới.
+
+Quy tắc bắt buộc:
+- Chỉ lấy phần trực tiếp liên quan đến ý khách đang hỏi; không đọc lại toàn bộ chính sách.
+- Diễn đạt tự nhiên, thân thiện, xưng "em", gọi khách "anh/chị".
+- Câu đơn giản trả lời 1-3 câu; chỉ dùng bullet khi khách hỏi nhiều ý.
+- Giữ nguyên chính xác số ngày, phần trăm, mức tiền, phạm vi áp dụng và điều kiện.
+- Không thêm, suy đoán hoặc dùng kiến thức ghi nhớ ngoài KB.
+- Nếu KB chưa đủ để kết luận, nói rõ phần nào cần shop xác nhận.
+- Ưu tiên ngữ cảnh câu hỏi nối tiếp gần nhất, nhưng không lặp lại nội dung không được hỏi.
+
+NGUỒN KB CHÍNH THỨC:
+${officialFacts}`;
+
+  try {
+    return await withTimeout(
+      completeFromOpenAI({
+        systemPrompt,
+        messages: [
+          ...history.slice(-4),
+          { role: "user", content: message },
+        ],
+        model: process.env.OPENAI_CARE_MODEL || process.env.OPENAI_MODEL || "gpt-4o-mini",
+      }),
+      AI_COMPLETION_TIMEOUT_MS,
+      "Fact KB phrasing"
+    );
+  } catch (err) {
+    console.error("[AI] fact phrasing error:", err);
+    return null;
+  } finally {
+    activeAiRequests--;
+  }
+}
+
 // =============================================
 // 7. DB PRODUCT QUERY — Cards với thumbnail
 // =============================================
@@ -1864,9 +1912,11 @@ export async function POST(request: Request) {
 
     if ((policyFactIntent || customFactIntent) && factKnowledgeHits.length > 0) {
       console.log(`[CONSULT] 📚 Fact KB hit: ${factKnowledgeHits.map((hit) => hit.keyword).join(" | ")}`);
+      const phrasedAnswer = await completeFactFromAI(trimmed, history, factKnowledgeHits);
       return NextResponse.json({
-        response: buildKnowledgeFallback(factKnowledgeHits, trimmed),
+        response: phrasedAnswer || buildKnowledgeFallback(factKnowledgeHits, trimmed),
         source: "knowledge",
+        renderedBy: phrasedAnswer ? "ai" : "direct",
         knowledgeIds: factKnowledgeHits.map((hit) => hit.id),
       });
     }
@@ -1897,18 +1947,12 @@ export async function POST(request: Request) {
     // ── 6. ADMIN KNOWLEDGE BASE FOR NON-CARE ──────────────
     if (factKnowledgeHits.length > 0) {
       console.log(`[CONSULT] 📚 KB fact hit: ${factKnowledgeHits.map((hit) => hit.keyword).join(" | ")}`);
-
-      if (shouldAnswerKnowledgeDirectly(factKnowledgeHits)) {
-        return NextResponse.json({
-          response: buildKnowledgeFallback(factKnowledgeHits, trimmed),
-          source: "knowledge",
-          knowledgeIds: factKnowledgeHits.map((hit) => hit.id),
-        });
-      }
-
+      const phrasedAnswer = await completeFactFromAI(trimmed, history, factKnowledgeHits);
       return NextResponse.json({
-        response: buildKnowledgeFallback(factKnowledgeHits, trimmed),
-        source: "fallback",
+        response: phrasedAnswer || buildKnowledgeFallback(factKnowledgeHits, trimmed),
+        source: "knowledge",
+        renderedBy: phrasedAnswer ? "ai" : "direct",
+        knowledgeIds: factKnowledgeHits.map((hit) => hit.id),
       });
     }
 
