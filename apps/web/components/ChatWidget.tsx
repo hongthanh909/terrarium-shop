@@ -103,6 +103,9 @@ const MAX_INPUT = 400;
 const DEFAULT_PANEL_SIZE = { width: 380, height: 520 };
 const EXPANDED_PANEL_SIZE = { width: 520, height: 700 };
 const MIN_PANEL_SIZE = { width: 320, height: 420 };
+const MIN_UI_ZOOM = 0.8;
+const MAX_UI_ZOOM = 1.25;
+const UI_ZOOM_STEP = 0.05;
 
 const WELCOME_MESSAGE = "Xin chào, Rêu có thể giúp bạn điều gì?";
 
@@ -114,6 +117,7 @@ export default function ChatWidget() {
 
   const [open, setOpen] = useState(false);
   const [expanded, setExpanded] = useState(false);
+  const [uiZoom, setUiZoom] = useState(1);
   const [message, setMessage] = useState("");
   const [isSending, setIsSending] = useState(false);
   const [isAIAvailable, setIsAIAvailable] = useState<boolean | null>(null);
@@ -329,6 +333,24 @@ export default function ChatWidget() {
     return () => observer.disconnect();
   }, [clampPanelRect, open]);
 
+  useEffect(() => {
+    const panel = panelRef.current;
+    if (!open || !panel) return;
+
+    const handleZoomWheel = (event: WheelEvent) => {
+      if (!event.ctrlKey || event.deltaY === 0) return;
+      event.preventDefault();
+      const direction = event.deltaY < 0 ? 1 : -1;
+      setUiZoom((current) => {
+        const next = current + direction * UI_ZOOM_STEP;
+        return Math.min(MAX_UI_ZOOM, Math.max(MIN_UI_ZOOM, Number(next.toFixed(2))));
+      });
+    };
+
+    panel.addEventListener("wheel", handleZoomWheel, { passive: false });
+    return () => panel.removeEventListener("wheel", handleZoomWheel);
+  }, [open]);
+
   // ── Page context ───────────────────────────────
   const [pageCtx, setPageCtx] = useState<PageContext>(() => getPageContext(pathname));
   const [productData, setProductData] = useState<{ name: string; price: string; category: string } | null>(null);
@@ -524,7 +546,7 @@ export default function ChatWidget() {
     if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(message); }
   };
 
-  const panelScale = Math.max(
+  const sizeScale = Math.max(
     0.8,
     Math.min(
       1.2,
@@ -534,6 +556,7 @@ export default function ChatWidget() {
       ),
     ),
   );
+  const panelScale = Math.max(0.7, Math.min(1.35, sizeScale * uiZoom));
   const compactPanel = panelRect.width < 370 || panelRect.height < 500;
   const textareaMaxHeight = Math.max(72, Math.min(120, panelRect.height * 0.22));
 
