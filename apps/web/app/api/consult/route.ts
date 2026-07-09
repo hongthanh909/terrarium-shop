@@ -370,6 +370,8 @@ function isCareAiIntent(message: string): boolean {
     /\bcham nhu the nao\b/,
     /\bco can cham\b/,
     /\breu\b.*\b(de cham|kho cham|cham hon|can cham|song tot|song khoe)\b/,
+    /\breu\b.*\b(de song|song hon|khoe hon|loai nao)\b/,
+    /\b(de song|song hon|khoe hon|loai nao)\b.*\breu\b/,
     /\b(co reu|nhieu reu|it reu)\b.*\b(de cham|kho cham|cham hon|tot hon)\b/,
     /\bterrarium\b.*\b(de cham|kho cham|cham hon)\b/,
     /\bcham soc\b/,
@@ -1831,7 +1833,7 @@ export async function POST(request: Request) {
     }
 
     // ── 3. PRODUCT INTENT: DB realtime query + thumbnails ──────────
-    if (isProductIntent(trimmed)) {
+    if (!policyFactIntent && !customFactIntent && isProductIntent(trimmed)) {
       console.log(`[CONSULT] 🛒 Product intent detected`);
       const productResult = await queryProducts(trimmed);
       if (productResult) {
@@ -1856,7 +1858,7 @@ export async function POST(request: Request) {
     const knowledgeHits = await searchOfficialKnowledge(knowledgeSearchQuery, trimmed);
     const factKnowledgeHits = (policyFactIntent || customFactIntent)
       ? filterFactKnowledgeHits(trimmed, knowledgeHits)
-      : knowledgeHits.filter(isShopFactKnowledgeHit);
+      : [];
 
     if ((policyFactIntent || customFactIntent) && factKnowledgeHits.length > 0) {
       console.log(`[CONSULT] 📚 Fact KB hit: ${factKnowledgeHits.map((hit) => hit.keyword).join(" | ")}`);
