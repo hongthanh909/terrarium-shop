@@ -71,7 +71,7 @@ jobs:
 
             echo "🔄 Syncing DB schema..."
             npx prisma db push --accept-data-loss
-            npx prisma migrate deploy || true
+            npx prisma migrate deploy --schema ../../packages/database/prisma/schema.prisma
 
             # ── Cập nhật AI env trong .env ───────────────────────────────────
             echo "🤖 Updating AI env..."

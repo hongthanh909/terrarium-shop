@@ -1805,9 +1805,12 @@ export async function POST(request: Request) {
     }
 
     console.log(`[CONSULT] "${trimmed.slice(0, 60)}..." from ${ip}`);
-    const careAiIntent = isCareAiIntent(trimmed);
     const policyFactIntent = isPolicyFactIntent(trimmed);
     const customFactIntent = isCustomFactIntent(trimmed);
+    const careAiIntent =
+      !policyFactIntent &&
+      !customFactIntent &&
+      isCareAiIntent(trimmed);
 
     // ── 1. GUARDRAIL: Chặn off-topic ──────────────────────
     if (isOffTopic(trimmed)) {
