@@ -7,16 +7,20 @@ on:
   # Cho phép chạy thủ công từ GitHub Actions tab
   workflow_dispatch:
 
+concurrency:
+  group: terrarium-shop-production-deploy
+  cancel-in-progress: false
+
 jobs:
   deploy:
     name: Deploy to VPS (14.225.210.118)
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 35
 
     steps:
       # ── 1. Checkout code ──────────────────────────────────────────────────
       - name: 📥 Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       # ── 2. Kiểm tra VPS có reachable không ────────────────────────────────
       - name: 🔍 Check VPS connectivity
@@ -41,10 +45,17 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           port: ${{ secrets.VPS_PORT }}
-          command_timeout: 20m
+          command_timeout: 30m
           timeout: 60s
           script: |
             set -e
+
+            # Prevent concurrent jobs or manual deploys from touching .next together.
+            exec 9>/tmp/terrarium-shop-deploy.lock
+            if ! flock -w 900 9; then
+              echo "Another production deploy still holds the VPS lock."
+              exit 1
+            fi
             echo "🕐 $(date) — Bắt đầu deploy..."
 
             # ── Vào thư mục app ──────────────────────────────────────────────
@@ -55,8 +66,8 @@ jobs:
 
             # ── Pull code mới nhất từ GitHub ─────────────────────────────────
             echo "📦 Pulling latest code..."
-            git fetch origin main
-            git reset --hard origin/main
+            git fetch origin ${{ github.sha }}
+            git reset --hard ${{ github.sha }}
             DEPLOY_COMMIT=$(git rev-parse --short HEAD)
             echo "Deploy commit: $DEPLOY_COMMIT"
 
@@ -163,7 +174,11 @@ jobs:
 
             # ── Build production (Turbo monorepo) ────────────────────────────
             echo "🏗️  Building Next.js..."
-            npm run build
+            if ! npm run build; then
+              echo "First build failed; clearing generated caches and retrying once..."
+              rm -rf apps/web/.next .turbo/cache
+              npm run build
+            fi
 
             # ── Reload app với PM2 (zero downtime) ───────────────────────────
             echo "🔁 Reloading PM2..."
