@@ -12,8 +12,18 @@ export async function POST(request: NextRequest) {
 
     let created = 0;
     let updated = 0;
+    let deactivated = 0;
 
     const seedItems = [...DEFAULT_AI_KNOWLEDGE, ...ADDITIONAL_AI_KNOWLEDGE];
+
+    const legacyResult = await prisma.aiKnowledge.updateMany({
+      where: {
+        isActive: true,
+        category: { in: ["care", "general", "system", "product"] },
+      },
+      data: { isActive: false },
+    });
+    deactivated = legacyResult.count;
 
     for (const item of seedItems) {
       const keyword = item.keyword.trim().toLowerCase();
@@ -50,6 +60,7 @@ export async function POST(request: NextRequest) {
     await logAdminAction(admin.id, "UPDATE", "AiKnowledge", "default-seed", {
       created,
       updated,
+      deactivated,
       total: seedItems.length,
       additional: ADDITIONAL_AI_KNOWLEDGE.length,
     });
@@ -58,6 +69,7 @@ export async function POST(request: NextRequest) {
       success: true,
       created,
       updated,
+      deactivated,
       total: seedItems.length,
       additional: ADDITIONAL_AI_KNOWLEDGE.length,
     });

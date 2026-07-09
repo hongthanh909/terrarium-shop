@@ -286,20 +286,8 @@ function getInstantResponse(message: string): string | null {
     return "Dạ tạm biệt anh/chị! 👋🌿 Hẹn gặp lại, nếu cần tư vấn cứ quay lại nhé!";
 
   // ── Chính sách shop (cần trả lời chính xác, không nên để AI bịa) ──
-  if (/ship|giao hàng|vận chuyển|freeship|phí ship|phí giao|bao lâu.*nhận|nhận.*bao lâu|giao.*nhanh/i.test(q))
-    return "🚚 Dạ phần vận chuyển/phí ship cần trả theo chính sách hiện tại của shop và khu vực nhận hàng.\n\nAnh/chị cho Rêu biết khu vực nhận hàng và sản phẩm muốn đặt, Rêu sẽ hướng theo thông tin shop đã chốt. Nếu là đơn đã đặt, anh/chị gửi SĐT đặt hàng để Rêu tra trạng thái, nhưng Rêu sẽ không hiển thị tracking link/tổng tiền/địa chỉ trong chatbox.";
-
-  if (/đổi trả|trả hàng|bảo hành|hỏng|vỡ|bể.*vỡ|lỗi/i.test(q))
-    return "🔄 Dạ phần bảo hành/đổi trả cần kiểm tra theo chính sách hiện tại và tình trạng thực tế.\n\nAnh/chị mô tả vấn đề, gửi ảnh/video nếu có, và cho biết thời điểm nhận hàng. Rêu có thể hướng dẫn bước đầu, nhưng kết luận bảo hành/đổi trả cần shop xác nhận.";
-
-  if (/thanh toán|trả tiền|chuyển khoản|cod|payment|momo/i.test(q))
-    return "💳 Dạ phần thanh toán sẽ theo phương thức đang bật ở bước checkout hoặc xác nhận trực tiếp từ shop.\n\nRêu không tự gửi số tài khoản, QR hay link thanh toán trong chatbox để tránh nhầm thông tin. Với đơn custom/đặt cọc, shop cần xác nhận riêng.";
-
   if (/khuyến mãi|voucher|mã giảm|discount|sale|giảm giá/i.test(q))
     return "🎉 Dạ voucher/khuyến mãi cần kiểm tra theo chương trình đang áp dụng trên website hoặc xác nhận từ shop.\n\nNếu anh/chị có mã giảm giá, hãy thử ở bước thanh toán để hệ thống kiểm tra điều kiện áp dụng.";
-
-  if (/liên hệ|hotline|zalo|facebook|điện thoại|sdt|phone|email/i.test(q))
-    return "📞 **Liên hệ Tiệm Rêu:**\n\n• **Facebook:** Tiệm Rêu Décor\n• **Zalo:** Tìm 'Tiệm Rêu'\n• **Website:** tiemreudecor.com\n• Giờ hỗ trợ: 8:00 - 21:00 hàng ngày\n\nHoặc anh/chị cứ chat với em ở đây, em hỗ trợ 24/7 ạ! 🌿";
 
   if (/đặt hàng.*sao|mua.*sao|cách.*mua|cách.*đặt|order.*sao/i.test(q))
     return "🛒 Dạ anh/chị có thể đặt hàng trực tiếp trên website: chọn sản phẩm, thêm vào giỏ, vào thanh toán và điền thông tin nhận hàng.\n\nNếu là mẫu custom/đặt theo yêu cầu, shop cần xác nhận riêng về mẫu, thời gian làm và thanh toán.";
@@ -927,7 +915,6 @@ function isShopFactKnowledgeHit(hit: KnowledgeHit): boolean {
     /\border\b/,
     /\bcustom\b/,
     /\bcontact\b/,
-    /\bproduct\b/,
     /\bshop\b/,
   ]);
 
@@ -1274,14 +1261,9 @@ Các bước:
 - Ý nghĩa: "Tặng cả một vườn thu nhỏ" — độc đáo, lâu bền, dễ chăm
 - Có thể customize theo yêu cầu
 
-═══════════════════════════════════════
-CHÍNH SÁCH SHOP (trả lời chính xác)
-═══════════════════════════════════════
-- Freeship đơn từ 500.000₫
-- Ship tiêu chuẩn: 25.000₫-40.000₫ (HCM 1-2 ngày, tỉnh khác 3-5 ngày)
-- Đổi trả 3 ngày (lỗi do vận chuyển), bảo hành 7 ngày
-- Thanh toán: COD (thu tiền khi giao hàng)
-- Liên hệ: Facebook "Tiệm Rêu Décor", Zalo "Tiệm Rêu"
+Thông tin chính sách, thanh toán, vận chuyển, custom và liên hệ chỉ được lấy từ
+Knowledge Base chính thức được truyền vào prompt. Không sử dụng kiến thức ghi nhớ
+hoặc tự suy đoán điều kiện của shop.
 ${catalog ? `\n═══════════════════════════════════════\nDANH SÁCH SẢN PHẨM HIỆN CÓ\n═══════════════════════════════════════\n${catalog}\n\nQuy tắc: Gợi ý TỐI ĐA 3 SP phù hợp nhất, kèm giá + link. Ưu tiên ⭐ featured và còn hàng.` : ""}
 ${pageContext?.type === "product" && pageContext.productName ? `\nKhách đang xem: "${pageContext.productName}"${pageContext.productPrice ? ` — ${pageContext.productPrice}` : ""}. Ưu tiên trả lời về SP này.` : ""}`;
 
@@ -1866,7 +1848,7 @@ export async function POST(request: Request) {
 
     // ── 4. ADMIN KNOWLEDGE BASE RAG ───────────────────────
     // Dữ liệu admin nhập ở /tiem-nho-nth24/ai-knowledge là nguồn chính thức.
-    // Fact query (policy/custom) phải bám KB/DB; care query có thể đưa KB làm nền để AI diễn giải linh hoạt.
+    // KB chỉ phục vụ chính sách và shop facts; chăm sóc luôn do GPT xử lý.
     const knowledgeSearchQuery = buildKnowledgeSearchQuery(trimmed, history);
     const knowledgeHits = await searchOfficialKnowledge(knowledgeSearchQuery, trimmed);
     const factKnowledgeHits = (policyFactIntent || customFactIntent)
@@ -1899,13 +1881,8 @@ export async function POST(request: Request) {
         });
       }
 
-      const careFallback = getOfflineFallback(knowledgeSearchQuery);
-      if (careFallback) {
-        return NextResponse.json({ response: careFallback, source: "fallback" });
-      }
-
       return NextResponse.json({
-        response: "Dạ câu này thuộc phần chăm sóc cây/rêu nên Rêu sẽ tư vấn theo hướng thực tế nhé. Với terrarium có rêu, bể thường dễ ổn định độ ẩm hơn, nhưng không có nghĩa là không cần chăm. Anh/chị vẫn nên đặt bể nơi sáng gián tiếp, tránh nắng trực tiếp, quan sát độ ẩm và mở nắp thoáng nếu bể đọng sương quá nhiều. Nếu anh/chị cho Rêu biết bể kín hay bể mở, đang đặt ở đâu và có máy lạnh không, Rêu sẽ hướng dẫn cụ thể hơn ạ.",
+        response: "Dạ phần tư vấn chăm sóc bằng AI đang tạm thời chưa phản hồi được. Anh/chị vui lòng thử lại sau ít phút hoặc liên hệ Fanpage tiemreudecor nếu cần hỗ trợ ngay ạ.",
         source: "fallback",
       });
     }
@@ -1954,11 +1931,7 @@ export async function POST(request: Request) {
     }
 
     // ── 10. AI OFFLINE → Fallback an toàn ──────────────────────
-    console.log(`[CONSULT] ⚠️ Care GPT unavailable, trying fallback`);
-    const fallback = getOfflineFallback(knowledgeSearchQuery);
-    if (fallback) {
-      return NextResponse.json({ response: fallback, source: "fallback" });
-    }
+    console.log(`[CONSULT] ⚠️ Care GPT unavailable`);
 
     // ── 11. PRODUCT FALLBACK (last resort) ─────────────────
     if (isProductIntent(trimmed)) {
