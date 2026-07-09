@@ -100,7 +100,7 @@ function getPageContext(pathname: string): PageContext {
 const MAX_MESSAGES = 30;
 const COOLDOWN_MS = 3000;
 const MAX_INPUT = 400;
-const DEFAULT_PANEL_SIZE = { width: 400, height: 560 };
+const DEFAULT_PANEL_SIZE = { width: 380, height: 520 };
 const EXPANDED_PANEL_SIZE = { width: 520, height: 700 };
 const MIN_PANEL_SIZE = { width: 320, height: 420 };
 
@@ -880,7 +880,7 @@ export default function ChatWidget() {
                           </div>
                         </div>
                       ) : (
-                        <div className="flex items-start justify-center gap-2">
+                        <div className="flex items-start justify-start gap-2">
                           {/* Bot avatar mini */}
                           <div
                             className="w-6 h-6 rounded-full overflow-hidden flex-shrink-0 mt-0.5"
