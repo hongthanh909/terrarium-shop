@@ -254,3 +254,303 @@ Bước này đã chuyển chatbox sang hướng đúng hơn:
 - KB vẫn giữ vai trò kiểm soát chính sách và các fact quan trọng.
 
 Bước tiếp theo nên ưu tiên seed KB vào DB và tạo công cụ admin review/test KB, sau đó mới mở rộng classifier thông minh hơn cho các câu hỏi mơ hồ.
+
+## 6. Ke hoach them tinh nang phan tich anh tinh trang be bang API GPT
+
+### 6.1. Muc tieu
+
+Them kha nang de khach gui anh tinh trang be/cay/reu trong chatbox, sau do GPT phan tich anh va tu van cach cham soc phu hop.
+
+Tinh nang nay phuc vu cac nhom cau hoi:
+
+- Reu vang, reu nau, reu kho, reu bi moc.
+- Cay heo, la ru, la vang, cay yeu, cay chet dan.
+- Kinh dong suong qua nhieu, kinh mo, be qua am.
+- Dat/reu qua kho hoac qua uot.
+- Be co dau hieu nam, moc, con trung nho.
+- Bo cuc/setup be co phu hop khong.
+- Nen dat be o dau, anh sang hien tai co on khong neu anh the hien duoc moi truong.
+
+GPT chi tu van dua tren anh va mo ta cua khach, khong duoc ket luan tuyet doi hoac cam ket cay/reu chac chan hoi phuc.
+
+### 6.2. Model va chi phi
+
+Cau hinh de xuat cho MVP:
+
+```env
+OPENAI_MODEL=gpt-5-mini
+OPENAI_CARE_MODEL=gpt-5-mini
+OPENAI_VISION_MODEL=gpt-5-mini
+```
+
+Ly do:
+
+- Dung chung GPT-5 mini dang dung cho chatbox.
+- Ho tro image input va text output.
+- It phat sinh cau hinh moi.
+- Chi phi van tru chung vao credit API hien tai cua project/key OpenAI.
+
+Uoc tinh voi credit 5 USD:
+
+- Anh da resize/nen tot + tra loi ngan: khoang 3.000-5.000 luot.
+- Anh 768-1024px + tra loi vua: khoang 1.600-3.300 luot.
+- Anh lon + tra loi dai: khoang 600-1.200 luot.
+
+Muc an toan de tinh thuc te: 5 USD khoang 1.500-3.000 luot phan tich anh neu kiem soat anh va output tot.
+
+### 6.3. Quy tac xu ly anh de toi uu chi phi
+
+Mac dinh nen xu ly anh truoc khi gui OpenAI:
+
+- Chi cho 1 anh/lan hoi trong MVP.
+- Gioi han file upload ban dau: toi da 5MB.
+- Resize canh dai ve 1024px.
+- Nen JPEG/WebP quality 75-85%.
+- Khong filter mau, khong chinh contrast/saturation qua manh.
+- Khong gui metadata anh.
+- Khong gui toan bo lich su chat dai khi phan tich anh.
+
+Truong hop can chi tiet hon co the them che do sau:
+
+- Canh dai 1536px.
+- Quality 85-90%.
+- Chi dung khi user can xem chi tiet nho nhu moc/re/la/reu.
+
+Khong nen nen qua thap vi GPT can nhin duoc mau reu/cay, moc trang, la heo, do am, dong suong va tinh trang dat.
+
+### 6.4. Flow UI chatbox
+
+Các bước cần làm ở frontend:
+
+1. Them nut upload anh trong khung nhap chatbox.
+2. Chi cho chon dinh dang anh pho bien: JPG, JPEG, PNG, WebP.
+3. Hien thi preview anh truoc khi gui.
+4. Cho user nhap them mo ta kem anh, vi du:
+   - "Reu bi vang nhu nay la sao?"
+   - "Be nay co qua am khong?"
+   - "Cay nay heo co cuu duoc khong?"
+5. Neu user chi gui anh khong nhap text, tu gui prompt mac dinh:
+   - "Anh/chi xem giup tinh trang be/cay/reu trong anh va tu van cach cham soc."
+6. Hien thi trang thai dang phan tich:
+   - "Reu dang xem anh..."
+   - "Dang kiem tra tinh trang cay/reu..."
+7. Sau khi GPT tra loi, anh va cau tra loi phai nam trong cung khung chat history.
+8. Neu anh qua lon hoac sai dinh dang, bao loi ro rang.
+9. Neu API loi/het credit, bao user thu lai sau hoac lien he Fanpage.
+
+### 6.5. Flow backend API
+
+Các bước cần làm ở backend:
+
+1. Tao endpoint moi, vi du:
+
+```txt
+POST /api/consult/image
+```
+
+2. Endpoint nhan:
+
+```txt
+- message: cau hoi cua user
+- image: file anh hoac base64
+- history: lich su chat rut gon
+- pageContext: thong tin trang/san pham neu co
+```
+
+3. Validate request:
+
+- Co anh hop le.
+- File dung dinh dang.
+- File khong vuot qua gioi han.
+- Message khong qua dai.
+- Khong nhan nhieu anh o MVP.
+
+4. Resize/nen anh server-side.
+
+5. Tao prompt cho GPT Vision.
+
+6. Goi OpenAI bang model:
+
+```txt
+process.env.OPENAI_VISION_MODEL || process.env.OPENAI_CARE_MODEL || process.env.OPENAI_MODEL || "gpt-5-mini"
+```
+
+7. Tra ve JSON:
+
+```json
+{
+  "response": "...",
+  "source": "ai_vision",
+  "imageAnalysis": true
+}
+```
+
+8. Ghi log toi thieu:
+
+- thoi gian request,
+- model dung,
+- kich thuoc anh truoc/sau resize,
+- trang thai thanh cong/loi,
+- usage token/cost neu API tra ve.
+
+Khong log base64 anh hoac du lieu nhay cam cua khach.
+
+### 6.6. Prompt cho GPT phan tich anh
+
+Prompt can yeu cau GPT tra loi theo cau truc:
+
+```txt
+Ban la Reu, tro ly tu van cham soc terrarium cua Tiem Reu Decor.
+Hay quan sat anh va cau hoi cua khach de tu van.
+
+Quy tac:
+- Chi nhan xet nhung gi co the thay tu anh hoac khach mo ta.
+- Khong chan doan chac chan 100%.
+- Neu anh khong du ro, noi ro can anh gan hon/sang hon/goc khac.
+- Uu tien tu van thuc hanh: tinh trang co the la gi -> nguyen nhan kha di -> cach xu ly -> cach theo doi.
+- Khong tu noi gia, bao hanh, doi tra, phi ship hoac cam ket cua shop.
+- Neu tinh trang nang, khuyen khach gui them anh/video qua Fanpage de shop kiem tra.
+- Tra loi tieng Viet, xung em, goi khach anh/chi.
+```
+
+Format tra loi de xuat:
+
+```txt
+Da em nhin anh thi kha nang cao be dang gap ...
+
+Nguyen nhan co the:
+- ...
+
+Anh/chi xu ly nhu sau:
+1. ...
+2. ...
+3. ...
+
+Theo doi them:
+- ...
+
+Neu sau ... ngay khong cai thien, anh/chi nen gui them anh/video ro hon cho Fanpage tiemreudecor de shop kiem tra ky hon a.
+```
+
+### 6.7. Routing giua anh, DB, KB va GPT
+
+Quy tac routing moi:
+
+- Co anh + hoi cham soc/tinh trang/setup: dung `ai_vision`.
+- Co anh + hoi chinh sach/bao hanh/doi tra: dung KB de tra chinh sach, khong de GPT tu suy doan quyen loi.
+- Co anh + hoi san pham/gia/ton kho: dung DB neu nhan dien duoc san pham, neu khong thi hoi lai ten san pham.
+- Khong anh + hoi cham soc/setup/style: dung GPT text hien tai.
+- Khong anh + hoi chinh sach/shop facts: dung KB.
+- Khong anh + hoi san pham/gia/ton kho/don hang: dung DB.
+
+Vi du:
+
+- "Reu trong anh bi vang la sao?" -> GPT Vision.
+- "Be nay co bi qua am khong?" -> GPT Vision.
+- "Anh nay cay gi va cham sao?" -> GPT Vision, tra loi o muc kha nang, khong khang dinh tuyet doi neu anh mo.
+- "Neu van chuyen toi ma vo nhu anh thi bao hanh sao?" -> KB warranty/return, co the nhac can video mo hang va bao loi trong 3 ngay.
+- "Be trong anh gia bao nhieu?" -> DB/product neu co product context, neu khong hoi lai ten/ma san pham.
+
+### 6.8. Rate limit va kiem soat chi phi
+
+Nen co rate limit rieng cho anh vi anh ton hon text:
+
+- MVP: 5 anh/user/10 phut.
+- Toi da 1 anh/request.
+- Toi da output 500-700 tu.
+- Timeout API 20-30 giay.
+- Neu qua gioi han, bao user doi them.
+
+Nen them env:
+
+```env
+CHAT_IMAGE_MAX_MB=5
+CHAT_IMAGE_MAX_LONG_EDGE=1024
+CHAT_IMAGE_JPEG_QUALITY=82
+CHAT_IMAGE_RATE_LIMIT=5
+CHAT_IMAGE_RATE_WINDOW_MINUTES=10
+OPENAI_VISION_MODEL=gpt-5-mini
+```
+
+### 6.9. Cac file du kien can sua
+
+Du kien can kiem tra va sua cac nhom file:
+
+- `apps/web/components/ChatWidget.tsx`
+  - them nut upload anh,
+  - preview anh,
+  - gui multipart/base64,
+  - render message co anh.
+
+- `apps/web/app/api/consult/image/route.ts`
+  - endpoint moi cho phan tich anh.
+
+- `apps/web/lib/ai/openai.ts`
+  - them helper goi OpenAI voi image input neu chua co.
+
+- `apps/web/app/api/consult/route.ts`
+  - co the giu nguyen cho text,
+  - chi bo sung shared helper/routing neu can.
+
+- `.env.example` hoac tai lieu deploy
+  - them `OPENAI_VISION_MODEL` va cau hinh gioi han anh.
+
+### 6.10. Thu tu trien khai khuyen nghi
+
+1. Tao helper xu ly anh server-side:
+   - validate file,
+   - resize,
+   - nen,
+   - convert sang base64/data URL phu hop OpenAI.
+
+2. Tao endpoint `/api/consult/image`.
+
+3. Them prompt vision va goi OpenAI.
+
+4. Test endpoint bang request thu cong voi 1 anh mau.
+
+5. Them UI upload anh trong chatbox.
+
+6. Render preview anh va tin nhan anh trong chat history.
+
+7. Them loading state khi phan tich anh.
+
+8. Them loi ro rang cho:
+   - anh qua lon,
+   - sai dinh dang,
+   - API loi,
+   - het credit/quota,
+   - qua rate limit.
+
+9. Them rate limit rieng cho anh.
+
+10. Log usage/cost neu OpenAI tra usage.
+
+11. Test cac case thuc te:
+   - reu vang,
+   - cay heo,
+   - moc trang,
+   - kinh dong suong,
+   - be qua kho,
+   - setup/bo cuc,
+   - anh mo/thieu sang,
+   - hoi chinh sach kem anh,
+   - hoi gia san pham kem anh.
+
+12. Commit, push va redeploy.
+
+13. Test live tren `tiemreudecor.com`.
+
+### 6.11. Tieu chi nghiem thu
+
+Tinh nang dat yeu cau khi:
+
+- User gui duoc anh trong chatbox.
+- Chatbox hien thi anh trong lich su chat.
+- GPT tra loi duoc tinh trang be/cay/reu dua tren anh.
+- Cau tra loi khong chung chung, co nguyen nhan va buoc xu ly cu the.
+- GPT khong tu bia chinh sach/gia/bao hanh.
+- Anh duoc resize/nen truoc khi gui API.
+- Co gioi han so anh de tranh ton phi.
+- Khi API loi, user nhan duoc thong bao ro rang.
+- Text chat hien tai van hoat dong binh thuong.

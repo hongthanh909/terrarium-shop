@@ -13,6 +13,16 @@ type StreamFromOpenAIOptions = {
   onDone?: () => void;
 };
 
+type CompleteVisionOptions = {
+  systemPrompt: string;
+  message: string;
+  imageDataUrl: string;
+  history?: AiChatMessage[];
+  model?: string;
+  apiKey?: string;
+  maxOutputTokens?: number;
+};
+
 function escapeJsonString(str: string): string {
   return str
     .replace(/\\/g, "\\\\")
@@ -198,6 +208,79 @@ export async function completeFromOpenAI({
   } catch (err) {
     clearTimeout(timeout);
     console.error("[AI] OpenAI completion fetch error:", err);
+    return null;
+  }
+}
+
+export async function completeVisionFromOpenAI({
+  systemPrompt,
+  message,
+  imageDataUrl,
+  history = [],
+  model = "gpt-5-mini",
+  apiKey = process.env.OPENAI_API_KEY,
+  maxOutputTokens = 700,
+}: CompleteVisionOptions): Promise<{ text: string; usage?: unknown } | null> {
+  if (!apiKey) {
+    console.log("[AI] OpenAI vision skipped: missing OPENAI_API_KEY");
+    return null;
+  }
+
+  const abortCtrl = new AbortController();
+  const timeout = setTimeout(() => abortCtrl.abort(), 30_000);
+
+  try {
+    const trimmedHistory = history
+      .filter((item) => item.role !== "system" && item.content.trim())
+      .slice(-4)
+      .map((item) => ({
+        role: item.role === "assistant" ? "assistant" : "user",
+        content: item.content.slice(0, 700),
+      }));
+
+    const res = await fetch("https://api.openai.com/v1/responses", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model,
+        instructions: systemPrompt,
+        input: [
+          ...trimmedHistory,
+          {
+            role: "user",
+            content: [
+              { type: "input_text", text: message },
+              { type: "input_image", image_url: imageDataUrl },
+            ],
+          },
+        ],
+        stream: false,
+        max_output_tokens: maxOutputTokens,
+      }),
+      signal: abortCtrl.signal,
+    });
+    clearTimeout(timeout);
+
+    if (!res.ok) {
+      const details = await res.text().catch(() => "");
+      console.error(`[AI] OpenAI vision error: ${res.status} ${details.slice(0, 240)}`);
+      return null;
+    }
+
+    const payload = await res.json();
+    const text = extractResponseText(payload);
+    if (!text) {
+      console.error(`[AI] OpenAI vision empty response for model ${model}; status=${payload?.status || "unknown"}`);
+      return null;
+    }
+
+    return { text, usage: payload?.usage };
+  } catch (err) {
+    clearTimeout(timeout);
+    console.error("[AI] OpenAI vision fetch error:", err);
     return null;
   }
 }

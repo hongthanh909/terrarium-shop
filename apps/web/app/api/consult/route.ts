@@ -428,6 +428,50 @@ function isCareAiIntent(message: string): boolean {
   ]);
 }
 
+function isSetupStyleAiIntent(message: string): boolean {
+  const n = normalizeVN(message);
+  const asksShopFact = hasAnyPattern(n, [
+    /\bgia\b/,
+    /\bbao nhieu\b/,
+    /\bbn\b/,
+    /\bcon hang\b/,
+    /\bhet hang\b/,
+    /\bmua\b/,
+    /\bdat hang\b/,
+    /\bdat coc\b/,
+    /\bbao gia\b/,
+    /\bthoi gian lam\b/,
+    /\bmay ngay\b/,
+    /\bship\b/,
+    /\bgiao hang\b/,
+    /\bchinh sach\b/,
+  ]);
+
+  const asksReadyProduct = hasAnyPattern(n, [
+    /\bda setup san\b/,
+    /\bsetup san\b/,
+    /\bset up san\b/,
+    /\bbe san\b/,
+    /\bmau san\b/,
+    /\blam san\b/,
+    /\bfull set\b/,
+    /\btrung ngay\b/,
+  ]);
+
+  if (asksShopFact || asksReadyProduct) return false;
+
+  return hasAnyPattern(n, [
+    /\bsetup\b.*\b(nhu the nao|ntn|sao|cach|huong dan|tu van|style|kieu|dang|mau|bo cuc|layout|concept|chu de|hop|phu hop|de cham)\b/,
+    /\bset up\b.*\b(nhu the nao|ntn|sao|cach|huong dan|tu van|style|kieu|dang|mau|bo cuc|layout|concept|chu de|hop|phu hop|de cham)\b/,
+    /\b(cach|huong dan|tu van)\b.*\b(setup|set up|lam be|lam terrarium|bo cuc|layout|concept|style)\b/,
+    /\b(style|kieu|dang|mau|bo cuc|layout|concept|chu de)\b.*\b(be|terrarium|binh|mossarium|reu|cay|setup|set up)\b/,
+    /\b(be|terrarium|binh|mossarium|reu|cay)\b.*\b(style|kieu|dang|mau|bo cuc|layout|concept|chu de)\b/,
+    /\bphoi\b.*\b(cay|reu|lua|da|be|terrarium)\b/,
+    /\b(cay|reu|lua|da)\b.*\b(phoi|ket hop|di voi|hop voi)\b/,
+    /\b(be|terrarium)\b.*\b(de cham|it cham|cho nguoi moi|nguoi moi choi|van phong|ban lam viec|phong ngu|phong khach)\b/,
+  ]);
+}
+
 function isPolicyFactIntent(message: string): boolean {
   const n = normalizeVN(message);
   return hasAnyPattern(n, [
@@ -1468,13 +1512,15 @@ async function completeCareFromAI(
   activeAiRequests++;
 
   const systemPrompt = `Bạn là "Rêu", trợ lý tư vấn chăm sóc terrarium của Tiệm Rêu Décor.
-Nhiệm vụ của bạn: trả lời linh hoạt về chăm sóc cây, rêu, terrarium, nhiệt độ, độ ẩm, ánh sáng, tưới nước, dấu hiệu cây/rêu bất thường.
+Nhiệm vụ của bạn: trả lời linh hoạt về chăm sóc cây, rêu, terrarium, nhiệt độ, độ ẩm, ánh sáng, tưới nước, dấu hiệu cây/rêu bất thường, và tư vấn setup/style/bố cục terrarium.
 
 Quy tắc:
 - Xưng "em", gọi khách "anh/chị", giọng thân thiện, tự nhiên.
 - Trả lời như người tư vấn chăm sóc thực tế, không đọc y nguyên Knowledge Base.
 - Ưu tiên giải thích: nguyên nhân có thể xảy ra -> cách kiểm tra -> cách xử lý.
-- Nếu thiếu dữ kiện, hỏi lại ngắn gọn: bể kín/mở, đặt ở đâu, có máy lạnh không, tưới lần cuối khi nào.
+- Với câu hỏi setup/style/bố cục: tư vấn theo nhu cầu, môi trường đặt, mức dễ chăm, ánh sáng, độ ẩm, cây/rêu phù hợp, và rủi ro cần tránh.
+- Nếu khách hỏi "style nào", "setup bể sao", "bố cục thế nào" thì không trả lời chung chung; hãy đưa 2-4 hướng cụ thể, nêu ai phù hợp, ưu/nhược điểm, cây/rêu nên dùng.
+- Nếu thiếu dữ kiện, hỏi lại ngắn gọn: bể kín/mở, vị trí đặt, ánh sáng, có máy lạnh không, thích style tự nhiên/tối giản/rừng/rêu/cây, mức chăm mong muốn.
 - Không tự bịa giá, tồn kho, chính sách, bảo hành, phí ship, đơn hàng.
 - Nếu khách hỏi giá/sản phẩm/chính sách, nói phần đó Rêu sẽ tra từ dữ liệu shop.
 - Không cam kết cây/rêu chắc chắn hồi phục; nếu nặng thì khuyên gửi ảnh/video cho shop kiểm tra.
@@ -1857,12 +1903,13 @@ export async function POST(request: Request) {
     }
 
     console.log(`[CONSULT] "${trimmed.slice(0, 60)}..." from ${ip}`);
-    const policyFactIntent = isPolicyFactIntent(trimmed);
-    const customFactIntent = isCustomFactIntent(trimmed);
+    const setupStyleAiIntent = isSetupStyleAiIntent(trimmed);
+    const policyFactIntent = !setupStyleAiIntent && isPolicyFactIntent(trimmed);
+    const customFactIntent = !setupStyleAiIntent && isCustomFactIntent(trimmed);
     const careAiIntent =
       !policyFactIntent &&
       !customFactIntent &&
-      isCareAiIntent(trimmed);
+      (setupStyleAiIntent || isCareAiIntent(trimmed));
 
     // ── 1. GUARDRAIL: Chặn off-topic ──────────────────────
     if (isOffTopic(trimmed)) {
@@ -1883,7 +1930,7 @@ export async function POST(request: Request) {
     }
 
     // ── 3. PRODUCT INTENT: DB realtime query + thumbnails ──────────
-    if (!policyFactIntent && !customFactIntent && isProductIntent(trimmed)) {
+    if (!careAiIntent && !policyFactIntent && !customFactIntent && isProductIntent(trimmed)) {
       console.log(`[CONSULT] 🛒 Product intent detected`);
       const productResult = await queryProducts(trimmed);
       if (productResult) {

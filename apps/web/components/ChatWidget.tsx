@@ -4,7 +4,7 @@ import { useState, useRef, useEffect, useLayoutEffect, useMemo, useCallback } fr
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { Bot, Send, X, Maximize2, Minimize2, ExternalLink, Package, Truck, ShieldCheck, Sparkles, RotateCcw, Loader2, ZoomIn, ZoomOut } from "lucide-react";
+import { Bot, Send, X, Maximize2, Minimize2, ExternalLink, Package, Truck, ShieldCheck, Sparkles, RotateCcw, Loader2, ZoomIn, ZoomOut, Image as ImageIcon } from "lucide-react";
 import { ImageWrapper } from "@/components/ui/ImageWrapper";
 
 // ── Types ────────────────────────────────────────────
@@ -21,8 +21,9 @@ interface ProductCard {
 interface ChatMessage {
   role: "user" | "assistant";
   content: string;
-  source?: "ai" | "db" | "fallback" | "knowledge" | "guardrail" | "rag" | "disabled";
+  source?: "ai" | "ai_vision" | "db" | "fallback" | "knowledge" | "guardrail" | "rag" | "disabled";
   isStreaming?: boolean;
+  imageUrl?: string;
   products?: ProductCard[];
   suggestedProducts?: { name: string; slug: string; price: string; image?: string }[];
 }
@@ -97,10 +98,50 @@ function getPageContext(pathname: string): PageContext {
   return { type: "general" };
 }
 
+function resizeChatImage(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    if (!/^image\/(jpeg|jpg|png|webp)$/.test(file.type)) {
+      reject(new Error("UNSUPPORTED_IMAGE"));
+      return;
+    }
+    if (file.size > MAX_CHAT_IMAGE_BYTES) {
+      reject(new Error("IMAGE_TOO_LARGE"));
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error("READ_IMAGE_FAILED"));
+    reader.onload = () => {
+      const img = new Image();
+      img.onerror = () => reject(new Error("LOAD_IMAGE_FAILED"));
+      img.onload = () => {
+        const scale = Math.min(1, CHAT_IMAGE_LONG_EDGE / Math.max(img.width, img.height));
+        const width = Math.max(1, Math.round(img.width * scale));
+        const height = Math.max(1, Math.round(img.height * scale));
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) {
+          reject(new Error("CANVAS_UNAVAILABLE"));
+          return;
+        }
+        ctx.drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL("image/jpeg", CHAT_IMAGE_QUALITY));
+      };
+      img.src = String(reader.result || "");
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
 // ── Constants ────────────────────────────────────────
 const MAX_MESSAGES = 30;
 const COOLDOWN_MS = 3000;
 const MAX_INPUT = 400;
+const MAX_CHAT_IMAGE_BYTES = 5 * 1024 * 1024;
+const CHAT_IMAGE_LONG_EDGE = 1024;
+const CHAT_IMAGE_QUALITY = 0.82;
 const DEFAULT_PANEL_SIZE = { width: 380, height: 520 };
 const EXPANDED_PANEL_SIZE = { width: 520, height: 700 };
 const MIN_PANEL_SIZE = { width: 320, height: 420 };
@@ -120,12 +161,15 @@ export default function ChatWidget() {
   const [expanded, setExpanded] = useState(false);
   const [uiZoom, setUiZoom] = useState(1);
   const [message, setMessage] = useState("");
+  const [selectedImage, setSelectedImage] = useState<{ dataUrl: string; name: string } | null>(null);
+  const [imageError, setImageError] = useState<string | null>(null);
   const [isSending, setIsSending] = useState(false);
   const [isAIAvailable, setIsAIAvailable] = useState<boolean | null>(null);
   const [isCooldown, setIsCooldown] = useState(false);
   const messagesScrollRef = useRef<HTMLDivElement>(null);
   const latestUserMessageRef = useRef<HTMLDivElement | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const abortRef = useRef<AbortController | null>(null);
   const panelRef = useRef<HTMLDivElement>(null);
 
@@ -430,6 +474,8 @@ export default function ChatWidget() {
     abortRef.current?.abort();
     setMessages([initialMessage]);
     setMessage("");
+    setSelectedImage(null);
+    setImageError(null);
     setIsSending(false);
     setIsCooldown(false);
     setIsAIAvailable(null);
@@ -455,8 +501,28 @@ export default function ChatWidget() {
   };
 
   // ── Send message ───────────────────────────────
-  const sendMessage = async (text: string) => {
-    if (!text.trim() || isSending || isCooldown) return;
+  const handleImageSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file || isSending) return;
+
+    try {
+      setImageError(null);
+      const dataUrl = await resizeChatImage(file);
+      setSelectedImage({ dataUrl, name: file.name });
+      setOpen(true);
+      setTimeout(() => textareaRef.current?.focus(), 80);
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error && err.message === "IMAGE_TOO_LARGE"
+          ? "Anh toi da 5MB. Anh/chi chon anh nho hon hoac chup lai ro hon nhe."
+          : "Anh chua dung dinh dang. Reu ho tro JPG, PNG hoac WebP.";
+      setImageError(errorMessage);
+    }
+  };
+
+  const sendMessage = async (text: string, image = selectedImage) => {
+    if ((!text.trim() && !image) || isSending || isCooldown) return;
     if (userMsgCount >= MAX_MESSAGES) {
       setMessages(prev => [...prev, {
         role: "assistant",
@@ -466,11 +532,13 @@ export default function ChatWidget() {
       return;
     }
 
-    const userMsg = text.trim();
+    const userMsg = text.trim() || "Anh/chi xem giup tinh trang be/cay/reu trong anh va tu van cach cham soc.";
     if (userMsg.length > MAX_INPUT) return;
     setMessage("");
+    setSelectedImage(null);
+    setImageError(null);
 
-    const newMsgs: ChatMessage[] = [...messages, { role: "user", content: userMsg }];
+    const newMsgs: ChatMessage[] = [...messages, { role: "user", content: userMsg, imageUrl: image?.dataUrl }];
     setMessages(newMsgs);
     setIsSending(true);
 
@@ -481,10 +549,15 @@ export default function ChatWidget() {
     abortRef.current = controller;
 
     try {
-      const res = await fetch("/api/consult", {
+      const res = await fetch(image ? "/api/consult/image" : "/api/consult", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: userMsg, history: history.slice(0, -1), pageContext: enrichedCtx }),
+        body: JSON.stringify({
+          message: userMsg,
+          history: history.slice(0, -1),
+          pageContext: enrichedCtx,
+          ...(image ? { imageDataUrl: image.dataUrl } : {}),
+        }),
         signal: controller.signal,
       });
 
@@ -530,7 +603,7 @@ export default function ChatWidget() {
       } else {
         const data = await res.json();
         if (data.source === "fallback") setIsAIAvailable(false);
-        else if ((data.source === "knowledge" || data.source === "db") && isAIAvailable === null) setIsAIAvailable(true);
+        else if ((data.source === "knowledge" || data.source === "db" || data.source === "ai_vision") && isAIAvailable === null) setIsAIAvailable(true);
         setMessages(prev => {
           const u = [...prev];
           u[u.length - 1] = {
@@ -1056,6 +1129,14 @@ export default function ChatWidget() {
                               boxShadow: "0 2px 8px rgba(45,74,34,0.2)",
                             }}
                           >
+                            {msg.imageUrl && (
+                              <img
+                                src={msg.imageUrl}
+                                alt="Anh khach gui cho Reu phan tich"
+                                className="mb-2 max-h-44 w-full rounded-xl object-cover"
+                                style={{ border: "1px solid rgba(240,247,238,0.24)" }}
+                              />
+                            )}
                             {renderContent(msg.content)}
                           </div>
                         </div>
@@ -1190,7 +1271,56 @@ export default function ChatWidget() {
 
             {/* ── INPUT ────────────────────────────── */}
               <div className="flex-shrink-0 px-[calc(12px*var(--cw-scale))] pt-[calc(10px*var(--cw-scale))] pb-[calc(env(safe-area-inset-bottom)+0.625rem)]" style={{ borderTop: "1px solid var(--cw-border)", background: "var(--cw-surface)" }}>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                className="hidden"
+                onChange={handleImageSelect}
+              />
+              {selectedImage && (
+                <div className="mb-2 flex items-center gap-2 rounded-xl p-2" style={{ background: "#f5f8f3", border: "1px solid var(--cw-border)" }}>
+                  <img
+                    src={selectedImage.dataUrl}
+                    alt="Anh se gui cho Reu phan tich"
+                    className="h-14 w-14 flex-shrink-0 rounded-lg object-cover"
+                  />
+                  <div className="min-w-0 flex-1">
+                    <div className="truncate cw-fluid-small font-semibold" style={{ color: "var(--cw-text)" }}>{selectedImage.name}</div>
+                    <div className="cw-fluid-small" style={{ color: "var(--cw-muted)" }}>Reu se phan tich anh nay cung cau hoi cua anh/chi.</div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedImage(null)}
+                    className="cw-focusable flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full"
+                    style={{ color: "var(--cw-muted)", background: "var(--cw-surface)" }}
+                    aria-label="Bo anh da chon"
+                  >
+                    <X size={14} />
+                  </button>
+                </div>
+              )}
+              {imageError && (
+                <div className="mb-2 cw-fluid-small font-medium" style={{ color: "var(--cw-danger)" }}>
+                  {imageError}
+                </div>
+              )}
               <div className="cw-fluid-input-wrap flex items-end rounded-2xl" style={{ background: "#f5f8f3", border: "1px solid var(--cw-border)" }}>
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isSending || isCooldown || userMsgCount >= MAX_MESSAGES}
+                  className="cw-fluid-send cw-focusable rounded-full flex items-center justify-center flex-shrink-0 transition-colors"
+                  style={{
+                    background: selectedImage ? "#dcebd6" : "var(--cw-surface)",
+                    border: "1px solid var(--cw-border)",
+                    color: "var(--cw-primary)",
+                    cursor: !isSending && !isCooldown && userMsgCount < MAX_MESSAGES ? "pointer" : "default",
+                  }}
+                  aria-label="Gui anh tinh trang be cho Reu phan tich"
+                >
+                  <ImageIcon size={15} />
+                </button>
                 <div className="flex-1 relative">
                   <textarea
                     ref={textareaRef}
@@ -1218,14 +1348,14 @@ export default function ChatWidget() {
                 </div>
                 <button
                   onClick={() => sendMessage(message)}
-                  disabled={isSending || isCooldown || !message.trim() || userMsgCount >= MAX_MESSAGES}
+                  disabled={isSending || isCooldown || (!message.trim() && !selectedImage) || userMsgCount >= MAX_MESSAGES}
                   className="cw-fluid-send cw-focusable rounded-full flex items-center justify-center flex-shrink-0 transition-colors"
                   style={{
-                    background: message.trim() && !isSending && !isCooldown
+                    background: (message.trim() || selectedImage) && !isSending && !isCooldown
                       ? "linear-gradient(135deg, #3a5229, #4a6a35)"
                       : "#c5d9c0",
                     border: "none",
-                    cursor: message.trim() && !isSending && !isCooldown ? "pointer" : "default",
+                    cursor: (message.trim() || selectedImage) && !isSending && !isCooldown ? "pointer" : "default",
                   }}
                   aria-label={isSending ? "Đang gửi tin nhắn" : "Gửi tin nhắn"}
                 >
