@@ -3,6 +3,12 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import { ADMIN_SECRET_PATH } from "@/lib/admin-path";
+import {
+  buildLoginRateLimitKey,
+  checkRateLimit,
+  clearRateLimit,
+  recordFailedAttempt,
+} from "@/lib/rate-limit";
 
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -67,6 +73,10 @@ async function findUserByEmail(email: string) {
   }
 }
 
+const ADMIN_LOGIN_WINDOW_MS = 15 * 60 * 1000;
+const ADMIN_LOGIN_MAX_ATTEMPTS = 5;
+const ADMIN_LOGIN_ERROR = "Email hoặc mật khẩu không chính xác.";
+
 export const authOptions: NextAuthOptions = {
   providers: [
     // ─── Provider 1: ADMIN login ─────────────────────────────────────────────
@@ -77,32 +87,50 @@ export const authOptions: NextAuthOptions = {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
       },
-      async authorize(credentials) {
+      async authorize(credentials, req) {
         if (!credentials?.email || !credentials?.password) {
           throw new Error("Vui lòng nhập email và mật khẩu.");
+        }
+
+        const rateLimitKey = buildLoginRateLimitKey("admin-login", credentials.email, req?.headers);
+        const rateLimit = checkRateLimit(
+          rateLimitKey,
+          ADMIN_LOGIN_MAX_ATTEMPTS,
+          ADMIN_LOGIN_WINDOW_MS
+        );
+        if (rateLimit.limited) {
+          throw new Error(
+            `Quá nhiều lần đăng nhập thất bại. Vui lòng thử lại sau ${rateLimit.retryAfterSeconds} giây.`
+          );
         }
 
         const user = await findUserByEmail(credentials.email);
 
         if (!user || !user.passwordHash) {
-          throw new Error("Tài khoản không tồn tại.");
+          recordFailedAttempt(rateLimitKey, ADMIN_LOGIN_WINDOW_MS);
+          throw new Error(ADMIN_LOGIN_ERROR);
         }
 
         const isValid = await bcrypt.compare(credentials.password, user.passwordHash);
         if (!isValid) {
-          throw new Error("Mật khẩu không chính xác.");
+          recordFailedAttempt(rateLimitKey, ADMIN_LOGIN_WINDOW_MS);
+          throw new Error(ADMIN_LOGIN_ERROR);
         }
 
         // Only ADMIN role is allowed through this provider
         if (user.role !== "ADMIN") {
-          throw new Error("Bạn không có quyền truy cập quản trị.");
+          recordFailedAttempt(rateLimitKey, ADMIN_LOGIN_WINDOW_MS);
+          throw new Error(ADMIN_LOGIN_ERROR);
         }
 
         // Email whitelist — only the configured admin email
         const allowedEmail = process.env.ADMIN_EMAIL;
         if (allowedEmail && user.email !== allowedEmail) {
-          throw new Error("Tài khoản này không được phép truy cập trang quản trị.");
+          recordFailedAttempt(rateLimitKey, ADMIN_LOGIN_WINDOW_MS);
+          throw new Error(ADMIN_LOGIN_ERROR);
         }
+
+        clearRateLimit(rateLimitKey);
 
         return {
           id: user.id,

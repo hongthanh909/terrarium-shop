@@ -1,11 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { verifyAdminRequest, unauthorizedResponse } from "@/lib/admin-auth";
+import { maskSensitiveSettings } from "@/lib/privacy";
 
 export const dynamic = "force-dynamic";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    const admin = await verifyAdminRequest(request);
+    if (!admin) return unauthorizedResponse();
+
     const settings = await prisma.siteSetting.findMany({
       orderBy: { key: "asc" },
     });
@@ -16,7 +20,7 @@ export async function GET() {
       settingsObject[setting.key] = setting.value;
     });
 
-    return NextResponse.json(settingsObject);
+    return NextResponse.json(maskSensitiveSettings(settingsObject));
   } catch (error) {
     console.error("Error fetching site settings:", error);
     return NextResponse.json({ error: "Failed to fetch site settings" }, { status: 500 });

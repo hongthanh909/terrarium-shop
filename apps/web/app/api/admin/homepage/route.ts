@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { verifyAdminRequest, unauthorizedResponse } from "@/lib/admin-auth";
 
 export const dynamic = "force-dynamic";
 
@@ -17,8 +18,11 @@ export interface HomeBanner {
 }
 
 // GET — Fetch all home banners
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    const admin = await verifyAdminRequest(request);
+    if (!admin) return unauthorizedResponse();
+
     const setting = await prisma.siteSetting.findUnique({
       where: { key: BANNER_KEY },
     });
@@ -37,6 +41,9 @@ export async function GET() {
 // PUT — Replace all banners (full update)
 export async function PUT(request: NextRequest) {
   try {
+    const admin = await verifyAdminRequest(request);
+    if (!admin) return unauthorizedResponse();
+
     const body = await request.json();
     const banners: HomeBanner[] = body.banners ?? [];
 

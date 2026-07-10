@@ -1,10 +1,15 @@
 import { prisma } from "@/lib/prisma";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import { verifyAdminRequest, unauthorizedResponse } from "@/lib/admin-auth";
+import { maskEmail } from "@/lib/privacy";
 
 export const dynamic = "force-dynamic";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    const admin = await verifyAdminRequest(request);
+    if (!admin) return unauthorizedResponse();
+
     const now = new Date();
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
     const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
@@ -105,6 +110,12 @@ export async function GET() {
         ...o,
         total: Number(o.total),
         createdAt: o.createdAt.toISOString(),
+        customer: o.customer
+          ? {
+              ...o.customer,
+              email: maskEmail(o.customer.email),
+            }
+          : o.customer,
       })),
       topProducts: topProductsWithNames,
     });

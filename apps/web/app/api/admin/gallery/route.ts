@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
+import { verifyAdminRequest, unauthorizedResponse } from "@/lib/admin-auth";
 
 export const dynamic = "force-dynamic";
 
@@ -15,8 +16,11 @@ export interface GalleryImage {
 }
 
 // GET — Lấy danh sách ảnh gallery
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    const admin = await verifyAdminRequest(request);
+    if (!admin) return unauthorizedResponse();
+
     const setting = await prisma.siteSetting.findUnique({
       where: { key: GALLERY_KEY },
     });
@@ -38,6 +42,9 @@ export async function GET() {
 // PUT — Lưu toàn bộ gallery
 export async function PUT(request: NextRequest) {
   try {
+    const admin = await verifyAdminRequest(request);
+    if (!admin) return unauthorizedResponse();
+
     const body = await request.json();
     const images: GalleryImage[] = body.images ?? [];
 

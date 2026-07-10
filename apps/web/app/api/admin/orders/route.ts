@@ -1,11 +1,27 @@
 import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
+import { verifyAdminRequest, unauthorizedResponse } from "@/lib/admin-auth";
+import { maskEmail, maskPhone } from "@/lib/privacy";
 
 export const dynamic = "force-dynamic";
 
 // Helper: serialize Decimal fields
 const serializeOrder = (order: any) => ({
   ...order,
+  customer: order.customer
+    ? {
+        ...order.customer,
+        email: maskEmail(order.customer.email),
+        phone: maskPhone(order.customer.phone),
+      }
+    : order.customer,
+  shippingInfo: order.shippingInfo
+    ? {
+        ...order.shippingInfo,
+        email: maskEmail(order.shippingInfo.email),
+        phone: maskPhone(order.shippingInfo.phone),
+      }
+    : order.shippingInfo,
   subtotal: Number(order.subtotal),
   shippingFee: Number(order.shippingFee),
   discount: Number(order.discount),
@@ -18,6 +34,9 @@ const serializeOrder = (order: any) => ({
 
 export async function GET(request: NextRequest) {
   try {
+    const admin = await verifyAdminRequest(request);
+    if (!admin) return unauthorizedResponse();
+
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get("page") || "1");
     const limit = parseInt(searchParams.get("limit") || "20");
@@ -60,6 +79,9 @@ export async function GET(request: NextRequest) {
 // PATCH: Cập nhật trạng thái đơn hàng (admin → đồng bộ với customer)
 export async function PATCH(request: NextRequest) {
   try {
+    const admin = await verifyAdminRequest(request);
+    if (!admin) return unauthorizedResponse();
+
     const body = await request.json();
     const { orderId, status, paymentStatus, note } = body;
 
