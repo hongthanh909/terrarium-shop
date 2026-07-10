@@ -25,6 +25,7 @@ export async function GET(request: Request) {
     openaiConfigured: Boolean(process.env.OPENAI_API_KEY),
     openaiModel: process.env.OPENAI_MODEL || "gpt-5-mini",
     openaiCareModel: process.env.OPENAI_CARE_MODEL || process.env.OPENAI_MODEL || "gpt-5-mini",
+    openaiVisionModel: process.env.OPENAI_VISION_MODEL || process.env.OPENAI_MODEL || process.env.OPENAI_CARE_MODEL || "gpt-5-mini",
     pid: process.pid,
     uptime: Math.round(process.uptime()),
     nodeEnv: process.env.NODE_ENV || "unknown",

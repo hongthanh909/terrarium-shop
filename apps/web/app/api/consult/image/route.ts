@@ -118,7 +118,7 @@ export async function POST(request: Request) {
 
     const message = normalizeMessage(body?.message) || "Anh/chi xem giup tinh trang be/cay/reu trong anh va tu van cach cham soc.";
     const history = getSafeHistory(body?.history);
-    const model = process.env.OPENAI_VISION_MODEL || process.env.OPENAI_CARE_MODEL || process.env.OPENAI_MODEL || "gpt-5-mini";
+    const model = process.env.OPENAI_VISION_MODEL || process.env.OPENAI_MODEL || process.env.OPENAI_CARE_MODEL || "gpt-5-mini";
 
     console.log(`[CONSULT_IMAGE] ${imageInfo.mime}, ${imageInfo.bytes} bytes, model=${model}, ip=${ip}`);
 
