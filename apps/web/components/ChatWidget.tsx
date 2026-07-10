@@ -4,7 +4,7 @@ import { useState, useRef, useEffect, useLayoutEffect, useMemo, useCallback } fr
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { Bot, Send, X, Maximize2, Minimize2, ExternalLink, Package, Truck, ShieldCheck, Sparkles, RotateCcw } from "lucide-react";
+import { Bot, Send, X, Maximize2, Minimize2, ExternalLink, Package, Truck, ShieldCheck, Sparkles, RotateCcw, Loader2, ZoomIn, ZoomOut } from "lucide-react";
 import { ImageWrapper } from "@/components/ui/ImageWrapper";
 
 // ── Types ────────────────────────────────────────────
@@ -174,8 +174,13 @@ export default function ChatWidget() {
   const clampPanelRect = useCallback((rect: typeof panelRect) => {
     const vw = viewport.w || document.documentElement.clientWidth;
     const vh = viewport.h || document.documentElement.clientHeight;
-    const width = Math.max(MIN_PANEL_SIZE.width, Math.min(rect.width, vw - 16));
-    const height = Math.max(MIN_PANEL_SIZE.height, Math.min(rect.height, vh - 16));
+    const mobile = vw < 640;
+    const minWidth = mobile ? Math.min(MIN_PANEL_SIZE.width, vw - 16) : MIN_PANEL_SIZE.width;
+    const minHeight = mobile ? Math.min(360, vh - 16) : MIN_PANEL_SIZE.height;
+    const targetWidth = mobile ? Math.min(Math.max(rect.width, minWidth), vw - 16) : rect.width;
+    const targetHeight = mobile ? Math.min(Math.max(rect.height, minHeight), vh - 16) : rect.height;
+    const width = Math.max(minWidth, Math.min(targetWidth, vw - 16));
+    const height = Math.max(minHeight, Math.min(targetHeight, vh - 16));
     return {
       width,
       height,
@@ -187,8 +192,9 @@ export default function ChatWidget() {
   const getPanelRectNearBubble = useCallback((size = DEFAULT_PANEL_SIZE) => {
     const vw = viewport.w || document.documentElement.clientWidth;
     const vh = viewport.h || document.documentElement.clientHeight;
-    const width = Math.min(size.width, vw - 16);
-    const height = Math.min(size.height, vh - 16);
+    const mobile = vw < 640;
+    const width = mobile ? vw - 16 : Math.min(size.width, vw - 16);
+    const height = mobile ? Math.min(size.height, Math.max(360, Math.floor(vh * 0.72))) : Math.min(size.height, vh - 16);
     // Anchor panel above the bubble using the same right/bottom coordinate system
     const right = bubblePos.right;
     const bottom = bubblePos.bottom + 56 + 12; // bubble height (56) + gap (12)
@@ -409,6 +415,15 @@ export default function ChatWidget() {
     latestUserMessageRef.current?.scrollIntoView({ block: "start", behavior: "smooth" });
   }, [latestUserIndex, open, showWelcomeScreen]);
   useEffect(() => { if (open) setTimeout(() => textareaRef.current?.focus(), 150); }, [open]);
+
+  useEffect(() => {
+    if (!open) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setOpen(false);
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [open]);
   useEffect(() => () => { abortRef.current?.abort(); }, []);
 
   const resetChat = () => {
@@ -558,8 +573,17 @@ export default function ChatWidget() {
     ),
   );
   const panelScale = Math.max(0.7, Math.min(1.35, sizeScale * uiZoom));
+  const isMobilePanel = viewport.w > 0 && viewport.w < 640;
   const compactPanel = panelRect.width < 370 || panelRect.height < 500;
   const textareaMaxHeight = Math.max(72, Math.min(120, panelRect.height * 0.22));
+  const canZoomOut = uiZoom > MIN_UI_ZOOM;
+  const canZoomIn = uiZoom < MAX_UI_ZOOM;
+  const adjustUiZoom = useCallback((direction: -1 | 1) => {
+    setUiZoom((current) => {
+      const next = current + direction * UI_ZOOM_STEP;
+      return Math.max(MIN_UI_ZOOM, Math.min(MAX_UI_ZOOM, Number(next.toFixed(2))));
+    });
+  }, []);
 
   // ═══════════════════════════════════════════════
   // RENDER
@@ -573,13 +597,39 @@ export default function ChatWidget() {
           min-height: 420px;
           max-width: calc(100% - 16px);
           max-height: calc(100dvh - 16px);
+          --cw-primary: #425733;
+          --cw-primary-strong: #2d4a22;
+          --cw-primary-soft: #eef4ea;
+          --cw-surface: #ffffff;
+          --cw-surface-muted: #fafbf8;
+          --cw-border: #e3ebdd;
+          --cw-border-strong: #9ab88a;
+          --cw-text: #1e3319;
+          --cw-muted: #526248;
+          --cw-danger: #dc2626;
+          --cw-focus: rgba(66,87,51,0.38);
         }
         @media (max-width: 639px) {
           .cw-panel {
             border-radius: 18px !important;
             min-width: min(320px, calc(100% - 16px));
+            min-height: min(360px, calc(100dvh - 16px));
             max-width: calc(100% - 16px);
             max-height: calc(100dvh - 16px);
+          }
+          .cw-resize-handle {
+            display: none;
+          }
+          .cw-panel-header {
+            cursor: default;
+          }
+          .cw-mobile-size-controls {
+            display: flex;
+          }
+        }
+        @media (min-width: 640px) {
+          .cw-mobile-size-controls {
+            display: none;
           }
         }
         .cw-panel-header { cursor: move; touch-action: none; user-select: none; }
@@ -615,10 +665,10 @@ export default function ChatWidget() {
           inset: 5px;
           border: 1px solid rgba(66,87,51,0.18);
         }
-        .cw-fluid-text { font-size: calc(13px * var(--cw-scale)); }
-        .cw-fluid-small { font-size: calc(12px * var(--cw-scale)); }
+        .cw-fluid-text { font-size: clamp(13px, calc(13px * var(--cw-scale)), 18px); }
+        .cw-fluid-small { font-size: clamp(12px, calc(12px * var(--cw-scale)), 16px); }
         .cw-fluid-gap { gap: calc(12px * var(--cw-scale)); }
-        .cw-fluid-header { gap: calc(12px * var(--cw-scale)); padding: calc(12px * var(--cw-scale)) calc(16px * var(--cw-scale)); }
+        .cw-fluid-header { gap: calc(10px * var(--cw-scale)); padding: calc(12px * var(--cw-scale)) calc(14px * var(--cw-scale)); }
         .cw-fluid-avatar { width: calc(36px * var(--cw-scale)); height: calc(36px * var(--cw-scale)); }
         .cw-fluid-action { width: max(44px, calc(32px * var(--cw-scale))); height: max(44px, calc(32px * var(--cw-scale))); }
         .cw-fluid-action svg { width: calc(14px * var(--cw-scale)); height: calc(14px * var(--cw-scale)); }
@@ -664,6 +714,24 @@ export default function ChatWidget() {
         .cw-scroll::-webkit-scrollbar-track { background: transparent; }
         .cw-scroll::-webkit-scrollbar-thumb { background: rgba(66,87,51,0.15); border-radius: 99px; }
         .cw-input::placeholder { color: #8a9e84; }
+        .cw-focusable:focus-visible {
+          outline: 2px solid var(--cw-focus);
+          outline-offset: 2px;
+        }
+        .cw-message-bubble {
+          padding: calc(10px * var(--cw-scale)) calc(14px * var(--cw-scale));
+        }
+        .cw-size-control {
+          width: max(38px, calc(32px * var(--cw-scale)));
+          height: max(38px, calc(32px * var(--cw-scale)));
+          border: 1px solid var(--cw-border);
+          background: var(--cw-surface);
+          color: var(--cw-primary);
+        }
+        .cw-size-control:disabled {
+          opacity: 0.45;
+          cursor: not-allowed;
+        }
         .cw-category-card {
           transition: transform 0.2s cubic-bezier(0.4,0,0.2,1), box-shadow 0.2s cubic-bezier(0.4,0,0.2,1), border-color 0.2s cubic-bezier(0.4,0,0.2,1), background-color 0.2s cubic-bezier(0.4,0,0.2,1), color 0.2s cubic-bezier(0.4,0,0.2,1);
           cursor: pointer;
@@ -744,6 +812,9 @@ export default function ChatWidget() {
           return (
           <motion.div
             ref={panelRef}
+            role="dialog"
+            aria-modal="false"
+            aria-label="Chat với Rêu"
             initial={{ opacity: 0, y: 16, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 12, scale: 0.95 }}
@@ -757,11 +828,11 @@ export default function ChatWidget() {
               "--cw-scale": panelScale,
               borderRadius: 16,
               overflow: "hidden",
-              background: "#ffffff",
+              background: "var(--cw-surface)",
               boxShadow: "0 12px 48px rgba(26,46,18,0.12), 0 0 0 1px rgba(227,235,221,0.6)",
             } as React.CSSProperties}
           >
-            {(["n", "s", "e", "w", "ne", "nw", "se", "sw"] as ResizeHandle[]).map((handle) => (
+            {!isMobilePanel && (["n", "s", "e", "w", "ne", "nw", "se", "sw"] as ResizeHandle[]).map((handle) => (
               <div
                 key={handle}
                 className={`cw-resize-handle cw-resize-${handle}`}
@@ -808,12 +879,13 @@ export default function ChatWidget() {
               </div>
 
               {/* Actions */}
-              <div className="flex gap-0.5 flex-shrink-0">
+              <div className="flex gap-0.5 flex-shrink-0" onPointerDown={(e) => e.stopPropagation()}>
                 {messages.length > 1 && (
                   <button
                     onClick={resetChat}
                     title="TrĂ² chuyá»‡n láº¡i"
-                    className="cw-fluid-action rounded-lg flex items-center justify-center transition-colors"
+                    aria-label="Bắt đầu lại cuộc trò chuyện"
+                    className="cw-fluid-action cw-focusable rounded-lg flex items-center justify-center transition-colors"
                     style={{ border: "none", cursor: "pointer", color: "rgba(255,255,255,0.6)" }}
                     onMouseEnter={e => (e.currentTarget.style.background = "rgba(255,255,255,0.1)")}
                     onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
@@ -832,7 +904,8 @@ export default function ChatWidget() {
                     }));
                   }}
                   title={expanded ? "Thu nhỏ" : "Mở rộng"}
-                  className="cw-fluid-action rounded-lg flex items-center justify-center transition-colors"
+                  aria-label={expanded ? "Thu nhỏ khung chat" : "Mở rộng khung chat"}
+                  className="cw-fluid-action cw-focusable rounded-lg flex items-center justify-center transition-colors"
                   style={{ border: "none", cursor: "pointer", color: "rgba(255,255,255,0.6)" }}
                   onMouseEnter={e => (e.currentTarget.style.background = "rgba(255,255,255,0.1)")}
                   onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
@@ -842,7 +915,8 @@ export default function ChatWidget() {
                 <button
                   onClick={() => setOpen(false)}
                   title="Đóng"
-                  className="cw-fluid-action rounded-lg flex items-center justify-center transition-colors"
+                  aria-label="Đóng khung chat"
+                  className="cw-fluid-action cw-focusable rounded-lg flex items-center justify-center transition-colors"
                   style={{ border: "none", cursor: "pointer", color: "rgba(255,255,255,0.6)" }}
                   onMouseEnter={e => (e.currentTarget.style.background = "rgba(255,255,255,0.1)")}
                   onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
@@ -854,9 +928,43 @@ export default function ChatWidget() {
 
             {/* ── MESSAGES AREA ───────────────────── */}
             <div
+              className="cw-mobile-size-controls items-center justify-center gap-2 px-[calc(12px*var(--cw-scale))] py-[calc(8px*var(--cw-scale))]"
+              style={{ background: "var(--cw-surface)", borderBottom: "1px solid var(--cw-border)" }}
+              onPointerDown={(e) => e.stopPropagation()}
+            >
+              <button
+                type="button"
+                className="cw-size-control cw-focusable rounded-full flex items-center justify-center transition-colors"
+                onClick={() => adjustUiZoom(-1)}
+                disabled={!canZoomOut}
+                aria-label="Giảm cỡ chữ và UI chat"
+              >
+                <ZoomOut size={15} strokeWidth={2} />
+              </button>
+              <button
+                type="button"
+                className="cw-size-control cw-focusable rounded-full flex items-center justify-center transition-colors"
+                onClick={() => setUiZoom(1)}
+                disabled={uiZoom === 1}
+                aria-label="Đưa cỡ chữ và UI chat về mặc định"
+              >
+                <RotateCcw size={14} strokeWidth={2} />
+              </button>
+              <button
+                type="button"
+                className="cw-size-control cw-focusable rounded-full flex items-center justify-center transition-colors"
+                onClick={() => adjustUiZoom(1)}
+                disabled={!canZoomIn}
+                aria-label="Tăng cỡ chữ và UI chat"
+              >
+                <ZoomIn size={15} strokeWidth={2} />
+              </button>
+            </div>
+
+            <div
               ref={messagesScrollRef}
               className="cw-fluid-body min-h-0 flex-1 overflow-y-auto cw-scroll flex flex-col"
-              style={{ background: "#fafbf8" }}
+              style={{ background: "var(--cw-surface-muted)" }}
             >
               {/* ─── WELCOME SCREEN (initial state) ─── */}
               {showWelcomeScreen ? (
@@ -864,9 +972,9 @@ export default function ChatWidget() {
                   {/* Welcome card */}
                   <div
                     className="cw-fluid-welcome-card rounded-2xl"
-                    style={{ background: "linear-gradient(135deg, #eef5ea 0%, #f4f9f1 100%)", border: "1px solid #dde8d7" }}
+                    style={{ background: "linear-gradient(135deg, var(--cw-primary-soft) 0%, #f4f9f1 100%)", border: "1px solid var(--cw-border)" }}
                   >
-                    <p className="font-semibold leading-snug" style={{ color: "#1e3319", fontSize: "calc(15px * var(--cw-scale))" }}>
+                    <p className="font-semibold leading-snug" style={{ color: "var(--cw-text)", fontSize: "calc(15px * var(--cw-scale))" }}>
                       {WELCOME_MESSAGE}
                     </p>
                   </div>
@@ -877,15 +985,17 @@ export default function ChatWidget() {
                       const Icon = item.icon;
                       return (
                         <motion.button
+                          type="button"
                           key={item.action}
                           initial={{ opacity: 0, y: 10, scale: 0.95 }}
                           animate={{ opacity: 1, y: 0, scale: 1 }}
                           transition={{ delay: 0.05 + idx * 0.06, type: "spring", stiffness: 420, damping: 28 }}
                           onClick={() => handleCategoryClick(item.action)}
-                          className="cw-category-card cw-fluid-category-card flex flex-col items-center rounded-xl text-center"
+                          aria-label={item.label}
+                          className="cw-category-card cw-fluid-category-card cw-focusable flex flex-col items-center rounded-xl text-center"
                           style={{
-                            background: "#ffffff",
-                            border: "1px solid #e3ebdd",
+                            background: "var(--cw-surface)",
+                            border: "1px solid var(--cw-border)",
                           }}
                         >
                           <div
@@ -894,7 +1004,7 @@ export default function ChatWidget() {
                           >
                             <Icon size={20} strokeWidth={1.8} />
                           </div>
-                          <span className="cw-fluid-category-label font-semibold leading-tight" style={{ color: "#2d4a22" }}>
+                          <span className="cw-fluid-category-label font-semibold leading-tight" style={{ color: "var(--cw-primary-strong)" }}>
                             {item.label}
                           </span>
                         </motion.button>
@@ -904,14 +1014,15 @@ export default function ChatWidget() {
 
                   {/* ── "Bạn muốn hỏi về:" ─────────── */}
                   {/* ── "Trò chuyện lại với Rêu" ───── */}
-                  <div style={{ borderTop: "1px solid #e8ede4", paddingTop: 16 }}>
+                  <div style={{ borderTop: "1px solid var(--cw-border)", paddingTop: 16 }}>
                     <button
+                      type="button"
                       onClick={resetChat}
-                      className="cw-reset-btn w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-[13px] font-semibold"
+                      className="cw-reset-btn cw-focusable w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-[13px] font-semibold"
                       style={{
-                        background: "#ffffff",
-                        border: "1px solid #dde8d7",
-                        color: "#5a6d52",
+                        background: "var(--cw-surface)",
+                        border: "1px solid var(--cw-border)",
+                        color: "var(--cw-muted)",
                       }}
                     >
                       <RotateCcw size={14} />
@@ -937,12 +1048,11 @@ export default function ChatWidget() {
                       {msg.role === "user" ? (
                         <div className="flex justify-end">
                           <div
-                            className="max-w-[78%] cw-fluid-text leading-relaxed"
+                            className="max-w-[78%] cw-fluid-text cw-message-bubble leading-relaxed"
                             style={{
                               background: "linear-gradient(135deg, #2d4a22, #3a5e2c)",
                               color: "#f0f7ee",
                               borderRadius: "16px 16px 4px 16px",
-                              padding: "10px 14px",
                               boxShadow: "0 2px 8px rgba(45,74,34,0.2)",
                             }}
                           >
@@ -954,17 +1064,16 @@ export default function ChatWidget() {
                           {/* Bot avatar mini */}
                           <div
                             className="cw-bot-avatar rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"
-                            style={{ border: "1px solid rgba(66,87,51,0.15)", background: "#f0f5ee", color: "#425733" }}
+                            style={{ border: "1px solid rgba(66,87,51,0.15)", background: "var(--cw-primary-soft)", color: "var(--cw-primary)" }}
                             aria-hidden="true"
                           >
                             <Bot size={14} strokeWidth={1.9} />
                           </div>
                           <div
-                            className="max-w-[88%] cw-fluid-text leading-[1.7] rounded-[4px_16px_16px_16px]"
+                            className="max-w-[88%] cw-fluid-text cw-message-bubble leading-[1.7] rounded-[4px_16px_16px_16px]"
                             style={{
-                              color: "#1e3319",
-                              background: "#eef4ea",
-                              padding: "10px 13px",
+                              color: "var(--cw-text)",
+                              background: "var(--cw-primary-soft)",
                               border: "1px solid rgba(66,87,51,0.08)",
                             }}
                           >
@@ -1000,14 +1109,15 @@ export default function ChatWidget() {
                             <a
                               key={p.slug}
                               href={p.slug}
+                              aria-label={`Xem sản phẩm ${p.name}`}
                               className="cw-product-card flex items-center no-underline"
                               style={{
-                                background: "#ffffff",
-                                border: "1px solid #e3ebdd",
+                                background: "var(--cw-surface)",
+                                border: "1px solid var(--cw-border)",
                                 borderRadius: 14,
                               }}
                             >
-                              <div className="cw-product-image rounded-xl overflow-hidden flex-shrink-0 relative" style={{ background: "#f2f8f2" }}>
+                              <div className="cw-product-image rounded-xl overflow-hidden flex-shrink-0 relative" style={{ background: "var(--cw-primary-soft)" }}>
                                 {p.image ? (
                                   <ImageWrapper src={p.image} alt={p.name} fill sizes="84px" noRound className="object-cover" />
                                 ) : (
@@ -1020,16 +1130,16 @@ export default function ChatWidget() {
                                 )}
                               </div>
                               <div className="flex-1 min-w-0">
-                                <span className="cw-product-title block font-semibold truncate" style={{ color: "#2c3e24" }}>{p.name}</span>
-                                  <span className="cw-product-meta mt-0.5 block" style={{ color: "#526248" }}>{p.category}</span>
+                                <span className="cw-product-title block font-semibold truncate" style={{ color: "var(--cw-text)" }}>{p.name}</span>
+                                  <span className="cw-product-meta mt-0.5 block" style={{ color: "var(--cw-muted)" }}>{p.category}</span>
                                 <div className="flex items-center gap-1.5 mt-0.5">
-                                  <span className="cw-product-price font-bold tabular-nums whitespace-nowrap" style={{ color: "#425733" }}>{p.price}</span>
+                                  <span className="cw-product-price font-bold tabular-nums whitespace-nowrap" style={{ color: "var(--cw-primary)" }}>{p.price}</span>
                                   {p.originalPrice && (
-                                    <span className="cw-product-meta line-through tabular-nums whitespace-nowrap" style={{ color: "#dc2626" }}>{p.originalPrice}</span>
+                                    <span className="cw-product-meta line-through tabular-nums whitespace-nowrap" style={{ color: "var(--cw-danger)" }}>{p.originalPrice}</span>
                                   )}
                                 </div>
                               </div>
-                              <div className="cw-product-action flex-shrink-0 rounded-full flex items-center justify-center" style={{ background: "#425733" }}>
+                              <div className="cw-product-action flex-shrink-0 rounded-full flex items-center justify-center" style={{ background: "var(--cw-primary)" }}>
                                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
                               </div>
                             </a>
@@ -1044,14 +1154,15 @@ export default function ChatWidget() {
                             <a
                               key={p.slug}
                               href={p.slug}
+                              aria-label={`Xem sản phẩm ${p.name}`}
                               className="cw-product-card flex items-center no-underline"
                               style={{
-                                background: "#ffffff",
-                                border: "1px solid #e3ebdd",
+                                background: "var(--cw-surface)",
+                                border: "1px solid var(--cw-border)",
                                 borderRadius: 14,
                               }}
                             >
-                              <div className="cw-product-image rounded-xl overflow-hidden flex-shrink-0 relative" style={{ background: "#f2f8f2" }}>
+                              <div className="cw-product-image rounded-xl overflow-hidden flex-shrink-0 relative" style={{ background: "var(--cw-primary-soft)" }}>
                                 {p.image ? (
                                   <ImageWrapper src={p.image} alt={p.name} fill sizes="84px" noRound className="object-cover" />
                                 ) : (
@@ -1061,10 +1172,10 @@ export default function ChatWidget() {
                                 )}
                               </div>
                               <div className="flex-1 min-w-0">
-                                <span className="cw-product-title block font-semibold truncate" style={{ color: "#2c3e24" }}>{p.name}</span>
-                                {p.price && <span className="cw-product-price font-bold tabular-nums whitespace-nowrap" style={{ color: "#425733" }}>{p.price}</span>}
+                                <span className="cw-product-title block font-semibold truncate" style={{ color: "var(--cw-text)" }}>{p.name}</span>
+                                {p.price && <span className="cw-product-price font-bold tabular-nums whitespace-nowrap" style={{ color: "var(--cw-primary)" }}>{p.price}</span>}
                               </div>
-                              <div className="cw-product-action flex-shrink-0 rounded-full flex items-center justify-center" style={{ background: "#425733" }}>
+                              <div className="cw-product-action flex-shrink-0 rounded-full flex items-center justify-center" style={{ background: "var(--cw-primary)" }}>
                                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
                               </div>
                             </a>
@@ -1078,8 +1189,8 @@ export default function ChatWidget() {
             </div>
 
             {/* ── INPUT ────────────────────────────── */}
-              <div className="flex-shrink-0 px-[calc(12px*var(--cw-scale))] pt-[calc(10px*var(--cw-scale))] pb-[calc(env(safe-area-inset-bottom)+0.625rem)]" style={{ borderTop: "1px solid #e3ebdd", background: "#ffffff" }}>
-              <div className="cw-fluid-input-wrap flex items-end rounded-2xl" style={{ background: "#f5f8f3", border: "1px solid #e3ebdd" }}>
+              <div className="flex-shrink-0 px-[calc(12px*var(--cw-scale))] pt-[calc(10px*var(--cw-scale))] pb-[calc(env(safe-area-inset-bottom)+0.625rem)]" style={{ borderTop: "1px solid var(--cw-border)", background: "var(--cw-surface)" }}>
+              <div className="cw-fluid-input-wrap flex items-end rounded-2xl" style={{ background: "#f5f8f3", border: "1px solid var(--cw-border)" }}>
                 <div className="flex-1 relative">
                   <textarea
                     ref={textareaRef}
@@ -1093,12 +1204,14 @@ export default function ChatWidget() {
                     onKeyDown={handleKey}
                     disabled={isSending || isCooldown || userMsgCount >= MAX_MESSAGES}
                     placeholder={isCooldown ? "Đợi chút..." : userMsgCount >= MAX_MESSAGES ? "Đã đạt giới hạn" : "Hỏi em về terrarium..."}
+                    aria-label="Nhập tin nhắn cho Rêu"
+                    aria-describedby={isCooldown ? "cw-input-status" : undefined}
                     rows={1}
                     className="cw-input w-full resize-none border-none outline-none bg-transparent cw-fluid-text leading-relaxed font-[inherit]"
-                    style={{ minHeight: compactPanel ? 34 : 40, maxHeight: textareaMaxHeight, boxShadow: "none", color: "#2c3e24" }}
+                    style={{ minHeight: compactPanel ? 34 : 40, maxHeight: textareaMaxHeight, boxShadow: "none", color: "var(--cw-text)" }}
                   />
                   {message.length > 300 && (
-                    <span className="absolute right-0 bottom-0 text-xs font-semibold" style={{ color: message.length >= MAX_INPUT ? "#dc2626" : "#526248" }}>
+                    <span className="absolute right-0 bottom-0 text-xs font-semibold" style={{ color: message.length >= MAX_INPUT ? "var(--cw-danger)" : "var(--cw-muted)" }}>
                       {message.length}/{MAX_INPUT}
                     </span>
                   )}
@@ -1106,7 +1219,7 @@ export default function ChatWidget() {
                 <button
                   onClick={() => sendMessage(message)}
                   disabled={isSending || isCooldown || !message.trim() || userMsgCount >= MAX_MESSAGES}
-                  className="cw-fluid-send rounded-full flex items-center justify-center flex-shrink-0 transition-colors"
+                  className="cw-fluid-send cw-focusable rounded-full flex items-center justify-center flex-shrink-0 transition-colors"
                   style={{
                     background: message.trim() && !isSending && !isCooldown
                       ? "linear-gradient(135deg, #3a5229, #4a6a35)"
@@ -1114,11 +1227,16 @@ export default function ChatWidget() {
                     border: "none",
                     cursor: message.trim() && !isSending && !isCooldown ? "pointer" : "default",
                   }}
-                  aria-label="Gửi"
+                  aria-label={isSending ? "Đang gửi tin nhắn" : "Gửi tin nhắn"}
                 >
-                  <Send size={14} color="white" />
+                  {isSending ? <Loader2 size={15} color="white" className="animate-spin" /> : <Send size={14} color="white" />}
                 </button>
               </div>
+              {(isCooldown || userMsgCount >= MAX_MESSAGES) && (
+                <div id="cw-input-status" className="cw-fluid-small mt-1 text-center font-medium" style={{ color: "var(--cw-muted)" }}>
+                  {userMsgCount >= MAX_MESSAGES ? "Đã đạt giới hạn trò chuyện" : "Rêu đang nghỉ vài giây trước tin nhắn tiếp theo"}
+                </div>
+              )}
               <div className="text-center pt-1.5 pb-0.5">
                 <Link
                   href="/products"
@@ -1140,6 +1258,9 @@ export default function ChatWidget() {
       <AnimatePresence>
         {!open && (
           <motion.div
+            role="button"
+            tabIndex={0}
+            aria-label="Mở chat với Rêu"
             initial={{ scale: 0, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0, opacity: 0 }}
@@ -1149,6 +1270,13 @@ export default function ChatWidget() {
             onPointerDown={onPointerDown}
             onPointerMove={onPointerMove}
             onPointerUp={onPointerUp}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                setPanelRect(getPanelRectNearBubble(expanded ? EXPANDED_PANEL_SIZE : DEFAULT_PANEL_SIZE));
+                setOpen(true);
+              }
+            }}
           >
             <div className="flex items-center gap-2">
               {/* Tooltip */}
