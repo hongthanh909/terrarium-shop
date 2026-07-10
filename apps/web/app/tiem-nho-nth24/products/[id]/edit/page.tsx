@@ -14,8 +14,9 @@ import { FormSelect } from "@/components/admin/ui/FormSelect";
 import { SuggestionInput } from "@/components/admin/ui/SuggestionInput";
 import { compressImage } from "@/lib/image";
 import { ImageCropModal } from "@/components/ui/image-crop-modal";
+import { MAX_PRODUCT_VIDEO_UPLOAD_MB } from "@/lib/upload-limits";
 
-const MAX_VIDEO_MB = 50;
+const MAX_VIDEO_MB = MAX_PRODUCT_VIDEO_UPLOAD_MB;
 
 interface Category {
   id: string;

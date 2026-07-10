@@ -14,6 +14,7 @@ import { FormSelect } from "@/components/admin/ui/FormSelect";
 import { SuggestionInput } from "@/components/admin/ui/SuggestionInput";
 import { compressImage } from "@/lib/image";
 import { ImageCropModal } from "@/components/ui/image-crop-modal";
+import { MAX_PRODUCT_VIDEO_UPLOAD_MB } from "@/lib/upload-limits";
 
 interface Category {
   id: string;
@@ -28,7 +29,7 @@ const formatVND = (value: string | number) => {
   return new Intl.NumberFormat("vi-VN").format(parseInt(clean));
 };
 
-const MAX_VIDEO_MB = 50;
+const MAX_VIDEO_MB = MAX_PRODUCT_VIDEO_UPLOAD_MB;
 const CREATE_PRODUCT_DRAFT_KEY = "tiemreu:create-product:draft:v1";
 const DRAFT_NAVIGATION_MESSAGE = "Bạn có thay đổi chưa lưu. Dữ liệu đã được giữ tạm, bạn vẫn muốn rời trang?";
 

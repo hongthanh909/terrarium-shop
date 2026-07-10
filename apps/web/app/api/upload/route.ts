@@ -3,6 +3,10 @@ import { getServerSession } from "next-auth";
 import { uploadFile } from "@/lib/storage";
 import { verifyAdminRequest } from "@/lib/admin-auth";
 import { authOptions } from "@/lib/auth";
+import {
+  MAX_IMAGE_UPLOAD_BYTES,
+  MAX_PRODUCT_VIDEO_UPLOAD_BYTES,
+} from "@/lib/upload-limits";
 
 const ADMIN_BUCKETS = new Set(["products", "banners", "blog", "homepage", "policies", "gallery", "avatars"]);
 const CUSTOMER_BUCKETS = new Set(["avatars"]);
@@ -10,9 +14,6 @@ const CUSTOMER_BUCKETS = new Set(["avatars"]);
 const ALLOWED_IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
 const ALLOWED_VIDEO_TYPES = new Set(["video/mp4", "video/webm", "video/quicktime"]);
 const ALLOWED_VIDEO_EXTENSIONS = new Set([".mp4", ".webm", ".mov"]);
-
-const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
-const MAX_VIDEO_SIZE = 50 * 1024 * 1024;
 
 function getUploadKind(file: File): "image" | "video" | null {
   const type = file.type.toLowerCase();
@@ -66,7 +67,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const maxSize = kind === "video" ? MAX_VIDEO_SIZE : MAX_IMAGE_SIZE;
+    const maxSize =
+      kind === "video" ? MAX_PRODUCT_VIDEO_UPLOAD_BYTES : MAX_IMAGE_UPLOAD_BYTES;
     if (file.size > maxSize) {
       const maxSizeMB = Math.round(maxSize / 1024 / 1024);
       return NextResponse.json(
