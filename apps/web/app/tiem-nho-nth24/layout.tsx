@@ -4,9 +4,9 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 import {
-  Package, Settings, Home,
+  Package, Home,
   ShoppingCart, Percent, FileText, LogOut,
-  Grid3X3, ExternalLink, Star, ShieldCheck, LayoutDashboard, Compass, Brain,
+  Grid3X3, ExternalLink, Star, ShieldCheck, Compass, Brain,
 } from "lucide-react";
 
 
@@ -29,7 +29,6 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
   const menuItems = [
     { href: "/tiem-nho-nth24", label: "Bảng Điều Khiển", icon: Home },
-    { href: "/tiem-nho-nth24/homepage", label: "Giao Diện", icon: LayoutDashboard },
     { href: "/tiem-nho-nth24/explore", label: "Khám Phá", icon: Compass },
     { href: "/tiem-nho-nth24/products", label: "Sản phẩm", icon: Package },
     { href: "/tiem-nho-nth24/categories", label: "Danh mục", icon: Grid3X3 },
@@ -39,7 +38,6 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     { href: "/tiem-nho-nth24/reviews", label: "Đánh giá", icon: Star },
     { href: "/tiem-nho-nth24/policies", label: "Chính sách", icon: ShieldCheck },
     { href: "/tiem-nho-nth24/ai-knowledge", label: "Kiến thức AI", icon: Brain },
-    { href: "/tiem-nho-nth24/settings", label: "Cài đặt", icon: Settings },
   ];
 
   const isActive = (href: string) => {
@@ -56,7 +54,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
 
       {/* Sidebar */}
-      <aside className="fixed left-0 top-0 h-full w-60 bg-[#1a2e12] text-white flex flex-col shadow-[4px_0_24px_rgba(26,46,18,0.3)]">
+      <aside className="fixed left-0 top-0 hidden h-full w-60 flex-col bg-[#1a2e12] text-white shadow-[4px_0_24px_rgba(26,46,18,0.3)] lg:flex">
         {/* Logo */}
         <div className="px-5 py-5 border-b border-white/10">
           <Link href="/" className="flex flex-col group">
@@ -87,10 +85,11 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
               <Link
                 key={item.href}
                 href={item.href}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-150 text-sm font-medium ${
+                aria-current={active ? "page" : undefined}
+                className={`flex min-h-11 items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8fba6f]/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#1a2e12] ${
                   active
                     ? "bg-white/15 text-white shadow-sm"
-                    : "text-white/60 hover:text-white hover:bg-white/10"
+                    : "text-white/70 hover:bg-white/10 hover:text-white"
                 }`}
               >
                 <item.icon
@@ -108,14 +107,14 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         <div className="border-t border-white/10 p-3 space-y-0.5">
           <Link
             href="/"
-            className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-white/50 hover:text-white hover:bg-white/10 transition-all text-sm"
+            className="flex min-h-11 items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-white/60 transition-colors hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8fba6f]/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#1a2e12]"
           >
             <ExternalLink className="flex-shrink-0" style={{ width: "18px", height: "18px" }} />
             <span>Xem cửa hàng</span>
           </Link>
           <button
             onClick={handleLogout}
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-red-400/80 hover:text-red-300 hover:bg-red-950/40 transition-all text-sm"
+            className="flex min-h-11 w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-red-400/80 transition-colors hover:bg-red-950/40 hover:text-red-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#1a2e12]"
           >
             <LogOut className="flex-shrink-0" style={{ width: "18px", height: "18px" }} />
             <span>Đăng xuất</span>
@@ -124,8 +123,9 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       </aside>
 
       {/* Main Content */}
-      <div className="ml-60 min-h-[100dvh] flex flex-col">
-        <header className="bg-white shadow-[0_1px_8px_rgba(66,87,51,0.06)] border-b border-[#e3ebdd] px-8 py-3.5 sticky top-0 z-10 flex items-center justify-between">
+      <div className="flex min-h-[100dvh] flex-col lg:ml-60">
+        <header className="sticky top-0 z-10 border-b border-[#e3ebdd] bg-white px-4 py-3 shadow-[0_1px_8px_rgba(66,87,51,0.06)] sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between gap-4">
           <div>
             <h1 className="text-lg font-semibold text-gray-800">
               {menuItems.find((m) => isActive(m.href))?.label ?? "Bảng Điều Khiển"}
@@ -134,13 +134,34 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           </div>
           <Link
             href="/"
-            className="flex items-center gap-2 text-xs text-gray-400 hover:text-[#425733] transition-colors px-3 py-1.5 rounded-full hover:bg-[#f0f4ee] border border-transparent hover:border-[#c2d6b0]"
+            className="flex min-h-10 items-center gap-2 rounded-full border border-transparent px-3 py-2 text-xs font-medium text-gray-500 transition-colors hover:border-[#c2d6b0] hover:bg-[#f0f4ee] hover:text-[#425733] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8fba6f]/60"
           >
             <ExternalLink className="w-3.5 h-3.5" />
             Xem cửa hàng
           </Link>
+          </div>
+          <nav className="-mx-4 mt-3 flex gap-2 overflow-x-auto px-4 pb-1 lg:hidden" aria-label="Admin mobile navigation">
+            {menuItems.map((item) => {
+              const active = isActive(item.href);
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  aria-current={active ? "page" : undefined}
+                  className={`flex min-h-10 shrink-0 items-center gap-2 rounded-full border px-3 py-2 text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8fba6f]/60 ${
+                    active
+                      ? "border-[#7fa95e] bg-[#eef5e8] text-[#2f4a23]"
+                      : "border-[#e3ebdd] bg-white text-gray-600 hover:border-[#c2d6b0] hover:text-[#425733]"
+                  }`}
+                >
+                  <item.icon className="h-4 w-4 shrink-0" />
+                  <span>{item.label}</span>
+                </Link>
+              );
+            })}
+          </nav>
         </header>
-        <main className="p-8 flex-1">{children}</main>
+        <main className="flex-1 p-4 sm:p-6 lg:p-8">{children}</main>
       </div>
     </div>
   );

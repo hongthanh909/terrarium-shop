@@ -14,7 +14,6 @@ import {
   ArrowDownRight,
   Tag,
   LayoutGrid,
-  LayoutDashboard,
 } from "lucide-react";
 
 interface Stats {
@@ -302,9 +301,8 @@ export default function AdminDashboard() {
       {/* ── Quick Actions — soft cards ── */}
       <div className="bg-white rounded-2xl border border-gray-100 p-5">
         <h3 className="font-semibold text-gray-700 text-[15px] mb-4">Hành Động Nhanh</h3>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
           {[
-            { href: "/tiem-nho-nth24/homepage",        icon: LayoutDashboard, label: "Giao Diện",      bg: "#eef3e8", color: "#4a6d38" },
             { href: "/tiem-nho-nth24/products/create", icon: Package,         label: "Thêm Sản Phẩm",  bg: "#fef5e7", color: "#c28b2d" },
             { href: "/tiem-nho-nth24/orders",          icon: ShoppingCart,    label: "Đơn Hàng",        bg: "#edf5ff", color: "#3b7dd8" },
             { href: "/tiem-nho-nth24/categories",      icon: LayoutGrid,      label: "Danh Mục",        bg: "#f0eef8", color: "#6b5eaa" },
@@ -314,7 +312,7 @@ export default function AdminDashboard() {
             <Link
               key={href}
               href={href}
-              className="flex flex-col items-center gap-2.5 p-4 rounded-xl border border-gray-100 hover:border-gray-200 hover:shadow-sm transition-all group"
+              className="group flex min-h-28 flex-col items-center justify-center gap-2.5 rounded-xl border border-gray-100 p-4 text-center transition-all hover:border-gray-200 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8fba6f]/60"
             >
               <div
                 className="w-10 h-10 rounded-xl flex items-center justify-center transition-transform duration-200 group-hover:scale-110"
