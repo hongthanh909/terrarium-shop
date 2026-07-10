@@ -253,7 +253,7 @@ export default function Header() {
                     >
                       <div className="w-6 h-6 rounded-full overflow-hidden bg-[#dde8d0] flex items-center justify-center relative flex-shrink-0 text-[#2d4520] font-bold text-xs">
                         {session.user?.image ? (
-                          <img src={session.user.image} alt={session.user.name || "Avatar"} className="w-full h-full object-cover" />
+                          <ImageWrapper src={session.user.image} alt={session.user.name || "Avatar"} fill sizes="24px" noRound className="object-cover" />
                         ) : (
                           <span>{(session.user?.name || "U").substring(0, 1).toUpperCase()}</span>
                         )}
@@ -515,16 +515,16 @@ export default function Header() {
                         </p>
                       )}
                       <p className="text-sm font-bold text-[#425733] mt-1">{item.price.toLocaleString("vi-VN")}₫</p>
-                      <div className="flex items-center gap-2 mt-2 [&_button]:min-h-9 [&_button]:min-w-9">
-                        <button onClick={() => updateQuantity(item.productId, item.quantity - 1, item.variants)} className="w-6 h-6 rounded-full bg-white border border-gray-200 flex items-center justify-center hover:border-[#425733] transition-colors" aria-label={`Giảm số lượng ${item.productName}`}>
-                          <Minus className="w-3 h-3" />
+                      <div className="flex items-center gap-2 mt-2">
+                        <button onClick={() => updateQuantity(item.productId, item.quantity - 1, item.variants)} className="min-w-11 min-h-11 rounded-full bg-white border border-gray-200 flex items-center justify-center hover:border-[#425733] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#425733]/30" aria-label={`Giảm số lượng ${item.productName}`}>
+                          <Minus className="w-4 h-4" />
                         </button>
                         <span className="text-sm font-semibold w-6 text-center">{item.quantity}</span>
-                        <button onClick={() => updateQuantity(item.productId, item.quantity + 1, item.variants)} className="w-6 h-6 rounded-full bg-white border border-gray-200 flex items-center justify-center hover:border-[#425733] transition-colors" aria-label={`Tăng số lượng ${item.productName}`}>
-                          <Plus className="w-3 h-3" />
+                        <button onClick={() => updateQuantity(item.productId, item.quantity + 1, item.variants)} className="min-w-11 min-h-11 rounded-full bg-white border border-gray-200 flex items-center justify-center hover:border-[#425733] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#425733]/30" aria-label={`Tăng số lượng ${item.productName}`}>
+                          <Plus className="w-4 h-4" />
                         </button>
-                        <button onClick={() => removeItem(item.productId, item.variants)} className="ml-auto w-6 h-6 rounded-full bg-white border border-gray-200 flex items-center justify-center hover:border-red-300 hover:text-red-500 transition-colors text-gray-400" aria-label={`Xóa ${item.productName} khỏi giỏ hàng`}>
-                          <X className="w-3 h-3" />
+                        <button onClick={() => removeItem(item.productId, item.variants)} className="ml-auto min-w-11 min-h-11 rounded-full bg-white border border-gray-200 flex items-center justify-center hover:border-red-300 hover:text-red-500 transition-colors text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-200" aria-label={`Xóa ${item.productName} khỏi giỏ hàng`}>
+                          <X className="w-4 h-4" />
                         </button>
                       </div>
                     </div>

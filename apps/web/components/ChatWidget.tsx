@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { Bot, Send, X, Maximize2, Minimize2, ExternalLink, Package, Truck, ShieldCheck, Sparkles, RotateCcw } from "lucide-react";
+import { ImageWrapper } from "@/components/ui/ImageWrapper";
 
 // ── Types ────────────────────────────────────────────
 interface ProductCard {
@@ -619,7 +620,7 @@ export default function ChatWidget() {
         .cw-fluid-gap { gap: calc(12px * var(--cw-scale)); }
         .cw-fluid-header { gap: calc(12px * var(--cw-scale)); padding: calc(12px * var(--cw-scale)) calc(16px * var(--cw-scale)); }
         .cw-fluid-avatar { width: calc(36px * var(--cw-scale)); height: calc(36px * var(--cw-scale)); }
-        .cw-fluid-action { width: calc(32px * var(--cw-scale)); height: calc(32px * var(--cw-scale)); }
+        .cw-fluid-action { width: max(44px, calc(32px * var(--cw-scale))); height: max(44px, calc(32px * var(--cw-scale))); }
         .cw-fluid-action svg { width: calc(14px * var(--cw-scale)); height: calc(14px * var(--cw-scale)); }
         .cw-fluid-body { padding: calc(16px * var(--cw-scale)); }
         .cw-fluid-welcome { gap: calc(20px * var(--cw-scale)); }
@@ -632,6 +633,33 @@ export default function ChatWidget() {
         .cw-fluid-input-wrap { gap: calc(8px * var(--cw-scale)); padding: calc(8px * var(--cw-scale)) calc(14px * var(--cw-scale)); }
         .cw-fluid-send { width: calc(44px * var(--cw-scale)); height: calc(44px * var(--cw-scale)); }
         .cw-fluid-send svg { width: calc(14px * var(--cw-scale)); height: calc(14px * var(--cw-scale)); }
+        .cw-bot-avatar {
+          width: max(28px, calc(24px * var(--cw-scale)));
+          height: max(28px, calc(24px * var(--cw-scale)));
+        }
+        .cw-product-card {
+          gap: calc(10px * var(--cw-scale));
+          min-height: calc(76px * var(--cw-scale));
+          padding: calc(10px * var(--cw-scale)) calc(12px * var(--cw-scale));
+        }
+        .cw-product-image {
+          width: clamp(56px, calc(62px * var(--cw-scale)), 84px);
+          aspect-ratio: 1 / 1;
+        }
+        .cw-product-title {
+          font-size: clamp(13px, calc(13px * var(--cw-scale)), 17px);
+        }
+        .cw-product-meta,
+        .cw-product-price {
+          font-size: clamp(12px, calc(12px * var(--cw-scale)), 16px);
+        }
+        .cw-sale-badge {
+          font-size: clamp(10px, calc(10px * var(--cw-scale)), 12px);
+        }
+        .cw-product-action {
+          width: max(44px, calc(34px * var(--cw-scale)));
+          height: max(44px, calc(34px * var(--cw-scale)));
+        }
         .cw-scroll::-webkit-scrollbar { width: 3px; }
         .cw-scroll::-webkit-scrollbar-track { background: transparent; }
         .cw-scroll::-webkit-scrollbar-thumb { background: rgba(66,87,51,0.15); border-radius: 99px; }
@@ -692,6 +720,22 @@ export default function ChatWidget() {
           50% { opacity: 0.6; transform: scale(0.85); }
         }
         .cw-status-dot { animation: cw-status-pulse 2s ease-in-out infinite; }
+        @media (prefers-reduced-motion: reduce) {
+          .cw-category-card,
+          .cw-product-card,
+          .cw-reset-btn,
+          .cw-fluid-action,
+          .cw-fluid-send {
+            transition-duration: 0.01ms !important;
+          }
+          .cw-bubble-idle,
+          .cw-status-dot,
+          .cw-product-card:hover,
+          .cw-category-card:hover {
+            animation: none !important;
+            transform: none !important;
+          }
+        }
       `}</style>
 
       {/* ═══ CHAT PANEL ═══════════════════════════ */}
@@ -746,10 +790,13 @@ export default function ChatWidget() {
                 className="cw-fluid-avatar rounded-full overflow-hidden flex-shrink-0"
                 style={{ border: "1.5px solid rgba(255,255,255,0.25)", background: "rgba(255,255,255,0.08)" }}
               >
-                <img
+                <ImageWrapper
                   src="/logo.png"
                   alt="Rêu"
-                  className="w-full h-full object-cover select-none pointer-events-none"
+                  fill
+                  sizes="48px"
+                  noRound
+                  className="object-cover select-none pointer-events-none"
                 />
               </div>
 
@@ -906,10 +953,11 @@ export default function ChatWidget() {
                         <div className="flex items-start justify-start gap-2">
                           {/* Bot avatar mini */}
                           <div
-                            className="w-6 h-6 rounded-full overflow-hidden flex-shrink-0 mt-0.5"
-                            style={{ border: "1px solid rgba(66,87,51,0.15)", background: "#f0f5ee" }}
+                            className="cw-bot-avatar rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"
+                            style={{ border: "1px solid rgba(66,87,51,0.15)", background: "#f0f5ee", color: "#425733" }}
+                            aria-hidden="true"
                           >
-                            <img src="/logo.png" alt="" className="w-full h-full object-cover" />
+                            <Bot size={14} strokeWidth={1.9} />
                           </div>
                           <div
                             className="max-w-[88%] cw-fluid-text leading-[1.7] rounded-[4px_16px_16px_16px]"
@@ -952,37 +1000,36 @@ export default function ChatWidget() {
                             <a
                               key={p.slug}
                               href={p.slug}
-                              className="cw-product-card flex items-center gap-3 no-underline"
+                              className="cw-product-card flex items-center no-underline"
                               style={{
                                 background: "#ffffff",
                                 border: "1px solid #e3ebdd",
                                 borderRadius: 14,
-                                padding: "10px 12px",
                               }}
                             >
-                              <div className="w-14 h-14 rounded-xl overflow-hidden flex-shrink-0 relative" style={{ background: "#f2f8f2" }}>
+                              <div className="cw-product-image rounded-xl overflow-hidden flex-shrink-0 relative" style={{ background: "#f2f8f2" }}>
                                 {p.image ? (
-                                  <img src={p.image} alt={p.name} className="w-full h-full object-cover" loading="lazy" />
+                                  <ImageWrapper src={p.image} alt={p.name} fill sizes="84px" noRound className="object-cover" />
                                 ) : (
                                   <div className="w-full h-full flex items-center justify-center">
-                                    <span className="text-lg">🌿</span>
+                                    <Package className="w-5 h-5" aria-hidden="true" />
                                   </div>
                                 )}
                                 {p.originalPrice && (
-                                  <span className="absolute top-0.5 left-0.5 text-[8px] font-bold text-white px-1 py-0.5 rounded" style={{ background: "#e74c3c" }}>SALE</span>
+                                  <span className="cw-sale-badge absolute top-1 left-1 font-bold text-white px-1.5 py-0.5 rounded" style={{ background: "#e74c3c" }}>SALE</span>
                                 )}
                               </div>
                               <div className="flex-1 min-w-0">
-                                <span className="block text-[12px] font-semibold truncate" style={{ color: "#2c3e24" }}>{p.name}</span>
-                                  <span className="text-xs mt-0.5 block" style={{ color: "#526248" }}>{p.category}</span>
+                                <span className="cw-product-title block font-semibold truncate" style={{ color: "#2c3e24" }}>{p.name}</span>
+                                  <span className="cw-product-meta mt-0.5 block" style={{ color: "#526248" }}>{p.category}</span>
                                 <div className="flex items-center gap-1.5 mt-0.5">
-                                  <span className="text-[12px] font-bold" style={{ color: "#425733" }}>{p.price}</span>
+                                  <span className="cw-product-price font-bold tabular-nums whitespace-nowrap" style={{ color: "#425733" }}>{p.price}</span>
                                   {p.originalPrice && (
-                                    <span className="text-xs line-through" style={{ color: "#dc2626" }}>{p.originalPrice}</span>
+                                    <span className="cw-product-meta line-through tabular-nums whitespace-nowrap" style={{ color: "#dc2626" }}>{p.originalPrice}</span>
                                   )}
                                 </div>
                               </div>
-                              <div className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center" style={{ background: "#425733" }}>
+                              <div className="cw-product-action flex-shrink-0 rounded-full flex items-center justify-center" style={{ background: "#425733" }}>
                                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
                               </div>
                             </a>
@@ -997,28 +1044,27 @@ export default function ChatWidget() {
                             <a
                               key={p.slug}
                               href={p.slug}
-                              className="cw-product-card flex items-center gap-3 no-underline"
+                              className="cw-product-card flex items-center no-underline"
                               style={{
                                 background: "#ffffff",
                                 border: "1px solid #e3ebdd",
                                 borderRadius: 14,
-                                padding: "10px 12px",
                               }}
                             >
-                              <div className="w-14 h-14 rounded-xl overflow-hidden flex-shrink-0" style={{ background: "#f2f8f2" }}>
+                              <div className="cw-product-image rounded-xl overflow-hidden flex-shrink-0 relative" style={{ background: "#f2f8f2" }}>
                                 {p.image ? (
-                                  <img src={p.image} alt={p.name} className="w-full h-full object-cover" loading="lazy" />
+                                  <ImageWrapper src={p.image} alt={p.name} fill sizes="84px" noRound className="object-cover" />
                                 ) : (
                                   <div className="w-full h-full flex items-center justify-center">
-                                    <span className="text-lg">🌿</span>
+                                    <Package className="w-5 h-5" aria-hidden="true" />
                                   </div>
                                 )}
                               </div>
                               <div className="flex-1 min-w-0">
-                                <span className="block text-[12px] font-semibold truncate" style={{ color: "#2c3e24" }}>{p.name}</span>
-                                {p.price && <span className="text-[12px] font-bold" style={{ color: "#425733" }}>{p.price}</span>}
+                                <span className="cw-product-title block font-semibold truncate" style={{ color: "#2c3e24" }}>{p.name}</span>
+                                {p.price && <span className="cw-product-price font-bold tabular-nums whitespace-nowrap" style={{ color: "#425733" }}>{p.price}</span>}
                               </div>
-                              <div className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center" style={{ background: "#425733" }}>
+                              <div className="cw-product-action flex-shrink-0 rounded-full flex items-center justify-center" style={{ background: "#425733" }}>
                                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
                               </div>
                             </a>

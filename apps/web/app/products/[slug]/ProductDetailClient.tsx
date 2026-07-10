@@ -458,14 +458,14 @@ export function ProductDetailClient({
           className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/90 backdrop-blur-sm"
           onClick={(e) => { if (e.target === e.currentTarget) closeLightbox(); }}
         >
-          <button onClick={closeLightbox} className="absolute top-4 right-4 z-10 w-10 h-10 rounded-full bg-white/10 hover:bg-white/25 text-white flex items-center justify-center transition-colors" aria-label="Đóng">
+          <button onClick={closeLightbox} className="absolute top-4 right-4 z-10 w-11 h-11 rounded-full bg-white/10 hover:bg-white/25 text-white flex items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80" aria-label="Đóng">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
           </button>
           <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-2 z-10 bg-black/40 rounded-full px-3 py-1.5 backdrop-blur-sm">
-            <button onClick={() => setZoomScale((s) => { const n = Math.max(s - 0.5, 1); if (n === 1) setPanOffset({ x: 0, y: 0 }); return n; })} className="w-8 h-8 rounded-full bg-white/15 hover:bg-white/30 text-white flex items-center justify-center text-lg font-bold">−</button>
+            <button onClick={() => setZoomScale((s) => { const n = Math.max(s - 0.5, 1); if (n === 1) setPanOffset({ x: 0, y: 0 }); return n; })} className="w-11 h-11 rounded-full bg-white/15 hover:bg-white/30 text-white flex items-center justify-center text-lg font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80" aria-label="Thu nhỏ ảnh">−</button>
             <span className="text-white text-sm font-medium min-w-[3rem] text-center select-none">{Math.round(zoomScale * 100)}%</span>
-            <button onClick={() => setZoomScale((s) => Math.min(s + 0.5, 5))} className="w-8 h-8 rounded-full bg-white/15 hover:bg-white/30 text-white flex items-center justify-center text-lg font-bold">+</button>
-            {zoomScale > 1 && <button onClick={resetZoom} className="ml-1 px-3 h-8 rounded-full bg-white/15 hover:bg-white/30 text-white text-xs font-medium transition-colors">Reset</button>}
+            <button onClick={() => setZoomScale((s) => Math.min(s + 0.5, 5))} className="w-11 h-11 rounded-full bg-white/15 hover:bg-white/30 text-white flex items-center justify-center text-lg font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80" aria-label="Phóng to ảnh">+</button>
+            {zoomScale > 1 && <button onClick={resetZoom} className="ml-1 px-4 h-11 rounded-full bg-white/15 hover:bg-white/30 text-white text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80">Reset</button>}
           </div>
           {product.images.length > 1 && (
             <>
@@ -483,18 +483,22 @@ export function ProductDetailClient({
             style={{ cursor: zoomScale > 1 ? (isPanning ? "grabbing" : "grab") : "zoom-in" }}
             onWheel={handleWheel} onMouseDown={handleMouseDown} onMouseMove={handleMouseMove} onMouseUp={handleMouseUp} onMouseLeave={handleMouseUp}
           >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={product.images[lightboxIndex]} alt={product.name} draggable={false}
-              style={{ maxWidth: "90vw", maxHeight: "90vh", width: "auto", height: "auto", objectFit: "contain", transform: `scale(${zoomScale}) translate(${panOffset.x / zoomScale}px, ${panOffset.y / zoomScale}px)`, transformOrigin: `${zoomOrigin.x}% ${zoomOrigin.y}%`, transition: isPanning ? "none" : "transform 0.15s ease", userSelect: "none", pointerEvents: "none" }}
+            <ImageWrapper
+              src={product.images[lightboxIndex]}
+              alt={product.name}
+              fill
+              sizes="100vw"
+              noRound
+              draggable={false}
+              className="object-contain"
+              style={{ transform: `scale(${zoomScale}) translate(${panOffset.x / zoomScale}px, ${panOffset.y / zoomScale}px)`, transformOrigin: `${zoomOrigin.x}% ${zoomOrigin.y}%`, transition: isPanning ? "none" : "transform 0.15s ease", userSelect: "none", pointerEvents: "none" }}
             />
           </div>
           {product.images.length > 1 && (
             <div className="absolute bottom-16 left-1/2 -translate-x-1/2 flex gap-2 z-10">
               {product.images.map((img: string, i: number) => (
-                <button key={i} onClick={() => { setLightboxIndex(i); resetZoom(); }} className={`w-12 h-12 rounded-lg overflow-hidden border-2 transition-all ${i === lightboxIndex ? "border-white scale-110" : "border-white/30 opacity-60 hover:opacity-90"}`}>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={img} alt={`thumb-${i}`} className="w-full h-full object-cover" />
+                <button key={i} onClick={() => { setLightboxIndex(i); resetZoom(); }} className={`relative w-12 h-12 rounded-lg overflow-hidden border-2 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80 ${i === lightboxIndex ? "border-white scale-110" : "border-white/30 opacity-60 hover:opacity-90"}`} aria-label={`Xem ảnh ${i + 1}`}>
+                  <ImageWrapper src={img} alt={`${product.name} ${i + 1}`} fill sizes="48px" noRound className="object-cover" />
                 </button>
               ))}
             </div>
@@ -539,10 +543,10 @@ export function ProductDetailClient({
                           )}
                           <p className="text-primary font-bold mt-1">{(item.price * item.quantity).toLocaleString("vi-VN")}₫</p>
                           <div className="flex items-center gap-2 mt-2">
-                            <Button variant="outline" size="icon" className="h-7 w-7" onClick={() => updateQuantity(item.productId, item.quantity - 1, item.variants)}><Minus className="w-3 h-3" /></Button>
+                            <Button variant="outline" size="icon" className="h-11 w-11 shrink-0 rounded-full" onClick={() => updateQuantity(item.productId, item.quantity - 1, item.variants)} aria-label={`Giảm số lượng ${item.productName}`}><Minus className="w-4 h-4" /></Button>
                             <span className="w-8 text-center font-medium">{item.quantity}</span>
-                            <Button variant="outline" size="icon" className="h-7 w-7" onClick={() => updateQuantity(item.productId, item.quantity + 1, item.variants)}><Plus className="w-3 h-3" /></Button>
-                            <Button variant="ghost" size="sm" className="ml-auto text-destructive text-xs" onClick={() => removeItem(item.productId, item.variants)}>Xóa</Button>
+                            <Button variant="outline" size="icon" className="h-11 w-11 shrink-0 rounded-full" onClick={() => updateQuantity(item.productId, item.quantity + 1, item.variants)} aria-label={`Tăng số lượng ${item.productName}`}><Plus className="w-4 h-4" /></Button>
+                            <Button variant="ghost" size="sm" className="ml-auto min-h-11 px-3 text-destructive text-sm" onClick={() => removeItem(item.productId, item.variants)} aria-label={`Xóa ${item.productName} khỏi giỏ hàng`}>Xóa</Button>
                           </div>
                         </div>
                       </div>
@@ -584,11 +588,13 @@ export function ProductDetailClient({
                   style={{ aspectRatio: "1/1", maxHeight: "min(550px, 72dvh)" }}
                   onClick={() => handleOpenLightbox(currentImageIndex)}
                 >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
+                  <ImageWrapper
                     src={product.images[currentImageIndex]}
                     alt={product.name}
-                    className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-[1.03]"
+                    fill
+                    sizes="(max-width: 1024px) 100vw, 50vw"
+                    noRound
+                    className="object-contain transition-transform duration-500 group-hover:scale-[1.03]"
                   />
 
                   {/* Sale badge */}
@@ -650,8 +656,7 @@ export function ProductDetailClient({
                         : "border-gray-200 bg-white opacity-60 hover:opacity-100 hover:border-[#425733]/40"
                     }`}
                   >
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={img} alt={`${product.name} - ${i + 1}`} className="w-full h-full object-contain p-0.5" />
+                    <ImageWrapper src={img} alt={`${product.name} - ${i + 1}`} fill sizes="80px" noRound className="object-contain p-0.5" />
                   </button>
                 ))}
               </div>
