@@ -1101,6 +1101,16 @@ export default function ChatWidget() {
         .cw-message-bubble {
           padding: calc(10px * var(--cw-scale)) calc(14px * var(--cw-scale));
         }
+        .cw-user-image-card {
+          padding: calc(8px * var(--cw-scale));
+          background: #fff;
+          color: var(--cw-text);
+          border: 1px solid rgba(66,87,51,0.12);
+          box-shadow: 0 2px 14px rgba(26,46,18,0.08);
+        }
+        .cw-user-image-card img {
+          border: 1px solid rgba(66,87,51,0.1);
+        }
         .cw-size-control {
           width: max(38px, calc(32px * var(--cw-scale)));
           height: max(38px, calc(32px * var(--cw-scale)));
@@ -1428,13 +1438,13 @@ export default function ChatWidget() {
                       {msg.role === "user" ? (
                         <div className="flex flex-col items-end">
                           <div
-                            className="max-w-[78%] cw-fluid-text cw-message-bubble leading-relaxed"
+                            className={`max-w-[78%] cw-fluid-text cw-message-bubble leading-relaxed ${msg.imageUrl ? "cw-user-image-card" : ""}`}
                             style={{
-                              background: msg.imageUrl && !msg.content.trim() ? "#ffffff" : "linear-gradient(135deg, #2d4a22, #3a5e2c)",
-                              color: msg.imageUrl && !msg.content.trim() ? "var(--cw-text)" : "#f0f7ee",
+                              background: msg.imageUrl ? "#ffffff" : "linear-gradient(135deg, #2d4a22, #3a5e2c)",
+                              color: msg.imageUrl ? "var(--cw-text)" : "#f0f7ee",
                               borderRadius: "16px 16px 4px 16px",
-                              border: msg.imageUrl && !msg.content.trim() ? "1px solid rgba(66,87,51,0.12)" : "none",
-                              boxShadow: msg.imageUrl && !msg.content.trim() ? "0 2px 12px rgba(26,46,18,0.08)" : "0 2px 8px rgba(45,74,34,0.2)",
+                              border: msg.imageUrl ? "1px solid rgba(66,87,51,0.12)" : "none",
+                              boxShadow: msg.imageUrl ? "0 2px 14px rgba(26,46,18,0.08)" : "0 2px 8px rgba(45,74,34,0.2)",
                             }}
                           >
                             {msg.imageUrl && (
@@ -1442,7 +1452,7 @@ export default function ChatWidget() {
                                 src={msg.imageUrl}
                                 alt="Anh khach gui cho Reu phan tich"
                                 className={`${msg.content.trim() ? "mb-2" : ""} max-h-44 w-full rounded-xl object-cover`}
-                                style={{ border: msg.content.trim() ? "1px solid rgba(240,247,238,0.24)" : "1px solid rgba(66,87,51,0.1)" }}
+                                style={{ border: "1px solid rgba(66,87,51,0.1)" }}
                               />
                             )}
                             {msg.content.trim() && renderContent(msg.content)}
