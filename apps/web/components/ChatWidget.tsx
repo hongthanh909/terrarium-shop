@@ -4,7 +4,7 @@ import { useState, useRef, useEffect, useLayoutEffect, useMemo, useCallback } fr
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { Bot, X, Maximize2, Minimize2, ExternalLink, Package, Truck, ShieldCheck, Sparkles, RotateCcw, ZoomIn, ZoomOut, Plus, AudioLines, Image as ImageIcon, Camera, Mic, ArrowUp, Square } from "lucide-react";
+import { Bot, X, Maximize2, Minimize2, ExternalLink, Package, Truck, ShieldCheck, Sparkles, RotateCcw, ZoomIn, ZoomOut, Plus, AudioLines, Image as ImageIcon, Camera, Mic, ArrowUp, Square, Pause } from "lucide-react";
 import { ImageWrapper } from "@/components/ui/ImageWrapper";
 
 // ── Types ────────────────────────────────────────────
@@ -236,6 +236,7 @@ export default function ChatWidget() {
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const abortRef = useRef<AbortController | null>(null);
   const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
+  const voiceStopRequestedRef = useRef(false);
   const panelRef = useRef<HTMLDivElement>(null);
 
   // ── Viewport dimensions ────────────────────────
@@ -535,11 +536,13 @@ export default function ChatWidget() {
   }, [open]);
   useEffect(() => () => {
     abortRef.current?.abort();
+    voiceStopRequestedRef.current = true;
     recognitionRef.current?.stop();
   }, []);
 
   const resetChat = () => {
     abortRef.current?.abort();
+    voiceStopRequestedRef.current = true;
     recognitionRef.current?.stop();
     setMessages([initialMessage]);
     setMessage("");
@@ -634,6 +637,7 @@ export default function ChatWidget() {
   const handleVoiceInput = () => {
     if (isSending || isCooldown || userMsgCount >= MAX_MESSAGES) return;
     if (isListening) {
+      voiceStopRequestedRef.current = true;
       recognitionRef.current?.stop();
       setIsListening(false);
       return;
@@ -652,6 +656,7 @@ export default function ChatWidget() {
     const recognition = new SpeechRecognitionCtor();
     const baseMessage = message.trim();
     let finalTranscript = "";
+    voiceStopRequestedRef.current = false;
 
     recognition.lang = "vi-VN";
     recognition.interimResults = true;
@@ -670,11 +675,13 @@ export default function ChatWidget() {
     };
     recognition.onerror = (event) => {
       setIsListening(false);
+      if (voiceStopRequestedRef.current || event.error === "aborted") return;
       setImageError(getVoiceErrorMessage(event.error));
     };
     recognition.onend = () => {
       recognitionRef.current = null;
       setIsListening(false);
+      voiceStopRequestedRef.current = false;
       setTimeout(() => textareaRef.current?.focus(), 50);
     };
 
@@ -1643,15 +1650,15 @@ export default function ChatWidget() {
                   disabled={isSending || isCooldown || userMsgCount >= MAX_MESSAGES}
                   className="cw-gpt-mic cw-focusable rounded-full flex items-center justify-center flex-shrink-0 transition-colors"
                   style={{
-                    background: isListening ? "#eef6ea" : "transparent",
+                    background: isListening ? "var(--cw-primary)" : "transparent",
                     border: "none",
-                    color: isListening ? "var(--cw-primary)" : "#0f0f0f",
+                    color: isListening ? "#fff" : "#0f0f0f",
                     opacity: isCooldown || userMsgCount >= MAX_MESSAGES ? 0.5 : 1,
                     cursor: !isSending && !isCooldown && userMsgCount < MAX_MESSAGES ? "pointer" : "default",
                   }}
-                  aria-label={isListening ? "Dừng nhập giọng nói" : "Nhập bằng giọng nói"}
+                  aria-label={isListening ? "Tạm dừng và chuyển giọng nói thành văn bản" : "Nhập bằng giọng nói"}
                 >
-                  <Mic />
+                  {isListening ? <Pause fill="white" /> : <Mic />}
                 </button>
                 <button
                   type="button"
