@@ -128,7 +128,7 @@ export async function POST(request: Request) {
       imageDataUrl: body.imageDataUrl,
       history,
       model,
-      maxOutputTokens: 700,
+      maxOutputTokens: 1200,
     });
 
     if (!answer?.text) {

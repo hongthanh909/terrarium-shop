@@ -259,6 +259,7 @@ export async function completeVisionFromOpenAI({
         ],
         stream: false,
         max_output_tokens: maxOutputTokens,
+        reasoning: { effort: "low" },
       }),
       signal: abortCtrl.signal,
     });
@@ -273,7 +274,7 @@ export async function completeVisionFromOpenAI({
     const payload = await res.json();
     const text = extractResponseText(payload);
     if (!text) {
-      console.error(`[AI] OpenAI vision empty response for model ${model}; status=${payload?.status || "unknown"}`);
+      console.error(`[AI] OpenAI vision empty response for model ${model}; status=${payload?.status || "unknown"}; incomplete=${JSON.stringify(payload?.incomplete_details || null)}`);
       return null;
     }
 
