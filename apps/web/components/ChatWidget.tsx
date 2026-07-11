@@ -4,7 +4,7 @@ import { useState, useRef, useEffect, useLayoutEffect, useMemo, useCallback } fr
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { Bot, Send, X, Maximize2, Minimize2, ExternalLink, Package, Truck, ShieldCheck, Sparkles, RotateCcw, Loader2, ZoomIn, ZoomOut, Image as ImageIcon } from "lucide-react";
+import { Bot, Send, X, Maximize2, Minimize2, ExternalLink, Package, Truck, ShieldCheck, Sparkles, RotateCcw, Loader2, ZoomIn, ZoomOut, Plus, ChevronDown, AudioLines, Image as ImageIcon, Camera } from "lucide-react";
 import { ImageWrapper } from "@/components/ui/ImageWrapper";
 
 // ── Types ────────────────────────────────────────────
@@ -170,6 +170,7 @@ export default function ChatWidget() {
   const latestUserMessageRef = useRef<HTMLDivElement | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
   const abortRef = useRef<AbortController | null>(null);
   const panelRef = useRef<HTMLDivElement>(null);
 
@@ -501,11 +502,8 @@ export default function ChatWidget() {
   };
 
   // ── Send message ───────────────────────────────
-  const handleImageSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    event.target.value = "";
-    if (!file || isSending) return;
-
+  const handleImageFile = async (file: File) => {
+    if (isSending || isCooldown || userMsgCount >= MAX_MESSAGES) return;
     try {
       setImageError(null);
       const dataUrl = await resizeChatImage(file);
@@ -519,6 +517,23 @@ export default function ChatWidget() {
           : "Anh chua dung dinh dang. Reu ho tro JPG, PNG hoac WebP.";
       setImageError(errorMessage);
     }
+  };
+
+  const handleImageSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+    await handleImageFile(file);
+  };
+
+  const handlePaste = async (event: React.ClipboardEvent<HTMLTextAreaElement>) => {
+    const items = Array.from(event.clipboardData?.items || []);
+    const imageItem = items.find((item) => item.type.startsWith("image/"));
+    const file = imageItem?.getAsFile();
+    if (!file) return;
+
+    event.preventDefault();
+    await handleImageFile(file);
   };
 
   const sendMessage = async (text: string, image = selectedImage) => {
@@ -787,6 +802,46 @@ export default function ChatWidget() {
         .cw-scroll::-webkit-scrollbar-track { background: transparent; }
         .cw-scroll::-webkit-scrollbar-thumb { background: rgba(66,87,51,0.15); border-radius: 99px; }
         .cw-input::placeholder { color: #8a9e84; }
+        .cw-gpt-composer {
+          min-height: calc(60px * var(--cw-scale));
+          gap: calc(10px * var(--cw-scale));
+          padding: calc(8px * var(--cw-scale)) calc(10px * var(--cw-scale));
+          border: 1px solid rgba(26,46,18,0.1);
+          background: rgba(255,255,255,0.94);
+          border-radius: 999px;
+          box-shadow: 0 10px 34px rgba(26,46,18,0.08), 0 1px 0 rgba(255,255,255,0.7) inset;
+        }
+        .cw-gpt-composer:focus-within {
+          border-color: rgba(66,87,51,0.24);
+          box-shadow: 0 12px 38px rgba(26,46,18,0.11), 0 0 0 3px rgba(143,186,111,0.13);
+        }
+        .cw-gpt-icon-btn {
+          width: calc(40px * var(--cw-scale));
+          height: calc(40px * var(--cw-scale));
+          min-width: 40px;
+          min-height: 40px;
+        }
+        .cw-gpt-send {
+          width: calc(42px * var(--cw-scale));
+          height: calc(42px * var(--cw-scale));
+          min-width: 42px;
+          min-height: 42px;
+        }
+        .cw-gpt-level {
+          height: calc(36px * var(--cw-scale));
+          padding-inline: calc(8px * var(--cw-scale));
+          color: #6c7168;
+        }
+        .cw-gpt-level svg,
+        .cw-gpt-icon-btn svg,
+        .cw-gpt-send svg {
+          width: calc(18px * var(--cw-scale));
+          height: calc(18px * var(--cw-scale));
+        }
+        .cw-gpt-input {
+          padding: calc(8px * var(--cw-scale)) 0;
+          min-height: calc(38px * var(--cw-scale));
+        }
         .cw-focusable:focus-visible {
           outline: 2px solid var(--cw-focus);
           outline-offset: 2px;
@@ -1278,6 +1333,14 @@ export default function ChatWidget() {
                 className="hidden"
                 onChange={handleImageSelect}
               />
+              <input
+                ref={cameraInputRef}
+                type="file"
+                accept="image/*"
+                capture="environment"
+                className="hidden"
+                onChange={handleImageSelect}
+              />
               {selectedImage && (
                 <div className="mb-2 flex items-center gap-2 rounded-xl p-2" style={{ background: "#f5f8f3", border: "1px solid var(--cw-border)" }}>
                   <img
@@ -1305,21 +1368,21 @@ export default function ChatWidget() {
                   {imageError}
                 </div>
               )}
-              <div className="cw-fluid-input-wrap flex items-end rounded-2xl" style={{ background: "#f5f8f3", border: "1px solid var(--cw-border)" }}>
+              <div className="cw-gpt-composer flex items-center">
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
                   disabled={isSending || isCooldown || userMsgCount >= MAX_MESSAGES}
-                  className="cw-fluid-send cw-focusable rounded-full flex items-center justify-center flex-shrink-0 transition-colors"
+                  className="cw-gpt-icon-btn cw-focusable rounded-full flex items-center justify-center flex-shrink-0 transition-colors"
                   style={{
-                    background: selectedImage ? "#dcebd6" : "var(--cw-surface)",
-                    border: "1px solid var(--cw-border)",
-                    color: "var(--cw-primary)",
+                    background: "transparent",
+                    border: "none",
+                    color: selectedImage ? "var(--cw-primary)" : "#121212",
                     cursor: !isSending && !isCooldown && userMsgCount < MAX_MESSAGES ? "pointer" : "default",
                   }}
-                  aria-label="Gui anh tinh trang be cho Reu phan tich"
+                  aria-label="Them anh tinh trang be cho Reu phan tich"
                 >
-                  <ImageIcon size={15} />
+                  <Plus />
                 </button>
                 <div className="flex-1 relative">
                   <textarea
@@ -1332,13 +1395,14 @@ export default function ChatWidget() {
                       e.target.style.height = Math.min(e.target.scrollHeight, textareaMaxHeight) + "px";
                     }}
                     onKeyDown={handleKey}
+                    onPaste={handlePaste}
                     disabled={isSending || isCooldown || userMsgCount >= MAX_MESSAGES}
                     placeholder={isCooldown ? "Đợi chút..." : userMsgCount >= MAX_MESSAGES ? "Đã đạt giới hạn" : "Hỏi em về terrarium..."}
                     aria-label="Nhập tin nhắn cho Rêu"
                     aria-describedby={isCooldown ? "cw-input-status" : undefined}
                     rows={1}
-                    className="cw-input w-full resize-none border-none outline-none bg-transparent cw-fluid-text leading-relaxed font-[inherit]"
-                    style={{ minHeight: compactPanel ? 34 : 40, maxHeight: textareaMaxHeight, boxShadow: "none", color: "var(--cw-text)" }}
+                    className="cw-input cw-gpt-input w-full resize-none border-none outline-none bg-transparent cw-fluid-text leading-relaxed font-[inherit]"
+                    style={{ maxHeight: textareaMaxHeight, boxShadow: "none", color: "var(--cw-text)" }}
                   />
                   {message.length > 300 && (
                     <span className="absolute right-0 bottom-0 text-xs font-semibold" style={{ color: message.length >= MAX_INPUT ? "var(--cw-danger)" : "var(--cw-muted)" }}>
