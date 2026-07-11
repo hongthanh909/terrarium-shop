@@ -4,7 +4,7 @@ import { useState, useRef, useEffect, useLayoutEffect, useMemo, useCallback } fr
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { Bot, Send, X, Maximize2, Minimize2, ExternalLink, Package, Truck, ShieldCheck, Sparkles, RotateCcw, Loader2, ZoomIn, ZoomOut, Plus, AudioLines, Image as ImageIcon, Camera } from "lucide-react";
+import { Bot, X, Maximize2, Minimize2, ExternalLink, Package, Truck, ShieldCheck, Sparkles, RotateCcw, ZoomIn, ZoomOut, Plus, AudioLines, Image as ImageIcon, Camera, Mic, ArrowUp, Square } from "lucide-react";
 import { ImageWrapper } from "@/components/ui/ImageWrapper";
 
 // ── Types ────────────────────────────────────────────
@@ -39,6 +39,31 @@ interface PageContext {
 
 type ResizeHandle = "n" | "s" | "e" | "w" | "ne" | "nw" | "se" | "sw";
 type ChatImageSource = "upload" | "camera" | "paste";
+type SpeechRecognitionResultLike = {
+  isFinal: boolean;
+  0?: { transcript?: string };
+};
+type SpeechRecognitionEventLike = {
+  resultIndex: number;
+  results: {
+    length: number;
+    [index: number]: SpeechRecognitionResultLike;
+  };
+};
+type SpeechRecognitionLike = {
+  lang: string;
+  interimResults: boolean;
+  continuous: boolean;
+  onresult: ((event: SpeechRecognitionEventLike) => void) | null;
+  onerror: (() => void) | null;
+  onend: (() => void) | null;
+  start: () => void;
+  stop: () => void;
+};
+type SpeechRecognitionWindow = Window & {
+  SpeechRecognition?: new () => SpeechRecognitionLike;
+  webkitSpeechRecognition?: new () => SpeechRecognitionLike;
+};
 
 // ── Category menu items (Shopee-style 2×2 grid) ─────
 const CATEGORY_ITEMS = [
@@ -176,6 +201,7 @@ export default function ChatWidget() {
   const [selectedImage, setSelectedImage] = useState<{ dataUrl: string; name: string } | null>(null);
   const [imageError, setImageError] = useState<string | null>(null);
   const [attachmentMenuOpen, setAttachmentMenuOpen] = useState(false);
+  const [isListening, setIsListening] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const [isAIAvailable, setIsAIAvailable] = useState<boolean | null>(null);
   const [isCooldown, setIsCooldown] = useState(false);
@@ -185,6 +211,7 @@ export default function ChatWidget() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const abortRef = useRef<AbortController | null>(null);
+  const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
   const panelRef = useRef<HTMLDivElement>(null);
 
   // ── Viewport dimensions ────────────────────────
@@ -482,14 +509,19 @@ export default function ChatWidget() {
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [open]);
-  useEffect(() => () => { abortRef.current?.abort(); }, []);
+  useEffect(() => () => {
+    abortRef.current?.abort();
+    recognitionRef.current?.stop();
+  }, []);
 
   const resetChat = () => {
     abortRef.current?.abort();
+    recognitionRef.current?.stop();
     setMessages([initialMessage]);
     setMessage("");
     setSelectedImage(null);
     setImageError(null);
+    setIsListening(false);
     setIsSending(false);
     setIsCooldown(false);
     setIsAIAvailable(null);
@@ -555,6 +587,78 @@ export default function ChatWidget() {
 
     event.preventDefault();
     await handleImageFile(file, "paste");
+  };
+
+  const stopResponse = () => {
+    abortRef.current?.abort();
+    abortRef.current = null;
+    setIsSending(false);
+    setMessages(prev => {
+      const u = [...prev];
+      const last = u[u.length - 1];
+      if (last?.role === "assistant" && last.isStreaming) {
+        u[u.length - 1] = {
+          ...last,
+          content: last.content || "Đã dừng phản hồi.",
+          isStreaming: false,
+        };
+      }
+      return u;
+    });
+  };
+
+  const handleVoiceInput = () => {
+    if (isSending || isCooldown || userMsgCount >= MAX_MESSAGES) return;
+    if (isListening) {
+      recognitionRef.current?.stop();
+      setIsListening(false);
+      return;
+    }
+
+    const SpeechRecognitionCtor =
+      typeof window !== "undefined"
+        ? ((window as SpeechRecognitionWindow).SpeechRecognition || (window as SpeechRecognitionWindow).webkitSpeechRecognition)
+        : undefined;
+
+    if (!SpeechRecognitionCtor) {
+      setImageError("Trình duyệt chưa hỗ trợ nhập giọng nói. Anh/chị thử Chrome hoặc Edge nhé.");
+      return;
+    }
+
+    const recognition = new SpeechRecognitionCtor();
+    const baseMessage = message.trim();
+    let finalTranscript = "";
+
+    recognition.lang = "vi-VN";
+    recognition.interimResults = true;
+    recognition.continuous = false;
+    recognition.onresult = (event) => {
+      let interimTranscript = "";
+      for (let i = event.resultIndex; i < event.results.length; i += 1) {
+        const transcript = event.results[i]?.[0]?.transcript ?? "";
+        if (event.results[i]?.isFinal) finalTranscript += transcript;
+        else interimTranscript += transcript;
+      }
+
+      const spokenText = (finalTranscript || interimTranscript).trim();
+      const nextValue = [baseMessage, spokenText].filter(Boolean).join(" ");
+      if (nextValue.length <= MAX_INPUT) setMessage(nextValue);
+    };
+    recognition.onerror = () => {
+      setIsListening(false);
+      setImageError("Không nghe được giọng nói. Anh/chị thử lại nhé.");
+    };
+    recognition.onend = () => {
+      recognitionRef.current = null;
+      setIsListening(false);
+      setTimeout(() => textareaRef.current?.focus(), 50);
+    };
+
+    setImageError(null);
+    setAttachmentMenuOpen(false);
+    recognitionRef.current = recognition;
+    setIsListening(true);
+    recognition.start();
   };
 
   const sendMessage = async (text: string, image = selectedImage) => {
@@ -850,7 +954,14 @@ export default function ChatWidget() {
           min-width: 42px;
           min-height: 42px;
         }
+        .cw-gpt-mic {
+          width: calc(36px * var(--cw-scale));
+          height: calc(40px * var(--cw-scale));
+          min-width: 36px;
+          min-height: 40px;
+        }
         .cw-gpt-icon-btn svg,
+        .cw-gpt-mic svg,
         .cw-gpt-send svg {
           width: calc(18px * var(--cw-scale));
           height: calc(18px * var(--cw-scale));
@@ -1483,7 +1594,7 @@ export default function ChatWidget() {
                     onKeyDown={handleKey}
                     onPaste={handlePaste}
                     disabled={isSending || isCooldown || userMsgCount >= MAX_MESSAGES}
-                    placeholder={isCooldown ? "Đợi chút..." : userMsgCount >= MAX_MESSAGES ? "Đã đạt giới hạn" : "Hỏi em về terrarium..."}
+                    placeholder={isCooldown ? "Đợi chút..." : userMsgCount >= MAX_MESSAGES ? "Đã đạt giới hạn" : "Hỏi Rêu"}
                     aria-label="Nhập tin nhắn cho Rêu"
                     aria-describedby={isCooldown ? "cw-input-status" : undefined}
                     rows={1}
@@ -1497,21 +1608,41 @@ export default function ChatWidget() {
                   )}
                 </div>
                 <button
-                  onClick={() => sendMessage(message)}
-                  disabled={isSending || isCooldown || (!message.trim() && !selectedImage) || userMsgCount >= MAX_MESSAGES}
+                  type="button"
+                  onClick={handleVoiceInput}
+                  disabled={isSending || isCooldown || userMsgCount >= MAX_MESSAGES}
+                  className="cw-gpt-mic cw-focusable rounded-full flex items-center justify-center flex-shrink-0 transition-colors"
+                  style={{
+                    background: isListening ? "#eef6ea" : "transparent",
+                    border: "none",
+                    color: isListening ? "var(--cw-primary)" : "#0f0f0f",
+                    opacity: isCooldown || userMsgCount >= MAX_MESSAGES ? 0.5 : 1,
+                    cursor: !isSending && !isCooldown && userMsgCount < MAX_MESSAGES ? "pointer" : "default",
+                  }}
+                  aria-label={isListening ? "Dừng nhập giọng nói" : "Nhập bằng giọng nói"}
+                >
+                  <Mic />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (isSending) stopResponse();
+                    else sendMessage(message);
+                  }}
+                  disabled={isCooldown || (!isSending && !message.trim() && !selectedImage) || userMsgCount >= MAX_MESSAGES}
                   className="cw-gpt-send cw-focusable rounded-full flex items-center justify-center flex-shrink-0 transition-colors"
                   style={{
-                    background: "#0f0f0f",
+                    background: isSending || message.trim() || selectedImage ? "var(--cw-primary)" : "#0f0f0f",
                     border: "none",
-                    opacity: isSending || isCooldown || userMsgCount >= MAX_MESSAGES ? 0.5 : 1,
-                    cursor: (message.trim() || selectedImage) && !isSending && !isCooldown ? "pointer" : "default",
+                    opacity: isCooldown || userMsgCount >= MAX_MESSAGES ? 0.5 : 1,
+                    cursor: (isSending || message.trim() || selectedImage) && !isCooldown ? "pointer" : "default",
                   }}
-                  aria-label={isSending ? "Đang gửi tin nhắn" : "Gửi tin nhắn"}
+                  aria-label={isSending ? "Dừng phản hồi" : "Gửi tin nhắn"}
                 >
                   {isSending ? (
-                    <Loader2 color="white" className="animate-spin" />
+                    <Square color="white" fill="white" />
                   ) : message.trim() || selectedImage ? (
-                    <Send color="white" />
+                    <ArrowUp color="white" />
                   ) : (
                     <AudioLines color="white" />
                   )}
