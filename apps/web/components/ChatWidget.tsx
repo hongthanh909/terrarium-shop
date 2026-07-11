@@ -4,7 +4,7 @@ import { useState, useRef, useEffect, useLayoutEffect, useMemo, useCallback } fr
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { Bot, Send, X, Maximize2, Minimize2, ExternalLink, Package, Truck, ShieldCheck, Sparkles, RotateCcw, Loader2, ZoomIn, ZoomOut, Plus, ChevronDown, AudioLines } from "lucide-react";
+import { Bot, Send, X, Maximize2, Minimize2, ExternalLink, Package, Truck, ShieldCheck, Sparkles, RotateCcw, Loader2, ZoomIn, ZoomOut, Plus, ChevronDown, AudioLines, Camera } from "lucide-react";
 import { ImageWrapper } from "@/components/ui/ImageWrapper";
 
 // ── Types ────────────────────────────────────────────
@@ -38,6 +38,7 @@ interface PageContext {
 }
 
 type ResizeHandle = "n" | "s" | "e" | "w" | "ne" | "nw" | "se" | "sw";
+type ChatImageSource = "upload" | "camera" | "paste";
 
 // ── Category menu items (Shopee-style 2×2 grid) ─────
 const CATEGORY_ITEMS = [
@@ -98,7 +99,15 @@ function getPageContext(pathname: string): PageContext {
   return { type: "general" };
 }
 
-function resizeChatImage(file: File): Promise<string> {
+function getChatImageResizeConfig(source: ChatImageSource) {
+  const isMobile = typeof window !== "undefined" && window.innerWidth < 640;
+  if (source === "camera" || isMobile) {
+    return { longEdge: CHAT_IMAGE_MOBILE_LONG_EDGE, quality: CHAT_IMAGE_MOBILE_QUALITY };
+  }
+  return { longEdge: CHAT_IMAGE_DESKTOP_LONG_EDGE, quality: CHAT_IMAGE_DESKTOP_QUALITY };
+}
+
+function resizeChatImage(file: File, source: ChatImageSource): Promise<string> {
   return new Promise((resolve, reject) => {
     if (!/^image\/(jpeg|jpg|png|webp)$/.test(file.type)) {
       reject(new Error("UNSUPPORTED_IMAGE"));
@@ -115,7 +124,8 @@ function resizeChatImage(file: File): Promise<string> {
       const img = new Image();
       img.onerror = () => reject(new Error("LOAD_IMAGE_FAILED"));
       img.onload = () => {
-        const scale = Math.min(1, CHAT_IMAGE_LONG_EDGE / Math.max(img.width, img.height));
+        const { longEdge, quality } = getChatImageResizeConfig(source);
+        const scale = Math.min(1, longEdge / Math.max(img.width, img.height));
         const width = Math.max(1, Math.round(img.width * scale));
         const height = Math.max(1, Math.round(img.height * scale));
         const canvas = document.createElement("canvas");
@@ -127,7 +137,7 @@ function resizeChatImage(file: File): Promise<string> {
           return;
         }
         ctx.drawImage(img, 0, 0, width, height);
-        resolve(canvas.toDataURL("image/jpeg", CHAT_IMAGE_QUALITY));
+        resolve(canvas.toDataURL("image/jpeg", quality));
       };
       img.src = String(reader.result || "");
     };
@@ -139,9 +149,11 @@ function resizeChatImage(file: File): Promise<string> {
 const MAX_MESSAGES = 30;
 const COOLDOWN_MS = 3000;
 const MAX_INPUT = 400;
-const MAX_CHAT_IMAGE_BYTES = 5 * 1024 * 1024;
-const CHAT_IMAGE_LONG_EDGE = 1024;
-const CHAT_IMAGE_QUALITY = 0.82;
+const MAX_CHAT_IMAGE_BYTES = 10 * 1024 * 1024;
+const CHAT_IMAGE_DESKTOP_LONG_EDGE = 1024;
+const CHAT_IMAGE_DESKTOP_QUALITY = 0.82;
+const CHAT_IMAGE_MOBILE_LONG_EDGE = 1280;
+const CHAT_IMAGE_MOBILE_QUALITY = 0.84;
 const DEFAULT_PANEL_SIZE = { width: 380, height: 520 };
 const EXPANDED_PANEL_SIZE = { width: 520, height: 700 };
 const MIN_PANEL_SIZE = { width: 320, height: 420 };
@@ -170,6 +182,7 @@ export default function ChatWidget() {
   const latestUserMessageRef = useRef<HTMLDivElement | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
   const abortRef = useRef<AbortController | null>(null);
   const panelRef = useRef<HTMLDivElement>(null);
 
@@ -501,11 +514,11 @@ export default function ChatWidget() {
   };
 
   // ── Send message ───────────────────────────────
-  const handleImageFile = async (file: File) => {
+  const handleImageFile = async (file: File, source: ChatImageSource) => {
     if (isSending || isCooldown || userMsgCount >= MAX_MESSAGES) return;
     try {
       setImageError(null);
-      const dataUrl = await resizeChatImage(file);
+      const dataUrl = await resizeChatImage(file, source);
       setSelectedImage({ dataUrl, name: file.name });
       setOpen(true);
       setTimeout(() => textareaRef.current?.focus(), 80);
@@ -522,7 +535,14 @@ export default function ChatWidget() {
     const file = event.target.files?.[0];
     event.target.value = "";
     if (!file) return;
-    await handleImageFile(file);
+    await handleImageFile(file, "upload");
+  };
+
+  const handleCameraSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+    await handleImageFile(file, "camera");
   };
 
   const handlePaste = async (event: React.ClipboardEvent<HTMLTextAreaElement>) => {
@@ -532,7 +552,7 @@ export default function ChatWidget() {
     if (!file) return;
 
     event.preventDefault();
-    await handleImageFile(file);
+    await handleImageFile(file, "paste");
   };
 
   const sendMessage = async (text: string, image = selectedImage) => {
@@ -1332,6 +1352,14 @@ export default function ChatWidget() {
                 className="hidden"
                 onChange={handleImageSelect}
               />
+              <input
+                ref={cameraInputRef}
+                type="file"
+                accept="image/*"
+                capture="environment"
+                className="hidden"
+                onChange={handleCameraSelect}
+              />
               {selectedImage && (
                 <div className="mb-2 flex items-center gap-2 rounded-xl p-2" style={{ background: "#f5f8f3", border: "1px solid var(--cw-border)" }}>
                   <img
@@ -1374,6 +1402,21 @@ export default function ChatWidget() {
                   aria-label="Them anh tinh trang be cho Reu phan tich"
                 >
                   <Plus />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => cameraInputRef.current?.click()}
+                  disabled={isSending || isCooldown || userMsgCount >= MAX_MESSAGES}
+                  className="cw-gpt-icon-btn cw-focusable rounded-full flex items-center justify-center flex-shrink-0 transition-colors sm:hidden"
+                  style={{
+                    background: "transparent",
+                    border: "none",
+                    color: "#121212",
+                    cursor: !isSending && !isCooldown && userMsgCount < MAX_MESSAGES ? "pointer" : "default",
+                  }}
+                  aria-label="Chup anh truc tiep bang camera de Reu phan tich"
+                >
+                  <Camera />
                 </button>
                 <div className="flex-1 relative">
                   <textarea
