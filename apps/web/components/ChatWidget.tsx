@@ -4,7 +4,7 @@ import { useState, useRef, useEffect, useLayoutEffect, useMemo, useCallback } fr
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { Bot, Send, X, Maximize2, Minimize2, ExternalLink, Package, Truck, ShieldCheck, Sparkles, RotateCcw, Loader2, ZoomIn, ZoomOut, Plus, ChevronDown, AudioLines, Image as ImageIcon, Camera } from "lucide-react";
+import { Bot, Send, X, Maximize2, Minimize2, ExternalLink, Package, Truck, ShieldCheck, Sparkles, RotateCcw, Loader2, ZoomIn, ZoomOut, Plus, ChevronDown, AudioLines } from "lucide-react";
 import { ImageWrapper } from "@/components/ui/ImageWrapper";
 
 // ── Types ────────────────────────────────────────────
@@ -170,7 +170,6 @@ export default function ChatWidget() {
   const latestUserMessageRef = useRef<HTMLDivElement | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const cameraInputRef = useRef<HTMLInputElement>(null);
   const abortRef = useRef<AbortController | null>(null);
   const panelRef = useRef<HTMLDivElement>(null);
 
@@ -1333,14 +1332,6 @@ export default function ChatWidget() {
                 className="hidden"
                 onChange={handleImageSelect}
               />
-              <input
-                ref={cameraInputRef}
-                type="file"
-                accept="image/*"
-                capture="environment"
-                className="hidden"
-                onChange={handleImageSelect}
-              />
               {selectedImage && (
                 <div className="mb-2 flex items-center gap-2 rounded-xl p-2" style={{ background: "#f5f8f3", border: "1px solid var(--cw-border)" }}>
                   <img
@@ -1411,19 +1402,34 @@ export default function ChatWidget() {
                   )}
                 </div>
                 <button
+                  type="button"
+                  className="cw-gpt-level cw-focusable hidden items-center gap-1 rounded-full text-sm font-medium transition-colors sm:flex"
+                  style={{ background: "transparent", border: "none" }}
+                  aria-label="Do sau cau tra loi hien tai"
+                  title="Muc tra loi hien tai"
+                >
+                  Cao
+                  <ChevronDown />
+                </button>
+                <button
                   onClick={() => sendMessage(message)}
                   disabled={isSending || isCooldown || (!message.trim() && !selectedImage) || userMsgCount >= MAX_MESSAGES}
-                  className="cw-fluid-send cw-focusable rounded-full flex items-center justify-center flex-shrink-0 transition-colors"
+                  className="cw-gpt-send cw-focusable rounded-full flex items-center justify-center flex-shrink-0 transition-colors"
                   style={{
-                    background: (message.trim() || selectedImage) && !isSending && !isCooldown
-                      ? "linear-gradient(135deg, #3a5229, #4a6a35)"
-                      : "#c5d9c0",
+                    background: "#0f0f0f",
                     border: "none",
+                    opacity: isSending || isCooldown || userMsgCount >= MAX_MESSAGES ? 0.5 : 1,
                     cursor: (message.trim() || selectedImage) && !isSending && !isCooldown ? "pointer" : "default",
                   }}
                   aria-label={isSending ? "Đang gửi tin nhắn" : "Gửi tin nhắn"}
                 >
-                  {isSending ? <Loader2 size={15} color="white" className="animate-spin" /> : <Send size={14} color="white" />}
+                  {isSending ? (
+                    <Loader2 color="white" className="animate-spin" />
+                  ) : message.trim() || selectedImage ? (
+                    <Send color="white" />
+                  ) : (
+                    <AudioLines color="white" />
+                  )}
                 </button>
               </div>
               {(isCooldown || userMsgCount >= MAX_MESSAGES) && (
@@ -1431,7 +1437,7 @@ export default function ChatWidget() {
                   {userMsgCount >= MAX_MESSAGES ? "Đã đạt giới hạn trò chuyện" : "Rêu đang nghỉ vài giây trước tin nhắn tiếp theo"}
                 </div>
               )}
-              <div className="text-center pt-1.5 pb-0.5">
+              <div className="hidden">
                 <Link
                   href="/products"
                   className="cw-fluid-small inline-flex items-center gap-1 font-medium no-underline transition-colors"
