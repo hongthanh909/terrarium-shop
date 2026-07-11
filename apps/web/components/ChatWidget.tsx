@@ -21,6 +21,7 @@ interface ProductCard {
 interface ChatMessage {
   role: "user" | "assistant";
   content: string;
+  createdAt?: number;
   source?: "ai" | "ai_vision" | "db" | "fallback" | "knowledge" | "guardrail" | "rag" | "disabled";
   isStreaming?: boolean;
   imageUrl?: string;
@@ -183,14 +184,20 @@ const CHAT_IMAGE_DESKTOP_LONG_EDGE = 1024;
 const CHAT_IMAGE_DESKTOP_QUALITY = 0.82;
 const CHAT_IMAGE_MOBILE_LONG_EDGE = 1280;
 const CHAT_IMAGE_MOBILE_QUALITY = 0.84;
-const DEFAULT_PANEL_SIZE = { width: 380, height: 520 };
-const EXPANDED_PANEL_SIZE = { width: 520, height: 700 };
-const MIN_PANEL_SIZE = { width: 320, height: 420 };
+const DEFAULT_PANEL_SIZE = { width: 420, height: 600 };
+const EXPANDED_PANEL_SIZE = { width: 560, height: 760 };
+const MIN_PANEL_SIZE = { width: 340, height: 460 };
 const MIN_UI_ZOOM = 0.8;
 const MAX_UI_ZOOM = 1.25;
 const UI_ZOOM_STEP = 0.05;
 
 const WELCOME_MESSAGE = "Xin chào, Rêu có thể giúp bạn điều gì?";
+
+const formatMessageTime = (createdAt?: number) =>
+  new Intl.DateTimeFormat("vi-VN", {
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(createdAt ? new Date(createdAt) : new Date());
 
 const getVoiceErrorMessage = (error?: string) => {
   switch (error) {
@@ -505,6 +512,7 @@ export default function ChatWidget() {
   const initialMessage = useMemo<ChatMessage>(() => ({
     role: "assistant",
     content: WELCOME_MESSAGE,
+    createdAt: Date.now(),
   }), []);
 
   const [messages, setMessages] = useState<ChatMessage[]>([initialMessage]);
@@ -705,6 +713,7 @@ export default function ChatWidget() {
       setMessages(prev => [...prev, {
         role: "assistant",
         content: "Cuộc trò chuyện đã khá dài rồi. Liên hệ Zalo hoặc Facebook Tiệm Rêu để được tư vấn chi tiết hơn nhé!\n\nBấm nút làm mới để bắt đầu lại.",
+        createdAt: Date.now(),
         isStreaming: false,
       }]);
       return;
@@ -717,12 +726,12 @@ export default function ChatWidget() {
     setSelectedImage(null);
     setImageError(null);
 
-    const newMsgs: ChatMessage[] = [...messages, { role: "user", content: displayText, imageUrl: image?.dataUrl }];
+    const newMsgs: ChatMessage[] = [...messages, { role: "user", content: displayText, imageUrl: image?.dataUrl, createdAt: Date.now() }];
     setMessages(newMsgs);
     setIsSending(true);
 
     const history = newMsgs.slice(1).map(m => ({ role: m.role, content: m.content }));
-    setMessages(prev => [...prev, { role: "assistant", content: "", isStreaming: true }]);
+    setMessages(prev => [...prev, { role: "assistant", content: "", createdAt: Date.now(), isStreaming: true }]);
 
     const controller = new AbortController();
     abortRef.current = controller;
@@ -765,7 +774,7 @@ export default function ChatWidget() {
                 full += token;
                 setMessages(prev => {
                   const u = [...prev];
-                  u[u.length - 1] = { role: "assistant", content: full, source: "ai", isStreaming: true };
+                  u[u.length - 1] = { ...u[u.length - 1], role: "assistant", content: full, source: "ai", isStreaming: true };
                   return u;
                 });
               }
@@ -776,7 +785,7 @@ export default function ChatWidget() {
         const sp = extractProductLinks(full);
         setMessages(prev => {
           const u = [...prev];
-          u[u.length - 1] = { role: "assistant", content: full || "Xin lỗi, mình chưa thể trả lời.", source: "ai", isStreaming: false, suggestedProducts: sp };
+          u[u.length - 1] = { ...u[u.length - 1], role: "assistant", content: full || "Xin lỗi, mình chưa thể trả lời.", source: "ai", isStreaming: false, suggestedProducts: sp };
           return u;
         });
       } else {
@@ -786,6 +795,7 @@ export default function ChatWidget() {
         setMessages(prev => {
           const u = [...prev];
           u[u.length - 1] = {
+            ...u[u.length - 1],
             role: "assistant",
             content: data.response || "Xin lỗi, mình chưa hiểu.",
             source: data.source,
@@ -799,7 +809,7 @@ export default function ChatWidget() {
       if (err instanceof Error && err.name === "AbortError") return;
       setMessages(prev => {
         const u = [...prev];
-        u[u.length - 1] = { role: "assistant", content: "Xin lỗi, có lỗi xảy ra. Vui lòng thử lại!", isStreaming: false };
+        u[u.length - 1] = { ...u[u.length - 1], role: "assistant", content: "Xin lỗi, có lỗi xảy ra. Vui lòng thử lại!", isStreaming: false };
         return u;
       });
     } finally {
@@ -925,19 +935,26 @@ export default function ChatWidget() {
         .cw-fluid-action { width: max(44px, calc(32px * var(--cw-scale))); height: max(44px, calc(32px * var(--cw-scale))); }
         .cw-fluid-action svg { width: calc(14px * var(--cw-scale)); height: calc(14px * var(--cw-scale)); }
         .cw-fluid-body { padding: calc(16px * var(--cw-scale)); }
-        .cw-fluid-welcome { gap: calc(20px * var(--cw-scale)); }
-        .cw-fluid-welcome-card { padding: calc(16px * var(--cw-scale)) calc(20px * var(--cw-scale)); }
-        .cw-fluid-category-grid { gap: calc(10px * var(--cw-scale)); }
-        .cw-fluid-category-card { gap: calc(8px * var(--cw-scale)); padding: calc(16px * var(--cw-scale)) calc(12px * var(--cw-scale)); }
-        .cw-fluid-category-icon { width: calc(40px * var(--cw-scale)); height: calc(40px * var(--cw-scale)); }
-        .cw-fluid-category-icon svg { width: calc(20px * var(--cw-scale)); height: calc(20px * var(--cw-scale)); }
-        .cw-fluid-category-label { font-size: calc(12px * var(--cw-scale)); }
+        .cw-fluid-welcome { gap: calc(12px * var(--cw-scale)); }
+        .cw-fluid-welcome-card { padding: calc(12px * var(--cw-scale)) calc(18px * var(--cw-scale)); }
+        .cw-fluid-category-grid { gap: calc(8px * var(--cw-scale)); }
+        .cw-fluid-category-card { gap: calc(6px * var(--cw-scale)); min-height: max(72px, calc(76px * var(--cw-scale))); padding: calc(10px * var(--cw-scale)) calc(8px * var(--cw-scale)); }
+        .cw-fluid-category-icon { width: calc(34px * var(--cw-scale)); height: calc(34px * var(--cw-scale)); border-radius: calc(12px * var(--cw-scale)); }
+        .cw-fluid-category-icon svg { width: calc(17px * var(--cw-scale)); height: calc(17px * var(--cw-scale)); }
+        .cw-fluid-category-label { font-size: clamp(11px, calc(11px * var(--cw-scale)), 14px); }
         .cw-fluid-input-wrap { gap: calc(8px * var(--cw-scale)); padding: calc(8px * var(--cw-scale)) calc(14px * var(--cw-scale)); }
         .cw-fluid-send { width: calc(44px * var(--cw-scale)); height: calc(44px * var(--cw-scale)); }
         .cw-fluid-send svg { width: calc(14px * var(--cw-scale)); height: calc(14px * var(--cw-scale)); }
         .cw-bot-avatar {
           width: max(28px, calc(24px * var(--cw-scale)));
           height: max(28px, calc(24px * var(--cw-scale)));
+        }
+        .cw-message-time {
+          margin-top: calc(4px * var(--cw-scale));
+          color: rgba(91,105,82,0.72);
+          font-size: clamp(10px, calc(10px * var(--cw-scale)), 12px);
+          line-height: 1.2;
+          font-variant-numeric: tabular-nums;
         }
         .cw-product-card {
           gap: calc(10px * var(--cw-scale));
@@ -1373,7 +1390,7 @@ export default function ChatWidget() {
                       transition={{ type: "spring", stiffness: 400, damping: 30 }}
                     >
                       {msg.role === "user" ? (
-                        <div className="flex justify-end">
+                        <div className="flex flex-col items-end">
                           <div
                             className="max-w-[78%] cw-fluid-text cw-message-bubble leading-relaxed"
                             style={{
@@ -1394,6 +1411,9 @@ export default function ChatWidget() {
                             )}
                             {msg.content.trim() && renderContent(msg.content)}
                           </div>
+                          <span className="cw-message-time text-right" aria-label={`Thời gian gửi ${formatMessageTime(msg.createdAt)}`}>
+                            {formatMessageTime(msg.createdAt)}
+                          </span>
                         </div>
                       ) : (
                         <div className="flex items-start justify-start gap-2">
@@ -1406,34 +1426,41 @@ export default function ChatWidget() {
                             <Bot size={14} strokeWidth={1.9} />
                           </div>
                           <div
-                            className="max-w-[88%] cw-fluid-text cw-message-bubble leading-[1.7] rounded-[4px_16px_16px_16px]"
-                            style={{
-                              color: "var(--cw-text)",
-                              background: "var(--cw-primary-soft)",
-                              border: "1px solid rgba(66,87,51,0.08)",
-                            }}
+                            className="max-w-[88%]"
                           >
-                            {msg.isStreaming && msg.content === "" ? (
-                              <div className="flex gap-1.5 items-center py-1">
-                                {[0, 1, 2].map((d) => (
-                                  <span
-                                    key={d}
-                                    className="w-[5px] h-[5px] rounded-full"
-                                    style={{
-                                      background: "#5a8f4a",
-                                      animation: `cw-typing 1.4s ${d * 0.18}s ease-in-out infinite`,
-                                    }}
-                                  />
-                                ))}
-                              </div>
-                            ) : (
-                              <>
-                                {renderContent(msg.content)}
-                                {msg.isStreaming && (
-                                  <span className="inline-block w-[2px] h-3.5 ml-0.5 align-middle rounded-full animate-pulse" style={{ background: "#5a8f4a" }} />
-                                )}
-                              </>
-                            )}
+                            <div
+                              className="cw-fluid-text cw-message-bubble leading-[1.7] rounded-[4px_16px_16px_16px]"
+                              style={{
+                                color: "var(--cw-text)",
+                                background: "var(--cw-primary-soft)",
+                                border: "1px solid rgba(66,87,51,0.08)",
+                              }}
+                            >
+                              {msg.isStreaming && msg.content === "" ? (
+                                <div className="flex gap-1.5 items-center py-1">
+                                  {[0, 1, 2].map((d) => (
+                                    <span
+                                      key={d}
+                                      className="w-[5px] h-[5px] rounded-full"
+                                      style={{
+                                        background: "#5a8f4a",
+                                        animation: `cw-typing 1.4s ${d * 0.18}s ease-in-out infinite`,
+                                      }}
+                                    />
+                                  ))}
+                                </div>
+                              ) : (
+                                <>
+                                  {renderContent(msg.content)}
+                                  {msg.isStreaming && (
+                                    <span className="inline-block w-[2px] h-3.5 ml-0.5 align-middle rounded-full animate-pulse" style={{ background: "#5a8f4a" }} />
+                                  )}
+                                </>
+                              )}
+                            </div>
+                            <span className="cw-message-time block" aria-label={`Thời gian trả lời ${formatMessageTime(msg.createdAt)}`}>
+                              {formatMessageTime(msg.createdAt)}
+                            </span>
                           </div>
                         </div>
                       )}
