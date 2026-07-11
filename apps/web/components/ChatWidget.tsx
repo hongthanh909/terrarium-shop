@@ -239,6 +239,7 @@ export default function ChatWidget() {
   const messagesScrollRef = useRef<HTMLDivElement>(null);
   const latestUserMessageRef = useRef<HTMLDivElement | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const attachmentWrapRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const abortRef = useRef<AbortController | null>(null);
@@ -542,6 +543,29 @@ export default function ChatWidget() {
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [open]);
+
+  useEffect(() => {
+    if (!attachmentMenuOpen) return;
+
+    const onPointerDown = (event: PointerEvent) => {
+      const target = event.target;
+      if (!(target instanceof Node)) return;
+      if (attachmentWrapRef.current?.contains(target)) return;
+      setAttachmentMenuOpen(false);
+    };
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setAttachmentMenuOpen(false);
+    };
+
+    window.addEventListener("pointerdown", onPointerDown, true);
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      window.removeEventListener("pointerdown", onPointerDown, true);
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [attachmentMenuOpen]);
+
   useEffect(() => () => {
     abortRef.current?.abort();
     voiceStopRequestedRef.current = true;
@@ -1023,6 +1047,18 @@ export default function ChatWidget() {
         .cw-gpt-input {
           padding: calc(8px * var(--cw-scale)) 0;
           min-height: calc(38px * var(--cw-scale));
+          background: transparent !important;
+          border: 0 !important;
+          outline: 0 !important;
+          box-shadow: none !important;
+          appearance: none;
+        }
+        .cw-gpt-input:focus,
+        .cw-gpt-input:focus-visible {
+          background: transparent !important;
+          border: 0 !important;
+          outline: 0 !important;
+          box-shadow: none !important;
         }
         .cw-attach-menu {
           left: 0;
@@ -1596,7 +1632,7 @@ export default function ChatWidget() {
                 </div>
               )}
               <div className="cw-gpt-composer flex items-center">
-                <div className="relative flex-shrink-0">
+                <div ref={attachmentWrapRef} className="relative flex-shrink-0">
                   <button
                     type="button"
                     onClick={() => setAttachmentMenuOpen((open) => !open)}
@@ -1663,7 +1699,7 @@ export default function ChatWidget() {
                     aria-describedby={isCooldown ? "cw-input-status" : undefined}
                     rows={1}
                     className="cw-input cw-gpt-input w-full resize-none border-none outline-none bg-transparent cw-fluid-text leading-relaxed font-[inherit]"
-                    style={{ maxHeight: textareaMaxHeight, boxShadow: "none", color: "var(--cw-text)" }}
+                    style={{ maxHeight: textareaMaxHeight, boxShadow: "none", outline: "none", borderColor: "transparent", color: "var(--cw-text)" }}
                   />
                   {message.length > 300 && (
                     <span className="absolute right-0 bottom-0 text-xs font-semibold" style={{ color: message.length >= MAX_INPUT ? "var(--cw-danger)" : "var(--cw-muted)" }}>
