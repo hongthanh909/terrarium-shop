@@ -4,7 +4,7 @@ import { useState, useRef, useEffect, useLayoutEffect, useMemo, useCallback } fr
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { Bot, Send, X, Maximize2, Minimize2, ExternalLink, Package, Truck, ShieldCheck, Sparkles, RotateCcw, Loader2, ZoomIn, ZoomOut, Plus, ChevronDown, AudioLines, Camera } from "lucide-react";
+import { Bot, Send, X, Maximize2, Minimize2, ExternalLink, Package, Truck, ShieldCheck, Sparkles, RotateCcw, Loader2, ZoomIn, ZoomOut, Plus, AudioLines, Image as ImageIcon } from "lucide-react";
 import { ImageWrapper } from "@/components/ui/ImageWrapper";
 
 // ── Types ────────────────────────────────────────────
@@ -175,6 +175,7 @@ export default function ChatWidget() {
   const [message, setMessage] = useState("");
   const [selectedImage, setSelectedImage] = useState<{ dataUrl: string; name: string } | null>(null);
   const [imageError, setImageError] = useState<string | null>(null);
+  const [attachmentMenuOpen, setAttachmentMenuOpen] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const [isAIAvailable, setIsAIAvailable] = useState<boolean | null>(null);
   const [isCooldown, setIsCooldown] = useState(false);
@@ -182,7 +183,6 @@ export default function ChatWidget() {
   const latestUserMessageRef = useRef<HTMLDivElement | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const cameraInputRef = useRef<HTMLInputElement>(null);
   const abortRef = useRef<AbortController | null>(null);
   const panelRef = useRef<HTMLDivElement>(null);
 
@@ -518,6 +518,7 @@ export default function ChatWidget() {
     if (isSending || isCooldown || userMsgCount >= MAX_MESSAGES) return;
     try {
       setImageError(null);
+      setAttachmentMenuOpen(false);
       const dataUrl = await resizeChatImage(file, source);
       setSelectedImage({ dataUrl, name: file.name });
       setOpen(true);
@@ -538,13 +539,6 @@ export default function ChatWidget() {
     await handleImageFile(file, "upload");
   };
 
-  const handleCameraSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    event.target.value = "";
-    if (!file) return;
-    await handleImageFile(file, "camera");
-  };
-
   const handlePaste = async (event: React.ClipboardEvent<HTMLTextAreaElement>) => {
     const items = Array.from(event.clipboardData?.items || []);
     const imageItem = items.find((item) => item.type.startsWith("image/"));
@@ -557,6 +551,7 @@ export default function ChatWidget() {
 
   const sendMessage = async (text: string, image = selectedImage) => {
     if ((!text.trim() && !image) || isSending || isCooldown) return;
+    setAttachmentMenuOpen(false);
     if (userMsgCount >= MAX_MESSAGES) {
       setMessages(prev => [...prev, {
         role: "assistant",
@@ -846,12 +841,6 @@ export default function ChatWidget() {
           min-width: 42px;
           min-height: 42px;
         }
-        .cw-gpt-level {
-          height: calc(36px * var(--cw-scale));
-          padding-inline: calc(8px * var(--cw-scale));
-          color: #6c7168;
-        }
-        .cw-gpt-level svg,
         .cw-gpt-icon-btn svg,
         .cw-gpt-send svg {
           width: calc(18px * var(--cw-scale));
@@ -860,6 +849,34 @@ export default function ChatWidget() {
         .cw-gpt-input {
           padding: calc(8px * var(--cw-scale)) 0;
           min-height: calc(38px * var(--cw-scale));
+        }
+        .cw-attach-menu {
+          left: 0;
+          bottom: calc(48px * var(--cw-scale));
+          min-width: calc(220px * var(--cw-scale));
+          padding: calc(6px * var(--cw-scale));
+          border-radius: calc(18px * var(--cw-scale));
+          border: 1px solid rgba(26,46,18,0.1);
+          background: rgba(255,255,255,0.98);
+          box-shadow: 0 18px 44px rgba(26,46,18,0.16);
+        }
+        .cw-attach-item {
+          min-height: calc(44px * var(--cw-scale));
+          gap: calc(10px * var(--cw-scale));
+          padding: calc(8px * var(--cw-scale)) calc(10px * var(--cw-scale));
+          border-radius: calc(14px * var(--cw-scale));
+          color: #1f2d1a;
+        }
+        .cw-attach-item:hover {
+          background: #f2f6ef;
+        }
+        .cw-attach-icon {
+          width: calc(28px * var(--cw-scale));
+          height: calc(28px * var(--cw-scale));
+          min-width: 28px;
+          min-height: 28px;
+          background: #eef5e8;
+          color: var(--cw-primary);
         }
         .cw-focusable:focus-visible {
           outline: 2px solid var(--cw-focus);
@@ -1352,14 +1369,6 @@ export default function ChatWidget() {
                 className="hidden"
                 onChange={handleImageSelect}
               />
-              <input
-                ref={cameraInputRef}
-                type="file"
-                accept="image/*"
-                capture="environment"
-                className="hidden"
-                onChange={handleCameraSelect}
-              />
               {selectedImage && (
                 <div className="mb-2 flex items-center gap-2 rounded-xl p-2" style={{ background: "#f5f8f3", border: "1px solid var(--cw-border)" }}>
                   <img
@@ -1388,36 +1397,41 @@ export default function ChatWidget() {
                 </div>
               )}
               <div className="cw-gpt-composer flex items-center">
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={isSending || isCooldown || userMsgCount >= MAX_MESSAGES}
-                  className="cw-gpt-icon-btn cw-focusable rounded-full flex items-center justify-center flex-shrink-0 transition-colors"
-                  style={{
-                    background: "transparent",
-                    border: "none",
-                    color: selectedImage ? "var(--cw-primary)" : "#121212",
-                    cursor: !isSending && !isCooldown && userMsgCount < MAX_MESSAGES ? "pointer" : "default",
-                  }}
-                  aria-label="Them anh tinh trang be cho Reu phan tich"
-                >
-                  <Plus />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => cameraInputRef.current?.click()}
-                  disabled={isSending || isCooldown || userMsgCount >= MAX_MESSAGES}
-                  className="cw-gpt-icon-btn cw-focusable rounded-full flex items-center justify-center flex-shrink-0 transition-colors sm:hidden"
-                  style={{
-                    background: "transparent",
-                    border: "none",
-                    color: "#121212",
-                    cursor: !isSending && !isCooldown && userMsgCount < MAX_MESSAGES ? "pointer" : "default",
-                  }}
-                  aria-label="Chup anh truc tiep bang camera de Reu phan tich"
-                >
-                  <Camera />
-                </button>
+                <div className="relative flex-shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => setAttachmentMenuOpen((open) => !open)}
+                    disabled={isSending || isCooldown || userMsgCount >= MAX_MESSAGES}
+                    className="cw-gpt-icon-btn cw-focusable rounded-full flex items-center justify-center transition-colors"
+                    style={{
+                      background: attachmentMenuOpen ? "#f2f6ef" : "transparent",
+                      border: "none",
+                      color: selectedImage ? "var(--cw-primary)" : "#121212",
+                      cursor: !isSending && !isCooldown && userMsgCount < MAX_MESSAGES ? "pointer" : "default",
+                    }}
+                    aria-label="Mo tuy chon them anh"
+                    aria-expanded={attachmentMenuOpen}
+                  >
+                    <Plus />
+                  </button>
+                  {attachmentMenuOpen && (
+                    <div className="cw-attach-menu absolute z-20">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setAttachmentMenuOpen(false);
+                          fileInputRef.current?.click();
+                        }}
+                        className="cw-attach-item cw-focusable flex w-full items-center text-left text-sm font-medium transition-colors"
+                      >
+                        <span className="cw-attach-icon flex items-center justify-center rounded-full">
+                          <ImageIcon size={15} />
+                        </span>
+                        <span>Kiểm tra tình trạng bể</span>
+                      </button>
+                    </div>
+                  )}
+                </div>
                 <div className="flex-1 relative">
                   <textarea
                     ref={textareaRef}
@@ -1444,16 +1458,6 @@ export default function ChatWidget() {
                     </span>
                   )}
                 </div>
-                <button
-                  type="button"
-                  className="cw-gpt-level cw-focusable hidden items-center gap-1 rounded-full text-sm font-medium transition-colors sm:flex"
-                  style={{ background: "transparent", border: "none" }}
-                  aria-label="Do sau cau tra loi hien tai"
-                  title="Muc tra loi hien tai"
-                >
-                  Cao
-                  <ChevronDown />
-                </button>
                 <button
                   onClick={() => sendMessage(message)}
                   disabled={isSending || isCooldown || (!message.trim() && !selectedImage) || userMsgCount >= MAX_MESSAGES}
