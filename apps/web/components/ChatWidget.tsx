@@ -569,13 +569,14 @@ export default function ChatWidget() {
       return;
     }
 
-    const userMsg = text.trim() || "Anh/chi xem giup tinh trang be/cay/reu trong anh va tu van cach cham soc.";
-    if (userMsg.length > MAX_INPUT) return;
+    const displayText = text.trim();
+    const apiMessage = displayText || "Anh/chi xem giup tinh trang be/cay/reu trong anh va tu van cach cham soc.";
+    if (apiMessage.length > MAX_INPUT) return;
     setMessage("");
     setSelectedImage(null);
     setImageError(null);
 
-    const newMsgs: ChatMessage[] = [...messages, { role: "user", content: userMsg, imageUrl: image?.dataUrl }];
+    const newMsgs: ChatMessage[] = [...messages, { role: "user", content: displayText, imageUrl: image?.dataUrl }];
     setMessages(newMsgs);
     setIsSending(true);
 
@@ -590,7 +591,7 @@ export default function ChatWidget() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          message: userMsg,
+          message: apiMessage,
           history: history.slice(0, -1),
           pageContext: enrichedCtx,
           ...(image ? { imageDataUrl: image.dataUrl } : {}),
@@ -1228,21 +1229,22 @@ export default function ChatWidget() {
                           <div
                             className="max-w-[78%] cw-fluid-text cw-message-bubble leading-relaxed"
                             style={{
-                              background: "linear-gradient(135deg, #2d4a22, #3a5e2c)",
-                              color: "#f0f7ee",
+                              background: msg.imageUrl && !msg.content.trim() ? "#ffffff" : "linear-gradient(135deg, #2d4a22, #3a5e2c)",
+                              color: msg.imageUrl && !msg.content.trim() ? "var(--cw-text)" : "#f0f7ee",
                               borderRadius: "16px 16px 4px 16px",
-                              boxShadow: "0 2px 8px rgba(45,74,34,0.2)",
+                              border: msg.imageUrl && !msg.content.trim() ? "1px solid rgba(66,87,51,0.12)" : "none",
+                              boxShadow: msg.imageUrl && !msg.content.trim() ? "0 2px 12px rgba(26,46,18,0.08)" : "0 2px 8px rgba(45,74,34,0.2)",
                             }}
                           >
                             {msg.imageUrl && (
                               <img
                                 src={msg.imageUrl}
                                 alt="Anh khach gui cho Reu phan tich"
-                                className="mb-2 max-h-44 w-full rounded-xl object-cover"
-                                style={{ border: "1px solid rgba(240,247,238,0.24)" }}
+                                className={`${msg.content.trim() ? "mb-2" : ""} max-h-44 w-full rounded-xl object-cover`}
+                                style={{ border: msg.content.trim() ? "1px solid rgba(240,247,238,0.24)" : "1px solid rgba(66,87,51,0.1)" }}
                               />
                             )}
-                            {renderContent(msg.content)}
+                            {msg.content.trim() && renderContent(msg.content)}
                           </div>
                         </div>
                       ) : (
@@ -1428,7 +1430,7 @@ export default function ChatWidget() {
                     style={{
                       background: attachmentMenuOpen ? "#f2f6ef" : "transparent",
                       border: "none",
-                      color: selectedImage ? "var(--cw-primary)" : "#121212",
+                      color: "var(--cw-primary)",
                       cursor: !isSending && !isCooldown && userMsgCount < MAX_MESSAGES ? "pointer" : "default",
                     }}
                     aria-label="Mo tuy chon them anh"
