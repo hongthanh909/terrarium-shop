@@ -24,7 +24,7 @@ function applySecurityHeaders(response: NextResponse): NextResponse {
   // Tắt các API không cần thiết
   response.headers.set(
     "Permissions-Policy",
-    "camera=(), microphone=(), geolocation=(), payment=()"
+    "camera=(self), microphone=(self), geolocation=(), payment=()"
   );
   // HSTS — chỉ HTTPS
   response.headers.set(

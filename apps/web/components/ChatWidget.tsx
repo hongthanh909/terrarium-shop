@@ -50,12 +50,16 @@ type SpeechRecognitionEventLike = {
     [index: number]: SpeechRecognitionResultLike;
   };
 };
+type SpeechRecognitionErrorEventLike = {
+  error?: string;
+  message?: string;
+};
 type SpeechRecognitionLike = {
   lang: string;
   interimResults: boolean;
   continuous: boolean;
   onresult: ((event: SpeechRecognitionEventLike) => void) | null;
-  onerror: (() => void) | null;
+  onerror: ((event: SpeechRecognitionErrorEventLike) => void) | null;
   onend: (() => void) | null;
   start: () => void;
   stop: () => void;
@@ -187,6 +191,26 @@ const MAX_UI_ZOOM = 1.25;
 const UI_ZOOM_STEP = 0.05;
 
 const WELCOME_MESSAGE = "Xin chào, Rêu có thể giúp bạn điều gì?";
+
+const getVoiceErrorMessage = (error?: string) => {
+  switch (error) {
+    case "not-allowed":
+    case "service-not-allowed":
+      return "Micro đang bị trình duyệt hoặc chính sách website chặn. Anh/chị cho phép mic rồi tải lại trang nhé.";
+    case "audio-capture":
+      return "Chrome không lấy được thiết bị micro. Anh/chị kiểm tra mic mặc định trong cài đặt Chrome/Windows nhé.";
+    case "no-speech":
+      return "Rêu chưa nghe thấy giọng nói. Anh/chị bấm mic rồi nói ngay trong vài giây đầu nhé.";
+    case "network":
+      return "Dịch vụ nhận diện giọng nói đang lỗi mạng. Anh/chị thử lại sau vài giây nhé.";
+    case "aborted":
+      return "Đã dừng nhập giọng nói.";
+    case "language-not-supported":
+      return "Trình duyệt chưa hỗ trợ nhận diện tiếng Việt trên thiết bị này.";
+    default:
+      return `Không nghe được giọng nói${error ? ` (${error})` : ""}. Anh/chị thử lại nhé.`;
+  }
+};
 
 // ═══════════════════════════════════════════════════
 // COMPONENT
@@ -644,9 +668,9 @@ export default function ChatWidget() {
       const nextValue = [baseMessage, spokenText].filter(Boolean).join(" ");
       if (nextValue.length <= MAX_INPUT) setMessage(nextValue);
     };
-    recognition.onerror = () => {
+    recognition.onerror = (event) => {
       setIsListening(false);
-      setImageError("Không nghe được giọng nói. Anh/chị thử lại nhé.");
+      setImageError(getVoiceErrorMessage(event.error));
     };
     recognition.onend = () => {
       recognitionRef.current = null;
@@ -658,7 +682,13 @@ export default function ChatWidget() {
     setAttachmentMenuOpen(false);
     recognitionRef.current = recognition;
     setIsListening(true);
-    recognition.start();
+    try {
+      recognition.start();
+    } catch (err) {
+      recognitionRef.current = null;
+      setIsListening(false);
+      setImageError(err instanceof Error ? `Không mở được micro: ${err.message}` : "Không mở được micro. Anh/chị thử lại nhé.");
+    }
   };
 
   const sendMessage = async (text: string, image = selectedImage) => {
