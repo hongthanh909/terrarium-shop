@@ -4,7 +4,7 @@ import { useState, useRef, useEffect, useLayoutEffect, useMemo, useCallback } fr
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { Bot, Send, X, Maximize2, Minimize2, ExternalLink, Package, Truck, ShieldCheck, Sparkles, RotateCcw, Loader2, ZoomIn, ZoomOut, Plus, AudioLines, Image as ImageIcon } from "lucide-react";
+import { Bot, Send, X, Maximize2, Minimize2, ExternalLink, Package, Truck, ShieldCheck, Sparkles, RotateCcw, Loader2, ZoomIn, ZoomOut, Plus, AudioLines, Image as ImageIcon, Camera } from "lucide-react";
 import { ImageWrapper } from "@/components/ui/ImageWrapper";
 
 // ── Types ────────────────────────────────────────────
@@ -183,6 +183,7 @@ export default function ChatWidget() {
   const latestUserMessageRef = useRef<HTMLDivElement | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
   const abortRef = useRef<AbortController | null>(null);
   const panelRef = useRef<HTMLDivElement>(null);
 
@@ -539,6 +540,13 @@ export default function ChatWidget() {
     await handleImageFile(file, "upload");
   };
 
+  const handleCameraSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+    await handleImageFile(file, "camera");
+  };
+
   const handlePaste = async (event: React.ClipboardEvent<HTMLTextAreaElement>) => {
     const items = Array.from(event.clipboardData?.items || []);
     const imageItem = items.find((item) => item.type.startsWith("image/"));
@@ -853,12 +861,18 @@ export default function ChatWidget() {
         .cw-attach-menu {
           left: 0;
           bottom: calc(48px * var(--cw-scale));
-          min-width: calc(220px * var(--cw-scale));
+          min-width: calc(240px * var(--cw-scale));
           padding: calc(6px * var(--cw-scale));
           border-radius: calc(18px * var(--cw-scale));
           border: 1px solid rgba(26,46,18,0.1);
           background: rgba(255,255,255,0.98);
           box-shadow: 0 18px 44px rgba(26,46,18,0.16);
+        }
+        .cw-attach-title {
+          padding: calc(6px * var(--cw-scale)) calc(10px * var(--cw-scale)) calc(4px * var(--cw-scale));
+          color: #6b7664;
+          font-size: clamp(11px, calc(11px * var(--cw-scale)), 14px);
+          font-weight: 700;
         }
         .cw-attach-item {
           min-height: calc(44px * var(--cw-scale));
@@ -1369,6 +1383,14 @@ export default function ChatWidget() {
                 className="hidden"
                 onChange={handleImageSelect}
               />
+              <input
+                ref={cameraInputRef}
+                type="file"
+                accept="image/*"
+                capture="environment"
+                className="hidden"
+                onChange={handleCameraSelect}
+              />
               {selectedImage && (
                 <div className="mb-2 flex items-center gap-2 rounded-xl p-2" style={{ background: "#f5f8f3", border: "1px solid var(--cw-border)" }}>
                   <img
@@ -1416,6 +1438,7 @@ export default function ChatWidget() {
                   </button>
                   {attachmentMenuOpen && (
                     <div className="cw-attach-menu absolute z-20">
+                      <div className="cw-attach-title">Chọn ảnh kiểm tra bể</div>
                       <button
                         type="button"
                         onClick={() => {
@@ -1427,7 +1450,20 @@ export default function ChatWidget() {
                         <span className="cw-attach-icon flex items-center justify-center rounded-full">
                           <ImageIcon size={15} />
                         </span>
-                        <span>Kiểm tra tình trạng bể</span>
+                        <span>Chọn ảnh từ thiết bị</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setAttachmentMenuOpen(false);
+                          cameraInputRef.current?.click();
+                        }}
+                        className="cw-attach-item cw-focusable flex w-full items-center text-left text-sm font-medium transition-colors"
+                      >
+                        <span className="cw-attach-icon flex items-center justify-center rounded-full">
+                          <Camera size={15} />
+                        </span>
+                        <span>Chụp ảnh trực tiếp</span>
                       </button>
                     </div>
                   )}
