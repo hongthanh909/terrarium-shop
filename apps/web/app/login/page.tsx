@@ -37,8 +37,7 @@ function AuthPage() {
   const isVerifyingRegistration = !isLogin && Boolean(verificationEmail);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.name === "email" ? e.target.value.trim().toLowerCase() : e.target.value;
-    setFormData({ ...formData, [e.target.name]: value });
+    setFormData({ ...formData, [e.target.name]: e.target.value });
     setError(null);
   };
 
