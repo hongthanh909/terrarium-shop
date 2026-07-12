@@ -194,6 +194,148 @@ export async function sendPasswordResetEmail(email: string, token: string) {
   }
 }
 
+function getPasswordResetCodeEmailHTML(code: string): string {
+  const safeCode = escapeEmailHtml(code);
+
+  return `
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mã đặt lại mật khẩu - Tiệm Rêu Décor</title>
+</head>
+<body style="margin:0;padding:0;background-color:#f0f4ee;font-family:'Segoe UI',Arial,sans-serif;color:#1f2937">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#f0f4ee;padding:40px 16px">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background:#ffffff;border-radius:16px;overflow:hidden">
+          <tr>
+            <td style="background:linear-gradient(135deg,#425733 0%,#2d3d23 100%);padding:30px 24px;text-align:center">
+              <h1 style="margin:0;color:#ffffff;font-size:24px">tiệm Rêu Décor</h1>
+              <p style="margin:6px 0 0;color:rgba(255,255,255,0.72);font-size:12px;letter-spacing:1.5px;text-transform:uppercase">Terrarium &amp; Moss Art</p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:32px 28px;text-align:center">
+              <h2 style="margin:0 0 10px;color:#1a2e12;font-size:20px">Mã đặt lại mật khẩu</h2>
+              <p style="margin:0 0 22px;color:#4b5563;font-size:14px;line-height:1.6">
+                Nhập mã 6 số bên dưới để xác minh yêu cầu đặt lại mật khẩu.
+              </p>
+              <div style="display:inline-block;padding:14px 24px;border-radius:12px;background:#f3f7ef;border:1px solid #d8e3d1;color:#425733;font-size:32px;font-weight:700;letter-spacing:8px">
+                ${safeCode}
+              </div>
+              <p style="margin:22px 0 0;color:#6b7280;font-size:13px;line-height:1.6">
+                Mã này sẽ hết hạn sau 10 phút. Nếu bạn không yêu cầu đặt lại mật khẩu, vui lòng bỏ qua email này.
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+}
+
+export async function sendPasswordResetCodeEmail(email: string, code: string) {
+  if (!resend) {
+    console.warn("RESEND_API_KEY is not set. Email will not be sent.");
+    console.log(`Password reset verification code for ${email}: ${code}`);
+    return { success: false, error: "RESEND_API_KEY is not configured" };
+  }
+
+  try {
+    const { data, error } = await resend.emails.send({
+      from: DEFAULT_FROM,
+      to: email,
+      subject: "Mã đặt lại mật khẩu - Tiệm Rêu Décor",
+      html: getPasswordResetCodeEmailHTML(code),
+    });
+
+    if (error) {
+      console.error("Resend error:", error);
+      return { success: false, error: error.message };
+    }
+
+    return { success: true, data };
+  } catch (err) {
+    console.error("Failed to send password reset code:", err);
+    return { success: false, error: "Lỗi nội bộ khi gửi email" };
+  }
+}
+
+function getRegistrationCodeEmailHTML(code: string): string {
+  const safeCode = escapeEmailHtml(code);
+
+  return `
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mã xác minh tài khoản - Tiệm Rêu Décor</title>
+</head>
+<body style="margin:0;padding:0;background-color:#f0f4ee;font-family:'Segoe UI',Arial,sans-serif;color:#1f2937">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#f0f4ee;padding:40px 16px">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background:#ffffff;border-radius:16px;overflow:hidden">
+          <tr>
+            <td style="background:linear-gradient(135deg,#425733 0%,#2d3d23 100%);padding:30px 24px;text-align:center">
+              <h1 style="margin:0;color:#ffffff;font-size:24px">tiệm Rêu Décor</h1>
+              <p style="margin:6px 0 0;color:rgba(255,255,255,0.72);font-size:12px;letter-spacing:1.5px;text-transform:uppercase">Terrarium &amp; Moss Art</p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:32px 28px;text-align:center">
+              <h2 style="margin:0 0 10px;color:#1a2e12;font-size:20px">Xác minh email của bạn</h2>
+              <p style="margin:0 0 22px;color:#4b5563;font-size:14px;line-height:1.6">
+                Nhập mã 6 số bên dưới để hoàn tất tạo tài khoản tại Tiệm Rêu Décor.
+              </p>
+              <div style="display:inline-block;padding:14px 24px;border-radius:12px;background:#f3f7ef;border:1px solid #d8e3d1;color:#425733;font-size:32px;font-weight:700;letter-spacing:8px">
+                ${safeCode}
+              </div>
+              <p style="margin:22px 0 0;color:#6b7280;font-size:13px;line-height:1.6">
+                Mã này sẽ hết hạn sau 10 phút. Nếu bạn không tạo tài khoản, vui lòng bỏ qua email này.
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+}
+
+export async function sendRegistrationVerificationEmail(email: string, code: string) {
+  if (!resend) {
+    console.warn("RESEND_API_KEY is not set. Email will not be sent.");
+    console.log(`Registration verification code for ${email}: ${code}`);
+    return { success: false, error: "RESEND_API_KEY is not configured" };
+  }
+
+  try {
+    const { data, error } = await resend.emails.send({
+      from: DEFAULT_FROM,
+      to: email,
+      subject: "Mã xác minh tài khoản - Tiệm Rêu Décor",
+      html: getRegistrationCodeEmailHTML(code),
+    });
+
+    if (error) {
+      console.error("Resend error:", error);
+      return { success: false, error: error.message };
+    }
+
+    return { success: true, data };
+  } catch (err) {
+    console.error("Failed to send registration email:", err);
+    return { success: false, error: "Loi noi bo khi gui email" };
+  }
+}
+
 export async function sendContactNotification(input: {
   name: string;
   email: string;

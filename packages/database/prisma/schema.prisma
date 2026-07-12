@@ -326,6 +326,22 @@ model Customer {
   @@map("customers")
 }
 
+model PendingRegistration {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  phone        String?
+  passwordHash String
+  name         String
+  codeHash     String
+  expiresAt    DateTime
+  attempts     Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([expiresAt])
+  @@map("pending_registrations")
+}
+
 model CustomerCarePreference {
   id                    String           @id @default(cuid())
   customerId            String           @unique

@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
-import crypto from "crypto";
-import { sendPasswordResetEmail } from "@/lib/email";
+import { randomInt } from "crypto";
+import bcrypt from "bcryptjs";
+import { sendPasswordResetCodeEmail } from "@/lib/email";
 
 const forgotPasswordSchema = z.object({
   email: z.string().email("Email không hợp lệ"),
@@ -29,10 +30,12 @@ export async function POST(request: NextRequest) {
           mode: "insensitive",
         },
       },
+      select: {
+        id: true,
+        email: true,
+      },
     });
 
-    // Storefront UX choice: show a clear message when the account is not registered.
-    // This makes "forgot password" easier for real customers to understand.
     if (!user) {
       return NextResponse.json(
         {
@@ -43,31 +46,33 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const token = crypto.randomBytes(32).toString("hex");
-    const expiry = new Date();
-    expiry.setHours(expiry.getHours() + 1);
+    const code = randomInt(100000, 1000000).toString();
+    const salt = await bcrypt.genSalt(10);
+    const codeHash = await bcrypt.hash(code, salt);
+    const expiry = new Date(Date.now() + 10 * 60 * 1000);
 
     await prisma.customer.update({
       where: { id: user.id },
       data: {
-        resetToken: token,
+        resetToken: codeHash,
         resetTokenExpiry: expiry,
       },
     });
 
-    const emailResult = await sendPasswordResetEmail(user.email, token);
+    const emailResult = await sendPasswordResetCodeEmail(user.email, code);
 
     if (!emailResult.success) {
-      console.error("Forgot password email send failed:", emailResult.error);
+      console.error("Forgot password code email send failed:", emailResult.error);
       return NextResponse.json(
-        { error: "Chưa gửi được email khôi phục. Vui lòng thử lại sau hoặc liên hệ shop." },
+        { error: "Chưa gửi được mã xác minh. Vui lòng thử lại sau hoặc liên hệ shop." },
         { status: 502 }
       );
     }
 
     return NextResponse.json({
       success: true,
-      message: "Đã gửi link đặt lại mật khẩu. Vui lòng kiểm tra hộp thư và mục Spam.",
+      email: user.email,
+      message: "Đã gửi mã xác minh 6 số. Vui lòng kiểm tra hộp thư và mục Spam.",
     });
   } catch (error) {
     console.error("Forgot password error:", error);
