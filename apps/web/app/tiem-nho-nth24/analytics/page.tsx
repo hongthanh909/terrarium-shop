@@ -2,31 +2,101 @@
 
 import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Activity, BarChart3, Clock3, Eye, LogIn, Search, ShoppingCart, UserRound, Users, X } from "lucide-react";
+import {
+  Activity,
+  BarChart3,
+  ChevronLeft,
+  ChevronRight,
+  Clock3,
+  Eye,
+  LogIn,
+  Search,
+  ShoppingCart,
+  UserPlus,
+  UserRound,
+  Users,
+  X,
+} from "lucide-react";
+
+type PageInfo = { page: number; pageSize: number; totalItems: number; totalPages: number };
 
 type Overview = {
   range: number;
-  summary: { onlineNow: number; visitorsToday: number; sessionsToday: number; pageViewsToday: number; registeredSessions: number; anonymousSessions: number };
+  summary: {
+    onlineNow: number;
+    visitorsToday: number;
+    sessionsToday: number;
+    pageViewsToday: number;
+    registeredCustomersToday: number;
+    totalRegisteredCustomers: number;
+    registeredSessions: number;
+    anonymousSessions: number;
+  };
   trend: Array<{ day: string; visitors: number; sessions: number; pageViews: number }>;
   funnel: Array<{ key: string; label: string; value: number }>;
   topPages: Array<{ path: string; views: number }>;
   topProducts: Array<{ id: string; name: string; slug: string; views: number }>;
   topSearches: Array<{ term: string; searches: number }>;
-  recentActivity: Array<{ id: string; sessionId: string; eventType: string; path: string; searchTerm?: string; createdAt: string; visitorLabel: string; email?: string; registered: boolean; product?: { name: string; slug: string } }>;
+  pagination: {
+    recentActivity: PageInfo;
+    topPages: PageInfo;
+    topProducts: PageInfo;
+    topSearches: PageInfo;
+  };
+  recentActivity: Array<{
+    id: string;
+    sessionId: string;
+    eventType: string;
+    path: string;
+    searchTerm?: string;
+    createdAt: string;
+    visitorLabel: string;
+    email?: string;
+    registered: boolean;
+    product?: { name: string; slug: string };
+  }>;
 };
 
 type SessionDetail = {
-  id: string; visitorLabel: string; registered: boolean; email?: string; phone?: string;
-  startedAt: string; lastSeenAt: string; endedAt?: string; entryPath: string; exitPath?: string;
-  referrer?: string; deviceType?: string; browser?: string; operatingSystem?: string; pageViews: number;
-  events: Array<{ id: string; eventType: string; path: string; searchTerm?: string; durationMs?: number; createdAt: string; product?: { name: string; slug: string } }>;
+  id: string;
+  visitorLabel: string;
+  registered: boolean;
+  email?: string;
+  phone?: string;
+  startedAt: string;
+  lastSeenAt: string;
+  endedAt?: string;
+  entryPath: string;
+  exitPath?: string;
+  referrer?: string;
+  deviceType?: string;
+  browser?: string;
+  operatingSystem?: string;
+  pageViews: number;
+  events: Array<{
+    id: string;
+    eventType: string;
+    path: string;
+    searchTerm?: string;
+    durationMs?: number;
+    createdAt: string;
+    product?: { name: string; slug: string };
+  }>;
 };
 
 const EVENT_LABELS: Record<string, string> = {
-  PAGE_VIEW: "Xem trang", PRODUCT_VIEW: "Xem sản phẩm", SEARCH: "Tìm kiếm",
-  ADD_TO_CART: "Thêm vào giỏ", REMOVE_FROM_CART: "Xóa khỏi giỏ",
-  BEGIN_CHECKOUT: "Bắt đầu thanh toán", PURCHASE: "Tạo đơn", CHAT_OPEN: "Mở chat",
-  CHAT_MESSAGE_SENT: "Gửi tin chat", LOGIN: "Đăng nhập", REGISTER: "Đăng ký", SESSION_END: "Rời trang",
+  PAGE_VIEW: "Xem trang",
+  PRODUCT_VIEW: "Xem sản phẩm",
+  SEARCH: "Tìm kiếm",
+  ADD_TO_CART: "Thêm vào giỏ",
+  REMOVE_FROM_CART: "Xóa khỏi giỏ",
+  BEGIN_CHECKOUT: "Bắt đầu thanh toán",
+  PURCHASE: "Tạo đơn",
+  CHAT_OPEN: "Mở chat",
+  CHAT_MESSAGE_SENT: "Gửi tin chat",
+  LOGIN: "Đăng nhập",
+  REGISTER: "Đăng ký",
+  SESSION_END: "Rời trang",
 };
 
 async function fetchJson<T>(url: string): Promise<T> {
@@ -41,14 +111,29 @@ function formatTime(value: string) {
 
 export default function AnalyticsAdminPage() {
   const [range, setRange] = useState(7);
+  const [recentPage, setRecentPage] = useState(1);
+  const [topPagesPage, setTopPagesPage] = useState(1);
+  const [topProductsPage, setTopProductsPage] = useState(1);
+  const [topSearchesPage, setTopSearchesPage] = useState(1);
   const [selectedSession, setSelectedSession] = useState<string | null>(null);
   const queryClient = useQueryClient();
+
   const overview = useQuery({
-    queryKey: ["admin-analytics", range],
-    queryFn: () => fetchJson<Overview>(`/api/admin/analytics/overview?range=${range}`),
+    queryKey: ["admin-analytics", range, recentPage, topPagesPage, topProductsPage, topSearchesPage],
+    queryFn: () => {
+      const params = new URLSearchParams({
+        range: String(range),
+        recentPage: String(recentPage),
+        topPagesPage: String(topPagesPage),
+        topProductsPage: String(topProductsPage),
+        topSearchesPage: String(topSearchesPage),
+      });
+      return fetchJson<Overview>(`/api/admin/analytics/overview?${params}`);
+    },
     refetchInterval: 5_000,
     refetchIntervalInBackground: true,
   });
+
   const session = useQuery({
     queryKey: ["admin-analytics-session", selectedSession],
     queryFn: () => fetchJson<SessionDetail>(`/api/admin/analytics/sessions/${selectedSession}`),
@@ -76,6 +161,14 @@ export default function AnalyticsAdminPage() {
   const trendMax = Math.max(1, ...(data?.trend.map((item) => item.pageViews) || [1]));
   const funnelMax = Math.max(1, ...(data?.funnel.map((item) => item.value) || [1]));
 
+  const changeRange = (days: number) => {
+    setRange(days);
+    setRecentPage(1);
+    setTopPagesPage(1);
+    setTopProductsPage(1);
+    setTopSearchesPage(1);
+  };
+
   return (
     <div className="mx-auto max-w-[1500px] space-y-7">
       <header className="flex flex-col gap-4 border-b border-[#dce7d5] pb-5 sm:flex-row sm:items-end sm:justify-between">
@@ -86,7 +179,7 @@ export default function AnalyticsAdminPage() {
         </div>
         <div className="inline-flex w-fit border border-[#cedcc5] bg-white p-1" aria-label="Khoảng thời gian">
           {[7, 30, 90].map((days) => (
-            <button key={days} type="button" onClick={() => setRange(days)} className={`min-h-9 px-4 text-sm font-semibold ${range === days ? "bg-[#425733] text-white" : "text-gray-600 hover:bg-[#f1f5ee]"}`}>
+            <button key={days} type="button" onClick={() => changeRange(days)} className={`min-h-9 px-4 text-sm font-semibold ${range === days ? "bg-[#425733] text-white" : "text-gray-600 hover:bg-[#f1f5ee]"}`}>
               {days} ngày
             </button>
           ))}
@@ -98,12 +191,13 @@ export default function AnalyticsAdminPage() {
 
       {data && (
         <>
-          <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4" aria-label="Tổng quan hôm nay">
+          <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5" aria-label="Tổng quan hôm nay">
             {[
               { label: "Đang online", value: data.summary.onlineNow, icon: Activity, note: "Hoạt động trong 60 giây" },
               { label: "Khách hôm nay", value: data.summary.visitorsToday, icon: Users, note: "Trình duyệt duy nhất" },
               { label: "Phiên hôm nay", value: data.summary.sessionsToday, icon: Clock3, note: "Phiên truy cập" },
               { label: "Lượt xem hôm nay", value: data.summary.pageViewsToday, icon: Eye, note: "Tất cả trang cửa hàng" },
+              { label: "Tài khoản đã tạo", value: data.summary.totalRegisteredCustomers, icon: UserPlus, note: `+${data.summary.registeredCustomersToday} hôm nay` },
             ].map((item) => (
               <article key={item.label} className="border border-[#dce7d5] bg-white p-5 shadow-[0_3px_12px_rgba(46,72,35,0.05)]">
                 <div className="flex items-start justify-between">
@@ -158,28 +252,37 @@ export default function AnalyticsAdminPage() {
           </section>
 
           <section className="grid gap-6 border-t border-[#dce7d5] pt-5 lg:grid-cols-3">
-            <RankList title="Trang được xem nhiều" icon={<Eye className="h-4 w-4" />} rows={data.topPages.map((item) => ({ label: item.path, value: item.views }))} />
-            <RankList title="Sản phẩm được quan tâm" icon={<ShoppingCart className="h-4 w-4" />} rows={data.topProducts.map((item) => ({ label: item.name, value: item.views }))} />
-            <RankList title="Từ khóa tìm kiếm" icon={<Search className="h-4 w-4" />} rows={data.topSearches.map((item) => ({ label: item.term || "[đã ẩn]", value: item.searches }))} />
+            <RankList title="Trang được xem nhiều" icon={<Eye className="h-4 w-4" />} rows={data.topPages.map((item) => ({ label: item.path, value: item.views }))} pagination={data.pagination.topPages} onPageChange={setTopPagesPage} />
+            <RankList title="Sản phẩm được quan tâm" icon={<ShoppingCart className="h-4 w-4" />} rows={data.topProducts.map((item) => ({ label: item.name, value: item.views }))} pagination={data.pagination.topProducts} onPageChange={setTopProductsPage} />
+            <RankList title="Từ khóa tìm kiếm" icon={<Search className="h-4 w-4" />} rows={data.topSearches.map((item) => ({ label: item.term || "[đã ẩn]", value: item.searches }))} pagination={data.pagination.topSearches} onPageChange={setTopSearchesPage} />
           </section>
 
           <section className="border-t border-[#dce7d5] pt-5">
-            <div className="mb-4 flex items-center justify-between"><h3 className="font-bold text-gray-900">Hoạt động gần đây</h3><span className="text-xs text-gray-400">Bấm một dòng để xem timeline</span></div>
+            <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h3 className="font-bold text-gray-900">Hoạt động gần đây</h3>
+                <p className="mt-1 text-xs text-gray-400">{data.pagination.recentActivity.totalItems.toLocaleString("vi-VN")} hoạt động, trang {data.pagination.recentActivity.page}/{data.pagination.recentActivity.totalPages}</p>
+              </div>
+              <span className="text-xs text-gray-400">Bấm một dòng để xem timeline</span>
+            </div>
             <div className="overflow-x-auto border border-[#dce7d5] bg-white">
               <table className="w-full min-w-[760px] text-left text-sm">
                 <thead className="bg-[#f1f5ee] text-xs uppercase text-gray-500"><tr><th className="px-4 py-3">Khách</th><th className="px-4 py-3">Hành động</th><th className="px-4 py-3">Trang</th><th className="px-4 py-3">Thời gian</th></tr></thead>
                 <tbody className="divide-y divide-gray-100">
-                  {data.recentActivity.map((event) => (
+                  {data.recentActivity.length ? data.recentActivity.map((event) => (
                     <tr key={event.id} onClick={() => setSelectedSession(event.sessionId)} className="cursor-pointer hover:bg-[#f7faf5]">
                       <td className="px-4 py-3"><div className="flex items-center gap-2">{event.registered ? <LogIn className="h-4 w-4 text-[#63804f]" /> : <UserRound className="h-4 w-4 text-gray-400" />}<div><p className="font-semibold text-gray-800">{event.visitorLabel}</p><p className="text-xs text-gray-400">{event.email || "Ẩn danh"}</p></div></div></td>
                       <td className="px-4 py-3 font-medium text-gray-700">{EVENT_LABELS[event.eventType] || event.eventType}</td>
                       <td className="max-w-[300px] truncate px-4 py-3 text-gray-500">{event.searchTerm ? `Từ khóa: ${event.searchTerm}` : event.product?.name || event.path}</td>
                       <td className="whitespace-nowrap px-4 py-3 text-gray-500">{formatTime(event.createdAt)}</td>
                     </tr>
-                  ))}
+                  )) : (
+                    <tr><td colSpan={4} className="px-4 py-10 text-center text-sm text-gray-400">Chưa có hoạt động</td></tr>
+                  )}
                 </tbody>
               </table>
             </div>
+            <Pagination info={data.pagination.recentActivity} onChange={setRecentPage} className="mt-4 justify-end" />
           </section>
         </>
       )}
@@ -200,8 +303,69 @@ export default function AnalyticsAdminPage() {
   );
 }
 
-function RankList({ title, icon, rows }: { title: string; icon: React.ReactNode; rows: Array<{ label: string; value: number }> }) {
-  return <div><div className="mb-3 flex items-center gap-2 font-bold text-gray-900">{icon}{title}</div><ol className="divide-y divide-gray-100 border border-[#dce7d5] bg-white">{rows.length ? rows.map((row, index) => <li key={`${row.label}-${index}`} className="flex items-center gap-3 px-4 py-3"><span className="w-5 text-xs font-bold text-gray-300">{index + 1}</span><span className="min-w-0 flex-1 truncate text-sm text-gray-700">{row.label}</span><strong className="text-sm text-[#425733]">{row.value}</strong></li>) : <li className="px-4 py-8 text-center text-sm text-gray-400">Chưa có dữ liệu</li>}</ol></div>;
+function RankList({
+  title,
+  icon,
+  rows,
+  pagination,
+  onPageChange,
+}: {
+  title: string;
+  icon: React.ReactNode;
+  rows: Array<{ label: string; value: number }>;
+  pagination: PageInfo;
+  onPageChange: (page: number) => void;
+}) {
+  const start = pagination.totalItems ? (pagination.page - 1) * pagination.pageSize + 1 : 0;
+  return (
+    <div>
+      <div className="mb-3 flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2 font-bold text-gray-900">{icon}{title}</div>
+        <span className="text-xs text-gray-400">{start}-{Math.min(pagination.page * pagination.pageSize, pagination.totalItems)} / {pagination.totalItems}</span>
+      </div>
+      <ol className="divide-y divide-gray-100 border border-[#dce7d5] bg-white">
+        {rows.length ? rows.map((row, index) => (
+          <li key={`${row.label}-${index}`} className="flex items-center gap-3 px-4 py-3">
+            <span className="w-5 text-xs font-bold text-gray-300">{(pagination.page - 1) * pagination.pageSize + index + 1}</span>
+            <span className="min-w-0 flex-1 truncate text-sm text-gray-700">{row.label}</span>
+            <strong className="text-sm text-[#425733]">{row.value}</strong>
+          </li>
+        )) : <li className="px-4 py-8 text-center text-sm text-gray-400">Chưa có dữ liệu</li>}
+      </ol>
+      <Pagination info={pagination} onChange={onPageChange} className="mt-3 justify-end" compact />
+    </div>
+  );
+}
+
+function Pagination({ info, onChange, className = "", compact = false }: { info: PageInfo; onChange: (page: number) => void; className?: string; compact?: boolean }) {
+  if (info.totalPages <= 1) return null;
+  const pages: Array<number | string> = [];
+  let previous = 0;
+  for (let page = 1; page <= info.totalPages; page += 1) {
+    if (page === 1 || page === info.totalPages || Math.abs(page - info.page) <= 1) {
+      if (previous && page - previous > 1) pages.push(`+${page - previous - 1}`);
+      pages.push(page);
+      previous = page;
+    }
+  }
+
+  return (
+    <nav className={`flex flex-wrap items-center gap-1 ${className}`} aria-label="Phân trang">
+      <button type="button" onClick={() => onChange(Math.max(1, info.page - 1))} disabled={info.page <= 1} className="grid h-9 w-9 place-items-center border border-[#cedcc5] text-gray-600 disabled:cursor-not-allowed disabled:opacity-40">
+        <ChevronLeft className="h-4 w-4" />
+      </button>
+      {pages.map((page, index) => typeof page === "number" ? (
+        <button key={page} type="button" onClick={() => onChange(page)} className={`${compact ? "h-9 min-w-9 px-2" : "h-9 min-w-10 px-3"} border border-[#cedcc5] text-sm font-semibold ${page === info.page ? "bg-[#425733] text-white" : "bg-white text-gray-600 hover:bg-[#f1f5ee]"}`}>
+          {page}
+        </button>
+      ) : (
+        <span key={`${page}-${index}`} className="px-2 text-xs font-semibold text-gray-400">{page}</span>
+      ))}
+      <button type="button" onClick={() => onChange(Math.min(info.totalPages, info.page + 1))} disabled={info.page >= info.totalPages} className="grid h-9 w-9 place-items-center border border-[#cedcc5] text-gray-600 disabled:cursor-not-allowed disabled:opacity-40">
+        <ChevronRight className="h-4 w-4" />
+      </button>
+    </nav>
+  );
 }
 
 function SessionTimeline({ session }: { session: SessionDetail }) {
