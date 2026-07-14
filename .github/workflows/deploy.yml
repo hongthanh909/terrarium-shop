@@ -82,6 +82,10 @@ jobs:
 
             echo "🔄 Syncing DB schema..."
             npx prisma db push --accept-data-loss
+            # db push already created the analytics tables. Record that schema
+            # migration before applying later data-only migrations.
+            npx prisma migrate resolve --applied 20260714170000_add_first_party_analytics \
+              --schema ../../packages/database/prisma/schema.prisma || true
             npx prisma migrate deploy --schema ../../packages/database/prisma/schema.prisma
 
             # ── Cập nhật AI env trong .env ───────────────────────────────────
