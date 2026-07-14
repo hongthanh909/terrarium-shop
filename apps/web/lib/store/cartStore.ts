@@ -8,6 +8,7 @@ export interface CartItem {
   productName: string;
   productImage: string;
   price: number;
+  discountCode?: string;
   quantity: number;
   variants?: {
     SIZE?: string;
@@ -47,7 +48,8 @@ export const useCartStore = create<CartStore>()(
           const existingItemIndex = state.items.findIndex(
             (existingItem) =>
               existingItem.productId === item.productId &&
-              JSON.stringify(existingItem.variants) === JSON.stringify(item.variants)
+              JSON.stringify(existingItem.variants) === JSON.stringify(item.variants) &&
+              existingItem.discountCode === item.discountCode
           );
 
           if (existingItemIndex > -1) {

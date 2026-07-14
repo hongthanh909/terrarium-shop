@@ -38,6 +38,7 @@ export default function CheckoutPage() {
   const [voucherCampaignId, setVoucherCampaignId] = useState<string | null>(null);
   const [voucherChecking, setVoucherChecking] = useState(false);
   const [voucherError, setVoucherError] = useState<string | null>(null);
+  const [pendingAutoVoucherCode, setPendingAutoVoucherCode] = useState<string | null>(null);
   const [isFreeShipping, setIsFreeShipping] = useState(false);
   const [discount, setDiscount] = useState(0);
   const [shippingFee, setShippingFee] = useState(30000);
@@ -55,6 +56,16 @@ export default function CheckoutPage() {
 
   const subtotal = getSelectedTotal();
   const total = subtotal + shippingFee - discount;
+
+  useEffect(() => {
+    if (formData.voucherCode || voucherApplied || voucherChecking) return;
+    const itemVoucherCode = itemsToCheckout.find((item: CartItem) => item.discountCode)?.discountCode;
+    if (!itemVoucherCode) return;
+
+    const normalizedCode = itemVoucherCode.trim().toUpperCase();
+    setFormData((prev) => ({ ...prev, voucherCode: normalizedCode }));
+    setPendingAutoVoucherCode(normalizedCode);
+  }, [formData.voucherCode, itemsToCheckout, voucherApplied, voucherChecking]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -119,6 +130,14 @@ export default function CheckoutPage() {
       setVoucherChecking(false);
     }
   };
+
+  useEffect(() => {
+    if (!pendingAutoVoucherCode) return;
+    if (formData.voucherCode !== pendingAutoVoucherCode) return;
+
+    setPendingAutoVoucherCode(null);
+    void handleApplyVoucher();
+  }, [formData.voucherCode, pendingAutoVoucherCode]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

@@ -205,17 +205,34 @@ export function ProductDetailClient({
     let best: VoucherData | null = null;
     let bestDiscount = 0;
     for (const v of publicVouchers) {
-      if (v.minOrderAmount && price < Number(v.minOrderAmount)) continue;
-      let discount = 0;
-      if (v.type === "PERCENTAGE") {
-        discount = (price * Number(v.value)) / 100;
-        if (v.maxDiscountAmount) discount = Math.min(discount, Number(v.maxDiscountAmount));
-      } else {
-        discount = Number(v.value);
-      }
+      if (!isVoucherEligible(v, price)) continue;
+      const discount = getVoucherDiscountAmount(v, price);
       if (discount > bestDiscount) { bestDiscount = discount; best = v; }
     }
     return best;
+  };
+
+  const isVoucherEligible = (voucher: VoucherData | null, amount: number) => {
+    if (!voucher) return false;
+    return !voucher.minOrderAmount || amount >= Number(voucher.minOrderAmount);
+  };
+
+  const getVoucherDiscountAmount = (voucher: VoucherData | null, amount: number) => {
+    if (!voucher || voucher.type === "FREE_SHIPPING" || !isVoucherEligible(voucher, amount)) {
+      return 0;
+    }
+
+    let discount = 0;
+    if (voucher.type === "PERCENTAGE") {
+      discount = amount * (Number(voucher.value) / 100);
+      if (voucher.maxDiscountAmount) {
+        discount = Math.min(discount, Number(voucher.maxDiscountAmount));
+      }
+    } else {
+      discount = Number(voucher.value);
+    }
+
+    return Math.max(0, Math.min(amount, Math.round(discount)));
   };
 
   const productImages: string[] = Array.isArray(product?.images) ? product.images : [];
@@ -416,7 +433,15 @@ export function ProductDetailClient({
       cartVariants["Phân loại"] = pkgLabel;
     }
     delete cartVariants[LAMP_VARIANT_TYPE];
-    addItem({ productId: product.id, productName: product.name, productImage: product.images[0] || "", price, quantity, variants: cartVariants });
+    addItem({
+      productId: product.id,
+      productName: product.name,
+      productImage: product.images[0] || "",
+      price,
+      discountCode: appliedVoucher?.code,
+      quantity,
+      variants: cartVariants,
+    });
     setCartOpen(true);
   };
 
@@ -431,7 +456,15 @@ export function ProductDetailClient({
       cartVariants["Phân loại"] = pkgLabel;
     }
     delete cartVariants[LAMP_VARIANT_TYPE];
-    addItem({ productId: product.id, productName: product.name, productImage: product.images[0] || "", price, quantity, variants: cartVariants });
+    addItem({
+      productId: product.id,
+      productName: product.name,
+      productImage: product.images[0] || "",
+      price,
+      discountCode: appliedVoucher?.code,
+      quantity,
+      variants: cartVariants,
+    });
     if (items.length === 0) { router.push("/checkout"); } else { setCartOpen(true); }
   };
 
@@ -454,6 +487,10 @@ export function ProductDetailClient({
 
   const { price: finalPrice, base: originalPrice, isSale } = getPriceWithVariants();
   const discountPercent = isSale && originalPrice > 0 ? Math.round(((originalPrice - finalPrice) / originalPrice) * 100) : 0;
+  const voucherDiscountAmount = getVoucherDiscountAmount(appliedVoucher, finalPrice);
+  const priceAfterVoucher = Math.max(0, finalPrice - voucherDiscountAmount);
+  const hasPriceVoucher = voucherDiscountAmount > 0;
+  const priceBeforeDisplayedDiscount = hasPriceVoucher ? finalPrice : originalPrice;
   const hasCareGuide = !!(product.careGuide && (product.careGuide.watering || product.careGuide.sunlight || product.careGuide.temperature || product.careGuide.humidity));
   const ratingSummary = getProductRatingSummary({ ...product, reviews });
   const ratingBreakdown = getPositiveRatingBreakdown(ratingSummary.rating, ratingSummary.reviewCount);
@@ -769,30 +806,17 @@ export function ProductDetailClient({
             {/* Price section */}
             <div className="flex flex-wrap items-baseline gap-3 mb-6 p-4 bg-[#f8faf6]/80 border border-[#eaefeb] rounded-2xl">
               {/* Old price */}
-              {(isSale || (appliedVoucher && appliedVoucher.type !== "FREE_SHIPPING")) && (
+              {(isSale || hasPriceVoucher) && (
                 <span className="text-base text-red-500 font-semibold line-through">
-                  {(isSale ? originalPrice : finalPrice).toLocaleString("vi-VN")}₫
+                  {priceBeforeDisplayedDiscount.toLocaleString("vi-VN")}₫
                 </span>
               )}
               
               {/* Main Price */}
               <span className={`text-3xl sm:text-4xl font-extrabold ${
-                appliedVoucher && appliedVoucher.type !== "FREE_SHIPPING" ? "text-green-700" : "text-[#425733]"
+                hasPriceVoucher ? "text-green-700" : "text-[#425733]"
               }`}>
-                {(() => {
-                  let displayPrice = finalPrice;
-                  if (appliedVoucher && appliedVoucher.type !== "FREE_SHIPPING") {
-                    let disc = 0;
-                    if (appliedVoucher.type === "PERCENTAGE") {
-                      disc = (finalPrice * Number(appliedVoucher.value)) / 100;
-                      if (appliedVoucher.maxDiscountAmount) disc = Math.min(disc, Number(appliedVoucher.maxDiscountAmount));
-                    } else {
-                      disc = Number(appliedVoucher.value);
-                    }
-                    displayPrice = Math.max(0, finalPrice - disc);
-                  }
-                  return displayPrice.toLocaleString("vi-VN");
-                })()}₫
+                {priceAfterVoucher.toLocaleString("vi-VN")}₫
               </span>
 
               {/* Promo tag */}
@@ -807,9 +831,9 @@ export function ProductDetailClient({
                   🚚 Miễn phí vận chuyển
                 </span>
               )}
-              {appliedVoucher && appliedVoucher.type !== "FREE_SHIPPING" && (
+              {hasPriceVoucher && (
                 <span className="bg-green-50 border border-green-200 text-green-700 text-xs font-bold px-2.5 py-1 rounded-full animate-pulse">
-                  Đã giảm {appliedVoucher.type === "PERCENTAGE" ? `${appliedVoucher.value}%` : `${Number(appliedVoucher.value).toLocaleString("vi-VN")}₫`}
+                  Đã giảm {voucherDiscountAmount.toLocaleString("vi-VN")}₫
                 </span>
               )}
             </div>
@@ -913,9 +937,9 @@ export function ProductDetailClient({
                   <CheckIcon className="w-4 h-4 text-green-600 flex-shrink-0" />
                   <span className="text-xs font-semibold text-green-700 flex-1">
                     Đã áp dụng <strong>{appliedVoucher.code}</strong>
-                    {appliedVoucher.type === "PERCENTAGE"
-                      ? ` (Giảm ${appliedVoucher.value}%)`
-                      : ` (Giảm ${Number(appliedVoucher.value).toLocaleString("vi-VN")}₫)`}
+                    {appliedVoucher.type === "FREE_SHIPPING"
+                      ? " (Miễn phí vận chuyển)"
+                      : ` (Giảm ${voucherDiscountAmount.toLocaleString("vi-VN")}₫)`}
                   </span>
                   <button onClick={() => { setAppliedVoucher(null); setVoucherInput(""); }} className="text-gray-400 hover:text-gray-600 text-xs font-medium">
                     Bỏ chọn
@@ -932,18 +956,9 @@ export function ProductDetailClient({
                     const isBest = best?.id === v.id;
                     const isApplied = appliedVoucher?.id === v.id;
                     const isFreeShip = v.type === "FREE_SHIPPING";
-                    const meetsMin = !v.minOrderAmount || finalPrice >= Number(v.minOrderAmount);
+                    const meetsMin = isVoucherEligible(v, finalPrice);
                     const expDate = new Date(v.expiresAt).toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric" });
-                    
-                    let discountAmt = 0;
-                    if (isFreeShip) {
-                      discountAmt = Number(v.value);
-                    } else if (v.type === "PERCENTAGE") {
-                      discountAmt = (finalPrice * Number(v.value)) / 100;
-                      if (v.maxDiscountAmount) discountAmt = Math.min(discountAmt, Number(v.maxDiscountAmount));
-                    } else {
-                      discountAmt = Number(v.value);
-                    }
+                    const discountAmt = getVoucherDiscountAmount(v, finalPrice);
                     return (
                       <label
                         key={v.id}
@@ -1377,7 +1392,7 @@ export function ProductDetailClient({
           <div className="min-w-0 flex-1">
             <p className="truncate text-xs font-semibold text-[#526248]">{product.name}</p>
             <p className="whitespace-nowrap text-[clamp(1.05rem,5vw,1.25rem)] font-extrabold leading-tight text-[#425733]">
-              {finalPrice.toLocaleString("vi-VN")}₫
+              {priceAfterVoucher.toLocaleString("vi-VN")}₫
             </p>
           </div>
           <Button
