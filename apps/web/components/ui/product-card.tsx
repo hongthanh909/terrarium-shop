@@ -9,6 +9,7 @@ import { Heart, Star, Package, Minus, Plus } from "lucide-react";
 import { SaleCountdown } from "@/components/ui/sale-countdown";
 import { ImageWrapper } from "@/components/ui/ImageWrapper";
 import { GlassCard } from "@/components/ui/glass-card";
+import { getProductPackagePriceAdjustment } from "@/lib/product-packages";
 
 export interface ProductCardProps {
   id: string;
@@ -63,11 +64,12 @@ export function ProductCard({
     (saleEndDate == null || new Date(saleEndDate) > new Date());
 
   const pkgPriceAdjustment = isBểProduct
-    ? (selectedPackage === "standard" ? 150000 : selectedPackage === "advanced" ? 180000 : 0)
+    ? getProductPackagePriceAdjustment(selectedPackage)
     : 0;
 
+  const activeBasePrice = isOnSale && salePrice != null ? salePrice : basePrice;
   const adjustedBase = basePrice + pkgPriceAdjustment;
-  const adjustedSale = (salePrice ?? basePrice) + pkgPriceAdjustment;
+  const adjustedSale = activeBasePrice + pkgPriceAdjustment;
 
   const discountPct = isOnSale
     ? Math.round(((adjustedBase - adjustedSale) / adjustedBase) * 100)

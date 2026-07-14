@@ -20,12 +20,13 @@ import { ProductCard } from "@/components/ui/product-card";
 import { ImageWrapper } from "@/components/ui/ImageWrapper";
 import { useWishlist } from "@/lib/hooks/useWishlist";
 import { getPositiveRatingBreakdown, getProductRatingSummary } from "@/lib/product-rating";
+import { getProductPackagePriceAdjustment } from "@/lib/product-packages";
 
 // ── Package variant constants ───────────────────────────────────────────────
 const LAMP_VARIANT_TYPE = "Đèn";
 const LAMP_COMBO_OPTION = "Combo bể + đèn";
 const LAMP_NONE_OPTION = "Không kèm đèn";
-const LAMP_PRICE_ADJUSTMENT = 150000;
+const LAMP_PRICE_ADJUSTMENT = 100000;
 
 // 3-tier package selection for Bể products
 const PACKAGES = [
@@ -40,14 +41,14 @@ const PACKAGES = [
     key: "standard",
     label: "Gói tiêu chuẩn",
     sub: "Đèn + đế",
-    priceAdj: 150000,
+    priceAdj: getProductPackagePriceAdjustment("standard"),
     icon: "💡",
   },
   {
     key: "advanced",
     label: "Gói nâng cao",
     sub: "Đèn + đế + dụng cụ",
-    priceAdj: 180000,
+    priceAdj: getProductPackagePriceAdjustment("advanced"),
     icon: "🔧",
   },
 ];
@@ -1304,7 +1305,7 @@ export function ProductDetailClient({
                       relSalePrice < relBasePrice &&
                       (!rel.saleEndDate || new Date(rel.saleEndDate) > new Date());
                     const base = relSaleValid ? relSalePrice : relBasePrice;
-                    const price = base + (pkg === "standard" ? 150000 : pkg === "advanced" ? 180000 : 0);
+                    const price = base + getProductPackagePriceAdjustment(pkg);
                     const pkgLabel = pkg === "standard" ? "Gói tiêu chuẩn" : pkg === "advanced" ? "Gói nâng cao" : "Gói cơ bản";
                     addItem({
                       productId: rel.id,

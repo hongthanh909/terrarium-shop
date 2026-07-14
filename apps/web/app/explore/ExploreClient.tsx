@@ -9,6 +9,7 @@ import { ProductCard } from "@/components/ui/product-card";
 import { PageTransition } from "@/components/ui/page-transition";
 import { motion } from "framer-motion";
 import { getProductRatingSummary } from "@/lib/product-rating";
+import { getProductPackagePriceAdjustment } from "@/lib/product-packages";
 
 interface Product {
   id: string;
@@ -54,7 +55,11 @@ function useAddToCart() {
   return (product: Product, selectedPackage = "basic", quantity = 1) => {
     const base = parseFloat(product.basePrice.toString());
     const sale = product.salePrice ? parseFloat(product.salePrice.toString()) : null;
-    const itemPrice = sale != null && sale < base ? sale : base;
+    const saleIsValid =
+      sale != null &&
+      sale < base &&
+      (!product.saleEndDate || new Date(product.saleEndDate) > new Date());
+    const itemPrice = saleIsValid ? sale : base;
 
     const isBể = 
       product.category?.name?.toLowerCase().includes("bể") ||
@@ -62,7 +67,7 @@ function useAddToCart() {
       product.slug?.toLowerCase().includes("be");
 
     const pkgPriceAdjustment = isBể
-      ? (selectedPackage === "standard" ? 150000 : selectedPackage === "advanced" ? 180000 : 0)
+      ? getProductPackagePriceAdjustment(selectedPackage)
       : 0;
 
     const price = itemPrice + pkgPriceAdjustment;

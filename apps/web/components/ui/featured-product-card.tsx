@@ -4,6 +4,7 @@ import { ProductCard } from "@/components/ui/product-card";
 import { useCartStore } from "@/lib/store/cartStore";
 import { useWishlist } from "@/lib/hooks/useWishlist";
 import { showToast } from "@/components/ui/custom-toast";
+import { getProductPackagePriceAdjustment } from "@/lib/product-packages";
 
 interface FeaturedProductCardProps {
   id: string;
@@ -46,7 +47,7 @@ export function FeaturedProductCard(props: FeaturedProductCardProps) {
       props.slug?.toLowerCase().includes("be");
 
     const pkgPriceAdjustment = isBể
-      ? (selectedPackage === "standard" ? 150000 : selectedPackage === "advanced" ? 180000 : 0)
+      ? getProductPackagePriceAdjustment(selectedPackage)
       : 0;
 
     const price = base + pkgPriceAdjustment;

@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { prisma } from "@/lib/prisma";
 import { authOptions } from "@/lib/auth";
 import { verifyAdminRequest } from "@/lib/admin-auth";
+import { getProductPackagePriceAdjustment } from "@/lib/product-packages";
 
 export const PAYMENT_TIMEOUT_MINUTES = 30;
 
@@ -82,8 +83,12 @@ function inferPackageAdjustment(product: any, variants: Record<string, unknown>)
     productText.includes("tank");
 
   if (!looksLikeTank) return 0;
-  if (variantText.includes("advanced") || variantText.includes("nang cao")) return 180000;
-  if (variantText.includes("standard") || variantText.includes("tieu chuan")) return 150000;
+  if (variantText.includes("advanced") || variantText.includes("nang cao")) {
+    return getProductPackagePriceAdjustment("advanced");
+  }
+  if (variantText.includes("standard") || variantText.includes("tieu chuan")) {
+    return getProductPackagePriceAdjustment("standard");
+  }
   return 0;
 }
 

@@ -13,6 +13,7 @@ import { useSession } from "next-auth/react";
 import { showToast } from "@/components/ui/custom-toast";
 import { motion, useReducedMotion } from "framer-motion";
 import { getProductRatingSummary } from "@/lib/product-rating";
+import { getProductPackagePriceAdjustment } from "@/lib/product-packages";
 
 interface Product {
   id: string;
@@ -91,7 +92,7 @@ export function ProductsClient({
       product.slug?.toLowerCase().includes("be");
 
     const pkgPriceAdjustment = isBể
-      ? (selectedPackage === "standard" ? 150000 : selectedPackage === "advanced" ? 180000 : 0)
+      ? getProductPackagePriceAdjustment(selectedPackage)
       : 0;
 
     const price = base + pkgPriceAdjustment;
