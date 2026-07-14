@@ -14,8 +14,9 @@ const EXCLUDED_PREFIXES = ["/tiem-nho-nth24", "/seller", "/api"];
 export function AnalyticsTracker() {
   const pathname = usePathname() || "/";
   const searchParams = useSearchParams();
-  const [consent, setConsent] = useState<"granted" | "denied" | null>(null);
+  const [consent, setConsent] = useState<"granted" | "denied" | null | undefined>(undefined);
   const pageStartedAt = useRef(Date.now());
+  const trackingEnabled = consent !== undefined && consent !== "denied";
 
   useEffect(() => {
     setConsent((localStorage.getItem(ANALYTICS_CONSENT_KEY) as "granted" | "denied" | null) || null);
@@ -25,17 +26,17 @@ export function AnalyticsTracker() {
   }, []);
 
   useEffect(() => {
-    if (consent !== "granted" || EXCLUDED_PREFIXES.some((prefix) => pathname.startsWith(prefix))) return;
+    if (!trackingEnabled || EXCLUDED_PREFIXES.some((prefix) => pathname.startsWith(prefix))) return;
     pageStartedAt.current = Date.now();
     trackEvent({ type: "PAGE_VIEW", path: pathname });
     return () => {
       trackEvent({ type: "SESSION_END", path: pathname, durationMs: Date.now() - pageStartedAt.current });
       flushAnalytics(true);
     };
-  }, [consent, pathname, searchParams]);
+  }, [trackingEnabled, pathname, searchParams]);
 
   useEffect(() => {
-    if (consent !== "granted" || EXCLUDED_PREFIXES.some((prefix) => pathname.startsWith(prefix))) return;
+    if (!trackingEnabled || EXCLUDED_PREFIXES.some((prefix) => pathname.startsWith(prefix))) return;
     const heartbeat = window.setInterval(() => {
       if (document.visibilityState === "visible") trackEvent({ type: "HEARTBEAT", path: pathname });
     }, 30_000);
@@ -48,7 +49,7 @@ export function AnalyticsTracker() {
       window.clearInterval(heartbeat);
       window.removeEventListener("pagehide", onPageHide);
     };
-  }, [consent, pathname]);
+  }, [trackingEnabled, pathname]);
 
   if (consent !== null) return null;
 

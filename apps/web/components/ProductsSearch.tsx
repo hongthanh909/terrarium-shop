@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { trackEvent } from "@/lib/analytics-client";
 
 export default function ProductsSearch() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -13,7 +14,9 @@ export default function ProductsSearch() {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      window.location.href = `/products?search=${encodeURIComponent(searchQuery)}`;
+      const term = searchQuery.trim();
+      trackEvent({ type: "SEARCH", searchTerm: term, path: "/products" });
+      window.location.href = `/products?search=${encodeURIComponent(term)}`;
     }
   };
 

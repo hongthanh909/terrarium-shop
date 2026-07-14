@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Activity, BarChart3, Clock3, Eye, LogIn, Search, ShoppingCart, UserRound, Users, X } from "lucide-react";
 
 type Overview = {
@@ -12,7 +12,7 @@ type Overview = {
   topPages: Array<{ path: string; views: number }>;
   topProducts: Array<{ id: string; name: string; slug: string; views: number }>;
   topSearches: Array<{ term: string; searches: number }>;
-  recentActivity: Array<{ id: string; sessionId: string; eventType: string; path: string; createdAt: string; visitorLabel: string; email?: string; registered: boolean; product?: { name: string; slug: string } }>;
+  recentActivity: Array<{ id: string; sessionId: string; eventType: string; path: string; searchTerm?: string; createdAt: string; visitorLabel: string; email?: string; registered: boolean; product?: { name: string; slug: string } }>;
 };
 
 type SessionDetail = {
@@ -42,16 +42,33 @@ function formatTime(value: string) {
 export default function AnalyticsAdminPage() {
   const [range, setRange] = useState(7);
   const [selectedSession, setSelectedSession] = useState<string | null>(null);
+  const queryClient = useQueryClient();
   const overview = useQuery({
     queryKey: ["admin-analytics", range],
     queryFn: () => fetchJson<Overview>(`/api/admin/analytics/overview?range=${range}`),
-    refetchInterval: 10_000,
+    refetchInterval: 5_000,
+    refetchIntervalInBackground: true,
   });
   const session = useQuery({
     queryKey: ["admin-analytics-session", selectedSession],
     queryFn: () => fetchJson<SessionDetail>(`/api/admin/analytics/sessions/${selectedSession}`),
     enabled: Boolean(selectedSession),
+    refetchInterval: selectedSession ? 5_000 : false,
+    refetchIntervalInBackground: true,
   });
+
+  useEffect(() => {
+    const source = new EventSource("/api/admin/analytics/stream");
+    const refresh = () => {
+      void queryClient.invalidateQueries({ queryKey: ["admin-analytics"] });
+      if (selectedSession) void queryClient.invalidateQueries({ queryKey: ["admin-analytics-session", selectedSession] });
+    };
+    source.addEventListener("analytics", refresh);
+    return () => {
+      source.removeEventListener("analytics", refresh);
+      source.close();
+    };
+  }, [queryClient, selectedSession]);
 
   const data = overview.data;
   const totalIdentity = (data?.summary.registeredSessions || 0) + (data?.summary.anonymousSessions || 0);
@@ -65,7 +82,7 @@ export default function AnalyticsAdminPage() {
         <div>
           <p className="text-sm font-semibold text-[#63804f]">Storefront analytics</p>
           <h2 className="mt-1 text-2xl font-bold text-gray-900">Phân tích truy cập</h2>
-          <p className="mt-1 text-sm text-gray-500">Dữ liệu first-party, tự cập nhật mỗi 10 giây.</p>
+          <p className="mt-1 text-sm text-gray-500">Dữ liệu first-party đang cập nhật trực tiếp, đồng bộ dự phòng mỗi 5 giây.</p>
         </div>
         <div className="inline-flex w-fit border border-[#cedcc5] bg-white p-1" aria-label="Khoảng thời gian">
           {[7, 30, 90].map((days) => (
@@ -156,7 +173,7 @@ export default function AnalyticsAdminPage() {
                     <tr key={event.id} onClick={() => setSelectedSession(event.sessionId)} className="cursor-pointer hover:bg-[#f7faf5]">
                       <td className="px-4 py-3"><div className="flex items-center gap-2">{event.registered ? <LogIn className="h-4 w-4 text-[#63804f]" /> : <UserRound className="h-4 w-4 text-gray-400" />}<div><p className="font-semibold text-gray-800">{event.visitorLabel}</p><p className="text-xs text-gray-400">{event.email || "Ẩn danh"}</p></div></div></td>
                       <td className="px-4 py-3 font-medium text-gray-700">{EVENT_LABELS[event.eventType] || event.eventType}</td>
-                      <td className="max-w-[300px] truncate px-4 py-3 text-gray-500">{event.product?.name || event.path}</td>
+                      <td className="max-w-[300px] truncate px-4 py-3 text-gray-500">{event.searchTerm ? `Từ khóa: ${event.searchTerm}` : event.product?.name || event.path}</td>
                       <td className="whitespace-nowrap px-4 py-3 text-gray-500">{formatTime(event.createdAt)}</td>
                     </tr>
                   ))}

@@ -78,7 +78,7 @@ export async function GET(request: NextRequest) {
         orderBy: { createdAt: "desc" },
         where: { eventType: { not: "HEARTBEAT" } },
         select: {
-          id: true, eventType: true, path: true, createdAt: true, analyticsSessionId: true,
+          id: true, eventType: true, path: true, searchTerm: true, createdAt: true, analyticsSessionId: true,
           customer: { select: { name: true, email: true, phone: true } },
           visitor: { select: { anonymousId: true } },
           product: { select: { name: true, slug: true } },
@@ -123,6 +123,7 @@ export async function GET(request: NextRequest) {
         sessionId: event.analyticsSessionId,
         eventType: event.eventType,
         path: event.path,
+        searchTerm: event.searchTerm,
         createdAt: event.createdAt,
         product: event.product,
         visitorLabel: event.customer?.name || `Khách #${event.visitor.anonymousId.slice(-4).toUpperCase()}`,

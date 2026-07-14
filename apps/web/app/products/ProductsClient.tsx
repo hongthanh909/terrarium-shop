@@ -14,6 +14,7 @@ import { showToast } from "@/components/ui/custom-toast";
 import { motion, useReducedMotion } from "framer-motion";
 import { getProductRatingSummary } from "@/lib/product-rating";
 import { getProductPackagePriceAdjustment } from "@/lib/product-packages";
+import { trackEvent } from "@/lib/analytics-client";
 
 interface Product {
   id: string;
@@ -116,9 +117,11 @@ export function ProductsClient({
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
+    const term = searchQuery.trim();
+    if (term) trackEvent({ type: "SEARCH", searchTerm: term, path: "/products" });
     const params = new URLSearchParams();
     if (selectedCategory) params.set("category", selectedCategory);
-    if (searchQuery) params.set("search", searchQuery);
+    if (term) params.set("search", term);
     router.push(`/products?${params}`);
   };
 

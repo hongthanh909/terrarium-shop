@@ -28,7 +28,7 @@ export interface AnalyticsEventInput {
 const VISITOR_KEY = "terrarium-analytics-visitor";
 const SESSION_KEY = "terrarium-analytics-session";
 const SESSION_IDLE_MS = 30 * 60 * 1000;
-const FLUSH_DELAY_MS = 500;
+const FLUSH_DELAY_MS = 100;
 const MAX_BATCH_SIZE = 20;
 
 type SessionState = { id: string; lastActivityAt: number; entryPath: string };
@@ -42,7 +42,7 @@ function randomId() {
 }
 
 function analyticsAllowed() {
-  return typeof window !== "undefined" && localStorage.getItem(ANALYTICS_CONSENT_KEY) === "granted";
+  return typeof window !== "undefined" && localStorage.getItem(ANALYTICS_CONSENT_KEY) !== "denied";
 }
 
 function getVisitorId() {
@@ -142,5 +142,10 @@ export function getAnalyticsContext() {
 
 export function setAnalyticsConsent(granted: boolean) {
   localStorage.setItem(ANALYTICS_CONSENT_KEY, granted ? "granted" : "denied");
+  if (!granted) {
+    queue = [];
+    if (flushTimer) clearTimeout(flushTimer);
+    flushTimer = null;
+  }
   window.dispatchEvent(new CustomEvent("analytics-consent-changed", { detail: granted }));
 }

@@ -1,4 +1,5 @@
 import { randomUUID } from "crypto";
+import { publishAnalyticsUpdate } from "@/lib/analytics-live";
 import { prisma } from "@/lib/prisma";
 
 export async function recordPurchaseEvent(input: {
@@ -23,6 +24,7 @@ export async function recordPurchaseEvent(input: {
         metadata: { orderId: input.orderId },
       },
     });
+    publishAnalyticsUpdate(["PURCHASE"]);
   } catch (error) {
     console.warn("Purchase analytics was not recorded:", error);
   }

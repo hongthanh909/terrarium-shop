@@ -2,6 +2,7 @@ import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { authOptions } from "@/lib/auth";
+import { publishAnalyticsUpdate } from "@/lib/analytics-live";
 import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
@@ -173,6 +174,8 @@ export async function POST(request: NextRequest) {
         skipDuplicates: true,
       });
     });
+
+    publishAnalyticsUpdate(parsed.data.events.map((event) => event.type));
 
     return new NextResponse(null, { status: 204 });
   } catch (error) {
