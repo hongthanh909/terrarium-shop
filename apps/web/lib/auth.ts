@@ -73,8 +73,8 @@ async function findUserByEmail(email: string) {
   }
 }
 
-const ADMIN_LOGIN_WINDOW_MS = 15 * 60 * 1000;
-const ADMIN_LOGIN_MAX_ATTEMPTS = 5;
+const ADMIN_LOGIN_WINDOW_MS = 10 * 60 * 1000;
+const ADMIN_LOGIN_MAX_ATTEMPTS = 30;
 const ADMIN_LOGIN_ERROR = "Email hoặc mật khẩu không chính xác.";
 
 export const authOptions: NextAuthOptions = {

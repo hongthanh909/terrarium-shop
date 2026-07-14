@@ -40,8 +40,8 @@ function applySecurityHeaders(response: NextResponse): NextResponse {
 // Lưu ý: In-memory sẽ reset khi cold start. Dùng Upstash Redis ở Phase 2
 //        Tuy nhiên đây vẫn tạo thêm một lớp bảo vệ.
 const loginAttempts = new Map<string, { count: number; resetAt: number }>();
-const RATE_LIMIT_MAX = 5;
-const RATE_LIMIT_WINDOW = 15 * 60 * 1000; // 15 phút
+const RATE_LIMIT_MAX = 30;
+const RATE_LIMIT_WINDOW = 10 * 60 * 1000; // 10 phút
 
 function checkLoginRateLimit(ip: string): { allowed: boolean; retryAfter?: number } {
   const now = Date.now();
@@ -76,15 +76,11 @@ export async function proxy(request: NextRequest) {
 
   // ─── 2. Cho qua trang login admin (xử lý rate limit riêng) ─────────────────
   if (pathname === ADMIN_LOGIN_PATH) {
-    // Nếu đã đăng nhập admin rồi mà vào trang login thì tự động chuyển hướng vào bảng điều khiển
-    const token = await getToken({
-      req: request as any,
-      secret: process.env.NEXTAUTH_SECRET,
-    });
-    if (hasAdminSession(token)) {
-      return NextResponse.redirect(new URL(ADMIN_SECRET_PATH, request.url));
-    }
     const response = NextResponse.next();
+    // Always allow the login page to render. Redirecting an existing session
+    // here can bounce forever when an old customer/admin cookie is present.
+    response.headers.set("Cache-Control", "no-store, no-cache, must-revalidate");
+    response.headers.set("Pragma", "no-cache");
     return applySecurityHeaders(response);
   }
 
@@ -135,11 +131,8 @@ export async function proxy(request: NextRequest) {
     if (!hasAdminSession(token)) {
       return NextResponse.redirect(new URL(ADMIN_LOGIN_PATH, request.url));
     }
-    // Xác thực header Referer bắt nguồn từ các trang admin hoặc trang đăng nhập admin
-    const referer = request.headers.get("referer");
-    if (referer && !referer.includes(ADMIN_SECRET_PATH)) {
-      return NextResponse.redirect(new URL(ADMIN_LOGIN_PATH, request.url));
-    }
+    // Referer is not a security boundary and can create redirect loops after
+    // login or browser session restore. Token + optional IP whitelist protect access.
     // Verify IP whitelist if configured
     const whitelistEnv = process.env.ADMIN_IP_WHITELIST;
     if (whitelistEnv) {
