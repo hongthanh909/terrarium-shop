@@ -218,7 +218,20 @@ export function ProductDetailClient({
     return best;
   };
 
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const productImages: string[] = Array.isArray(product?.images) ? product.images : [];
+  const productVideoUrl = typeof product?.careGuide?.videoUrl === "string"
+    ? product.careGuide.videoUrl.trim()
+    : "";
+  const isDirectProductVideo = Boolean(
+    productVideoUrl &&
+    !/(youtube\.com|youtu\.be|tiktok\.com)/i.test(productVideoUrl)
+  );
+  const galleryMedia = [
+    ...productImages.map((url) => ({ type: "image" as const, url })),
+    ...(isDirectProductVideo ? [{ type: "video" as const, url: productVideoUrl }] : []),
+  ];
+
+  const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
   const [cartOpen, setCartOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<TabType>("details");
   const [isVoting, setIsVoting] = useState(false);
@@ -581,22 +594,40 @@ export function ProductDetailClient({
 
           {/* ── LEFT: Gallery ── */}
           <div className="flex flex-col gap-4">
-            {/* Main image — square, max 480px so it fits in viewport */}
+            {/* Main media — square so images and video share one stable viewport */}
             <div className="w-full">
-              {product.images && product.images.length > 0 ? (
+              {galleryMedia.length > 0 ? (
                 <div
-                  className="relative rounded-2xl overflow-hidden bg-[#f8faf6] border border-[#eaefeb] shadow-sm cursor-zoom-in group w-full"
+                  className={`relative rounded-2xl overflow-hidden bg-[#f8faf6] border border-[#eaefeb] shadow-sm group w-full ${galleryMedia[currentMediaIndex]?.type === "image" ? "cursor-zoom-in" : ""}`}
                   style={{ aspectRatio: "1/1", maxHeight: "min(550px, 72dvh)" }}
-                  onClick={() => handleOpenLightbox(currentImageIndex)}
+                  onClick={() => {
+                    if (galleryMedia[currentMediaIndex]?.type === "image") {
+                      handleOpenLightbox(currentMediaIndex);
+                    }
+                  }}
                 >
-                  <ImageWrapper
-                    src={product.images[currentImageIndex]}
-                    alt={product.name}
-                    fill
-                    sizes="(max-width: 1024px) 100vw, 50vw"
-                    noRound
-                    className="object-contain transition-transform duration-500 group-hover:scale-[1.03]"
-                  />
+                  {galleryMedia[currentMediaIndex]?.type === "video" ? (
+                    <video
+                      key={galleryMedia[currentMediaIndex].url}
+                      src={galleryMedia[currentMediaIndex].url}
+                      poster={productImages[0] || undefined}
+                      controls
+                      playsInline
+                      preload="metadata"
+                      className="absolute inset-0 h-full w-full bg-black object-contain"
+                      aria-label={`Video sản phẩm ${product.name}`}
+                      onClick={(event) => event.stopPropagation()}
+                    />
+                  ) : (
+                    <ImageWrapper
+                      src={galleryMedia[currentMediaIndex].url}
+                      alt={product.name}
+                      fill
+                      sizes="(max-width: 1024px) 100vw, 50vw"
+                      noRound
+                      className="object-contain transition-transform duration-500 group-hover:scale-[1.03]"
+                    />
+                  )}
 
                   {/* Sale badge */}
                   {isSale && (
@@ -609,19 +640,19 @@ export function ProductDetailClient({
                   )}
 
                   {/* Prev/Next arrows (appear on hover) */}
-                  {product.images.length > 1 && (
+                  {galleryMedia.length > 1 && (
                     <>
                       <button
-                        onClick={(e) => { e.stopPropagation(); setCurrentImageIndex((p: number) => (p === 0 ? product.images.length - 1 : p - 1)); }}
+                        onClick={(e) => { e.stopPropagation(); setCurrentMediaIndex((p: number) => (p === 0 ? galleryMedia.length - 1 : p - 1)); }}
                         className="absolute left-3 top-1/2 -translate-y-1/2 w-11 h-11 sm:w-10 sm:h-10 rounded-full bg-white/90 hover:bg-white text-gray-700 flex items-center justify-center shadow transition-[opacity,background-color] opacity-100 sm:opacity-0 sm:group-hover:opacity-100"
-                        aria-label="Ảnh trước"
+                        aria-label="Nội dung trước"
                       >
                         <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
                       </button>
                       <button
-                        onClick={(e) => { e.stopPropagation(); setCurrentImageIndex((p: number) => (p === product.images.length - 1 ? 0 : p + 1)); }}
+                        onClick={(e) => { e.stopPropagation(); setCurrentMediaIndex((p: number) => (p === galleryMedia.length - 1 ? 0 : p + 1)); }}
                         className="absolute right-3 top-1/2 -translate-y-1/2 w-11 h-11 sm:w-10 sm:h-10 rounded-full bg-white/90 hover:bg-white text-gray-700 flex items-center justify-center shadow transition-[opacity,background-color] opacity-100 sm:opacity-0 sm:group-hover:opacity-100"
-                        aria-label="Ảnh tiếp"
+                        aria-label="Nội dung tiếp theo"
                       >
                         <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
                       </button>
@@ -629,35 +660,49 @@ export function ProductDetailClient({
                   )}
 
                   {/* Dot indicators */}
-                  {product.images.length > 1 && (
-                    <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
-                      {product.images.map((_: string, i: number) => (
-                        <span key={i} className={`block rounded-full transition-all duration-200 ${i === currentImageIndex ? "w-4 h-1.5 bg-white" : "w-1.5 h-1.5 bg-white/50"}`} />
+                  {galleryMedia.length > 1 && (
+                    <div className={`absolute flex gap-1.5 ${galleryMedia[currentMediaIndex]?.type === "video" ? "right-3 top-3 rounded-full bg-black/35 px-2 py-1" : "bottom-3 left-1/2 -translate-x-1/2"}`}>
+                      {galleryMedia.map((media, i: number) => (
+                        <span key={`${media.type}-${media.url}`} className={`block rounded-full transition-all duration-200 ${i === currentMediaIndex ? "w-4 h-1.5 bg-white" : "w-1.5 h-1.5 bg-white/50"}`} />
                       ))}
                     </div>
                   )}
                 </div>
               ) : (
                 <div className="bg-muted rounded-2xl flex items-center justify-center w-full animate-pulse" style={{ aspectRatio: "1/1", maxHeight: "550px" }}>
-                  <span className="text-muted-foreground text-sm">Chưa có ảnh</span>
+                  <span className="text-muted-foreground text-sm">Chưa có ảnh hoặc video</span>
                 </div>
               )}
             </div>
 
             {/* Horizontal thumbnail strip */}
-            {product.images && product.images.length > 1 && (
+            {galleryMedia.length > 1 && (
               <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
-                {product.images.map((img: string, i: number) => (
+                {galleryMedia.map((media, i: number) => (
                   <button
-                    key={i}
-                    onClick={() => setCurrentImageIndex(i)}
+                    key={`${media.type}-${media.url}`}
+                    onClick={() => setCurrentMediaIndex(i)}
                     className={`relative w-20 h-20 sm:w-[70px] sm:h-[70px] rounded-xl sm:rounded-lg overflow-hidden border-2 flex-shrink-0 transition-[opacity,border-color,box-shadow] duration-200 ${
-                      i === currentImageIndex
+                      i === currentMediaIndex
                         ? "border-[#425733] shadow-sm bg-white"
                         : "border-gray-200 bg-white opacity-60 hover:opacity-100 hover:border-[#425733]/40"
                     }`}
+                    aria-label={media.type === "video" ? "Xem video sản phẩm" : `Xem ảnh sản phẩm ${i + 1}`}
                   >
-                    <ImageWrapper src={img} alt={`${product.name} - ${i + 1}`} fill sizes="80px" noRound className="object-contain p-0.5" />
+                    {media.type === "video" ? (
+                      <>
+                        {productImages[0] && (
+                          <ImageWrapper src={productImages[0]} alt="" fill sizes="80px" noRound className="object-cover" />
+                        )}
+                        <span className="absolute inset-0 flex items-center justify-center bg-black/35 text-white" aria-hidden="true">
+                          <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#425733] shadow-sm">
+                            <Play className="h-4 w-4 fill-current" />
+                          </span>
+                        </span>
+                      </>
+                    ) : (
+                      <ImageWrapper src={media.url} alt={`${product.name} - ${i + 1}`} fill sizes="80px" noRound className="object-contain p-0.5" />
+                    )}
                   </button>
                 ))}
               </div>
