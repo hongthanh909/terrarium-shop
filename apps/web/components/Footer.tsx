@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Mail, Phone, MapPin, Clock, Facebook, Instagram } from "lucide-react";
+import { Mail, MapPin, Clock, Facebook, Instagram } from "lucide-react";
 
 // Custom TikTok icon — Exception per taste skill Rule 3.C: Lucide doesn't have TikTok
 const TikTokIcon = ({ className }: { className?: string }) => (
@@ -11,8 +11,8 @@ const TikTokIcon = ({ className }: { className?: string }) => (
 export default async function Footer() {
   // Hardcoded correct business info — đảm bảo luôn hiển thị đúng bất kể DB
   const emails = [{ value: 'tiemreudecor@gmail.com' }];
-  const phones = [{ value: '0706 668 296' }];
-  const addresses = [{ value: '32/16 Tam Đa, Phường Long Trường, TP. Hồ Chí Minh' }];
+  const fanpages = [{ label: 'tiemreudecor', value: 'https://www.facebook.com/tiemreudecor' }];
+  const addresses = [{ value: 'Long Trường, Hồ Chí Minh' }];
   const workingHours = [{ value: 'Thứ 2 - Chủ nhật: 9:00 - 21:00' }];
 
   const socials = [
@@ -113,17 +113,21 @@ export default async function Footer() {
                   </a>
                 </li>
               )}
-              {phones.length > 0 ? (
-                phones.map((item: any, idx: number) => (
+              {fanpages.length > 0 ? (
+                fanpages.map((item: any, idx: number) => (
                   <li key={idx} className="flex items-center gap-2">
-                    <Phone className="w-4 h-4 text-[#425733]" />
-                    <span>{item.value}</span>
+                    <Facebook className="w-4 h-4 text-[#425733]" />
+                    <a href={item.value} target="_blank" rel="noopener noreferrer" className="hover:text-[#425733] transition-colors">
+                      Fanpage: {item.label}
+                    </a>
                   </li>
                 ))
               ) : (
                 <li className="flex items-center gap-2">
-                  <Phone className="w-4 h-4 text-[#425733]" />
-                  <a href="tel:0706668296" className="hover:text-[#425733] transition-colors">0706 668 296</a>
+                  <Facebook className="w-4 h-4 text-[#425733]" />
+                  <a href="https://www.facebook.com/tiemreudecor" target="_blank" rel="noopener noreferrer" className="hover:text-[#425733] transition-colors">
+                    Fanpage: tiemreudecor
+                  </a>
                 </li>
               )}
               {addresses.length > 0 ? (
@@ -136,7 +140,7 @@ export default async function Footer() {
               ) : (
                 <li className="flex items-start gap-2">
                   <MapPin className="w-4 h-4 text-[#425733] mt-0.5" />
-                <span>32/16 Tam Đa, Phường Long Trường, TP. Hồ Chí Minh</span>
+                  <span>Long Trường, Hồ Chí Minh</span>
                 </li>
               )}
               {workingHours.length > 0 ? (
