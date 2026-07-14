@@ -9,6 +9,7 @@ import ShopLayout from "./ShopLayout";
 import { CustomToastContainer } from "@/components/ui/custom-toast";
 import { NavigationProgress } from "@/components/ui/navigation-progress";
 import { ChatWidgetClient } from "@/components/ChatWidgetClient";
+import { AnalyticsTracker } from "@/components/AnalyticsTracker";
 
 export const dynamic = "force-dynamic";
 
@@ -96,6 +97,7 @@ export default function RootLayout({
         <AuthProvider>
           <QueryProvider>
             <NavigationProgress />
+            <AnalyticsTracker />
             <CustomToastContainer />
             <ShopLayout
               header={<Header />}

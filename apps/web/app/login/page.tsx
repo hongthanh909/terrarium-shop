@@ -8,6 +8,7 @@ import { ArrowLeft, Mail, Lock, User, Phone, Eye, EyeOff, ShieldCheck } from "lu
 import { motion, AnimatePresence } from "framer-motion";
 import { Label } from "@/components/ui/label";
 import { ShimmerButton } from "@/components/ui/shimmer-button";
+import { trackEvent } from "@/lib/analytics-client";
 
 export default function AuthPageWrapper() {
   return (
@@ -65,6 +66,7 @@ function AuthPage() {
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || "Mã xác minh không hợp lệ");
+    trackEvent({ type: "REGISTER", path: "/login" });
 
     const signInResult = await signIn("customer-login", {
       email: formData.email,
@@ -74,6 +76,7 @@ function AuthPage() {
     if (signInResult?.error) {
       throw new Error("Đăng ký thành công nhưng đăng nhập tự động thất bại.");
     }
+    trackEvent({ type: "LOGIN", path: "/login" });
   };
 
   const handleLogin = async () => {
@@ -86,6 +89,7 @@ function AuthPage() {
     if (result?.error) {
       throw new Error("Email hoặc mật khẩu không đúng. Vui lòng kiểm tra lại thông tin đăng nhập.");
     }
+    trackEvent({ type: "LOGIN", path: "/login" });
 
     return result;
   };

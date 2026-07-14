@@ -6,7 +6,7 @@ import { signOut } from "next-auth/react";
 import {
   Package, Home,
   ShoppingCart, Percent, FileText, LogOut,
-  Grid3X3, ExternalLink, Star, ShieldCheck, Compass, Brain,
+  Grid3X3, ExternalLink, Star, ShieldCheck, Compass, Brain, BarChart3,
 } from "lucide-react";
 
 
@@ -36,6 +36,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     { href: "/tiem-nho-nth24/vouchers", label: "Phiếu giảm giá", icon: Percent },
     { href: "/tiem-nho-nth24/blog", label: "Blog", icon: FileText },
     { href: "/tiem-nho-nth24/reviews", label: "Đánh giá", icon: Star },
+    { href: "/tiem-nho-nth24/analytics", label: "Phân tích truy cập", icon: BarChart3 },
     { href: "/tiem-nho-nth24/policies", label: "Chính sách", icon: ShieldCheck },
     { href: "/tiem-nho-nth24/ai-knowledge", label: "Kiến thức AI", icon: Brain },
   ];

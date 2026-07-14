@@ -6,6 +6,7 @@ import { Search, Package, FileText, X, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { ImageWrapper } from "@/components/ui/ImageWrapper";
 import { useRouter } from "next/navigation";
+import { trackEvent } from "@/lib/analytics-client";
 
 interface SearchResult {
   products: Array<{ id: string; slug: string; name: string; basePrice: string; images: string[]; category: { name: string } }>;
@@ -44,6 +45,7 @@ export function SearchPalette({ open, onClose }: SearchPaletteProps) {
 
   const doSearch = useCallback(async (q: string) => {
     if (!q.trim() || q.length < 2) { setResults(null); return; }
+    trackEvent({ type: "SEARCH", searchTerm: q.trim(), path: "/search" });
     setLoading(true);
     try {
       const res = await fetch(`/api/search?q=${encodeURIComponent(q)}`);

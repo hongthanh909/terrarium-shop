@@ -21,6 +21,7 @@ import { ImageWrapper } from "@/components/ui/ImageWrapper";
 import { useWishlist } from "@/lib/hooks/useWishlist";
 import { getPositiveRatingBreakdown, getProductRatingSummary } from "@/lib/product-rating";
 import { getProductPackagePriceAdjustment } from "@/lib/product-packages";
+import { trackEvent } from "@/lib/analytics-client";
 
 // ── Package variant constants ───────────────────────────────────────────────
 const LAMP_VARIANT_TYPE = "Đèn";
@@ -103,6 +104,12 @@ export function ProductDetailClient({
   const [relatedProducts] = useState<any[]>(initialRelated);
   const [loading] = useState(false);
   const { isWished, toggleWishlist } = useWishlist();
+
+  useEffect(() => {
+    if (initialProduct?.id) {
+      trackEvent({ type: "PRODUCT_VIEW", productId: initialProduct.id, path: `/products/${initialProduct.slug}` });
+    }
+  }, [initialProduct?.id, initialProduct?.slug]);
 
   const isBểProduct = initialProduct?.category?.name?.toLowerCase().includes("bể") || 
                        initialProduct?.category?.slug?.toLowerCase().includes("be") ||

@@ -3,6 +3,7 @@ import { calculateProductUnitPrice, canAccessOrder, getCurrentCustomerId, getShi
 import { validateCoupon } from "@/lib/voucher-engine";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { recordPurchaseEvent } from "@/lib/analytics-server";
 
 const serializeOrder = (order: any) => ({
   ...order,
@@ -40,6 +41,10 @@ const createOrderSchema = z.object({
   shippingMethod: z.enum(["GHN_STANDARD", "GHN_EXPRESS", "GRAB"]).default("GHN_STANDARD"),
   paymentMethod: z.enum(["COD", "MOMO"]).default("COD"),
   discountCode: z.string().trim().max(64).optional(),
+  analytics: z.object({
+    anonymousId: z.string().uuid(),
+    sessionKey: z.string().uuid(),
+  }).optional(),
 });
 
 export async function POST(request: NextRequest) {
@@ -244,6 +249,14 @@ export async function POST(request: NextRequest) {
         },
       });
     });
+
+    if (order) {
+      await recordPurchaseEvent({
+        ...validated.data.analytics,
+        customerId: currentCustomerId,
+        orderId: order.id,
+      });
+    }
 
     return NextResponse.json(serializeOrder(order), { status: 201 });
   } catch (error: any) {

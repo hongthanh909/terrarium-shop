@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { ImageWrapper } from "@/components/ui/ImageWrapper";
 import { useRouter } from "next/navigation";
@@ -14,6 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { showToast } from "@/components/ui/custom-toast";
+import { getAnalyticsContext, trackEvent } from "@/lib/analytics-client";
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -43,6 +44,14 @@ export default function CheckoutPage() {
   const [discount, setDiscount] = useState(0);
   const [shippingFee, setShippingFee] = useState(30000);
   const [loading, setLoading] = useState(false);
+  const checkoutTracked = useRef(false);
+
+  useEffect(() => {
+    if (!checkoutTracked.current && itemsToCheckout.length > 0) {
+      checkoutTracked.current = true;
+      trackEvent({ type: "BEGIN_CHECKOUT", path: "/checkout", metadata: { itemCount: itemsToCheckout.length } });
+    }
+  }, [itemsToCheckout.length]);
 
   useEffect(() => {
     if (session?.user) {
@@ -178,6 +187,7 @@ export default function CheckoutPage() {
         total: total,
         discountCode: voucherApplied ? formData.voucherCode : undefined,
         discountCampaignId: voucherCampaignId || undefined,
+        analytics: getAnalyticsContext(),
       };
 
       const response = await fetch("/api/orders", {
@@ -195,7 +205,7 @@ export default function CheckoutPage() {
 
       // Xóa giỏ hàng và redirect sang trang cảm ơn
       itemsToCheckout.forEach(item => {
-        removeItem(item.productId, item.variants);
+        removeItem(item.productId, item.variants, false);
       });
       const params = new URLSearchParams({
         orderId: order.id,

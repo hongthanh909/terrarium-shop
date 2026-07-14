@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, useLayoutEffect, useMemo, useCallback } from "react";
 import { usePathname } from "next/navigation";
+import { trackEvent } from "@/lib/analytics-client";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { Bot, X, Maximize2, Minimize2, ExternalLink, Package, Truck, ShieldCheck, Sparkles, RotateCcw, ZoomIn, ZoomOut, Plus, AudioLines, Image as ImageIcon, Camera, Mic, ArrowUp, Square, Pause } from "lucide-react";
@@ -226,7 +227,16 @@ export default function ChatWidget() {
   const pathname = usePathname() ?? "";
 
   const [open, setOpen] = useState(false);
+  const chatOpenTrackedRef = useRef(false);
   const [expanded, setExpanded] = useState(false);
+
+  useEffect(() => {
+    if (open && !chatOpenTrackedRef.current) {
+      chatOpenTrackedRef.current = true;
+      trackEvent({ type: "CHAT_OPEN", path: pathname });
+    }
+    if (!open) chatOpenTrackedRef.current = false;
+  }, [open, pathname]);
   const [uiZoom, setUiZoom] = useState(1);
   const [message, setMessage] = useState("");
   const [selectedImage, setSelectedImage] = useState<{ dataUrl: string; name: string } | null>(null);
@@ -732,6 +742,7 @@ export default function ChatWidget() {
 
   const sendMessage = async (text: string, image = selectedImage) => {
     if ((!text.trim() && !image) || isSending || isCooldown) return;
+    trackEvent({ type: "CHAT_MESSAGE_SENT", path: pathname });
     setAttachmentMenuOpen(false);
     if (userMsgCount >= MAX_MESSAGES) {
       setMessages(prev => [...prev, {

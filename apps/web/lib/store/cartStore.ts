@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
+import { trackEvent } from "@/lib/analytics-client";
 
 export interface CartItem {
   id: string;
@@ -27,7 +28,7 @@ export interface CartItem {
 interface CartStore {
   items: CartItem[];
   addItem: (item: Omit<CartItem, "id">) => void;
-  removeItem: (productId: string, variants?: CartItem["variants"]) => void;
+  removeItem: (productId: string, variants?: CartItem["variants"], recordAnalytics?: boolean) => void;
   updateQuantity: (productId: string, quantity: number, variants?: CartItem["variants"]) => void;
   clearCart: () => void;
   getCartTotal: () => number;
@@ -44,6 +45,7 @@ export const useCartStore = create<CartStore>()(
       items: [],
 
       addItem: (item) => {
+        trackEvent({ type: "ADD_TO_CART", productId: item.productId, metadata: { quantity: item.quantity } });
         set((state) => {
           const existingItemIndex = state.items.findIndex(
             (existingItem) =>
@@ -72,7 +74,13 @@ export const useCartStore = create<CartStore>()(
         });
       },
 
-      removeItem: (productId, variants) => {
+      removeItem: (productId, variants, recordAnalytics = true) => {
+        if (recordAnalytics) {
+          const existing = get().items.find(
+            (item) => item.productId === productId && JSON.stringify(item.variants) === JSON.stringify(variants)
+          );
+          trackEvent({ type: "REMOVE_FROM_CART", productId, metadata: { quantity: existing?.quantity || 1 } });
+        }
         set((state) => ({
           items: state.items.filter(
             (item) =>

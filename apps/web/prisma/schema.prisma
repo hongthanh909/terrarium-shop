@@ -205,6 +205,7 @@ model Product {
   // orderItems removed - OrderItem stores snapshot, no reverse relation
   // careItems     CustomerCareItem[]
   seoMeta       SeoMeta?
+  analyticsEvents AnalyticsEvent[]
   // discountApplicables removed - not implemented
 
   // ── Indexes cho các query phổ biến ──────────────────────────
@@ -322,6 +323,8 @@ model Customer {
   blogLikes       BlogLike[]
   blogComments    BlogComment[]
   blogReplies     BlogReply[]
+  analyticsSessions AnalyticsSession[]
+  analyticsEvents AnalyticsEvent[]
 
   @@map("customers")
 }
@@ -786,6 +789,104 @@ model AuditLog {
   createdAt DateTime @default(now())
 
   @@map("audit_logs")
+}
+
+// ============================================
+// FIRST-PARTY STOREFRONT ANALYTICS
+// ============================================
+
+model AnalyticsVisitor {
+  id          String   @id @default(cuid())
+  anonymousId String   @unique
+  firstSeenAt DateTime @default(now())
+  lastSeenAt  DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  sessions AnalyticsSession[]
+  events   AnalyticsEvent[]
+
+  @@index([lastSeenAt])
+  @@map("analytics_visitors")
+}
+
+model AnalyticsSession {
+  id              String   @id @default(cuid())
+  sessionKey      String   @unique
+  visitorId       String
+  customerId      String?
+  startedAt       DateTime @default(now())
+  lastSeenAt      DateTime @default(now())
+  endedAt         DateTime?
+  entryPath       String
+  exitPath        String?
+  referrer        String?
+  utmSource       String?
+  utmMedium       String?
+  utmCampaign     String?
+  deviceType      String?
+  browser         String?
+  operatingSystem String?
+  pageViews       Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  visitor AnalyticsVisitor @relation(fields: [visitorId], references: [id], onDelete: Cascade)
+  customer Customer?        @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  events   AnalyticsEvent[]
+
+  @@index([visitorId, lastSeenAt])
+  @@index([customerId, lastSeenAt])
+  @@index([lastSeenAt])
+  @@map("analytics_sessions")
+}
+
+model AnalyticsEvent {
+  id                 String   @id @default(cuid())
+  eventKey           String   @unique
+  visitorId          String
+  analyticsSessionId String
+  customerId         String?
+  eventType          String
+  path               String
+  productId          String?
+  searchTerm         String?
+  durationMs         Int?
+  metadata           Json?
+  createdAt          DateTime @default(now())
+
+  visitor AnalyticsVisitor @relation(fields: [visitorId], references: [id], onDelete: Cascade)
+  session AnalyticsSession @relation(fields: [analyticsSessionId], references: [id], onDelete: Cascade)
+  customer Customer?        @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  product Product?          @relation(fields: [productId], references: [id], onDelete: SetNull)
+
+  @@index([createdAt])
+  @@index([analyticsSessionId, createdAt])
+  @@index([customerId, createdAt])
+  @@index([eventType, createdAt])
+  @@index([path, createdAt])
+  @@index([productId, createdAt])
+  @@map("analytics_events")
+}
+
+model AnalyticsDailyStat {
+  id                 String   @id @default(cuid())
+  date               DateTime @unique @db.Date
+  visitors           Int      @default(0)
+  sessions           Int      @default(0)
+  pageViews          Int      @default(0)
+  registeredSessions Int      @default(0)
+  anonymousSessions  Int      @default(0)
+  productViews       Int      @default(0)
+  addToCarts         Int      @default(0)
+  checkouts          Int      @default(0)
+  purchases          Int      @default(0)
+  chatOpens          Int      @default(0)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@index([date])
+  @@map("analytics_daily_stats")
 }
 
 // ============================================
