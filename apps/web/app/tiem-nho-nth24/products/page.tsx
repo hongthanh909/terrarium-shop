@@ -15,6 +15,8 @@ interface Product {
   basePrice: {
     toString: () => string;
   };
+  salePrice?: { toString: () => string } | string | number | null;
+  saleEndDate?: string | null;
   status: string;
   inventory: number;
   category: {
@@ -26,6 +28,31 @@ interface Product {
   pinnedUntil: string | null;
   featured?: boolean;
 }
+
+const formatPrice = (value: number) => `${value.toLocaleString("vi-VN")}đ`;
+
+const toNumber = (value: Product["salePrice"] | Product["basePrice"]) => {
+  if (value == null) return null;
+  const numberValue = Number(value.toString());
+  return Number.isFinite(numberValue) ? numberValue : null;
+};
+
+const getProductPriceSummary = (product: Product) => {
+  const basePrice = toNumber(product.basePrice) ?? 0;
+  const salePrice = toNumber(product.salePrice);
+  const saleIsActive =
+    salePrice != null &&
+    salePrice > 0 &&
+    salePrice < basePrice &&
+    (!product.saleEndDate || new Date(product.saleEndDate) > new Date());
+  const currentPrice = saleIsActive ? salePrice : basePrice;
+  const discountPercent =
+    saleIsActive && basePrice > 0
+      ? Math.round(((basePrice - salePrice) / basePrice) * 100)
+      : 0;
+
+  return { basePrice, currentPrice, saleIsActive, discountPercent };
+};
 
 export default function AdminProductsPage() {
   const queryClient = useQueryClient();
@@ -248,7 +275,7 @@ export default function AdminProductsPage() {
       product.slug.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesStatus = filterStatus === "all" || product.status === filterStatus;
     
-    const price = Number(product.basePrice.toString());
+    const price = getProductPriceSummary(product).currentPrice;
     const matchesMinPrice = minPrice === "" || price >= Number(minPrice);
     const matchesMaxPrice = maxPrice === "" || price <= Number(maxPrice);
     
@@ -430,9 +457,32 @@ export default function AdminProductsPage() {
                     <div className="text-sm text-gray-900">{product.category?.name || "Chưa phân loại"}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-semibold text-gray-900">
-                      {Number(product.basePrice.toString()).toLocaleString("vi-VN")}₫
-                    </div>
+                    {(() => {
+                      const price = getProductPriceSummary(product);
+
+                      return (
+                        <div className="flex flex-col items-start gap-1 tabular-nums">
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-bold text-gray-950">
+                              {formatPrice(price.currentPrice)}
+                            </span>
+                            {price.saleIsActive && (
+                              <span className="rounded-full border border-red-200 bg-red-50 px-2 py-0.5 text-[11px] font-semibold text-red-600">
+                                -{price.discountPercent}%
+                              </span>
+                            )}
+                          </div>
+                          {price.saleIsActive && (
+                            <div className="flex items-center gap-1.5 text-xs text-gray-500">
+                              <span>Gốc</span>
+                              <span className="line-through decoration-red-400">
+                                {formatPrice(price.basePrice)}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })()}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm text-gray-900">{product.inventory}</div>
