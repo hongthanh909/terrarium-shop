@@ -62,11 +62,20 @@ export const metadata: Metadata = {
     type: "website",
     locale: "vi_VN",
     siteName: "Tiệm Rêu Décor",
+    images: [
+      {
+        url: "/home-hero-full-banner.png?v=20260714",
+        width: 1680,
+        height: 900,
+        alt: "Tiệm Rêu Décor - Một chút rêu, một chút xanh",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "Tiệm Rêu Décor",
     description: "Terrarium & Moss Art Thủ Công",
+    images: ["/home-hero-full-banner.png?v=20260714"],
   },
   robots: {
     index: true,

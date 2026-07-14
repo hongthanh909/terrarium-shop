@@ -29,12 +29,31 @@ export const revalidate = 60;
 
 export const metadata: Metadata = {
   title: "Tiệm Rêu Décor | Một Chút Rêu, Một Chút Xanh",
-  description: "Khám phá bộ sưu tập terrarium thủ công, những hệ sinh thái thu nhỏ biến không gian của bạn thành thiên nhiên trong trẻo.",
+  description:
+    "Khám phá bộ sưu tập terrarium thủ công, những hệ sinh thái thu nhỏ biến không gian của bạn thành thiên nhiên trong trẻo.",
   openGraph: {
-    title: "Terrarium Shop | Khám Phá Hệ Sinh Thái Của Bạn",
-    description: "Cung cấp các sản phẩm terrarium thủ công, thiết kế độc bản.",
+    title: "Tiệm Rêu Décor | Một Chút Rêu, Một Chút Xanh",
+    description:
+      "Terrarium thủ công, moss art và góc xanh nhỏ cho bàn làm việc, quà tặng và không gian sống.",
     type: "website",
     locale: "vi_VN",
+    url: "/",
+    siteName: "Tiệm Rêu Décor",
+    images: [
+      {
+        url: "/home-hero-full-banner.png?v=20260714",
+        width: 1680,
+        height: 900,
+        alt: "Tiệm Rêu Décor - Một chút rêu, một chút xanh",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Tiệm Rêu Décor | Một Chút Rêu, Một Chút Xanh",
+    description:
+      "Terrarium thủ công, moss art và góc xanh nhỏ cho bàn làm việc, quà tặng và không gian sống.",
+    images: ["/home-hero-full-banner.png?v=20260714"],
   },
 };
 
