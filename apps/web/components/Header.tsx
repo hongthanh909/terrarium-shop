@@ -5,7 +5,7 @@ import { ImageWrapper } from "@/components/ui/ImageWrapper";
 import {
   ShoppingBasket, User, X, Minus, Plus, ShoppingBag,
   LogOut, Package, LayoutDashboard, Heart, Lock,
-  Menu, ChevronDown, Phone, MapPin, Sprout, Truck, ShieldCheck,
+  Menu, ChevronDown, MessageCircle, MapPin, Sprout, Truck, ShieldCheck,
 } from "lucide-react";
 import { useCartStore, CartItem } from "@/lib/store/cartStore";
 import { useState, useEffect, useCallback } from "react";
@@ -332,13 +332,13 @@ export default function Header() {
                 aria-hidden={dup === 1}
               >
                 <span className="inline-flex items-center gap-1.5">
-                  <Phone className="w-3 h-3 text-[#3d5a2a]/70" />
-                  <span>Liên hệ: <strong className="text-[#2d4520] font-semibold">0706 668 296</strong></span>
+                  <MessageCircle className="w-3 h-3 text-[#3d5a2a]/70" />
+                  <span>Fanpage: <strong className="text-[#2d4520] font-semibold">tiemreudecor</strong></span>
                 </span>
                 <span className="text-[#3d5a2a]/20">·</span>
                 <span className="inline-flex items-center gap-1.5">
                   <MapPin className="w-3 h-3 text-[#3d5a2a]/70" />
-                  <span>32/16 Tam Đa, TP. Hồ Chí Minh</span>
+                  <span>Long Trường, Hồ Chí Minh</span>
                 </span>
                 <span className="text-[#3d5a2a]/20">·</span>
                 <span className="inline-flex items-center gap-1.5">
