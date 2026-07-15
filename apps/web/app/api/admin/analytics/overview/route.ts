@@ -6,10 +6,16 @@ import { maskEmail, maskPhone } from "@/lib/privacy";
 
 export const dynamic = "force-dynamic";
 
-const VALID_RANGES = new Set([7, 30, 90]);
+const MAX_RANGE_DAYS = 365;
 const asNumber = (value: bigint | number | null | undefined) => Number(value || 0);
 const RECENT_PAGE_SIZE = 12;
 const RANK_PAGE_SIZE = 8;
+
+function rangeParam(request: NextRequest) {
+  const value = Number(request.nextUrl.searchParams.get("range") || 7);
+  if (!Number.isFinite(value)) return 7;
+  return Math.min(MAX_RANGE_DAYS, Math.max(1, Math.floor(value)));
+}
 
 function pageParam(request: NextRequest, name: string) {
   const value = Number(request.nextUrl.searchParams.get(name) || 1);
@@ -30,8 +36,7 @@ export async function GET(request: NextRequest) {
     const admin = await verifyAdminRequest(request);
     if (!admin) return unauthorizedResponse();
 
-    const requestedRange = Number(request.nextUrl.searchParams.get("range") || 7);
-    const range = VALID_RANGES.has(requestedRange) ? requestedRange : 7;
+    const range = rangeParam(request);
     const recentPage = pageParam(request, "recentPage");
     const topPagesPage = pageParam(request, "topPagesPage");
     const topProductsPage = pageParam(request, "topProductsPage");
@@ -43,19 +48,34 @@ export async function GET(request: NextRequest) {
     const rangeStart = new Date(today);
     rangeStart.setDate(rangeStart.getDate() - range + 1);
 
-    const [onlineVisitorRows, sessionsToday, pageViewsToday, visitorsTodayRows, registeredCustomersToday, totalRegisteredCustomers] = await Promise.all([
+    const [
+      onlineVisitorRows,
+      sessionsToday,
+      pageViewsToday,
+      visitorsTodayRows,
+      registeredCustomersToday,
+      totalRegisteredCustomers,
+      sessionsInRange,
+      pageViewsInRange,
+      visitorsInRangeRows,
+      registeredCustomersInRange,
+    ] = await Promise.all([
       prisma.analyticsSession.groupBy({ by: ["visitorId"], where: { lastSeenAt: { gte: activeSince } } }),
       prisma.analyticsSession.count({ where: { startedAt: { gte: today } } }),
       prisma.analyticsEvent.count({ where: { eventType: "PAGE_VIEW", createdAt: { gte: today } } }),
       prisma.analyticsEvent.groupBy({ by: ["visitorId"], where: { createdAt: { gte: today } } }),
       prisma.customer.count({ where: { createdAt: { gte: today } } }),
       prisma.customer.count(),
+      prisma.analyticsSession.count({ where: { startedAt: { gte: rangeStart } } }),
+      prisma.analyticsEvent.count({ where: { eventType: "PAGE_VIEW", createdAt: { gte: rangeStart } } }),
+      prisma.analyticsEvent.groupBy({ by: ["visitorId"], where: { createdAt: { gte: rangeStart } } }),
+      prisma.customer.count({ where: { createdAt: { gte: rangeStart } } }),
     ]);
 
     const topPagesWhere = { eventType: "PAGE_VIEW", createdAt: { gte: rangeStart } } as const;
     const topProductsWhere = { eventType: "PRODUCT_VIEW", productId: { not: null }, createdAt: { gte: rangeStart } } as const;
     const topSearchesWhere = { eventType: "SEARCH", searchTerm: { not: null }, createdAt: { gte: rangeStart } } as const;
-    const recentWhere = { eventType: { not: "HEARTBEAT" } } as const;
+    const recentWhere = { eventType: { not: "HEARTBEAT" }, createdAt: { gte: rangeStart } } as const;
 
     const [
       registeredSessions,
@@ -92,7 +112,8 @@ export async function GET(request: NextRequest) {
         by: ["searchTerm"],
         where: topSearchesWhere,
         _count: { _all: true },
-        orderBy: { _count: { searchTerm: "desc" } },
+        _max: { createdAt: true },
+        orderBy: [{ _max: { createdAt: "desc" } }, { _count: { searchTerm: "desc" } }],
         skip: (topSearchesPage - 1) * RANK_PAGE_SIZE,
         take: RANK_PAGE_SIZE,
       }),
@@ -146,6 +167,10 @@ export async function GET(request: NextRequest) {
         pageViewsToday,
         registeredCustomersToday,
         totalRegisteredCustomers,
+        visitorsInRange: visitorsInRangeRows.length,
+        sessionsInRange,
+        pageViewsInRange,
+        registeredCustomersInRange,
         registeredSessions,
         anonymousSessions,
       },

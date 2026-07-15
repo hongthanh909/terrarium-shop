@@ -29,6 +29,10 @@ type Overview = {
     pageViewsToday: number;
     registeredCustomersToday: number;
     totalRegisteredCustomers: number;
+    visitorsInRange: number;
+    sessionsInRange: number;
+    pageViewsInRange: number;
+    registeredCustomersInRange: number;
     registeredSessions: number;
     anonymousSessions: number;
   };
@@ -56,6 +60,23 @@ type Overview = {
     product?: { name: string; slug: string };
   }>;
 };
+
+type AnalyticsUser = {
+  id: string;
+  email: string;
+  phone?: string | null;
+  name?: string | null;
+  image?: string | null;
+  role: string;
+  loyaltyPoints: number;
+  loyaltyTier: string;
+  password: string;
+  createdAt: string;
+  updatedAt: string;
+  counts: { orders: number; reviews: number; wishlist: number };
+};
+
+type UsersResponse = { range: number; users: AnalyticsUser[] };
 
 type SessionDetail = {
   id: string;
@@ -111,11 +132,13 @@ function formatTime(value: string) {
 
 export default function AnalyticsAdminPage() {
   const [range, setRange] = useState(7);
+  const [customRange, setCustomRange] = useState("14");
   const [recentPage, setRecentPage] = useState(1);
   const [topPagesPage, setTopPagesPage] = useState(1);
   const [topProductsPage, setTopProductsPage] = useState(1);
   const [topSearchesPage, setTopSearchesPage] = useState(1);
   const [selectedSession, setSelectedSession] = useState<string | null>(null);
+  const [accountsOpen, setAccountsOpen] = useState(false);
   const queryClient = useQueryClient();
 
   const overview = useQuery({
@@ -139,6 +162,14 @@ export default function AnalyticsAdminPage() {
     queryFn: () => fetchJson<SessionDetail>(`/api/admin/analytics/sessions/${selectedSession}`),
     enabled: Boolean(selectedSession),
     refetchInterval: selectedSession ? 5_000 : false,
+    refetchIntervalInBackground: true,
+  });
+
+  const users = useQuery({
+    queryKey: ["admin-analytics-users", range],
+    queryFn: () => fetchJson<UsersResponse>(`/api/admin/analytics/users?range=${range}`),
+    enabled: accountsOpen,
+    refetchInterval: accountsOpen ? 5_000 : false,
     refetchIntervalInBackground: true,
   });
 
@@ -177,12 +208,32 @@ export default function AnalyticsAdminPage() {
           <h2 className="mt-1 text-2xl font-bold text-gray-900">Phân tích truy cập</h2>
           <p className="mt-1 text-sm text-gray-500">Dữ liệu first-party đang cập nhật trực tiếp, đồng bộ dự phòng mỗi 5 giây.</p>
         </div>
-        <div className="inline-flex w-fit border border-[#cedcc5] bg-white p-1" aria-label="Khoảng thời gian">
-          {[7, 30, 90].map((days) => (
+        <div className="inline-flex w-fit flex-wrap border border-[#cedcc5] bg-white p-1" aria-label="Khoảng thời gian">
+          {[1, 7, 30, 90].map((days) => (
             <button key={days} type="button" onClick={() => changeRange(days)} className={`min-h-9 px-4 text-sm font-semibold ${range === days ? "bg-[#425733] text-white" : "text-gray-600 hover:bg-[#f1f5ee]"}`}>
-              {days} ngày
+              {days === 1 ? "Từng ngày" : `${days} ngày`}
             </button>
           ))}
+          <form
+            className="ml-1 flex items-center gap-1 border-l border-[#cedcc5] pl-2"
+            onSubmit={(event) => {
+              event.preventDefault();
+              const next = Math.min(365, Math.max(1, Number(customRange) || 7));
+              setCustomRange(String(next));
+              changeRange(next);
+            }}
+          >
+            <input
+              value={customRange}
+              onChange={(event) => setCustomRange(event.target.value)}
+              inputMode="numeric"
+              aria-label="Số ngày tùy chỉnh"
+              className="h-9 w-16 border border-[#cedcc5] px-2 text-sm font-semibold outline-none focus:border-[#63804f]"
+            />
+            <button type="submit" className={`min-h-9 px-3 text-sm font-semibold ${![1, 7, 30, 90].includes(range) ? "bg-[#425733] text-white" : "text-gray-600 hover:bg-[#f1f5ee]"}`}>
+              +N
+            </button>
+          </form>
         </div>
       </header>
 
@@ -194,11 +245,19 @@ export default function AnalyticsAdminPage() {
           <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5" aria-label="Tổng quan hôm nay">
             {[
               { label: "Đang online", value: data.summary.onlineNow, icon: Activity, note: "Hoạt động trong 60 giây" },
-              { label: "Khách hôm nay", value: data.summary.visitorsToday, icon: Users, note: "Trình duyệt duy nhất" },
-              { label: "Phiên hôm nay", value: data.summary.sessionsToday, icon: Clock3, note: "Phiên truy cập" },
-              { label: "Lượt xem hôm nay", value: data.summary.pageViewsToday, icon: Eye, note: "Tất cả trang cửa hàng" },
-              { label: "Tài khoản đã tạo", value: data.summary.totalRegisteredCustomers, icon: UserPlus, note: `+${data.summary.registeredCustomersToday} hôm nay` },
-            ].map((item) => (
+              { label: "Khách trong kỳ", value: data.summary.visitorsInRange, icon: Users, note: "Trình duyệt duy nhất" },
+              { label: "Phiên trong kỳ", value: data.summary.sessionsInRange, icon: Clock3, note: "Phiên truy cập" },
+              { label: "Lượt xem trong kỳ", value: data.summary.pageViewsInRange, icon: Eye, note: "Tất cả trang cửa hàng" },
+              { label: "Tài khoản đã tạo", value: data.summary.registeredCustomersInRange, icon: UserPlus, note: "Bấm để xem chi tiết", action: () => setAccountsOpen(true) },
+            ].map((item) => "action" in item ? (
+              <button key={item.label} type="button" onClick={item.action} className="border border-[#dce7d5] bg-white p-5 text-left shadow-[0_3px_12px_rgba(46,72,35,0.05)] transition hover:border-[#9fba8c] hover:bg-[#fbfdf9] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#63804f]/60">
+                <div className="flex items-start justify-between">
+                  <div><p className="text-sm font-medium text-gray-500">{item.label}</p><p className="mt-2 text-3xl font-bold text-gray-900">{item.value.toLocaleString("vi-VN")}</p></div>
+                  <item.icon className="h-5 w-5 text-[#63804f]" />
+                </div>
+                <p className="mt-3 text-xs text-gray-400">{item.note}</p>
+              </button>
+            ) : (
               <article key={item.label} className="border border-[#dce7d5] bg-white p-5 shadow-[0_3px_12px_rgba(46,72,35,0.05)]">
                 <div className="flex items-start justify-between">
                   <div><p className="text-sm font-medium text-gray-500">{item.label}</p><p className="mt-2 text-3xl font-bold text-gray-900">{item.value.toLocaleString("vi-VN")}</p></div>
@@ -296,6 +355,45 @@ export default function AnalyticsAdminPage() {
             </div>
             {session.isLoading && <p className="p-6 text-sm text-gray-500">Đang tải timeline...</p>}
             {session.data && <SessionTimeline session={session.data} />}
+          </aside>
+        </div>
+      )}
+
+      {accountsOpen && (
+        <div className="fixed inset-0 z-[10030] flex justify-end bg-black/30" onClick={() => setAccountsOpen(false)}>
+          <aside className="h-full w-full max-w-2xl overflow-y-auto bg-white shadow-2xl" onClick={(event) => event.stopPropagation()}>
+            <div className="sticky top-0 z-10 flex items-center justify-between border-b border-gray-200 bg-white px-5 py-4">
+              <div><p className="text-xs font-semibold uppercase text-[#63804f]">Tài khoản đã tạo</p><h3 className="font-bold text-gray-900">Trong {range} ngày gần nhất</h3></div>
+              <button type="button" onClick={() => setAccountsOpen(false)} className="grid h-10 w-10 place-items-center text-gray-500 hover:bg-gray-100" aria-label="Đóng"><X className="h-5 w-5" /></button>
+            </div>
+            {users.isLoading && <p className="p-6 text-sm text-gray-500">Đang tải tài khoản...</p>}
+            {users.isError && <p className="p-6 text-sm text-red-600">Không thể tải tài khoản đã tạo.</p>}
+            {users.data && (
+              <div className="divide-y divide-gray-100">
+                {users.data.users.length ? users.data.users.map((user) => (
+                  <article key={user.id} className="p-5">
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                      <div className="min-w-0">
+                        <h4 className="truncate font-bold text-gray-900">{user.name || "Chưa đặt tên"}</h4>
+                        <p className="mt-1 break-all text-sm text-gray-500">{user.email}</p>
+                        <p className="mt-1 text-sm text-gray-500">{user.phone || "Chưa có số điện thoại"}</p>
+                      </div>
+                      <span className="w-fit border border-[#dce7d5] px-3 py-1 text-xs font-semibold text-[#425733]">{user.role}</span>
+                    </div>
+                    <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-3">
+                      <Info label="Mật khẩu" value={user.password} />
+                      <Info label="Hạng thành viên" value={user.loyaltyTier} />
+                      <Info label="Điểm" value={user.loyaltyPoints.toLocaleString("vi-VN")} />
+                      <Info label="Đơn hàng" value={String(user.counts.orders)} />
+                      <Info label="Đánh giá" value={String(user.counts.reviews)} />
+                      <Info label="Wishlist" value={String(user.counts.wishlist)} />
+                      <Info label="Ngày tạo" value={formatTime(user.createdAt)} />
+                      <Info label="Cập nhật" value={formatTime(user.updatedAt)} />
+                    </dl>
+                  </article>
+                )) : <p className="p-6 text-sm text-gray-500">Chưa có tài khoản mới trong khoảng này.</p>}
+              </div>
+            )}
           </aside>
         </div>
       )}
