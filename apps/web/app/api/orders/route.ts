@@ -39,7 +39,7 @@ const createOrderSchema = z.object({
   items: z.array(orderItemSchema).min(1, "Order must have at least 1 item").max(30),
   shippingInfo: shippingInfoSchema.optional(),
   shippingMethod: z.enum(["GHN_STANDARD", "GHN_EXPRESS", "GRAB"]).default("GHN_STANDARD"),
-  paymentMethod: z.enum(["COD", "MOMO"]).default("COD"),
+  paymentMethod: z.enum(["COD", "MOMO", "BANK_TRANSFER"]).default("COD"),
   discountCode: z.string().trim().max(64).optional(),
   analytics: z.object({
     anonymousId: z.string().uuid(),

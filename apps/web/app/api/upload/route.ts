@@ -8,8 +8,8 @@ import {
   MAX_PRODUCT_VIDEO_UPLOAD_BYTES,
 } from "@/lib/upload-limits";
 
-const ADMIN_BUCKETS = new Set(["products", "banners", "blog", "homepage", "policies", "gallery", "avatars"]);
-const CUSTOMER_BUCKETS = new Set(["avatars"]);
+const ADMIN_BUCKETS = new Set(["products", "banners", "blog", "homepage", "policies", "gallery", "avatars", "chat"]);
+const CUSTOMER_BUCKETS = new Set(["avatars", "chat"]);
 
 const ALLOWED_IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
 const ALLOWED_VIDEO_TYPES = new Set(["video/mp4", "video/webm", "video/quicktime"]);

@@ -1,7 +1,17 @@
 import { prisma } from "@/lib/prisma";
 
 
-export type AuditAction = "CREATE" | "UPDATE" | "DELETE" | "BULK_DELETE";
+export type AuditAction =
+  | "CREATE"
+  | "UPDATE"
+  | "DELETE"
+  | "BULK_DELETE"
+  | "APPROVE"
+  | "REJECT"
+  | "SUSPEND"
+  | "REACTIVATE"
+  | "WARNING"
+  | "REVIEW";
 
 /**
  * Ghi lại thao tác của Admin vào bảng AuditLog

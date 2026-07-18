@@ -63,6 +63,42 @@ export function getShippingFee(shippingMethod: string) {
   return 30000;
 }
 
+type OrderInventoryItem = {
+  productId: string;
+  quantity: number;
+};
+
+export async function restoreOrderInventory(
+  tx: any,
+  items: OrderInventoryItem[]
+) {
+  for (const item of items) {
+    await tx.product.updateMany({
+      where: { id: item.productId },
+      data: { inventory: { increment: item.quantity } },
+    });
+  }
+}
+
+export async function reserveOrderInventory(
+  tx: any,
+  items: OrderInventoryItem[]
+) {
+  for (const item of items) {
+    const updated = await tx.product.updateMany({
+      where: {
+        id: item.productId,
+        inventory: { gte: item.quantity },
+      },
+      data: { inventory: { decrement: item.quantity } },
+    });
+
+    if (updated.count !== 1) {
+      throw new Error("Sản phẩm không đủ tồn kho");
+    }
+  }
+}
+
 function normalizeText(value: unknown) {
   return String(value ?? "")
     .normalize("NFD")

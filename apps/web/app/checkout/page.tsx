@@ -197,7 +197,8 @@ export default function CheckoutPage() {
       });
 
       if (!response.ok) {
-        showToast.error("Không thể tạo đơn hàng. Vui lòng thử lại.");
+        const errorData = await response.json().catch(() => null);
+        showToast.error(errorData?.error || "Không thể tạo đơn hàng. Vui lòng thử lại.");
         return;
       }
 

@@ -64,5 +64,17 @@ update_checkout.py
 backup/
 *.sql
 *.sql.gz
+
+# Prisma migrations are source code, not database backups.
+!apps/web/prisma/migrations/20260716100000_add_marketplace_inquiry_offer_price/
+!apps/web/prisma/migrations/20260716100000_add_marketplace_inquiry_offer_price/migration.sql
+!apps/web/prisma/migrations/20260718100000_add_realtime_product_chat/
+!apps/web/prisma/migrations/20260718100000_add_realtime_product_chat/migration.sql
+!packages/database/prisma/migrations/
+packages/database/prisma/migrations/*
+!packages/database/prisma/migrations/20260716100000_add_marketplace_inquiry_offer_price/
+!packages/database/prisma/migrations/20260716100000_add_marketplace_inquiry_offer_price/migration.sql
+!packages/database/prisma/migrations/20260718100000_add_realtime_product_chat/
+!packages/database/prisma/migrations/20260718100000_add_realtime_product_chat/migration.sql
 # Turbo cache (large binary files)
 .turbo/cache/

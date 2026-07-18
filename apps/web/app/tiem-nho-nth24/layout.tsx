@@ -1,13 +1,15 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 import {
   Package, Home,
   ShoppingCart, Percent, FileText, LogOut,
-  Grid3X3, ExternalLink, Star, ShieldCheck, Compass, Brain, BarChart3,
+  Grid3X3, ExternalLink, Star, ShieldCheck, Compass, Brain, Store, BarChart3, MessagesSquare,
 } from "lucide-react";
+import { AdminChatNotifier } from "@/components/chat/AdminChatNotifier";
 
 
 interface AdminLayoutProps {
@@ -16,6 +18,7 @@ interface AdminLayoutProps {
 
 export default function AdminLayout({ children }: AdminLayoutProps) {
   const pathname = usePathname();
+  const [chatUnread, setChatUnread] = useState(0);
 
   // If we are on the admin login page, render children directly without the sidebar & header
   if (pathname === "/tiem-nho-nth24/login") {
@@ -29,6 +32,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
   const menuItems = [
     { href: "/tiem-nho-nth24", label: "Bảng Điều Khiển", icon: Home },
+    { href: "/tiem-nho-nth24/messages", label: "Tin nhắn", icon: MessagesSquare, badge: chatUnread },
     { href: "/tiem-nho-nth24/explore", label: "Khám Phá", icon: Compass },
     { href: "/tiem-nho-nth24/products", label: "Sản phẩm", icon: Package },
     { href: "/tiem-nho-nth24/categories", label: "Danh mục", icon: Grid3X3 },
@@ -37,6 +41,8 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     { href: "/tiem-nho-nth24/blog", label: "Blog", icon: FileText },
     { href: "/tiem-nho-nth24/reviews", label: "Đánh giá", icon: Star },
     { href: "/tiem-nho-nth24/analytics", label: "Phân tích truy cập", icon: BarChart3 },
+    { href: "/tiem-nho-nth24/shops", label: "Quản lý shop", icon: Store },
+    { href: "/tiem-nho-nth24/marketplace-categories", label: "Danh mục diễn đàn", icon: Grid3X3 },
     { href: "/tiem-nho-nth24/policies", label: "Chính sách", icon: ShieldCheck },
     { href: "/tiem-nho-nth24/ai-knowledge", label: "Kiến thức AI", icon: Brain },
   ];
@@ -98,6 +104,11 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                   style={{ width: "18px", height: "18px" }}
                 />
                 <span>{item.label}</span>
+                {(item.badge ?? 0) > 0 && (
+                  <span className="ml-auto grid min-w-5 place-items-center rounded-full bg-red-500 px-1.5 py-0.5 text-[10px] font-bold text-white">
+                    {(item.badge ?? 0) > 99 ? "99+" : item.badge}
+                  </span>
+                )}
                 {active && <div className="ml-auto w-1.5 h-1.5 rounded-full bg-[#8fba6f]" />}
               </Link>
             );
@@ -133,13 +144,16 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             </h1>
             <p className="text-xs text-gray-400 mt-0.5">tiệm Rêu Décor · Hệ thống quản lý</p>
           </div>
-          <Link
-            href="/"
-            className="flex min-h-10 items-center gap-2 rounded-full border border-transparent px-3 py-2 text-xs font-medium text-gray-500 transition-colors hover:border-[#c2d6b0] hover:bg-[#f0f4ee] hover:text-[#425733] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8fba6f]/60"
-          >
-            <ExternalLink className="w-3.5 h-3.5" />
-            Xem cửa hàng
-          </Link>
+          <div className="flex items-center gap-2">
+            <AdminChatNotifier onUnreadChange={setChatUnread} />
+            <Link
+              href="/"
+              className="flex min-h-10 items-center gap-2 rounded-full border border-transparent px-3 py-2 text-xs font-medium text-gray-500 transition-colors hover:border-[#c2d6b0] hover:bg-[#f0f4ee] hover:text-[#425733] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8fba6f]/60"
+            >
+              <ExternalLink className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Xem cửa hàng</span>
+            </Link>
+          </div>
           </div>
           <nav className="-mx-4 mt-3 flex gap-2 overflow-x-auto px-4 pb-1 lg:hidden" aria-label="Admin mobile navigation">
             {menuItems.map((item) => {
@@ -157,6 +171,11 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                 >
                   <item.icon className="h-4 w-4 shrink-0" />
                   <span>{item.label}</span>
+                  {(item.badge ?? 0) > 0 && (
+                    <span className="grid min-w-5 place-items-center rounded-full bg-red-500 px-1.5 py-0.5 text-[10px] font-bold text-white">
+                      {(item.badge ?? 0) > 99 ? "99+" : item.badge}
+                    </span>
+                  )}
                 </Link>
               );
             })}

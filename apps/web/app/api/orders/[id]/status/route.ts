@@ -4,6 +4,7 @@ import {
   canAccessOrder,
   isExpiredBankTransfer,
   remainingPaymentSeconds,
+  restoreOrderInventory,
 } from "@/lib/order-security";
 
 export const dynamic = "force-dynamic";
@@ -34,6 +35,7 @@ export async function GET(
             id: true,
             productName: true,
             productImage: true,
+            productId: true,
             quantity: true,
             price: true,
             variants: true,
@@ -52,6 +54,30 @@ export async function GET(
     }
 
     const expired = isExpiredBankTransfer(order);
+    if (expired) {
+      await prisma.$transaction(async (tx) => {
+        const updated = await tx.order.updateMany({
+          where: {
+            id: order.id,
+            status: "PENDING",
+            paymentStatus: "PENDING",
+            paymentMethod: "BANK_TRANSFER",
+          },
+          data: { status: "CANCELLED", updatedAt: new Date() },
+        });
+
+        if (updated.count === 1) {
+          await restoreOrderInventory(tx, order.items);
+          await tx.orderStatusLog.create({
+            data: {
+              orderId: order.id,
+              status: "CANCELLED",
+              note: "Đơn chuyển khoản tự hủy do quá hạn thanh toán",
+            },
+          });
+        }
+      });
+    }
     const serializedItems = order.items.map((item) => ({
       ...item,
       price: Number(item.price),

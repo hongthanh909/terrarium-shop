@@ -59,6 +59,7 @@ const PAYMENT_STATUS_LABELS: Record<string, string> = {
 const PAYMENT_METHOD_LABELS: Record<string, string> = {
   COD:  "Thanh toán khi nhận hàng",
   MOMO: "Ví MoMo",
+  BANK_TRANSFER: "Chuyển khoản",
 };
 
 export default function MyOrdersPage() {

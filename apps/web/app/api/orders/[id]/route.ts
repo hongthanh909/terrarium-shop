@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { verifyAdminRequest, unauthorizedResponse } from "@/lib/admin-auth";
 import { logAdminAction } from "@/lib/audit";
-import { canAccessOrder } from "@/lib/order-security";
+import { canAccessOrder, reserveOrderInventory, restoreOrderInventory } from "@/lib/order-security";
 import { z } from "zod";
 
 const updateOrderSchema = z.object({
@@ -81,27 +81,50 @@ export async function PATCH(
     if (status) updateData.status = status;
     if (paymentStatus) updateData.paymentStatus = paymentStatus;
 
-    const order = await prisma.order.update({
+    const currentOrder = await prisma.order.findUnique({
       where: { id },
-      data: updateData,
-      include: {
-        items: true,
-        shippingInfo: true,
-        customer: true,
+      select: {
+        status: true,
+        items: {
+          select: {
+            productId: true,
+            quantity: true,
+          },
+        },
       },
     });
 
-    // Ghi log trạng thái đơn hàng
-    if (status) {
-      await prisma.orderStatusLog.create({
-        data: {
-          orderId: id,
-          status,
-          note: status === "CANCELLED" ? "Admin đã huỷ đơn hàng" : undefined,
+    const order = await prisma.$transaction(async (tx) => {
+      const updatedOrder = await tx.order.update({
+        where: { id },
+        data: updateData,
+        include: {
+          items: true,
+          shippingInfo: true,
+          customer: true,
         },
       });
-    }
 
+      if (status && currentOrder && currentOrder.status !== status) {
+        if (status === "CANCELLED") {
+          await restoreOrderInventory(tx, currentOrder.items);
+        } else if (currentOrder.status === "CANCELLED") {
+          await reserveOrderInventory(tx, currentOrder.items);
+        }
+      }
+
+      if (status) {
+        await tx.orderStatusLog.create({
+          data: {
+            orderId: id,
+            status,
+            note: status === "CANCELLED" ? "Admin đã huỷ đơn hàng" : undefined,
+          },
+        });
+      }
+
+      return updatedOrder;
+    });
     await logAdminAction(admin.id, "UPDATE", "Order", id, {
       orderNumber: order.orderNumber,
       ...(status && { newStatus: status }),

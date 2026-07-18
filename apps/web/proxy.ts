@@ -11,7 +11,7 @@ import { ADMIN_LOGIN_PATH, ADMIN_SECRET_PATH } from "@/lib/admin-path";
 const API_ADMIN_PATH = "/api/admin";
 
 // ─── Customer-only paths ───────────────────────────────────────────────────────
-const CUSTOMER_PROTECTED_PATHS = ["/orders", "/account", "/profile", "/checkout"];
+const CUSTOMER_PROTECTED_PATHS = ["/orders", "/account", "/profile", "/checkout", "/seller"];
 
 // ─── Security Headers (áp dụng cho mọi response) ─────────────────────────────
 function applySecurityHeaders(response: NextResponse): NextResponse {
@@ -194,6 +194,8 @@ export const config = {
     "/profile/:path*",
     "/checkout",
     "/checkout/:path*",
+    "/seller",
+    "/seller/:path*",
     // Apply security headers + idle-logout everywhere (static files excluded)
     "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)).*)",
   ],

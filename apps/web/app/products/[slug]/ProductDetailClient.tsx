@@ -22,6 +22,7 @@ import { useWishlist } from "@/lib/hooks/useWishlist";
 import { getPositiveRatingBreakdown, getProductRatingSummary } from "@/lib/product-rating";
 import { getProductPackagePriceAdjustment } from "@/lib/product-packages";
 import { trackEvent } from "@/lib/analytics-client";
+import { ProductAdminChat } from "@/components/chat/ProductAdminChat";
 
 // ── Package variant constants ───────────────────────────────────────────────
 const LAMP_VARIANT_TYPE = "Đèn";
@@ -1075,6 +1076,15 @@ export function ProductDetailClient({
               </Button>
             </div>
 
+            <div className="mb-5 hidden lg:block">
+              <ProductAdminChat
+                productType="CATALOG"
+                productId={product.id}
+                productName={product.name}
+                productImage={product.images?.[0]}
+              />
+            </div>
+
             {/* Shipping line */}
             <div className="flex items-center gap-2.5 text-xs text-gray-500 mb-5 pb-3">
               <svg className="w-5 h-5 text-[#425733] flex-shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -1402,6 +1412,13 @@ export function ProductDetailClient({
               {priceAfterVoucher.toLocaleString("vi-VN")}₫
             </p>
           </div>
+          <ProductAdminChat
+            productType="CATALOG"
+            productId={product.id}
+            productName={product.name}
+            productImage={product.images?.[0]}
+            compact
+          />
           <Button
             className="h-12 min-w-[122px] shrink-0 rounded-xl bg-[#425733] px-3 text-sm font-bold text-white hover:bg-[#364a29] min-[380px]:min-w-[140px] min-[380px]:px-4"
             onClick={handleAddToCart}

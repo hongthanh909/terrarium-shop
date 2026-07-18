@@ -136,7 +136,75 @@ enum CareItemStatus {
 
 enum UserRole {
   CUSTOMER
+  SELLER
   ADMIN
+}
+
+enum ShopApplicationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+enum ShopStatus {
+  PENDING
+  ACTIVE
+  UNDER_REVIEW
+  SUSPENDED
+  CLOSED
+}
+
+enum MarketplaceProductStatus {
+  DRAFT
+  PENDING_REVIEW
+  AI_FLAGGED
+  ACTIVE
+  REJECTED
+  SUSPENDED
+  ARCHIVED
+}
+
+enum MarketplaceInquiryStatus {
+  NEW
+  SEEN
+  REPLIED
+  CLOSED
+}
+
+enum ChatProductType {
+  CATALOG
+  MARKETPLACE
+}
+
+enum ChatConversationStatus {
+  OPEN
+  CLOSED
+}
+
+enum ChatSenderType {
+  CUSTOMER
+  ADMIN
+}
+
+enum ModerationRiskLevel {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum ShopPolicyViolationSeverity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum ShopPolicyAction {
+  WARNING
+  TEMP_SUSPEND
+  PERMANENT_BAN
+  ACCOUNT_DELETE_REQUESTED
 }
 
 // ============================================
@@ -157,137 +225,138 @@ model Category {
   updatedAt       DateTime       @updatedAt
 
   // Relations
-  parent          Category?      @relation("CategoryTree", fields: [parentId], references: [id])
-  children        Category[]     @relation("CategoryTree")
-  products        Product[]
+  parent   Category?  @relation("CategoryTree", fields: [parentId], references: [id])
+  children Category[] @relation("CategoryTree")
+  products Product[]
   // discountApplicables removed - not needed for Category
 
   @@map("categories")
 }
 
 model Product {
-  id            String         @id @default(cuid())
-  slug          String         @unique
-  name          String
-  basePrice     Decimal        @db.Decimal(10, 2)
-  salePrice     Decimal?       @db.Decimal(10, 2)  // Giá khuyến mãi (flash sale)
-  saleEndDate   DateTime?                           // Thời gian kết thúc flash sale
-  type          ProductType    @default(PRODUCT)
-  inventory     Int            @default(0)
-  featured      Boolean        @default(false)
-  pinnedUntil   DateTime?
-  categoryId    String
-  status        ProductStatus  @default(DRAFT)
-  images        String[]
-  size          String?        // Kích thước bể
-  soil          String?        // Loại đất
-  moss          String?        // Loại rêu
-  driftwood     String?        // Bố cục lũa
-  accessories   String?        // Phụ kiện
-  setupStatus   String?        // READY_TO_DISPLAY, DIY_KIT, CUSTOM_ORDER
-  careLevel     String?        // EASY, MEDIUM, ADVANCED
-  chatTags      String[]       @default([]) // Tag tư vấn cho chatbox
-  shortConsultNote String?     // Ghi chú tư vấn ngắn cho chatbox
-  displayRating Decimal?       @db.Decimal(2, 1)
-  displayReviewCount Int       @default(0)
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
+  id                 String        @id @default(cuid())
+  slug               String        @unique
+  name               String
+  basePrice          Decimal       @db.Decimal(10, 2)
+  salePrice          Decimal?      @db.Decimal(10, 2) // Giá khuyến mãi (flash sale)
+  saleEndDate        DateTime? // Thời gian kết thúc flash sale
+  type               ProductType   @default(PRODUCT)
+  inventory          Int           @default(0)
+  featured           Boolean       @default(false)
+  pinnedUntil        DateTime?
+  categoryId         String
+  status             ProductStatus @default(DRAFT)
+  images             String[]
+  size               String? // Kích thước bể
+  soil               String? // Loại đất
+  moss               String? // Loại rêu
+  driftwood          String? // Bố cục lũa
+  accessories        String? // Phụ kiện
+  setupStatus        String? // READY_TO_DISPLAY, DIY_KIT, CUSTOM_ORDER
+  careLevel          String? // EASY, MEDIUM, ADVANCED
+  chatTags           String[]      @default([]) // Tag tư vấn cho chatbox
+  shortConsultNote   String? // Ghi chú tư vấn ngắn cho chatbox
+  displayRating      Decimal?      @db.Decimal(2, 1)
+  displayReviewCount Int           @default(0)
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
 
   // Relations
-  category      Category           @relation(fields: [categoryId], references: [id])
-  variants      ProductVariant[]
-  variantOptions ProductVariantOption[]
-  careGuide     CareGuide?
-  reviews       Review[]
-  votes         ProductVote[]
-  wishlistItems Wishlist[]
-  weeklyFeatured WeeklyFeatured[]
+  category          Category               @relation(fields: [categoryId], references: [id])
+  variants          ProductVariant[]
+  variantOptions    ProductVariantOption[]
+  careGuide         CareGuide?
+  reviews           Review[]
+  votes             ProductVote[]
+  wishlistItems     Wishlist[]
+  weeklyFeatured    WeeklyFeatured[]
   // orderItems removed - OrderItem stores snapshot, no reverse relation
   // careItems     CustomerCareItem[]
-  seoMeta       SeoMeta?
-  analyticsEvents AnalyticsEvent[]
+  seoMeta           SeoMeta?
+  analyticsEvents   AnalyticsEvent[]
+  chatConversations ChatConversation[]     @relation("CatalogProductChatConversations")
   // discountApplicables removed - not implemented
 
   // ── Indexes cho các query phổ biến ──────────────────────────
-  @@index([status, featured])        // homepage: featured ACTIVE products
-  @@index([status, categoryId])      // /products: filter by category
-  @@index([status, createdAt])       // /products: sort by newest
-  @@index([status, saleEndDate])     // flash sale: query sale products
-  @@index([categoryId, status])      // related products query
+  @@index([status, featured]) // homepage: featured ACTIVE products
+  @@index([status, categoryId]) // /products: filter by category
+  @@index([status, createdAt]) // /products: sort by newest
+  @@index([status, saleEndDate]) // flash sale: query sale products
+  @@index([categoryId, status]) // related products query
   @@map("products")
 }
 
 model ProductVariant {
-  id               String       @id @default(cuid())
-  productId        String
-  variantType      VariantType
-  value            String
-  priceAdjustment  Decimal      @default(0) @db.Decimal(10, 2)
-  inventory        Int          @default(0)
-  sku              String?      @unique
+  id              String      @id @default(cuid())
+  productId       String
+  variantType     VariantType
+  value           String
+  priceAdjustment Decimal     @default(0) @db.Decimal(10, 2)
+  inventory       Int         @default(0)
+  sku             String?     @unique
 
   // Relations
-  product          Product      @relation(fields: [productId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   @@map("product_variants")
 }
 
 model ProductVariantOption {
-  id            String       @id @default(cuid())
-  productId     String
-  variantType   VariantType
-  options       String[]
-  image         String?
+  id          String      @id @default(cuid())
+  productId   String
+  variantType VariantType
+  options     String[]
+  image       String?
 
   // Relations
-  product       Product      @relation(fields: [productId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   @@map("product_variant_options")
 }
 
 model Combo {
-  id       String    @id @default(cuid())
-  type     ComboType
-  name     String
-  price    Decimal   @db.Decimal(10, 2)
-  features String[]
-  image    String
-  status   CategoryStatus @default(ACTIVE)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id        String         @id @default(cuid())
+  type      ComboType
+  name      String
+  price     Decimal        @db.Decimal(10, 2)
+  features  String[]
+  image     String
+  status    CategoryStatus @default(ACTIVE)
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
 
   // Relations
-  items     ComboItem[]
+  items ComboItem[]
   // discountApplicables removed - not implemented
 
   @@map("combos")
 }
 
 model ComboItem {
-  id      String  @id @default(cuid())
-  comboId String
+  id        String @id @default(cuid())
+  comboId   String
   productId String
   quantity  Int
 
   // Relations
-  combo   Combo   @relation(fields: [comboId], references: [id], onDelete: Cascade)
+  combo Combo @relation(fields: [comboId], references: [id], onDelete: Cascade)
   // product removed - ComboItem doesn't need direct product relation
 
   @@map("combo_items")
 }
 
 model CareGuide {
-  id             String  @id @default(cuid())
-  productId      String  @unique
-  watering       String
-  sunlight       String
-  temperature    String
-  humidity       String
-  commonIssues   String?
-  videoUrl       String?
+  id           String  @id @default(cuid())
+  productId    String  @unique
+  watering     String
+  sunlight     String
+  temperature  String
+  humidity     String
+  commonIssues String?
+  videoUrl     String?
 
   // Relations
-  product        Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   @@map("care_guides")
 }
@@ -297,34 +366,41 @@ model CareGuide {
 // ============================================
 
 model Customer {
-  id              String             @id @default(cuid())
-  email           String             @unique
-  phone           String?
-  passwordHash    String?
-  name            String?
-  image           String?
-  role            UserRole           @default(CUSTOMER)
-  loyaltyPoints   Int                @default(0)
-  loyaltyTier     CustomerLoyaltyTier @default(BRONZE)
-  resetToken      String?            @unique
+  id               String              @id @default(cuid())
+  email            String              @unique
+  phone            String?
+  passwordHash     String?
+  name             String?
+  image            String?
+  role             UserRole            @default(CUSTOMER)
+  loyaltyPoints    Int                 @default(0)
+  loyaltyTier      CustomerLoyaltyTier @default(BRONZE)
+  resetToken       String?             @unique
   resetTokenExpiry DateTime?
-  createdAt       DateTime           @default(now())
-  updatedAt       DateTime           @updatedAt
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
 
   // Relations
-  orders          Order[]
-  carePreferences CustomerCarePreference?
-  addresses       CustomerAddress[]
-  wishlist        Wishlist[]
-  reviews         Review[]
-  votes           ProductVote[]
-  careItems       CustomerCareItem[]
+  orders               Order[]
+  carePreferences      CustomerCarePreference?
+  addresses            CustomerAddress[]
+  wishlist             Wishlist[]
+  reviews              Review[]
+  votes                ProductVote[]
+  careItems            CustomerCareItem[]
   loyaltyPointsHistory LoyaltyPoint[]
-  blogLikes       BlogLike[]
-  blogComments    BlogComment[]
-  blogReplies     BlogReply[]
-  analyticsSessions AnalyticsSession[]
-  analyticsEvents AnalyticsEvent[]
+  blogLikes            BlogLike[]
+  blogComments         BlogComment[]
+  blogReplies          BlogReply[]
+  analyticsSessions    AnalyticsSession[]
+  analyticsEvents      AnalyticsEvent[]
+  shopApplications     ShopApplication[]       @relation("ShopApplications")
+  ownedShops           Shop[]                  @relation("OwnedShops")
+  marketplaceInquiries MarketplaceInquiry[]    @relation("MarketplaceInquiries")
+  shopRatings          ShopRating[]            @relation("ShopRatings")
+  shopPolicyViolations ShopPolicyViolation[]   @relation("ShopPolicyViolations")
+  chatConversations    ChatConversation[]      @relation("CustomerChatConversations")
+  sentChatMessages     ChatMessage[]           @relation("ChatMessageSender")
 
   @@map("customers")
 }
@@ -346,46 +422,46 @@ model PendingRegistration {
 }
 
 model CustomerCarePreference {
-  id                    String           @id @default(cuid())
-  customerId            String           @unique
-  favoritePlants        String[]
-  experienceLevel       CustomerExperienceLevel @default(BEGINNER)
-  homeEnvironment       CustomerHomeEnvironment @default(APARTMENT)
-  careReminderEnabled   Boolean          @default(false)
+  id                  String                  @id @default(cuid())
+  customerId          String                  @unique
+  favoritePlants      String[]
+  experienceLevel     CustomerExperienceLevel @default(BEGINNER)
+  homeEnvironment     CustomerHomeEnvironment @default(APARTMENT)
+  careReminderEnabled Boolean                 @default(false)
 
   // Relations
-  customer              Customer         @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  customer Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
 
   @@map("customer_care_preferences")
 }
 
 model CustomerAddress {
-  id           String  @id @default(cuid())
-  customerId   String
-  name         String
-  phone        String
-  province     String
-  district     String
-  ward         String
-  fullAddress  String
-  isDefault    Boolean @default(false)
+  id          String  @id @default(cuid())
+  customerId  String
+  name        String
+  phone       String
+  province    String
+  district    String
+  ward        String
+  fullAddress String
+  isDefault   Boolean @default(false)
 
   // Relations
-  customer     Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  customer Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
 
   @@unique([customerId, isDefault])
   @@map("customer_addresses")
 }
 
 model Wishlist {
-  id        String   @id @default(cuid())
+  id         String   @id @default(cuid())
   customerId String
-  productId String
-  createdAt DateTime @default(now())
+  productId  String
+  createdAt  DateTime @default(now())
 
   // Relations
-  customer  Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
-  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  customer Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  product  Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   @@unique([customerId, productId])
   @@map("wishlists")
@@ -396,19 +472,19 @@ model Wishlist {
 // ============================================
 
 model Order {
-  id               String        @id @default(cuid())
-  orderNumber      String        @unique
-  customerId       String?
-  subtotal         Decimal       @db.Decimal(10, 2)
-  shippingFee      Decimal       @db.Decimal(10, 2)
-  discount         Decimal       @default(0) @db.Decimal(10, 2)
-  total            Decimal       @db.Decimal(10, 2)
-  shippingMethod   ShippingMethod
-  paymentMethod    PaymentMethod
-  paymentStatus    PaymentStatus @default(PENDING)
-  status           OrderStatus   @default(PENDING)
-  createdAt        DateTime      @default(now())
-  updatedAt        DateTime      @updatedAt
+  id             String         @id @default(cuid())
+  orderNumber    String         @unique
+  customerId     String?
+  subtotal       Decimal        @db.Decimal(10, 2)
+  shippingFee    Decimal        @db.Decimal(10, 2)
+  discount       Decimal        @default(0) @db.Decimal(10, 2)
+  total          Decimal        @db.Decimal(10, 2)
+  shippingMethod ShippingMethod
+  paymentMethod  PaymentMethod
+  paymentStatus  PaymentStatus  @default(PENDING)
+  status         OrderStatus    @default(PENDING)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
 
   // Relations
   customer         Customer?         @relation(fields: [customerId], references: [id])
@@ -419,58 +495,58 @@ model Order {
   shippingTracking ShippingTracking?
 
   // ── Indexes cho query phổ biến ───────────────────────────────
-  @@index([customerId, createdAt])    // lịch sử đơn của khách hàng
-  @@index([status, createdAt])        // admin filter theo trạng thái
+  @@index([customerId, createdAt]) // lịch sử đơn của khách hàng
+  @@index([status, createdAt]) // admin filter theo trạng thái
   @@index([paymentStatus, paymentMethod]) // theo dõi thanh toán
   @@map("orders")
 }
 
 model OrderItem {
-  id            String   @id @default(cuid())
+  id            String  @id @default(cuid())
   orderId       String
   productId     String
   productName   String
   productImage  String
-  variants      Json     // { "SIZE": "M", "TYPE": "Suối" }
+  variants      Json // { "SIZE": "M", "TYPE": "Suối" }
   quantity      Int
-  price         Decimal  @db.Decimal(10, 2)
-  customOptions Json?    // { "hasLight": true }
+  price         Decimal @db.Decimal(10, 2)
+  customOptions Json? // { "hasLight": true }
 
   // Relations
-  order         Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
   // product removed - OrderItem stores snapshot, no relation needed
 
   @@map("order_items")
 }
 
 model ShippingInfo {
-  id            String  @id @default(cuid())
-  orderId       String  @unique
-  name          String?
-  phone         String?
-  email         String?
-  province      String?
-  district      String?
-  ward          String?
-  fullAddress   String?
+  id             String  @id @default(cuid())
+  orderId        String  @unique
+  name           String?
+  phone          String?
+  email          String?
+  province       String?
+  district       String?
+  ward           String?
+  fullAddress    String?
   trackingNumber String?
-  trackingUrl   String?
+  trackingUrl    String?
 
   // Relations
-  order         Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
 
   @@map("shipping_infos")
 }
 
 model OrderStatusLog {
-  id        String   @id @default(cuid())
+  id        String      @id @default(cuid())
   orderId   String
   status    OrderStatus
   note      String?
-  createdAt DateTime @default(now())
+  createdAt DateTime    @default(now())
 
   // Relations
-  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
 
   @@map("order_status_logs")
 }
@@ -480,37 +556,37 @@ model OrderStatusLog {
 // ============================================
 
 model DiscountCampaign {
-  id                   String                @id @default(cuid())
-  code                 String                @unique
-  type                 DiscountType
-  value                Decimal               @db.Decimal(10, 2)
-  minOrderAmount       Decimal?              @db.Decimal(10, 2)
-  maxDiscountAmount    Decimal?              @db.Decimal(10, 2)
-  startsAt             DateTime
-  expiresAt            DateTime
-  usageLimit           Int?
-  usageCount           Int                   @default(0)
-  status               DiscountCampaignStatus @default(INACTIVE)
-  applicableTo         DiscountApplicableTo
-  description          String?
-  createdAt            DateTime              @default(now())
-  updatedAt            DateTime              @updatedAt
+  id                String                 @id @default(cuid())
+  code              String                 @unique
+  type              DiscountType
+  value             Decimal                @db.Decimal(10, 2)
+  minOrderAmount    Decimal?               @db.Decimal(10, 2)
+  maxDiscountAmount Decimal?               @db.Decimal(10, 2)
+  startsAt          DateTime
+  expiresAt         DateTime
+  usageLimit        Int?
+  usageCount        Int                    @default(0)
+  status            DiscountCampaignStatus @default(INACTIVE)
+  applicableTo      DiscountApplicableTo
+  description       String?
+  createdAt         DateTime               @default(now())
+  updatedAt         DateTime               @updatedAt
 
   // Relations
-  applicables          DiscountApplicable[]
-  orderDiscounts       OrderDiscount[]
+  applicables    DiscountApplicable[]
+  orderDiscounts OrderDiscount[]
 
   @@map("discount_campaigns")
 }
 
 model DiscountApplicable {
-  id          String  @id @default(cuid())
-  campaignId  String
-  targetType  String  // CATEGORY, PRODUCT, COMBO
-  targetId    String
+  id         String @id @default(cuid())
+  campaignId String
+  targetType String // CATEGORY, PRODUCT, COMBO
+  targetId   String
 
   // Relations
-  campaign    DiscountCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  campaign DiscountCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
 
   @@map("discount_applicables")
 }
@@ -523,8 +599,8 @@ model OrderDiscount {
   appliedCode    String
 
   // Relations
-  order          Order              @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  campaign       DiscountCampaign   @relation(fields: [campaignId], references: [id])
+  order    Order            @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  campaign DiscountCampaign @relation(fields: [campaignId], references: [id])
 
   @@map("order_discounts")
 }
@@ -534,34 +610,34 @@ model OrderDiscount {
 // ============================================
 
 model Review {
-  id        String   @id @default(cuid())
-  productId String
+  id         String   @id @default(cuid())
+  productId  String
   customerId String
-  rating    Int
-  title     String?
-  content   String
-  images    String[]
-  verified  Boolean  @default(false)
-  approved  Boolean  @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  rating     Int
+  title      String?
+  content    String
+  images     String[]
+  verified   Boolean  @default(false)
+  approved   Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
   // Relations
-  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
-  customer  Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  product  Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  customer Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
 
   @@map("reviews")
 }
 
 model ProductVote {
-  id        String   @id @default(cuid())
-  productId String
+  id         String   @id @default(cuid())
+  productId  String
   customerId String
-  votedAt   DateTime @default(now())
+  votedAt    DateTime @default(now())
 
   // Relations
-  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
-  customer  Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  product  Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  customer Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
 
   @@unique([productId, customerId])
   @@map("product_votes")
@@ -572,33 +648,33 @@ model ProductVote {
 // ============================================
 
 model CustomerCareItem {
-  id              String         @id @default(cuid())
-  customerId      String
-  productId       String
-  purchasedAt     DateTime
-  careSchedule    Json           // { "watering": "weekly" }
-  lastWateredAt   DateTime?
-  lastPrunedAt    DateTime?
-  status          CareItemStatus @default(ACTIVE)
+  id            String         @id @default(cuid())
+  customerId    String
+  productId     String
+  purchasedAt   DateTime
+  careSchedule  Json // { "watering": "weekly" }
+  lastWateredAt DateTime?
+  lastPrunedAt  DateTime?
+  status        CareItemStatus @default(ACTIVE)
 
   // Relations
-  customer Customer       @relation(fields: [customerId], references: [id])
+  customer Customer @relation(fields: [customerId], references: [id])
   // product removed - no reverse relation needed
 
   @@map("customer_care_items")
 }
 
 model LoyaltyPoint {
-  id        String            @id @default(cuid())
+  id         String             @id @default(cuid())
   customerId String
-  points    Int
-  source    LoyaltyPointSource
-  orderId   String?
-  expiresAt DateTime?
-  createdAt DateTime          @default(now())
+  points     Int
+  source     LoyaltyPointSource
+  orderId    String?
+  expiresAt  DateTime?
+  createdAt  DateTime           @default(now())
 
   // Relations
-  customer  Customer          @relation(fields: [customerId], references: [id])
+  customer Customer @relation(fields: [customerId], references: [id])
   // order removed - optional relation not needed
 
   @@map("loyalty_points")
@@ -609,25 +685,25 @@ model LoyaltyPoint {
 // ============================================
 
 model BlogPost {
-  id            String    @id @default(cuid())
-  slug          String    @unique
-  title         String
-  content       String?
-  thumbnail     String?
-  images        String[]  @default([])
-  intro         String?
-  body          String?
-  conclusion    String?
-  published     Boolean   @default(false)
-  publishedAt   DateTime?
-  categoryId    String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  id          String    @id @default(cuid())
+  slug        String    @unique
+  title       String
+  content     String?
+  thumbnail   String?
+  images      String[]  @default([])
+  intro       String?
+  body        String?
+  conclusion  String?
+  published   Boolean   @default(false)
+  publishedAt DateTime?
+  categoryId  String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
   // Relations
-  category      BlogCategory? @relation(fields: [categoryId], references: [id])
-  likes         BlogLike[]
-  comments      BlogComment[]
+  category BlogCategory? @relation(fields: [categoryId], references: [id])
+  likes    BlogLike[]
+  comments BlogComment[]
 
   @@map("blog_posts")
 }
@@ -639,8 +715,8 @@ model BlogLike {
   createdAt  DateTime @default(now())
 
   // Relations
-  post       BlogPost @relation(fields: [postId], references: [id], onDelete: Cascade)
-  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  post     BlogPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  customer Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
 
   @@unique([postId, customerId])
   @@map("blog_likes")
@@ -655,25 +731,25 @@ model BlogComment {
   updatedAt  DateTime @updatedAt
 
   // Relations
-  post       BlogPost    @relation(fields: [postId], references: [id], onDelete: Cascade)
-  customer   Customer    @relation(fields: [customerId], references: [id], onDelete: Cascade)
-  replies    BlogReply[]
+  post     BlogPost    @relation(fields: [postId], references: [id], onDelete: Cascade)
+  customer Customer    @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  replies  BlogReply[]
 
   @@map("blog_comments")
 }
 
 model BlogReply {
-  id         String   @id @default(cuid())
-  commentId  String
-  userId     String
-  content    String
-  isAdmin    Boolean  @default(false)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  id        String   @id @default(cuid())
+  commentId String
+  userId    String
+  content   String
+  isAdmin   Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relations
-  comment    BlogComment @relation(fields: [commentId], references: [id], onDelete: Cascade)
-  user       Customer    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  comment BlogComment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  user    Customer    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("blog_replies")
 }
@@ -686,7 +762,7 @@ model BlogCategory {
   updatedAt DateTime @updatedAt
 
   // Relations
-  posts     BlogPost[]
+  posts BlogPost[]
 
   @@map("blog_categories")
 }
@@ -696,45 +772,45 @@ model BlogCategory {
 // ============================================
 
 model Policy {
-  id          String   @id @default(cuid())
-  slug        String   @unique
-  title       String
-  content     String
-  type        String   @default("policy") // policy, faq, warranty, shipping, returns, privacy
-  order       Int       @default(0)
-  isActive    Boolean   @default(true)
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id        String   @id @default(cuid())
+  slug      String   @unique
+  title     String
+  content   String
+  type      String   @default("policy") // policy, faq, warranty, shipping, returns, privacy
+  order     Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("policies")
 }
 
 model WeeklyFeatured {
-  id          String   @id @default(cuid())
-  weekStart   DateTime // Start of week (Monday)
-  productId   String
-  reason      String?  // Why this product is featured
-  isActive    Boolean  @default(true)
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id        String   @id @default(cuid())
+  weekStart DateTime // Start of week (Monday)
+  productId String
+  reason    String? // Why this product is featured
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relations
-  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   @@unique([weekStart, productId])
   @@map("weekly_featured")
 }
 
 model ContactInfo {
-  id          String   @id @default(cuid())
-  type        String   // email, phone, address, social, working_hours
-  label       String
-  value       String
-  orderIndex  Int       @default(0)
-  isActive    Boolean  @default(true)
-  metadata    Json?    // { "icon": "Mail", "url": "..." }
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id         String   @id @default(cuid())
+  type       String // email, phone, address, social, working_hours
+  label      String
+  value      String
+  orderIndex Int      @default(0)
+  isActive   Boolean  @default(true)
+  metadata   Json? // { "icon": "Mail", "url": "..." }
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
   @@map("contact_info")
 }
@@ -744,7 +820,7 @@ model SiteSetting {
   key         String   @unique
   value       Json
   description String?
-  updatedAt   DateTime  @updatedAt
+  updatedAt   DateTime @updatedAt
 
   @@map("site_settings")
 }
@@ -757,35 +833,285 @@ model SeoMeta {
   ogImage         String?
 
   // Relations
-  product         Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   @@map("seo_meta")
 }
 
 model ShippingTracking {
-  id        String  @id @default(cuid())
-  orderId   String  @unique
+  id         String  @id @default(cuid())
+  orderId    String  @unique
   ghnOrderId String?
-  status    String?
-  timeline  Json?   // Lịch sử vận chuyển
+  status     String?
+  timeline   Json? // Lịch sử vận chuyển
 
   // Relations
-  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
 
   @@map("shipping_trackings")
 }
 
 // ============================================
-// 12. AUDIT LOGGING
+// 12. MARKETPLACE SHOPS
+// Shop ca nhan tu trao doi voi nguoi mua; khong di qua checkout/order cua san trong MVP.
+// ============================================
+
+model ShopApplication {
+  id                 String                @id @default(cuid())
+  customerId         String
+  shopName           String
+  shopSlug           String                @unique
+  ownerName          String
+  ownerIdNumber      String
+  phone              String
+  email              String?
+  emailVerified      Boolean               @default(true)
+  phoneVerified      Boolean               @default(false)
+  zaloUrl            String?
+  address            String?
+  province           String?
+  district           String?
+  description        String?
+  commitmentAccepted Boolean               @default(false)
+  status             ShopApplicationStatus @default(PENDING)
+  adminNote          String?
+  reviewedById       String?
+  reviewedAt         DateTime?
+  createdAt          DateTime              @default(now())
+  updatedAt          DateTime              @updatedAt
+
+  customer Customer @relation("ShopApplications", fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@index([customerId, status])
+  @@index([status, createdAt])
+  @@map("shop_applications")
+}
+
+model Shop {
+  id                   String     @id @default(cuid())
+  ownerId              String
+  name                 String
+  slug                 String     @unique
+  description          String?
+  logoUrl              String?
+  bannerUrl            String?
+  phone                String?
+  email                String?
+  zaloUrl              String?
+  facebookUrl          String?
+  address              String?
+  province             String?
+  district             String?
+  status               ShopStatus @default(PENDING)
+  platformFeeRate      Decimal    @default(0.06) @db.Decimal(5, 4)
+  ratingPercent        Int        @default(100)
+  ratingCount          Int        @default(0)
+  policyViolationCount Int        @default(0)
+  lastPolicyReviewAt   DateTime?
+  lastPriceReviewAt    DateTime?
+  policyAcceptedAt     DateTime?
+  adminNote            String?
+  createdAt            DateTime   @default(now())
+  updatedAt            DateTime   @updatedAt
+
+  owner            Customer              @relation("OwnedShops", fields: [ownerId], references: [id], onDelete: Cascade)
+  products         MarketplaceProduct[]
+  inquiries        MarketplaceInquiry[]
+  ratings          ShopRating[]
+  policyViolations ShopPolicyViolation[]
+
+  @@index([ownerId, status])
+  @@index([status, ratingPercent])
+  @@index([policyViolationCount])
+  @@map("shops")
+}
+
+model MarketplaceProduct {
+  id                String                   @id @default(cuid())
+  shopId            String
+  categoryId        String?
+  title             String
+  slug              String                   @unique
+  description       String
+  price             Decimal                  @db.Decimal(10, 2)
+  priceNote         String?
+  images            String[]                 @default([])
+  videoUrl          String?
+  condition         String?
+  quantity          Int                      @default(1)
+  province          String?
+  district          String?
+  status            MarketplaceProductStatus @default(DRAFT)
+  moderationRisk    ModerationRiskLevel      @default(LOW)
+  moderationReasons String[]                 @default([])
+  adminNote         String?
+  approvedById      String?
+  approvedAt        DateTime?
+  rejectedAt        DateTime?
+  createdAt         DateTime                 @default(now())
+  updatedAt         DateTime                 @updatedAt
+
+  shop              Shop                         @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  inquiries         MarketplaceInquiry[]
+  policyViolations  ShopPolicyViolation[]
+  categories        MarketplaceProductCategory[]
+  chatConversations ChatConversation[]           @relation("MarketplaceProductChatConversations")
+
+  @@index([shopId, status])
+  @@index([status, createdAt])
+  @@index([categoryId, status])
+  @@index([moderationRisk, status])
+  @@map("marketplace_products")
+}
+
+model MarketplaceCategory {
+  id        String   @id @default(cuid())
+  slug      String   @unique
+  name      String
+  icon      String   @default("tag")
+  sortOrder Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  products MarketplaceProductCategory[]
+
+  @@index([isActive, sortOrder])
+  @@map("marketplace_categories")
+}
+
+model MarketplaceProductCategory {
+  productId  String
+  categoryId String
+  createdAt  DateTime @default(now())
+
+  product  MarketplaceProduct  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  category MarketplaceCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@id([productId, categoryId])
+  @@index([categoryId])
+  @@map("marketplace_product_categories")
+}
+
+model MarketplaceInquiry {
+  id         String                   @id @default(cuid())
+  productId  String
+  shopId     String
+  customerId String?
+  name       String
+  phone      String?
+  email      String?
+  offerPrice Decimal?                 @db.Decimal(10, 2)
+  message    String
+  status     MarketplaceInquiryStatus @default(NEW)
+  createdAt  DateTime                 @default(now())
+  updatedAt  DateTime                 @updatedAt
+
+  product  MarketplaceProduct @relation(fields: [productId], references: [id], onDelete: Cascade)
+  shop     Shop               @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  customer Customer?          @relation("MarketplaceInquiries", fields: [customerId], references: [id])
+
+  @@index([shopId, status, createdAt])
+  @@index([productId, createdAt])
+  @@index([customerId, createdAt])
+  @@map("marketplace_inquiries")
+}
+
+model ChatConversation {
+  id                   String                 @id @default(cuid())
+  customerId           String
+  productType          ChatProductType
+  catalogProductId     String?
+  marketplaceProductId String?
+  status               ChatConversationStatus @default(OPEN)
+  lastMessageAt        DateTime               @default(now())
+  customerUnreadCount  Int                    @default(0)
+  adminUnreadCount     Int                    @default(0)
+  customerLastReadAt   DateTime?
+  adminLastReadAt      DateTime?
+  createdAt            DateTime               @default(now())
+  updatedAt            DateTime               @updatedAt
+
+  customer           Customer            @relation("CustomerChatConversations", fields: [customerId], references: [id], onDelete: Cascade)
+  catalogProduct     Product?            @relation("CatalogProductChatConversations", fields: [catalogProductId], references: [id], onDelete: Cascade)
+  marketplaceProduct MarketplaceProduct? @relation("MarketplaceProductChatConversations", fields: [marketplaceProductId], references: [id], onDelete: Cascade)
+  messages           ChatMessage[]
+
+  @@unique([customerId, catalogProductId])
+  @@unique([customerId, marketplaceProductId])
+  @@index([status, lastMessageAt])
+  @@index([adminUnreadCount, lastMessageAt])
+  @@index([customerId, lastMessageAt])
+  @@map("chat_conversations")
+}
+
+model ChatMessage {
+  id             String         @id @default(cuid())
+  conversationId String
+  senderId       String
+  senderType     ChatSenderType
+  content        String?
+  imageUrl       String?
+  createdAt      DateTime       @default(now())
+
+  conversation ChatConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender       Customer         @relation("ChatMessageSender", fields: [senderId], references: [id], onDelete: Restrict)
+
+  @@index([conversationId, createdAt])
+  @@index([senderType, createdAt])
+  @@map("chat_messages")
+}
+
+model ShopRating {
+  id           String   @id @default(cuid())
+  shopId       String
+  customerId   String
+  scorePercent Int
+  comment      String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  shop     Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  customer Customer @relation("ShopRatings", fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@unique([shopId, customerId])
+  @@index([shopId, scorePercent])
+  @@map("shop_ratings")
+}
+
+model ShopPolicyViolation {
+  id          String                      @id @default(cuid())
+  shopId      String
+  customerId  String?
+  productId   String?
+  severity    ShopPolicyViolationSeverity
+  reason      String
+  evidence    String?
+  action      ShopPolicyAction            @default(WARNING)
+  createdById String
+  createdAt   DateTime                    @default(now())
+
+  shop     Shop                @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  customer Customer?           @relation("ShopPolicyViolations", fields: [customerId], references: [id])
+  product  MarketplaceProduct? @relation(fields: [productId], references: [id], onDelete: SetNull)
+
+  @@index([shopId, severity, createdAt])
+  @@index([customerId, createdAt])
+  @@index([productId])
+  @@map("shop_policy_violations")
+}
+
+// ============================================
+// 13. AUDIT LOGGING
 // ============================================
 
 model AuditLog {
   id        String   @id @default(cuid())
-  userId    String   // ID của admin
-  action    String   // CREATE, UPDATE, DELETE, BULK_DELETE, v.v.
-  entity    String   // Product, Category, Order, BlogPost, v.v.
-  entityId  String   // ID của thực thể bị tác động
-  details   Json?    // Chi tiết thay đổi (JSON)
+  userId    String // ID của admin
+  action    String // CREATE, UPDATE, DELETE, BULK_DELETE, v.v.
+  entity    String // Product, Category, Order, BlogPost, v.v.
+  entityId  String // ID của thực thể bị tác động
+  details   Json? // Chi tiết thay đổi (JSON)
   createdAt DateTime @default(now())
 
   @@map("audit_logs")
@@ -811,12 +1137,12 @@ model AnalyticsVisitor {
 }
 
 model AnalyticsSession {
-  id              String   @id @default(cuid())
-  sessionKey      String   @unique
+  id              String    @id @default(cuid())
+  sessionKey      String    @unique
   visitorId       String
   customerId      String?
-  startedAt       DateTime @default(now())
-  lastSeenAt      DateTime @default(now())
+  startedAt       DateTime  @default(now())
+  lastSeenAt      DateTime  @default(now())
   endedAt         DateTime?
   entryPath       String
   exitPath        String?
@@ -827,11 +1153,11 @@ model AnalyticsSession {
   deviceType      String?
   browser         String?
   operatingSystem String?
-  pageViews       Int      @default(0)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  pageViews       Int       @default(0)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 
-  visitor AnalyticsVisitor @relation(fields: [visitorId], references: [id], onDelete: Cascade)
+  visitor  AnalyticsVisitor @relation(fields: [visitorId], references: [id], onDelete: Cascade)
   customer Customer?        @relation(fields: [customerId], references: [id], onDelete: SetNull)
   events   AnalyticsEvent[]
 
@@ -855,10 +1181,10 @@ model AnalyticsEvent {
   metadata           Json?
   createdAt          DateTime @default(now())
 
-  visitor AnalyticsVisitor @relation(fields: [visitorId], references: [id], onDelete: Cascade)
-  session AnalyticsSession @relation(fields: [analyticsSessionId], references: [id], onDelete: Cascade)
+  visitor  AnalyticsVisitor @relation(fields: [visitorId], references: [id], onDelete: Cascade)
+  session  AnalyticsSession @relation(fields: [analyticsSessionId], references: [id], onDelete: Cascade)
   customer Customer?        @relation(fields: [customerId], references: [id], onDelete: SetNull)
-  product Product?          @relation(fields: [productId], references: [id], onDelete: SetNull)
+  product  Product?         @relation(fields: [productId], references: [id], onDelete: SetNull)
 
   @@index([createdAt])
   @@index([analyticsSessionId, createdAt])
@@ -890,15 +1216,15 @@ model AnalyticsDailyStat {
 }
 
 // ============================================
-// 13. AI KNOWLEDGE BASE
+// 14. AI KNOWLEDGE BASE
 // Nội dung kiến thức cho chatbot AI (fallback khi Ollama offline)
 // Admin có thể thêm/sửa/xóa qua giao diện admin
 // ============================================
 
 model AiKnowledge {
   id        String   @id @default(cuid())
-  keyword   String   // Từ khóa để match (ví dụ: "chăm sóc", "tưới nước")
-  response  String   // Nội dung trả lời (hỗ trợ markdown/emoji)
+  keyword   String // Từ khóa để match (ví dụ: "chăm sóc", "tưới nước")
+  response  String // Nội dung trả lời (hỗ trợ markdown/emoji)
   category  String   @default("general") // Phân loại: general, care, shipping, policy, product
   priority  Int      @default(0) // Thứ tự ưu tiên (cao hơn = ưu tiên hơn)
   isActive  Boolean  @default(true)

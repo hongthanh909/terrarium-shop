@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 import { verifyAdminRequest, unauthorizedResponse } from "@/lib/admin-auth";
 import { maskEmail, maskPhone } from "@/lib/privacy";
+import { reserveOrderInventory, restoreOrderInventory } from "@/lib/order-security";
 
 export const dynamic = "force-dynamic";
 
@@ -92,7 +93,17 @@ export async function PATCH(request: NextRequest) {
     // Lấy đơn hàng hiện tại trước khi cập nhật
     const currentOrder = await prisma.order.findUnique({
       where: { id: orderId },
-      select: { status: true, total: true, customerId: true },
+      select: {
+        status: true,
+        total: true,
+        customerId: true,
+        items: {
+          select: {
+            productId: true,
+            quantity: true,
+          },
+        },
+      },
     });
 
     const updateData: any = { updatedAt: new Date() };
@@ -106,6 +117,14 @@ export async function PATCH(request: NextRequest) {
         data: updateData,
         include: { items: true, shippingInfo: true, customer: { select: { id: true, name: true, email: true } } },
       });
+
+      if (status && currentOrder && currentOrder.status !== status) {
+        if (status === "CANCELLED") {
+          await restoreOrderInventory(tx, currentOrder.items);
+        } else if (currentOrder.status === "CANCELLED") {
+          await reserveOrderInventory(tx, currentOrder.items);
+        }
+      }
 
       // Ghi log thay đổi trạng thái
       if (status) {

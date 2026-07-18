@@ -5,7 +5,7 @@ import { ImageWrapper } from "@/components/ui/ImageWrapper";
 import {
   ShoppingBasket, User, X, Minus, Plus, ShoppingBag,
   LogOut, Package, LayoutDashboard, Heart, Lock,
-  Menu, ChevronDown, MessageCircle, MapPin, Sprout, Truck, ShieldCheck,
+  Menu, ChevronDown, MessageCircle, MapPin, Sprout, Truck, ShieldCheck, Store,
 } from "lucide-react";
 import { useCartStore, CartItem } from "@/lib/store/cartStore";
 import { useState, useEffect, useCallback } from "react";
@@ -27,6 +27,7 @@ const NAV_LINKS = [
   { href: "/", label: "Trang chủ" },
   { href: "/products", label: "Sản phẩm" },
   { href: "/explore", label: "Khám phá" },
+  { href: "/forum", label: "Diễn đàn" },
   { href: "/blog", label: "Blog" },
 ];
 
@@ -87,6 +88,12 @@ export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [sellerStatus, setSellerStatus] = useState<{
+    state: string;
+    label: string;
+    href: string;
+    description?: string;
+  } | null>(null);
   const { data: session } = useSession();
   const pathname = usePathname();
 
@@ -114,6 +121,28 @@ export default function Header() {
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [handleKeyDown]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    if (!session) {
+      setSellerStatus(null);
+      return;
+    }
+
+    fetch("/api/seller/status", { cache: "no-store" })
+      .then((response) => (response.ok ? response.json() : null))
+      .then((data) => {
+        if (!cancelled) setSellerStatus(data);
+      })
+      .catch(() => {
+        if (!cancelled) setSellerStatus(null);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [session]);
 
   const cartTotal = items.reduce((s: number, i: CartItem) => s + i.price * i.quantity, 0);
   const cartCount = mounted ? getCartCount() : 0;
@@ -286,6 +315,13 @@ export default function Header() {
                     <DropdownMenuItem asChild>
                       <Link href="/profile" className="cursor-pointer flex items-center gap-2"><User className="w-4 h-4" /> Tài khoản</Link>
                     </DropdownMenuItem>
+                    {(session.user as any)?.role !== "ADMIN" && (
+                      <DropdownMenuItem asChild>
+                        <Link href={sellerStatus?.href || "/seller/register"} className="cursor-pointer flex items-center gap-2">
+                          <Store className="w-4 h-4" /> {sellerStatus?.label || "Mở shop"}
+                        </Link>
+                      </DropdownMenuItem>
+                    )}
                     <DropdownMenuItem asChild>
                       <Link href="/orders" className="cursor-pointer flex items-center gap-2"><Package className="w-4 h-4" /> Đơn hàng</Link>
                     </DropdownMenuItem>
@@ -424,6 +460,14 @@ export default function Header() {
                     <p className="text-sm font-semibold text-[#2d4520] truncate">{session.user?.name}</p>
                     <p className="text-xs text-[#5a7a48]/60 truncate">{session.user?.email}</p>
                   </div>
+                  {(session.user as any)?.role !== "ADMIN" && (
+                    <Link
+                      href={sellerStatus?.href || "/seller/register"}
+                      className="flex items-center gap-2 px-3 py-3 rounded-xl text-base font-semibold text-[#4a5e38]/80 hover:text-[#2d4520] hover:bg-[#eceee5] transition-colors duration-200"
+                    >
+                      <Store className="w-4 h-4" /> {sellerStatus?.label || "Mở shop"}
+                    </Link>
+                  )}
                   <Link
                     href="/profile/favorites"
                     className="flex items-center gap-2 px-3 py-3 rounded-xl text-base font-semibold text-[#4a5e38]/80 hover:text-[#2d4520] hover:bg-[#eceee5] transition-colors duration-200"

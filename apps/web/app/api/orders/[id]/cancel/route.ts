@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
 import { prisma } from "@/lib/prisma";
+import { restoreOrderInventory } from "@/lib/order-security";
 
 export const dynamic = "force-dynamic";
 
@@ -27,6 +28,12 @@ export async function PATCH(
         discounts: {
           select: {
             campaignId: true,
+          },
+        },
+        items: {
+          select: {
+            productId: true,
+            quantity: true,
           },
         },
       },
@@ -63,6 +70,8 @@ export async function PATCH(
           note: "Khách hàng tự hủy đơn hàng",
         },
       });
+
+      await restoreOrderInventory(tx, order.items);
 
       // ✅ Hoàn lại lượt dùng voucher — chỉ decrement nếu > 0 (tránh âm)
       for (const discount of order.discounts) {
