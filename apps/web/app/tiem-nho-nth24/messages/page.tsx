@@ -18,6 +18,7 @@ import {
   X,
   XCircle,
 } from "lucide-react";
+import { useChatAutoScroll } from "@/components/chat/useChatAutoScroll";
 import { cn } from "@/lib/utils";
 
 type ChatMessage = {
@@ -67,7 +68,12 @@ export default function AdminMessagesPage() {
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesViewportRef = useChatAutoScroll({
+    conversationId: selectedId,
+    latestMessageId: messages.at(-1)?.id || null,
+    loading: loadingMessages,
+    sending,
+  });
 
   const selected = useMemo(
     () => conversations.find((conversation) => conversation.id === selectedId) || null,
@@ -122,10 +128,6 @@ export default function AdminMessagesPage() {
       events.close();
     };
   }, [loadConversations, loadMessages, selectedId]);
-
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
-  }, [messages, sending]);
 
   useEffect(() => () => {
     if (imagePreview) URL.revokeObjectURL(imagePreview);
@@ -260,11 +262,11 @@ export default function AdminMessagesPage() {
               <div className="min-w-0"><p className="truncate text-xs font-bold text-[#33452b]">{selected.product?.name || "Sản phẩm không còn tồn tại"}</p><p className="mt-0.5 text-[11px] text-[#788472]">{selected.product?.type === "MARKETPLACE" ? "Marketplace" : "Sản phẩm cửa hàng"}</p></div>
             </div>
 
-            <div className="min-h-0 flex-1 overflow-y-auto bg-[#fcfdfb] px-3 py-4 sm:px-5">
+            <div ref={messagesViewportRef} style={{ overflowAnchor: "none" }} className="min-h-0 flex-1 overflow-y-auto bg-[#fcfdfb] px-3 py-4 sm:px-5">
               {loadingMessages ? <div className="flex h-full items-center justify-center gap-2 text-sm text-[#718069]"><Loader2 className="h-4 w-4 animate-spin" /> Đang tải tin nhắn</div> : messages.length === 0 ? <div className="grid h-full place-items-center text-sm text-[#84907e]">Khách chưa gửi tin nhắn đầu tiên.</div> : <div className="space-y-3">{messages.map((message) => {
                 const mine = message.senderType === "ADMIN";
                 return <div key={message.id} className={cn("flex", mine ? "justify-end" : "justify-start")}><div className="max-w-[82%]"><div className={cn("overflow-hidden rounded-lg border text-sm leading-6", mine ? "border-[#425733] bg-[#425733] text-white" : "border-[#dde6d7] bg-white text-[#273520]")}>{message.imageUrl && <a href={message.imageUrl} target="_blank" rel="noreferrer" className="block bg-black/5"><img src={message.imageUrl} alt="Ảnh trong cuộc trò chuyện" className="max-h-80 w-full object-contain" /></a>}{message.content && <p className="whitespace-pre-wrap break-words px-3.5 py-2.5">{message.content}</p>}</div><p className={cn("mt-1 px-1 text-[11px] text-[#84907e]", mine && "text-right")}>{mine ? "Admin" : selected.customer.name || "Khách"} · {messageTime(message.createdAt)}</p></div></div>;
-              })}<div ref={messagesEndRef} /></div>}
+              })}</div>}
             </div>
 
             <footer className="border-t border-[#e4eadf] bg-white p-3">

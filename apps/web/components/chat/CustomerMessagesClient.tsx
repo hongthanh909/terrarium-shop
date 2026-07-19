@@ -16,6 +16,7 @@ import {
   ShoppingBag,
   X,
 } from "lucide-react";
+import { useChatAutoScroll } from "@/components/chat/useChatAutoScroll";
 import { cn } from "@/lib/utils";
 
 type ChatMessage = {
@@ -72,7 +73,12 @@ export function CustomerMessagesClient() {
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesViewportRef = useChatAutoScroll({
+    conversationId: selectedId,
+    latestMessageId: messages.at(-1)?.id || null,
+    loading: loadingMessages,
+    sending,
+  });
 
   const selected = useMemo(
     () => conversations.find((conversation) => conversation.id === selectedId) || null,
@@ -128,10 +134,6 @@ export function CustomerMessagesClient() {
       events.close();
     };
   }, [loadConversations, loadMessages, selectedId]);
-
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
-  }, [messages, sending]);
 
   useEffect(() => () => {
     if (imagePreview) URL.revokeObjectURL(imagePreview);
@@ -265,7 +267,7 @@ export function CustomerMessagesClient() {
                   {selected.product && <Link href={selected.product.href} className="grid h-9 w-9 shrink-0 place-items-center rounded-lg border border-[#d8e2d2] text-[#526248] hover:bg-[#edf3e9]" aria-label="Mở sản phẩm" title="Mở sản phẩm"><ExternalLink className="h-4 w-4" /></Link>}
                 </header>
 
-                <div className="min-h-0 flex-1 overflow-y-auto bg-[#fcfdfb] px-3 py-4 sm:px-5" aria-live="polite">
+                <div ref={messagesViewportRef} style={{ overflowAnchor: "none" }} className="min-h-0 flex-1 overflow-y-auto bg-[#fcfdfb] px-3 py-4 sm:px-5" aria-live="polite">
                   {loadingMessages ? (
                     <div className="flex h-full items-center justify-center gap-2 text-sm text-[#718069]"><Loader2 className="h-4 w-4 animate-spin" /> Đang tải tin nhắn</div>
                   ) : messages.length === 0 ? (
@@ -274,7 +276,7 @@ export function CustomerMessagesClient() {
                     <div className="space-y-3">{messages.map((message) => {
                       const mine = message.senderType === "CUSTOMER";
                       return <div key={message.id} className={cn("flex", mine ? "justify-end" : "justify-start")}><div className="max-w-[84%]"><div className={cn("overflow-hidden rounded-lg border text-sm leading-6", mine ? "border-[#425733] bg-[#425733] text-white" : "border-[#dde6d7] bg-white text-[#273520]")}>{message.imageUrl && <a href={message.imageUrl} target="_blank" rel="noreferrer" className="block bg-black/5"><img src={message.imageUrl} alt="Ảnh trong cuộc trò chuyện" className="max-h-80 w-full object-contain" /></a>}{message.content && <p className="whitespace-pre-wrap break-words px-3.5 py-2.5">{message.content}</p>}</div><p className={cn("mt-1 px-1 text-[11px] text-[#84907e]", mine && "text-right")}>{mine ? "Bạn" : "Admin"} · {messageTime(message.createdAt)}</p></div></div>;
-                    })}<div ref={messagesEndRef} /></div>
+                    })}</div>
                   )}
                 </div>
 

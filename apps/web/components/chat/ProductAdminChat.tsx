@@ -12,6 +12,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { showToast } from "@/components/ui/custom-toast";
+import { useChatAutoScroll } from "@/components/chat/useChatAutoScroll";
 import { cn } from "@/lib/utils";
 
 type ChatProductType = "CATALOG" | "MARKETPLACE";
@@ -60,7 +61,12 @@ export function ProductAdminChat({
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesViewportRef = useChatAutoScroll({
+    conversationId,
+    latestMessageId: messages.at(-1)?.id || null,
+    loading,
+    sending,
+  });
 
   const loadMessages = useCallback(async (id: string) => {
     const response = await fetch(`/api/chat/conversations/${id}/messages`, { cache: "no-store" });
@@ -106,10 +112,6 @@ export function ProductAdminChat({
       events.close();
     };
   }, [conversationId, loadMessages, open]);
-
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
-  }, [messages, sending]);
 
   useEffect(() => {
     return () => {
@@ -229,7 +231,7 @@ export function ProductAdminChat({
             <ShieldCheck className="h-5 w-5 shrink-0 text-[#4f6f3e]" aria-hidden="true" />
           </header>
 
-          <div className="min-h-0 flex-1 overflow-y-auto bg-[#fbfcfa] px-4 py-4" aria-live="polite">
+          <div ref={messagesViewportRef} style={{ overflowAnchor: "none" }} className="min-h-0 flex-1 overflow-y-auto bg-[#fbfcfa] px-4 py-4" aria-live="polite">
             {loading ? (
               <div className="grid h-full place-items-center text-[#64735d]">
                 <div className="flex items-center gap-2 text-sm font-medium"><Loader2 className="h-4 w-4 animate-spin" /> Đang mở hội thoại</div>
@@ -266,7 +268,6 @@ export function ProductAdminChat({
                     </div>
                   );
                 })}
-                <div ref={messagesEndRef} />
               </div>
             )}
           </div>
