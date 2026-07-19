@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { verifyAdminRequest } from "@/lib/admin-auth";
-import { getAuthorizedConversation } from "@/lib/product-chat";
+import { getAuthorizedConversation, getChatActor } from "@/lib/product-chat";
 import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
@@ -15,9 +15,12 @@ export async function GET(request: NextRequest) {
   const scope = searchParams.get("scope");
   const conversationId = searchParams.get("conversationId");
   const admin = scope === "admin" ? await verifyAdminRequest(request) : null;
+  const customer = scope === "customer" ? await getChatActor(request) : null;
 
   if (scope === "admin" && !admin) return new Response("Unauthorized", { status: 401 });
+  if (scope === "customer" && (!customer || customer.isAdmin)) return new Response("Unauthorized", { status: 401 });
   if (!scope && !conversationId) return new Response("Missing stream scope", { status: 400 });
+  if (scope && scope !== "admin" && scope !== "customer") return new Response("Invalid stream scope", { status: 400 });
 
   if (conversationId) {
     const authorized = await getAuthorizedConversation(request, conversationId);
@@ -83,6 +86,27 @@ export async function GET(request: NextRequest) {
                     conversation: undefined,
                   }
                 : null,
+            };
+            const nextFingerprint = `${payload.unreadCount}:${payload.latestMessage?.id || "none"}`;
+            if (nextFingerprint !== fingerprint) {
+              fingerprint = nextFingerprint;
+              controller.enqueue(encoder.encode(eventPayload(payload)));
+            }
+          } else if (scope === "customer" && customer) {
+            const [summary, latestMessage] = await Promise.all([
+              prisma.chatConversation.aggregate({
+                where: { customerId: customer.id },
+                _sum: { customerUnreadCount: true },
+              }),
+              prisma.chatMessage.findFirst({
+                where: { conversation: { customerId: customer.id } },
+                orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+                select: { id: true, conversationId: true, senderType: true, createdAt: true },
+              }),
+            ]);
+            const payload = {
+              unreadCount: summary._sum.customerUnreadCount || 0,
+              latestMessage,
             };
             const nextFingerprint = `${payload.unreadCount}:${payload.latestMessage?.id || "none"}`;
             if (nextFingerprint !== fingerprint) {

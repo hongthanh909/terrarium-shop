@@ -30,7 +30,8 @@ export async function getChatActor(request: NextRequest): Promise<ChatActor | nu
 
   const session = await getServerSession(authOptions);
   const id = (session?.user as any)?.id as string | undefined;
-  return id ? { id, isAdmin: false } : null;
+  const role = (session?.user as any)?.role as string | undefined;
+  return id && role !== "ADMIN" ? { id, isAdmin: false } : null;
 }
 
 export async function getAuthorizedConversation(request: NextRequest, conversationId: string) {

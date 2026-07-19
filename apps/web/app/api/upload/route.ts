@@ -34,8 +34,9 @@ export async function POST(request: NextRequest) {
   try {
     const admin = await verifyAdminRequest(request);
     const session = await getServerSession(authOptions);
+    const isCustomerSession = Boolean(session?.user && (session.user as any).role !== "ADMIN");
 
-    if (!admin && !session?.user) {
+    if (!admin && !isCustomerSession) {
       return NextResponse.json({ error: "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại." }, { status: 401 });
     }
 

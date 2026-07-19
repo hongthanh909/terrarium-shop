@@ -88,6 +88,7 @@ export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [chatUnread, setChatUnread] = useState(0);
   const [sellerStatus, setSellerStatus] = useState<{
     state: string;
     label: string;
@@ -96,6 +97,7 @@ export default function Header() {
   } | null>(null);
   const { data: session } = useSession();
   const pathname = usePathname();
+  const isCustomerSession = Boolean(session?.user && (session.user as any).role !== "ADMIN");
 
   // Đóng mobile menu khi chuyển trang
   useEffect(() => {
@@ -143,6 +145,47 @@ export default function Header() {
       cancelled = true;
     };
   }, [session]);
+
+  useEffect(() => {
+    if (!session?.user || (session.user as any).role !== "ADMIN" || (session.user as any).adminSession === true) return;
+    void signOut({ callbackUrl: "/login" });
+  }, [session]);
+
+  useEffect(() => {
+    if (!isCustomerSession) {
+      setChatUnread(0);
+      return;
+    }
+
+    let active = true;
+    const loadUnread = async () => {
+      const response = await fetch("/api/chat/conversations", { cache: "no-store" });
+      if (!response.ok) return;
+      const data = await response.json();
+      if (active) {
+        setChatUnread((data.conversations || []).reduce(
+          (total: number, conversation: { customerUnreadCount?: number }) => total + (conversation.customerUnreadCount || 0),
+          0,
+        ));
+      }
+    };
+
+    void loadUnread();
+    const events = new EventSource("/api/chat/events?scope=customer");
+    const updateUnread = (event: Event) => {
+      try {
+        const payload = JSON.parse((event as MessageEvent).data);
+        if (active) setChatUnread(payload.unreadCount || 0);
+      } catch {}
+    };
+    events.addEventListener("update", updateUnread);
+
+    return () => {
+      active = false;
+      events.removeEventListener("update", updateUnread);
+      events.close();
+    };
+  }, [isCustomerSession]);
 
   const cartTotal = items.reduce((s: number, i: CartItem) => s + i.price * i.quantity, 0);
   const cartCount = mounted ? getCartCount() : 0;
@@ -237,6 +280,22 @@ export default function Header() {
             {/* Separator 1 — desktop only */}
             <div className="hidden md:block w-px h-5 bg-[#c5d4b5]/80 mx-1" />
 
+            {isCustomerSession && (
+              <Link
+                href="/messages"
+                className="relative hidden h-9 w-9 items-center justify-center rounded-full text-[#4a5e38]/80 transition-colors hover:bg-[#eceee5] hover:text-[#293a20] md:flex"
+                aria-label={`Tin nhắn với admin${chatUnread > 0 ? `, ${chatUnread} tin chưa đọc` : ""}`}
+                title="Tin nhắn với admin"
+              >
+                <MessageCircle className="h-5 w-5" />
+                {chatUnread > 0 && (
+                  <span className="absolute -right-0.5 -top-0.5 grid min-h-[18px] min-w-[18px] place-items-center rounded-full bg-[#d93434] px-1 text-[10px] font-bold text-white">
+                    {chatUnread > 99 ? "99+" : chatUnread}
+                  </span>
+                )}
+              </Link>
+            )}
+
             {/* Cart */}
             <button
               className="relative w-11 h-11 md:w-9 md:h-9 flex items-center justify-center rounded-full text-[#4a5e38]/80 hover:text-[#293a20] hover:bg-[#eceee5] transition-colors"
@@ -315,6 +374,14 @@ export default function Header() {
                     <DropdownMenuItem asChild>
                       <Link href="/profile" className="cursor-pointer flex items-center gap-2"><User className="w-4 h-4" /> Tài khoản</Link>
                     </DropdownMenuItem>
+                    {(session.user as any)?.role !== "ADMIN" && (
+                      <DropdownMenuItem asChild>
+                        <Link href="/messages" className="cursor-pointer flex items-center gap-2">
+                          <MessageCircle className="w-4 h-4" /> Tin nhắn với admin
+                          {chatUnread > 0 && <span className="ml-auto grid min-w-5 place-items-center rounded-full bg-[#d93434] px-1.5 py-0.5 text-[10px] font-bold text-white">{chatUnread > 99 ? "99+" : chatUnread}</span>}
+                        </Link>
+                      </DropdownMenuItem>
+                    )}
                     {(session.user as any)?.role !== "ADMIN" && (
                       <DropdownMenuItem asChild>
                         <Link href={sellerStatus?.href || "/seller/register"} className="cursor-pointer flex items-center gap-2">
@@ -466,6 +533,15 @@ export default function Header() {
                       className="flex items-center gap-2 px-3 py-3 rounded-xl text-base font-semibold text-[#4a5e38]/80 hover:text-[#2d4520] hover:bg-[#eceee5] transition-colors duration-200"
                     >
                       <Store className="w-4 h-4" /> {sellerStatus?.label || "Mở shop"}
+                    </Link>
+                  )}
+                  {(session.user as any)?.role !== "ADMIN" && (
+                    <Link
+                      href="/messages"
+                      className="flex items-center gap-2 px-3 py-3 rounded-xl text-base font-semibold text-[#4a5e38]/80 hover:text-[#2d4520] hover:bg-[#eceee5] transition-colors duration-200"
+                    >
+                      <MessageCircle className="w-4 h-4" /> Tin nhắn với admin
+                      {chatUnread > 0 && <span className="ml-auto grid min-w-5 place-items-center rounded-full bg-[#d93434] px-1.5 py-0.5 text-[10px] font-bold text-white">{chatUnread > 99 ? "99+" : chatUnread}</span>}
                     </Link>
                   )}
                   <Link

@@ -167,6 +167,12 @@ export const authOptions: NextAuthOptions = {
           throw new Error("Email hoặc mật khẩu không đúng.");
         }
 
+        // Admin accounts must use the isolated admin provider so a storefront
+        // session can never be upgraded into administrative access.
+        if (user.role === "ADMIN") {
+          throw new Error("Email hoặc mật khẩu không đúng.");
+        }
+
         return {
           id: user.id,
           email: user.email,

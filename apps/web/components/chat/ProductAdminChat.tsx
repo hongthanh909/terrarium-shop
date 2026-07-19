@@ -1,8 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { ImagePlus, Loader2, MessageCircle, Send, ShieldCheck, X } from "lucide-react";
+import { ImagePlus, Loader2, MessageCircle, MessagesSquare, Send, ShieldCheck, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -215,6 +216,16 @@ export function ProductAdminChat({
                 Chat trực tiếp với admin
               </p>
             </div>
+            {conversationId && (
+              <Link
+                href={`/messages?conversation=${conversationId}`}
+                className="flex min-h-9 shrink-0 items-center gap-1.5 rounded-lg px-2 text-xs font-semibold text-[#526248] hover:bg-[#e9f1e4] hover:text-[#2f4725]"
+                title="Xem tất cả tin nhắn"
+              >
+                <MessagesSquare className="h-4 w-4" />
+                <span className="hidden sm:inline">Lịch sử</span>
+              </Link>
+            )}
             <ShieldCheck className="h-5 w-5 shrink-0 text-[#4f6f3e]" aria-hidden="true" />
           </header>
 
