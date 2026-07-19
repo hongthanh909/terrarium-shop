@@ -664,14 +664,24 @@ export function ProductDetailClient({
                       onClick={(event) => event.stopPropagation()}
                     />
                   ) : (
-                    <ImageWrapper
-                      src={galleryMedia[currentMediaIndex].url}
-                      alt={product.name}
-                      fill
-                      sizes="(max-width: 1024px) 100vw, 50vw"
-                      noRound
-                      className="object-contain transition-transform duration-500 group-hover:scale-[1.03]"
-                    />
+                    productImages.map((imageUrl, imageIndex) => {
+                      const isActive = imageIndex === currentMediaIndex;
+                      return (
+                        <ImageWrapper
+                          key={imageUrl}
+                          src={imageUrl}
+                          alt={isActive ? product.name : ""}
+                          aria-hidden={!isActive}
+                          fill
+                          sizes="(max-width: 1024px) 100vw, 50vw"
+                          loading="eager"
+                          fetchPriority={imageIndex === 0 ? "high" : "low"}
+                          noRound
+                          wrapperClassName={`absolute inset-0 transition-opacity duration-150 ${isActive ? "opacity-100" : "pointer-events-none opacity-0"}`}
+                          className={`object-contain transition-transform duration-300 ${isActive ? "group-hover:scale-[1.03]" : ""}`}
+                        />
+                      );
+                    })
                   )}
 
                   {/* Sale badge */}
