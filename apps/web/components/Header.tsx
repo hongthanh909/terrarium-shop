@@ -22,12 +22,13 @@ import {
 import { SearchPalette } from "@/components/ui/search-palette";
 import { Search } from "lucide-react";
 import { usePathname } from "next/navigation";
+import { SHOP_FORUM_ENABLED } from "@/lib/features";
 
 const NAV_LINKS = [
   { href: "/", label: "Trang chủ" },
   { href: "/products", label: "Sản phẩm" },
   { href: "/explore", label: "Khám phá" },
-  { href: "/forum", label: "Diễn đàn" },
+  ...(SHOP_FORUM_ENABLED ? [{ href: "/forum", label: "Diễn đàn" }] : []),
   { href: "/blog", label: "Blog" },
 ];
 
@@ -127,7 +128,7 @@ export default function Header() {
   useEffect(() => {
     let cancelled = false;
 
-    if (!session) {
+    if (!SHOP_FORUM_ENABLED || !session) {
       setSellerStatus(null);
       return;
     }
@@ -382,7 +383,7 @@ export default function Header() {
                         </Link>
                       </DropdownMenuItem>
                     )}
-                    {(session.user as any)?.role !== "ADMIN" && (
+                    {SHOP_FORUM_ENABLED && (session.user as any)?.role !== "ADMIN" && (
                       <DropdownMenuItem asChild>
                         <Link href={sellerStatus?.href || "/seller/register"} className="cursor-pointer flex items-center gap-2">
                           <Store className="w-4 h-4" /> {sellerStatus?.label || "Mở shop"}
@@ -527,7 +528,7 @@ export default function Header() {
                     <p className="text-sm font-semibold text-[#2d4520] truncate">{session.user?.name}</p>
                     <p className="text-xs text-[#5a7a48]/60 truncate">{session.user?.email}</p>
                   </div>
-                  {(session.user as any)?.role !== "ADMIN" && (
+                  {SHOP_FORUM_ENABLED && (session.user as any)?.role !== "ADMIN" && (
                     <Link
                       href={sellerStatus?.href || "/seller/register"}
                       className="flex items-center gap-2 px-3 py-3 rounded-xl text-base font-semibold text-[#4a5e38]/80 hover:text-[#2d4520] hover:bg-[#eceee5] transition-colors duration-200"

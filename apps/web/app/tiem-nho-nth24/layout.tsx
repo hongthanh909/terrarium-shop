@@ -10,6 +10,7 @@ import {
   Grid3X3, ExternalLink, Star, ShieldCheck, Compass, Brain, Store, BarChart3, MessagesSquare,
 } from "lucide-react";
 import { AdminChatNotifier } from "@/components/chat/AdminChatNotifier";
+import { SHOP_FORUM_ENABLED } from "@/lib/features";
 
 
 interface AdminLayoutProps {
@@ -41,8 +42,10 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     { href: "/tiem-nho-nth24/blog", label: "Blog", icon: FileText },
     { href: "/tiem-nho-nth24/reviews", label: "Đánh giá", icon: Star },
     { href: "/tiem-nho-nth24/analytics", label: "Phân tích truy cập", icon: BarChart3 },
-    { href: "/tiem-nho-nth24/shops", label: "Quản lý shop", icon: Store },
-    { href: "/tiem-nho-nth24/marketplace-categories", label: "Danh mục diễn đàn", icon: Grid3X3 },
+    ...(SHOP_FORUM_ENABLED ? [
+      { href: "/tiem-nho-nth24/shops", label: "Quản lý shop", icon: Store },
+      { href: "/tiem-nho-nth24/marketplace-categories", label: "Danh mục diễn đàn", icon: Grid3X3 },
+    ] : []),
     { href: "/tiem-nho-nth24/policies", label: "Chính sách", icon: ShieldCheck },
     { href: "/tiem-nho-nth24/ai-knowledge", label: "Kiến thức AI", icon: Brain },
   ];

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
 import { ADMIN_LOGIN_PATH, ADMIN_SECRET_PATH } from "@/lib/admin-path";
+import { SHOP_FORUM_ENABLED } from "@/lib/features";
 
 // ─── 🔐 SECRET ADMIN PATH — không dùng /admin nữa ────────────────────────────
 //   Thay đổi giá trị này nếu muốn đổi URL admin.
@@ -12,6 +13,25 @@ const API_ADMIN_PATH = "/api/admin";
 
 // ─── Customer-only paths ───────────────────────────────────────────────────────
 const CUSTOMER_PROTECTED_PATHS = ["/orders", "/account", "/profile", "/checkout", "/seller", "/messages"];
+
+const SHOP_FORUM_PATHS = [
+  "/forum",
+  "/marketplace",
+  "/seller",
+  "/api/marketplace",
+  "/api/seller",
+  "/api/shop/applications",
+  `${ADMIN_SECRET_PATH}/shops`,
+  `${ADMIN_SECRET_PATH}/marketplace-products`,
+  `${ADMIN_SECRET_PATH}/marketplace-categories`,
+  "/api/admin/shops",
+  "/api/admin/marketplace-products",
+  "/api/admin/marketplace-categories",
+];
+
+function matchesPathPrefix(pathname: string, prefix: string): boolean {
+  return pathname === prefix || pathname.startsWith(`${prefix}/`);
+}
 
 // ─── Security Headers (áp dụng cho mọi response) ─────────────────────────────
 function applySecurityHeaders(response: NextResponse): NextResponse {
@@ -67,6 +87,19 @@ function hasAdminSession(token: any): boolean {
 export async function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
   const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+
+  if (!SHOP_FORUM_ENABLED && SHOP_FORUM_PATHS.some((prefix) => matchesPathPrefix(pathname, prefix))) {
+    const isApi = pathname.startsWith("/api/");
+    const response = new NextResponse(
+      isApi ? JSON.stringify({ error: "Not Found" }) : null,
+      {
+        status: 404,
+        headers: isApi ? { "Content-Type": "application/json" } : undefined,
+      },
+    );
+    response.headers.set("Cache-Control", "no-store");
+    return applySecurityHeaders(response);
+  }
 
   // ─── 1. Người dùng gõ /admin → 404 (không lộ URL mới) ──────────────────────
   if (pathname === "/admin" || pathname.startsWith("/admin/")) {
