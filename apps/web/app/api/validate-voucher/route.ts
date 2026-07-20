@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { validateCoupon, incrementDiscountUsage } from "@/lib/voucher-engine";
+import { validateCoupon } from "@/lib/voucher-engine";
+import { getCurrentCustomerId } from "@/lib/order-security";
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { code, subtotal, cartItems, customerId } = body;
+    const { code, subtotal, cartItems } = body;
 
     if (!code) {
       return NextResponse.json(
@@ -13,7 +14,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const result = await validateCoupon(code, cartItems || [], subtotal, customerId);
+    const customerId = await getCurrentCustomerId();
+    const result = await validateCoupon(code, cartItems || [], subtotal, customerId ?? undefined);
 
     // NOTE: Do NOT increment usage here — only increment when order is actually placed
     // Usage is incremented in the orders API after successful payment

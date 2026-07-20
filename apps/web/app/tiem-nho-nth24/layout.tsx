@@ -7,7 +7,7 @@ import { signOut } from "next-auth/react";
 import {
   Package, Home,
   ShoppingCart, Percent, FileText, LogOut,
-  Grid3X3, ExternalLink, Star, ShieldCheck, Compass, Brain, Store, BarChart3, MessagesSquare,
+  Grid3X3, ExternalLink, Star, ShieldCheck, Compass, Brain, Store, BarChart3, MessagesSquare, TicketPercent,
 } from "lucide-react";
 import { AdminChatNotifier } from "@/components/chat/AdminChatNotifier";
 import { SHOP_FORUM_ENABLED } from "@/lib/features";
@@ -39,6 +39,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     { href: "/tiem-nho-nth24/categories", label: "Danh mục", icon: Grid3X3 },
     { href: "/tiem-nho-nth24/orders", label: "Đơn hàng", icon: ShoppingCart },
     { href: "/tiem-nho-nth24/vouchers", label: "Phiếu giảm giá", icon: Percent },
+    { href: "/tiem-nho-nth24/community-reward", label: "Ưu đãi Facebook", icon: TicketPercent },
     { href: "/tiem-nho-nth24/blog", label: "Blog", icon: FileText },
     { href: "/tiem-nho-nth24/reviews", label: "Đánh giá", icon: Star },
     { href: "/tiem-nho-nth24/analytics", label: "Phân tích truy cập", icon: BarChart3 },

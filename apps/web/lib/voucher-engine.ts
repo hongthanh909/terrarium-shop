@@ -21,6 +21,7 @@ export interface ValidationResult {
   discountAmount?: number;
   isFreeShipping?: boolean;
   campaign?: any;
+  approvalClaimId?: string;
 }
 
 export interface CartItem {
@@ -71,6 +72,26 @@ export async function validateCoupon(
     return { valid: false, error: "Mã giảm giá đã đạt giới hạn sử dụng" };
   }
 
+  let approvalClaimId: string | undefined;
+  if (campaign.requiresApproval) {
+    if (!customerId) {
+      return { valid: false, error: "Vui lòng đăng nhập để sử dụng voucher này" };
+    }
+    const claim = await prisma.facebookVoucherClaim.findFirst({
+      where: {
+        customerId,
+        campaignId: campaign.id,
+        status: "APPROVED",
+        redeemedAt: null,
+      },
+      select: { id: true },
+    });
+    if (!claim) {
+      return { valid: false, error: "Voucher này cần được admin duyệt cho tài khoản của bạn" };
+    }
+    approvalClaimId = claim.id;
+  }
+
   // Check minimum order amount
   if (campaign.minOrderAmount && subtotal < Number(campaign.minOrderAmount)) {
     return {
@@ -93,6 +114,7 @@ export async function validateCoupon(
       discountAmount: 0,
       isFreeShipping: true,
       campaign,
+      approvalClaimId,
     };
   }
 
@@ -101,6 +123,7 @@ export async function validateCoupon(
     discountAmount,
     isFreeShipping: false,
     campaign,
+    approvalClaimId,
   };
 }
 

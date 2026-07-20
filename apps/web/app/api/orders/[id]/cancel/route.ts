@@ -30,6 +30,7 @@ export async function PATCH(
             campaignId: true,
           },
         },
+        facebookVoucherClaim: { select: { id: true } },
         items: {
           select: {
             productId: true,
@@ -81,6 +82,13 @@ export async function PATCH(
             usageCount: { gt: 0 }, // Guard: không để âm
           },
           data: { usageCount: { decrement: 1 } },
+        });
+      }
+
+      if (order.facebookVoucherClaim) {
+        await tx.facebookVoucherClaim.update({
+          where: { id: order.facebookVoucherClaim.id },
+          data: { status: "APPROVED", redeemedAt: null, orderId: null },
         });
       }
 

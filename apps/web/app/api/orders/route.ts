@@ -125,6 +125,7 @@ export async function POST(request: NextRequest) {
     let shippingFee = getShippingFee(validated.data.shippingMethod);
     let discount = 0;
     let appliedCampaign: any = null;
+    let approvalClaimId: string | undefined;
     const discountCode = validated.data.discountCode?.trim().toUpperCase();
 
     if (discountCode) {
@@ -148,6 +149,7 @@ export async function POST(request: NextRequest) {
       }
 
       appliedCampaign = voucherResult.campaign;
+      approvalClaimId = voucherResult.approvalClaimId;
       if (voucherResult.isFreeShipping) {
         shippingFee = 0;
       } else {
@@ -238,6 +240,21 @@ export async function POST(request: NextRequest) {
             appliedCode: appliedCampaign.code,
           },
         });
+      }
+
+      if (approvalClaimId) {
+        if (!currentCustomerId) throw new Error("Vui lòng đăng nhập để sử dụng voucher này");
+        const claimed = await tx.facebookVoucherClaim.updateMany({
+          where: {
+            id: approvalClaimId,
+            customerId: currentCustomerId,
+            campaignId: appliedCampaign.id,
+            status: "APPROVED",
+            redeemedAt: null,
+          },
+          data: { status: "REDEEMED", redeemedAt: new Date(), orderId: newOrder.id },
+        });
+        if (claimed.count !== 1) throw new Error("Voucher đã được sử dụng hoặc không còn hiệu lực");
       }
 
       return tx.order.findUnique({

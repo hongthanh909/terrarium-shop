@@ -115,6 +115,13 @@ enum DiscountApplicableTo {
   COMBOS
 }
 
+enum FacebookVoucherClaimStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  REDEEMED
+}
+
 enum ReviewStatus {
   PENDING
   APPROVED
@@ -381,26 +388,27 @@ model Customer {
   updatedAt        DateTime            @updatedAt
 
   // Relations
-  orders               Order[]
-  carePreferences      CustomerCarePreference?
-  addresses            CustomerAddress[]
-  wishlist             Wishlist[]
-  reviews              Review[]
-  votes                ProductVote[]
-  careItems            CustomerCareItem[]
-  loyaltyPointsHistory LoyaltyPoint[]
-  blogLikes            BlogLike[]
-  blogComments         BlogComment[]
-  blogReplies          BlogReply[]
-  analyticsSessions    AnalyticsSession[]
-  analyticsEvents      AnalyticsEvent[]
-  shopApplications     ShopApplication[]       @relation("ShopApplications")
-  ownedShops           Shop[]                  @relation("OwnedShops")
-  marketplaceInquiries MarketplaceInquiry[]    @relation("MarketplaceInquiries")
-  shopRatings          ShopRating[]            @relation("ShopRatings")
-  shopPolicyViolations ShopPolicyViolation[]   @relation("ShopPolicyViolations")
-  chatConversations    ChatConversation[]      @relation("CustomerChatConversations")
-  sentChatMessages     ChatMessage[]           @relation("ChatMessageSender")
+  orders                Order[]
+  carePreferences       CustomerCarePreference?
+  addresses             CustomerAddress[]
+  wishlist              Wishlist[]
+  reviews               Review[]
+  votes                 ProductVote[]
+  careItems             CustomerCareItem[]
+  loyaltyPointsHistory  LoyaltyPoint[]
+  blogLikes             BlogLike[]
+  blogComments          BlogComment[]
+  blogReplies           BlogReply[]
+  analyticsSessions     AnalyticsSession[]
+  analyticsEvents       AnalyticsEvent[]
+  shopApplications      ShopApplication[]       @relation("ShopApplications")
+  ownedShops            Shop[]                  @relation("OwnedShops")
+  marketplaceInquiries  MarketplaceInquiry[]    @relation("MarketplaceInquiries")
+  shopRatings           ShopRating[]            @relation("ShopRatings")
+  shopPolicyViolations  ShopPolicyViolation[]   @relation("ShopPolicyViolations")
+  chatConversations     ChatConversation[]      @relation("CustomerChatConversations")
+  sentChatMessages      ChatMessage[]           @relation("ChatMessageSender")
+  facebookVoucherClaims FacebookVoucherClaim[]
 
   @@map("customers")
 }
@@ -487,12 +495,13 @@ model Order {
   updatedAt      DateTime       @updatedAt
 
   // Relations
-  customer         Customer?         @relation(fields: [customerId], references: [id])
-  items            OrderItem[]
-  shippingInfo     ShippingInfo?
-  statusLogs       OrderStatusLog[]
-  discounts        OrderDiscount[]
-  shippingTracking ShippingTracking?
+  customer             Customer?             @relation(fields: [customerId], references: [id])
+  items                OrderItem[]
+  shippingInfo         ShippingInfo?
+  statusLogs           OrderStatusLog[]
+  discounts            OrderDiscount[]
+  shippingTracking     ShippingTracking?
+  facebookVoucherClaim FacebookVoucherClaim?
 
   // ── Indexes cho query phổ biến ───────────────────────────────
   @@index([customerId, createdAt]) // lịch sử đơn của khách hàng
@@ -569,14 +578,39 @@ model DiscountCampaign {
   status            DiscountCampaignStatus @default(INACTIVE)
   applicableTo      DiscountApplicableTo
   description       String?
+  requiresApproval  Boolean                @default(false)
   createdAt         DateTime               @default(now())
   updatedAt         DateTime               @updatedAt
 
   // Relations
-  applicables    DiscountApplicable[]
-  orderDiscounts OrderDiscount[]
+  applicables           DiscountApplicable[]
+  orderDiscounts        OrderDiscount[]
+  facebookVoucherClaims FacebookVoucherClaim[]
 
   @@map("discount_campaigns")
+}
+
+model FacebookVoucherClaim {
+  id                 String                     @id @default(cuid())
+  customerId         String
+  campaignId         String
+  orderId            String?                    @unique
+  facebookName       String
+  facebookProfileUrl String?
+  status             FacebookVoucherClaimStatus @default(PENDING)
+  reviewNote         String?
+  reviewedAt         DateTime?
+  redeemedAt         DateTime?
+  createdAt          DateTime                   @default(now())
+  updatedAt          DateTime                   @updatedAt
+
+  customer Customer         @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  campaign DiscountCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  order    Order?           @relation(fields: [orderId], references: [id], onDelete: SetNull)
+
+  @@unique([customerId, campaignId])
+  @@index([status, createdAt])
+  @@map("facebook_voucher_claims")
 }
 
 model DiscountApplicable {

@@ -10,6 +10,8 @@ import { CustomToastContainer } from "@/components/ui/custom-toast";
 import { NavigationProgress } from "@/components/ui/navigation-progress";
 import { ChatWidgetClient } from "@/components/ChatWidgetClient";
 import { AnalyticsTracker } from "@/components/AnalyticsTracker";
+import { FacebookGroupVoucherPopup } from "@/components/FacebookGroupVoucherPopup";
+import { getFacebookGroupPromoPayload } from "@/lib/facebook-group-promo";
 
 export const dynamic = "force-dynamic";
 
@@ -88,11 +90,12 @@ export const metadata: Metadata = {
  * Root layout — Server Component (không dùng headers() để tránh ChunkLoadError).
  * ShopLayout (client) sẽ tự detect admin path bằng usePathname().
  */
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const facebookGroupPromo = await getFacebookGroupPromoPayload();
   return (
     <html lang="vi" className={`${inter.variable} ${dancingScript.variable}`}>
       <head>
@@ -108,6 +111,7 @@ export default function RootLayout({
             <NavigationProgress />
             <AnalyticsTracker />
             <CustomToastContainer />
+            <FacebookGroupVoucherPopup initialPromo={facebookGroupPromo} />
             <ShopLayout
               header={<Header />}
               footer={<Footer />}
