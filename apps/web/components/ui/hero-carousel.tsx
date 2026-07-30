@@ -7,6 +7,7 @@ import { ChevronLeft, ChevronRight, Star, Heart, Package, ShoppingBasket } from 
 import { useCartStore } from "@/lib/store/cartStore";
 import { showToast } from "@/components/ui/custom-toast";
 import { motion } from "framer-motion";
+import { getPrimaryProductImage, sanitizeProductImages } from "@/lib/product-images";
 
 interface Product {
   id: string;
@@ -52,7 +53,7 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
     addItem({
       productId: product.id,
       productName: product.name,
-      productImage: product.images[0] || "",
+      productImage: getPrimaryProductImage(product.images),
       price,
       quantity: 1,
     });
@@ -195,6 +196,7 @@ function ProductCardHero({
 
   const rating = product.rating ?? 5.0;
   const reviewCount = product.reviewCount ?? 5;
+  const productImages = sanitizeProductImages(product.images);
 
   const getLinkHref = (slug: string) => {
     if (!slug || slug === "#") return "#";
@@ -231,9 +233,9 @@ function ProductCardHero({
           transition={{ duration: 0.35 }}
           className="relative w-full h-full"
         >
-          {product.images[0] ? (
+          {productImages[0] ? (
             <ImageWrapper
-              src={product.images[0]}
+              src={productImages[0]}
               alt={product.name}
               fill
               noRound

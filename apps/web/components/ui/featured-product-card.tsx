@@ -5,6 +5,7 @@ import { useCartStore } from "@/lib/store/cartStore";
 import { useWishlist } from "@/lib/hooks/useWishlist";
 import { showToast } from "@/components/ui/custom-toast";
 import { getProductPackagePriceAdjustment } from "@/lib/product-packages";
+import { getPrimaryProductImage, sanitizeProductImages } from "@/lib/product-images";
 
 interface FeaturedProductCardProps {
   id: string;
@@ -61,7 +62,7 @@ export function FeaturedProductCard(props: FeaturedProductCardProps) {
     addItem({
       productId: props.id,
       productName: props.name,
-      productImage: props.images[0] || "",
+      productImage: getPrimaryProductImage(props.images),
       price,
       quantity,
       variants,
@@ -72,6 +73,7 @@ export function FeaturedProductCard(props: FeaturedProductCardProps) {
   return (
     <ProductCard
       {...props}
+      images={sanitizeProductImages(props.images)}
       onAddToCart={handleAddToCart}
       wished={isWished(props.id)}
       onToggleWishlist={() => toggleWishlist(props.id, props.name)}

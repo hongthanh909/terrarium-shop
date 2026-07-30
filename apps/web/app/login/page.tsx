@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, Suspense } from "react";
+import { useEffect, useState, Suspense } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { signIn } from "next-auth/react";
+import { getProviders, signIn } from "next-auth/react";
 import { ArrowLeft, Mail, Lock, User, Phone, Eye, EyeOff, ShieldCheck } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Label } from "@/components/ui/label";
@@ -29,6 +30,8 @@ function AuthPage() {
 
   const [isLogin, setIsLogin] = useState(true);
   const [loading, setLoading] = useState(false);
+  const [socialLoading, setSocialLoading] = useState<"google" | "facebook" | null>(null);
+  const [availableSocialProviders, setAvailableSocialProviders] = useState<Set<string>>(new Set());
   const [error, setError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [verificationEmail, setVerificationEmail] = useState<string | null>(null);
@@ -36,6 +39,26 @@ function AuthPage() {
   const [formData, setFormData] = useState({ email: "", password: "", name: "", phone: "" });
 
   const isVerifyingRegistration = !isLogin && Boolean(verificationEmail);
+
+  useEffect(() => {
+    let active = true;
+
+    getProviders()
+      .then((providers) => {
+        if (!active) return;
+        const providerIds = Object.keys(providers || {}).filter(
+          (providerId) => providerId === "google" || providerId === "facebook"
+        );
+        setAvailableSocialProviders(new Set(providerIds));
+      })
+      .catch(() => {
+        if (active) setAvailableSocialProviders(new Set());
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -116,6 +139,24 @@ function AuthPage() {
     }
   };
 
+  const handleSocialSignIn = async (provider: "google" | "facebook") => {
+    const providerName = provider === "google" ? "Google" : "Facebook";
+    setError(null);
+
+    if (!availableSocialProviders.has(provider)) {
+      setError(`Đăng nhập bằng ${providerName} đang chờ cấu hình ứng dụng OAuth.`);
+      return;
+    }
+
+    setSocialLoading(provider);
+    try {
+      await signIn(provider, { callbackUrl });
+    } catch {
+      setError(`Không thể kết nối với ${providerName}. Vui lòng thử lại.`);
+      setSocialLoading(null);
+    }
+  };
+
   const switchMode = () => {
     setIsLogin(!isLogin);
     setError(null);
@@ -193,6 +234,30 @@ function AuthPage() {
           </div>
 
           <div className="px-8 py-6">
+            {!isVerifyingRegistration && (
+              <div className="mb-5 space-y-3">
+                <SocialLoginButton
+                  provider="google"
+                  label="Tiếp tục với Google"
+                  loading={socialLoading === "google"}
+                  disabled={Boolean(socialLoading)}
+                  onClick={() => handleSocialSignIn("google")}
+                />
+                <SocialLoginButton
+                  provider="facebook"
+                  label="Tiếp tục với Facebook"
+                  loading={socialLoading === "facebook"}
+                  disabled={Boolean(socialLoading)}
+                  onClick={() => handleSocialSignIn("facebook")}
+                />
+                <div className="flex items-center gap-3 pt-1" aria-hidden="true">
+                  <div className="h-px flex-1 bg-gray-200" />
+                  <span className="text-xs text-gray-400">Hoặc tiếp tục bằng email</span>
+                  <div className="h-px flex-1 bg-gray-200" />
+                </div>
+              </div>
+            )}
+
             <form onSubmit={handleSubmit} className="space-y-4">
               <AnimatePresence>
                 {error && (
@@ -326,6 +391,38 @@ function AuthPage() {
         </motion.div>
       </div>
     </main>
+  );
+}
+
+function SocialLoginButton({ provider, label, loading, disabled, onClick }: {
+  provider: "google" | "facebook";
+  label: string;
+  loading: boolean;
+  disabled: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      className="relative flex min-h-11 w-full items-center justify-center rounded-xl border border-gray-200 bg-white px-4 text-sm font-semibold text-gray-700 shadow-sm transition-all hover:border-gray-300 hover:bg-gray-50 active:translate-y-px disabled:cursor-not-allowed disabled:opacity-60"
+    >
+      <span className="absolute left-4 flex h-5 w-5 items-center justify-center">
+        {loading ? (
+          <span className="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-[#425733]" />
+        ) : (
+          <Image
+            src={`/brands/${provider}.svg`}
+            alt=""
+            width={20}
+            height={20}
+            className="h-5 w-5 object-contain"
+          />
+        )}
+      </span>
+      <span>{loading ? "Đang kết nối..." : label}</span>
+    </button>
   );
 }
 

@@ -94,7 +94,7 @@ module.exports = {
 
   // Headers bảo mật + caching
   async headers() {
-    return [
+    const headers = [
       {
         source: '/(.*)',
         headers: [
@@ -103,6 +103,16 @@ module.exports = {
           { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
         ],
       },
+    ];
+
+    // Dev chunks keep stable URLs, so production cache headers make previews
+    // hydrate with stale client code after an edit.
+    if (process.env.NODE_ENV !== 'production') {
+      return headers;
+    }
+
+    return [
+      ...headers,
       {
         // CSS, fonts, media — truly immutable (filename has hash)
         source: '/_next/static/css/(.*)',
@@ -140,4 +150,3 @@ module.exports = {
     ];
   },
 };
-

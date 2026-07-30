@@ -3,6 +3,7 @@ import { ProductDetailClient } from "./ProductDetailClient";
 import { notFound } from "next/navigation";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { sanitizeProductImages } from "@/lib/product-images";
 
 // ISR: cache sản phẩm 60 giây
 export const dynamic = "force-dynamic";
@@ -57,9 +58,15 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
 
   const serializedProduct = {
     ...JSON.parse(JSON.stringify(product)),
+    images: sanitizeProductImages(product.images),
     voteCount: product._count?.votes || 0,
     userVoted: !!voteResult,
   };
 
-  return <ProductDetailClient initialProduct={serializedProduct} initialRelated={JSON.parse(JSON.stringify(relatedProducts))} />;
+  const serializedRelated = relatedProducts.map((relatedProduct) => ({
+    ...JSON.parse(JSON.stringify(relatedProduct)),
+    images: sanitizeProductImages(relatedProduct.images),
+  }));
+
+  return <ProductDetailClient initialProduct={serializedProduct} initialRelated={serializedRelated} />;
 }

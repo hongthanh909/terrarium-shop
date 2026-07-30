@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
+import { getPrimaryProductImage } from "@/lib/product-images";
 
 // Server component để generate metadata cho product detail
 export async function generateMetadata({
@@ -35,8 +36,8 @@ export async function generateMetadata({
       openGraph: {
         title,
         description,
-        images: product.images[0]
-          ? [{ url: product.images[0], width: 800, height: 800, alt: product.name }]
+        images: getPrimaryProductImage(product.images)
+          ? [{ url: getPrimaryProductImage(product.images), width: 800, height: 800, alt: product.name }]
           : [],
         type: "website",
         locale: "vi_VN",
@@ -46,7 +47,9 @@ export async function generateMetadata({
         card: "summary_large_image",
         title,
         description,
-        images: product.images[0] ? [product.images[0]] : [],
+        images: getPrimaryProductImage(product.images)
+          ? [getPrimaryProductImage(product.images)]
+          : [],
       },
     };
   } catch {

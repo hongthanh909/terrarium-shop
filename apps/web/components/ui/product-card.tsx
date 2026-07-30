@@ -10,6 +10,7 @@ import { SaleCountdown } from "@/components/ui/sale-countdown";
 import { ImageWrapper } from "@/components/ui/ImageWrapper";
 import { GlassCard } from "@/components/ui/glass-card";
 import { getProductPackagePriceAdjustment } from "@/lib/product-packages";
+import { sanitizeProductImages } from "@/lib/product-images";
 
 export interface ProductCardProps {
   id: string;
@@ -51,7 +52,10 @@ export function ProductCard({
 }: ProductCardProps) {
   const [selectedPackage, setSelectedPackage] = useState<"basic" | "standard" | "advanced">("basic");
   const [quantity, setQuantity] = useState(1);
+  const [imageIndex, setImageIndex] = useState(0);
   const isOutOfStock = inventory !== undefined && inventory <= 0;
+  const usableImages = sanitizeProductImages(images);
+  const activeImage = usableImages[imageIndex];
 
   const isBểProduct =
     category?.name?.toLowerCase().includes("bể") ||
@@ -89,11 +93,22 @@ export function ProductCard({
     >
       {/* Image area */}
       <Link href={`/products/${slug}`} className="block relative overflow-hidden rounded-xl sm:rounded-2xl bg-white mb-3 sm:mb-4 aspect-square flex-shrink-0">
-        {images[0] ? (
-          <ImageWrapper src={images[0]} alt={name} fill className="object-cover transition-transform duration-500 group-hover:scale-110" />
+        {activeImage ? (
+          <ImageWrapper
+            key={activeImage}
+            src={activeImage}
+            alt={name}
+            fill
+            sizes="(max-width: 639px) 50vw, (max-width: 1023px) 50vw, 25vw"
+            className="object-cover transition-transform duration-500 group-hover:scale-110"
+            onError={() => {
+              setImageIndex((current) => Math.min(current + 1, usableImages.length));
+            }}
+          />
         ) : (
-          <div className="absolute inset-0 flex items-center justify-center text-[#526248]">
-            <Package className="w-12 h-12" />
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-[#eef3e9] px-4 text-center text-[#526248]">
+            <Package className="w-10 h-10" />
+            <span className="text-xs font-medium">Ảnh đang được cập nhật</span>
           </div>
         )}
         {/* Badges */}

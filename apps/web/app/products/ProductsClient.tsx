@@ -15,6 +15,7 @@ import { motion, useReducedMotion } from "framer-motion";
 import { getProductRatingSummary } from "@/lib/product-rating";
 import { getProductPackagePriceAdjustment } from "@/lib/product-packages";
 import { trackEvent } from "@/lib/analytics-client";
+import { getPrimaryProductImage } from "@/lib/product-images";
 
 interface Product {
   id: string;
@@ -107,7 +108,7 @@ export function ProductsClient({
     addItem({
       productId: product.id,
       productName: product.name,
-      productImage: product.images[0] || "",
+      productImage: getPrimaryProductImage(product.images),
       price,
       quantity,
       variants,
