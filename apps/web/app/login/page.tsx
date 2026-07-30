@@ -60,6 +60,20 @@ function AuthPage() {
     };
   }, []);
 
+  useEffect(() => {
+    const oauthError = searchParams.get("error");
+    if (!oauthError) return;
+
+    const messages: Record<string, string> = {
+      AccessDenied: "Tài khoản này không thể đăng nhập bằng Google. Tài khoản quản trị cần dùng trang đăng nhập admin.",
+      OAuthAccountNotLinked: "Email này đã được sử dụng bằng phương thức đăng nhập khác.",
+      OAuthCallback: "Google chưa thể xác minh đăng nhập. Vui lòng thử lại.",
+      OAuthSignin: "Không thể bắt đầu đăng nhập Google. Vui lòng thử lại.",
+    };
+
+    setError(messages[oauthError] || "Đăng nhập Google chưa thành công. Vui lòng thử lại.");
+  }, [searchParams]);
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
     setError(null);

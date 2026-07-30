@@ -1,5 +1,6 @@
 import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
+import GoogleProvider from "next-auth/providers/google";
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import { ADMIN_SECRET_PATH } from "@/lib/admin-path";
@@ -73,12 +74,109 @@ async function findUserByEmail(email: string) {
   }
 }
 
+async function findOrCreateGoogleCustomer({
+  email,
+  name,
+  image,
+}: {
+  email: string;
+  name?: string | null;
+  image?: string | null;
+}) {
+  const normalizedEmail = email.trim().toLowerCase();
+  const adminEmail = process.env.ADMIN_EMAIL?.trim().toLowerCase();
+
+  // Administrative accounts must continue to use the isolated admin login.
+  if (adminEmail && normalizedEmail === adminEmail) return null;
+
+  const client = new PrismaClient({
+    datasources: {
+      db: {
+        url: process.env.DIRECT_URL || process.env.DATABASE_URL,
+      },
+    },
+    log: ["error"],
+  });
+
+  try {
+    const existing = await client.customer.findFirst({
+      where: {
+        email: {
+          equals: normalizedEmail,
+          mode: "insensitive",
+        },
+      },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        image: true,
+        role: true,
+      },
+    });
+
+    if (existing?.role === "ADMIN") return null;
+
+    if (existing) {
+      if ((!existing.name && name) || (!existing.image && image)) {
+        return client.customer.update({
+          where: { id: existing.id },
+          data: {
+            name: existing.name || name || undefined,
+            image: existing.image || image || undefined,
+          },
+          select: {
+            id: true,
+            email: true,
+            name: true,
+            image: true,
+            role: true,
+          },
+        });
+      }
+      return existing;
+    }
+
+    return client.customer.create({
+      data: {
+        email: normalizedEmail,
+        name: name || null,
+        image: image || null,
+      },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        image: true,
+        role: true,
+      },
+    });
+  } finally {
+    await client.$disconnect().catch(() => {});
+  }
+}
+
 const ADMIN_LOGIN_WINDOW_MS = 10 * 60 * 1000;
 const ADMIN_LOGIN_MAX_ATTEMPTS = 30;
 const ADMIN_LOGIN_ERROR = "Email hoặc mật khẩu không chính xác.";
 
 export const authOptions: NextAuthOptions = {
   providers: [
+    ...(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET
+      ? [
+          GoogleProvider({
+            clientId: process.env.GOOGLE_CLIENT_ID,
+            clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+            authorization: {
+              params: {
+                prompt: "select_account",
+                scope: "openid email profile",
+              },
+            },
+          }),
+        ]
+      : []),
+
     // ─── Provider 1: ADMIN login ─────────────────────────────────────────────
     CredentialsProvider({
       id: "admin-login",
@@ -192,6 +290,33 @@ export const authOptions: NextAuthOptions = {
   },
 
   callbacks: {
+    async signIn({ user, account, profile }) {
+      if (account?.provider !== "google") return true;
+
+      const googleProfile = profile as { email_verified?: boolean } | undefined;
+      if (!user.email || googleProfile?.email_verified === false) return false;
+
+      try {
+        const customer = await findOrCreateGoogleCustomer({
+          email: user.email,
+          name: user.name,
+          image: user.image,
+        });
+
+        if (!customer) return false;
+
+        user.id = customer.id;
+        user.email = customer.email;
+        user.name = customer.name;
+        user.image = customer.image;
+        (user as any).role = customer.role;
+        (user as any).authProvider = "google";
+        return true;
+      } catch (error) {
+        console.error("[Auth] Google customer sync failed", error);
+        return false;
+      }
+    },
     async jwt({ token, user, account, trigger, session }) {
       if (user) {
         token.id = user.id;
