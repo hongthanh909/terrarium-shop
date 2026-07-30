@@ -357,8 +357,8 @@ export const authOptions: NextAuthOptions = {
   },
 
   pages: {
-    // Gửi lỗi NextAuth chung về trang đăng nhập khách hàng (/login).
-    // Trang admin login tự xử lý lỗi riêng trong page component.
+    // Keep OAuth and credential failures inside the storefront login UI.
+    signIn: "/login",
     error: "/login",
   },
 
