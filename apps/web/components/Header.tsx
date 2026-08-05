@@ -218,8 +218,8 @@ export default function Header() {
         }`}
       >
         <div className="flex items-center justify-between px-3 py-2.5 sm:px-6 sm:py-3 max-w-7xl mx-auto">
-          {/* Left section: Hamburger (mobile) / Spacer for desktop balance */}
-          <div className="flex items-center gap-0.5 flex-1 min-w-0">
+          {/* Left section: Hamburger (mobile) + Logo */}
+          <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
             {/* Hamburger — chỉ hiện trên mobile */}
             <button
               className="md:hidden w-11 h-11 flex items-center justify-center rounded-full text-[#425733]/80 hover:text-[#293a20] hover:bg-[#eceee5] transition-colors flex-shrink-0"
@@ -228,6 +228,26 @@ export default function Header() {
             >
               <Menu className="w-5 h-5" />
             </button>
+
+            {/* Logo — nằm bên trái */}
+            <Link href="/" className="flex flex-col items-start group flex-shrink-0">
+              <span
+                className="text-lg sm:text-xl text-[#2d4520] group-hover:text-[#3d5a2a] transition-colors leading-tight whitespace-nowrap"
+                style={{ fontFamily: "'Dancing Script', cursive", fontWeight: 600 }}
+              >
+                tiệm Rêu Décor
+              </span>
+              <div className="flex items-center gap-1 mt-0.5 w-full">
+                <div className="flex-1 h-px bg-[#c5d4b5]/60" />
+                <span
+                  className="hidden sm:inline text-[9px] tracking-wider text-[#5a7a48]/60 whitespace-nowrap px-1"
+                  style={{ fontFamily: "'Dancing Script', cursive" }}
+                >
+                  Terrarium &amp; Decor
+                </span>
+                <div className="flex-1 h-px bg-[#c5d4b5]/60" />
+              </div>
+            </Link>
           </div>
 
           {/* Center section: Desktop Navigation Links */}
@@ -238,7 +258,7 @@ export default function Header() {
             <NavLink href="/policies" label="Chính sách" />
           </nav>
 
-          {/* Right section: Action Icons + Logo */}
+          {/* Right section: Action Icons */}
           <div className="flex items-center justify-end gap-1 sm:gap-1.5 flex-1 min-w-0">
             {/* Search trigger — desktop */}
             <button
@@ -338,7 +358,7 @@ export default function Header() {
                       <p className="font-semibold text-sm text-gray-800 truncate">{session.user?.name}</p>
                       <p className="text-xs text-gray-400 truncate">{session.user?.email}</p>
                       {(session.user as any)?.role === "ADMIN" && (
-                        <span className="inline-block mt-1 text-[10px] font-bold uppercase tracking-wider bg-[#425733] text-white px-2 py-0.5 rounded-full">Admin</span>
+                        <span className="inline-block mt-1 text-[10px] font-bold uppercase tracking-wider bg-[#425733] text-[#ffffff] px-2 py-0.5 rounded-full">Admin</span>
                       )}
                     </div>
                     <DropdownMenuSeparator />
@@ -399,29 +419,6 @@ export default function Header() {
                 </Link>
               )}
             </div>
-
-            {/* Separator before Logo */}
-            <div className="w-px h-5 bg-[#c5d4b5]/80 mx-1 sm:mx-1.5" />
-
-            {/* Right side: Logo */}
-            <Link href="/" className="flex flex-col items-center group flex-shrink-0">
-              <span
-                className="text-lg sm:text-xl text-[#2d4520] group-hover:text-[#3d5a2a] transition-colors leading-tight whitespace-nowrap"
-                style={{ fontFamily: "'Dancing Script', cursive", fontWeight: 600 }}
-              >
-                tiệm Rêu Décor
-              </span>
-              <div className="flex items-center gap-1 mt-0.5 w-full">
-                <div className="flex-1 h-px bg-[#c5d4b5]/60" />
-                <span
-                  className="hidden sm:inline text-[9px] tracking-wider text-[#5a7a48]/60 whitespace-nowrap px-1"
-                  style={{ fontFamily: "'Dancing Script', cursive" }}
-                >
-                  Terrarium &amp; Decor
-                </span>
-                <div className="flex-1 h-px bg-[#c5d4b5]/60" />
-              </div>
-            </Link>
           </div>
         </div>
 
