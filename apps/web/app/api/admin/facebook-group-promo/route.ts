@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
   const [{ config }, campaigns, grouped] = await Promise.all([
     getFacebookGroupPromo(),
     prisma.discountCampaign.findMany({
-      where: { deletedAt: null, type: "FIXED", value: 100000, minOrderAmount: { gte: 1500000 } },
+      where: { deletedAt: null, discountCodes: { none: {} }, type: "FIXED", value: 100000, minOrderAmount: { gte: 1500000 } },
       select: { id: true, code: true, status: true, expiresAt: true },
       orderBy: { createdAt: "desc" },
     }),

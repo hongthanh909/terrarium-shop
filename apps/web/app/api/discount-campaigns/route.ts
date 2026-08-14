@@ -8,10 +8,13 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const status = searchParams.get("status");
+    const includePrivate = searchParams.get("includePrivate") === "true";
+    const admin = includePrivate ? await verifyAdminRequest(request) : null;
 
     const campaigns = await prisma.discountCampaign.findMany({
       where: {
         deletedAt: null,
+        ...(admin ? {} : { discountCodes: { none: {} } }),
         ...(status ? { status: status as any } : {}),
       },
       include: {

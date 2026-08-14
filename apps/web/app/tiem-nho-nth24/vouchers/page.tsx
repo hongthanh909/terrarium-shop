@@ -158,7 +158,7 @@ export default function AdminVouchersPage() {
   const { data: campaigns = [], isLoading: loading } = useQuery({
     queryKey: ["admin-vouchers"],
     queryFn: async () => {
-      const res = await fetch("/api/discount-campaigns");
+      const res = await fetch("/api/discount-campaigns?includePrivate=true");
       if (!res.ok) throw new Error("Failed to fetch");
       const data = await res.json();
       return Array.isArray(data) ? data : [];

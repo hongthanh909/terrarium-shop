@@ -66,7 +66,7 @@ export async function getFacebookGroupPromoPayload(): Promise<FacebookGroupPromo
       getCurrentCustomerId(),
     ]);
     const campaign = config.campaignId ? await prisma.discountCampaign.findFirst({
-      where: { id: config.campaignId, status: "ACTIVE", requiresApproval: true, deletedAt: null },
+      where: { id: config.campaignId, status: "ACTIVE", requiresApproval: true, deletedAt: null, discountCodes: { none: {} } },
     }) : null;
     if (!config.enabled || !campaign) return { enabled: false };
     const claim = customerId ? await prisma.facebookVoucherClaim.findUnique({

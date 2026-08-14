@@ -50,13 +50,20 @@ export async function validateCoupon(
     }),
     prisma.discountCampaign.findUnique({
       where: { code },
-      include: { applicables: true },
+      include: {
+        applicables: true,
+        discountCodes: { select: { id: true }, take: 1 },
+      },
     }),
   ]);
   const campaign = privateCode?.campaign ?? legacyCampaign;
 
   if (!campaign) {
     return { valid: false, error: "Invalid discount code" };
+  }
+
+  if (!privateCode && legacyCampaign?.discountCodes.length) {
+    return { valid: false, error: "Voucher này chỉ dùng bằng mã riêng được cung cấp" };
   }
 
   if (privateCode) {
