@@ -126,6 +126,8 @@ export async function POST(request: NextRequest) {
     let discount = 0;
     let appliedCampaign: any = null;
     let approvalClaimId: string | undefined;
+    let appliedDiscountCodeId: string | undefined;
+    let appliedDiscountCodeUsageLimit: number | null | undefined;
     const discountCode = validated.data.discountCode?.trim().toUpperCase();
 
     if (discountCode) {
@@ -150,6 +152,8 @@ export async function POST(request: NextRequest) {
 
       appliedCampaign = voucherResult.campaign;
       approvalClaimId = voucherResult.approvalClaimId;
+      appliedDiscountCodeId = voucherResult.discountCodeId;
+      appliedDiscountCodeUsageLimit = voucherResult.discountCodeUsageLimit;
       if (voucherResult.isFreeShipping) {
         shippingFee = 0;
       } else {
@@ -177,6 +181,34 @@ export async function POST(request: NextRequest) {
 
         if (usageUpdated.count !== 1) {
           throw new Error("Voucher đã hết lượt sử dụng");
+        }
+      }
+
+      if (appliedDiscountCodeId) {
+        const codeUsageUpdated = await tx.discountCode.updateMany({
+          where: {
+            id: appliedDiscountCodeId,
+            status: "ACTIVE",
+            ...(appliedDiscountCodeUsageLimit != null
+              ? { usageCount: { lt: appliedDiscountCodeUsageLimit } }
+              : {}),
+          },
+          data: { usageCount: { increment: 1 } },
+        });
+
+        if (codeUsageUpdated.count !== 1) {
+          throw new Error("Mã voucher đã hết lượt sử dụng hoặc không còn hiệu lực");
+        }
+
+        if (appliedDiscountCodeUsageLimit != null) {
+          await tx.discountCode.updateMany({
+            where: {
+              id: appliedDiscountCodeId,
+              status: "ACTIVE",
+              usageCount: { gte: appliedDiscountCodeUsageLimit },
+            },
+            data: { status: "USED" },
+          });
         }
       }
 
@@ -236,8 +268,9 @@ export async function POST(request: NextRequest) {
           data: {
             orderId: newOrder.id,
             campaignId: appliedCampaign.id,
+            discountCodeId: appliedDiscountCodeId ?? null,
             discountAmount: discount,
-            appliedCode: appliedCampaign.code,
+            appliedCode: discountCode || appliedCampaign.code,
           },
         });
       }

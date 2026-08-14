@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
   const [{ config }, campaigns, grouped] = await Promise.all([
     getFacebookGroupPromo(),
     prisma.discountCampaign.findMany({
-      where: { type: "FIXED", value: 100000, minOrderAmount: { gte: 1500000 } },
+      where: { deletedAt: null, type: "FIXED", value: 100000, minOrderAmount: { gte: 1500000 } },
       select: { id: true, code: true, status: true, expiresAt: true },
       orderBy: { createdAt: "desc" },
     }),
@@ -27,7 +27,7 @@ export async function PUT(request: NextRequest) {
   const parsed = facebookGroupPromoSchema.safeParse(await request.json());
   if (!parsed.success) return NextResponse.json({ error: parsed.error.errors[0]?.message ?? "Cấu hình không hợp lệ" }, { status: 400 });
 
-  const campaign = parsed.data.campaignId ? await prisma.discountCampaign.findUnique({ where: { id: parsed.data.campaignId } }) : null;
+  const campaign = parsed.data.campaignId ? await prisma.discountCampaign.findFirst({ where: { id: parsed.data.campaignId, deletedAt: null } }) : null;
   if (parsed.data.enabled && (!campaign || campaign.type !== "FIXED" || Number(campaign.value) !== 100000 || Number(campaign.minOrderAmount) < 1500000)) {
     return NextResponse.json({ error: "Hãy chọn voucher cố định 100.000đ, đơn tối thiểu từ 1.500.000đ" }, { status: 400 });
   }

@@ -108,6 +108,12 @@ enum DiscountCampaignStatus {
   SOLD_OUT
 }
 
+enum DiscountCodeStatus {
+  ACTIVE
+  USED
+  DISABLED
+}
+
 enum DiscountApplicableTo {
   ALL
   CATEGORIES
@@ -579,15 +585,35 @@ model DiscountCampaign {
   applicableTo      DiscountApplicableTo
   description       String?
   requiresApproval  Boolean                @default(false)
+  deletedAt         DateTime?
   createdAt         DateTime               @default(now())
   updatedAt         DateTime               @updatedAt
 
   // Relations
   applicables           DiscountApplicable[]
+  discountCodes         DiscountCode[]
   orderDiscounts        OrderDiscount[]
   facebookVoucherClaims FacebookVoucherClaim[]
 
+  @@index([deletedAt])
   @@map("discount_campaigns")
+}
+
+model DiscountCode {
+  id          String           @id @default(cuid())
+  campaignId  String
+  code        String           @unique
+  status      DiscountCodeStatus @default(ACTIVE)
+  usageLimit  Int?             @default(1)
+  usageCount  Int              @default(0)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  campaign      DiscountCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  orderDiscounts OrderDiscount[]
+
+  @@index([campaignId, status])
+  @@map("discount_codes")
 }
 
 model FacebookVoucherClaim {
@@ -629,13 +655,16 @@ model OrderDiscount {
   id             String  @id @default(cuid())
   orderId        String
   campaignId     String
+  discountCodeId String?
   discountAmount Decimal @db.Decimal(10, 2)
   appliedCode    String
 
   // Relations
   order    Order            @relation(fields: [orderId], references: [id], onDelete: Cascade)
   campaign DiscountCampaign @relation(fields: [campaignId], references: [id])
+  discountCode DiscountCode? @relation(fields: [discountCodeId], references: [id], onDelete: SetNull)
 
+  @@index([discountCodeId])
   @@map("order_discounts")
 }
 

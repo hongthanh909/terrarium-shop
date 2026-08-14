@@ -14,7 +14,7 @@ const claimSchema = z.object({
 async function getActiveCampaign(campaignId: string | null) {
   if (!campaignId) return null;
   return prisma.discountCampaign.findFirst({
-    where: { id: campaignId, status: "ACTIVE", requiresApproval: true },
+    where: { id: campaignId, status: "ACTIVE", requiresApproval: true, deletedAt: null },
   });
 }
 

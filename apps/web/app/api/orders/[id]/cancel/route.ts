@@ -28,6 +28,7 @@ export async function PATCH(
         discounts: {
           select: {
             campaignId: true,
+            discountCodeId: true,
           },
         },
         facebookVoucherClaim: { select: { id: true } },
@@ -83,6 +84,23 @@ export async function PATCH(
           },
           data: { usageCount: { decrement: 1 } },
         });
+
+        if (discount.discountCodeId) {
+          const code = await tx.discountCode.findUnique({
+            where: { id: discount.discountCodeId },
+            select: { status: true, usageCount: true },
+          });
+
+          if (code?.usageCount && code.usageCount > 0) {
+            await tx.discountCode.update({
+              where: { id: discount.discountCodeId },
+              data: {
+                usageCount: { decrement: 1 },
+                ...(code.status === "USED" ? { status: "ACTIVE" } : {}),
+              },
+            });
+          }
+        }
       }
 
       if (order.facebookVoucherClaim) {

@@ -2,14 +2,16 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { verifyAdminRequest, unauthorizedResponse } from "@/lib/admin-auth";
 import { logAdminAction } from "@/lib/audit";
+import { Prisma } from "@prisma/client";
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const campaign = await prisma.discountCampaign.findUnique({
-      where: { id: (await params).id },
+      where: { id },
       include: {
         applicables: true,
       },
@@ -40,6 +42,8 @@ export async function PUT(
     const admin = await verifyAdminRequest(request);
     if (!admin) return unauthorizedResponse();
 
+    const { id } = await params;
+
     const body = await request.json();
     const {
       code,
@@ -59,10 +63,10 @@ export async function PUT(
 
     // Check if campaign exists
     const existing = await prisma.discountCampaign.findUnique({
-      where: { id: (await params).id },
+      where: { id },
     });
 
-    if (!existing) {
+    if (!existing || existing.deletedAt) {
       return NextResponse.json(
         { error: "Discount campaign not found" },
         { status: 404 }
@@ -85,7 +89,7 @@ export async function PUT(
 
     // Update campaign with applicable items
     const campaign = await prisma.discountCampaign.update({
-      where: { id: (await params).id },
+      where: { id },
       data: {
         code,
         type,
@@ -117,7 +121,7 @@ export async function PUT(
       },
     });
 
-    await logAdminAction(admin.id, "UPDATE", "DiscountCampaign", (await params).id, {
+    await logAdminAction(admin.id, "UPDATE", "DiscountCampaign", id, {
       code: campaign.code,
       type: campaign.type,
       value: campaign.value,
@@ -141,19 +145,69 @@ export async function DELETE(
     const admin = await verifyAdminRequest(request);
     if (!admin) return unauthorizedResponse();
 
+    const { id } = await params;
+    const existing = await prisma.discountCampaign.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        code: true,
+        deletedAt: true,
+        orderDiscounts: {
+          select: { id: true },
+          take: 1,
+        },
+      },
+    });
+
+    if (!existing || existing.deletedAt) {
+      return NextResponse.json(
+        { error: "Discount campaign not found" },
+        { status: 404 }
+      );
+    }
+
+    const hasOrderHistory = existing.orderDiscounts.length > 0;
+    if (hasOrderHistory) {
+      await prisma.discountCampaign.update({
+        where: { id },
+        data: {
+          status: "INACTIVE",
+          deletedAt: new Date(),
+        },
+      });
+
+      await logAdminAction(admin.id, "DELETE", "DiscountCampaign", id, {
+        code: existing.code,
+        mode: "ARCHIVE",
+      });
+
+      return NextResponse.json({
+        success: true,
+        archived: true,
+        message: "Voucher đã được lưu trữ vì đã có lịch sử đơn hàng",
+      });
+    }
+
     const campaign = await prisma.discountCampaign.delete({
-      where: { id: (await params).id },
+      where: { id },
     });
 
-    await logAdminAction(admin.id, "DELETE", "DiscountCampaign", (await params).id, {
+    await logAdminAction(admin.id, "DELETE", "DiscountCampaign", id, {
       code: campaign.code,
+      mode: "HARD_DELETE",
     });
 
-    return NextResponse.json({ success: true, campaign });
+    return NextResponse.json({ success: true, archived: false, campaign });
   } catch (error) {
     console.error("Error deleting discount campaign:", error);
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2003") {
+      return NextResponse.json(
+        { error: "Voucher đã có lịch sử đơn hàng và không thể xóa trực tiếp" },
+        { status: 409 }
+      );
+    }
     return NextResponse.json(
-      { error: "Failed to delete discount campaign" },
+      { error: "Không thể xóa voucher" },
       { status: 500 }
     );
   }

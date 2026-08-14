@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Plus, Edit, Trash2, Save, X, Clock } from "lucide-react";
+import { ArrowLeft, Plus, Edit, Trash2, Save, X, Clock, Copy, Download, KeyRound, RefreshCw } from "lucide-react";
 import Link from "next/link";
 import { showToast } from "@/components/ui/custom-toast";
 
@@ -57,6 +57,16 @@ interface DiscountCampaign {
   applicableTo: string;
   description: string | null;
   applicables?: { id: string; targetType: string; targetId: string }[];
+}
+
+interface DiscountCode {
+  id: string;
+  code: string;
+  status: "ACTIVE" | "USED" | "DISABLED";
+  usageLimit: number | null;
+  usageCount: number;
+  createdAt: string;
+  updatedAt: string;
 }
 
 interface CategoryItem {
@@ -120,6 +130,12 @@ export default function AdminVouchersPage() {
   const vnClock = useVNClock();
   const [submitting, setSubmitting] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [codeCampaign, setCodeCampaign] = useState<DiscountCampaign | null>(null);
+  const [privateCodes, setPrivateCodes] = useState<DiscountCode[]>([]);
+  const [codesLoading, setCodesLoading] = useState(false);
+  const [codesSubmitting, setCodesSubmitting] = useState(false);
+  const [showCodesModal, setShowCodesModal] = useState(false);
+  const [codeForm, setCodeForm] = useState({ quantity: "10", prefix: "", length: "8", usageLimit: "1" });
 
   // ─ Data for applicable targeting ───────────────────────────────────
   const [allCategories, setAllCategories] = useState<CategoryItem[]>([]);
@@ -231,17 +247,134 @@ export default function AdminVouchersPage() {
     setDeletingId(id);
     try {
       const res = await fetch(`/api/discount-campaigns/${id}`, { method: "DELETE" });
+      const data = await res.json().catch(() => ({}));
       if (res.ok) {
-        showToast.success("Xóa phiếu giảm giá thành công!");
+        showToast.success(
+          data.archived
+            ? "Voucher đã được lưu trữ và ẩn khỏi danh sách vì đã có lịch sử đơn hàng."
+            : "Xóa phiếu giảm giá thành công!"
+        );
         queryClient.invalidateQueries({ queryKey: ["admin-vouchers"] });
       } else {
-        showToast.error("Không thể xóa phiếu giảm giá");
+        showToast.error(data.error || "Không thể xóa phiếu giảm giá");
       }
     } catch {
       showToast.error("Lỗi khi xóa phiếu giảm giá");
     } finally {
       setDeletingId(null);
     }
+  };
+
+  const loadPrivateCodes = async (campaignId: string) => {
+    setCodesLoading(true);
+    try {
+      const res = await fetch(`/api/discount-campaigns/${campaignId}/codes`);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Không thể tải mã riêng");
+      setPrivateCodes(Array.isArray(data) ? data : []);
+    } catch (error) {
+      showToast.error(error instanceof Error ? error.message : "Không thể tải mã riêng");
+    } finally {
+      setCodesLoading(false);
+    }
+  };
+
+  const handleOpenCodes = (campaign: DiscountCampaign) => {
+    setCodeCampaign(campaign);
+    setCodeForm({
+      quantity: "10",
+      prefix: campaign.code.replace(/[^A-Za-z0-9]/g, "").slice(0, 6).toUpperCase(),
+      length: "8",
+      usageLimit: "1",
+    });
+    setPrivateCodes([]);
+    setShowCodesModal(true);
+    void loadPrivateCodes(campaign.id);
+  };
+
+  const handleGenerateCodes = async () => {
+    if (!codeCampaign) return;
+    setCodesSubmitting(true);
+    try {
+      const res = await fetch(`/api/discount-campaigns/${codeCampaign.id}/codes`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          quantity: Number(codeForm.quantity),
+          prefix: codeForm.prefix,
+          length: Number(codeForm.length),
+          usageLimit: Number(codeForm.usageLimit),
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Không thể tạo mã riêng");
+      setPrivateCodes((current) => [...(data.codes || []), ...current]);
+      showToast.success(`Đã tạo ${data.codes?.length || 0} mã riêng`);
+    } catch (error) {
+      showToast.error(error instanceof Error ? error.message : "Không thể tạo mã riêng");
+    } finally {
+      setCodesSubmitting(false);
+    }
+  };
+
+  const handleToggleCode = async (code: DiscountCode) => {
+    if (!codeCampaign) return;
+    const nextStatus = code.status === "DISABLED" ? "ACTIVE" : "DISABLED";
+    setCodesSubmitting(true);
+    try {
+      const res = await fetch(`/api/discount-campaigns/${codeCampaign.id}/codes/${code.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: nextStatus }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Không thể cập nhật mã riêng");
+      setPrivateCodes((current) => current.map((item) => item.id === code.id ? data : item));
+      showToast.success(nextStatus === "ACTIVE" ? "Đã mở lại mã" : "Đã khóa mã");
+    } catch (error) {
+      showToast.error(error instanceof Error ? error.message : "Không thể cập nhật mã riêng");
+    } finally {
+      setCodesSubmitting(false);
+    }
+  };
+
+  const handleDeleteCode = async (code: DiscountCode) => {
+    if (!codeCampaign || !confirm(`Xóa mã ${code.code}?`)) return;
+    setCodesSubmitting(true);
+    try {
+      const res = await fetch(`/api/discount-campaigns/${codeCampaign.id}/codes/${code.id}`, { method: "DELETE" });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Không thể xóa mã riêng");
+      setPrivateCodes((current) => current.filter((item) => item.id !== code.id));
+      showToast.success("Đã xóa mã riêng");
+    } catch (error) {
+      showToast.error(error instanceof Error ? error.message : "Không thể xóa mã riêng");
+    } finally {
+      setCodesSubmitting(false);
+    }
+  };
+
+  const handleCopyCode = async (code: string) => {
+    try {
+      await navigator.clipboard.writeText(code);
+      showToast.success("Đã sao chép mã");
+    } catch {
+      showToast.error("Không thể sao chép mã");
+    }
+  };
+
+  const handleDownloadCodes = () => {
+    if (!codeCampaign || privateCodes.length === 0) return;
+    const csv = [
+      "code,status,usageCount,usageLimit",
+      ...privateCodes.map((code) => `${code.code},${code.status},${code.usageCount},${code.usageLimit ?? ""}`),
+    ].join("\n");
+    const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `${codeCampaign.code.toLowerCase()}-codes.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
   };
 
   if (loading) {
@@ -316,6 +449,14 @@ export default function AdminVouchersPage() {
                 </td>
                 <td className="px-6 py-4 text-right">
                   <div className="flex justify-end gap-1">
+                    <button
+                      onClick={() => handleOpenCodes(c)}
+                      disabled={deletingId !== null}
+                      className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-[#425733] hover:bg-[#e3ebdd] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                      title="Quản lý mã riêng"
+                    >
+                      <KeyRound className="w-4 h-4" />
+                    </button>
                     <button
                       onClick={() => handleOpenModal(c)}
                       disabled={deletingId !== null}
@@ -691,6 +832,170 @@ export default function AdminVouchersPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {showCodesModal && codeCampaign && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-3xl overflow-hidden rounded-2xl bg-white shadow-2xl">
+            <div className="flex items-center justify-between border-b px-6 py-5">
+              <div>
+                <h3 className="text-xl font-bold text-gray-800">Mã riêng của {codeCampaign.code}</h3>
+                <p className="mt-1 text-xs text-gray-500">Mỗi mã có thể gửi cho một khách hàng và theo dõi lượt dùng riêng.</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowCodesModal(false)}
+                className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
+                title="Đóng"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <div className="space-y-5 p-6">
+              <div className="grid gap-3 sm:grid-cols-4">
+                <label className="text-sm font-semibold text-gray-700">
+                  Số lượng
+                  <input
+                    type="number"
+                    min="1"
+                    max="500"
+                    value={codeForm.quantity}
+                    onChange={(e) => setCodeForm({ ...codeForm, quantity: e.target.value })}
+                    className="mt-1.5 w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm font-normal focus:border-[#425733]/50 focus:outline-none"
+                  />
+                </label>
+                <label className="text-sm font-semibold text-gray-700">
+                  Tiền tố
+                  <input
+                    type="text"
+                    maxLength={12}
+                    value={codeForm.prefix}
+                    onChange={(e) => setCodeForm({ ...codeForm, prefix: e.target.value.toUpperCase() })}
+                    placeholder="VIP"
+                    className="mt-1.5 w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm font-normal uppercase focus:border-[#425733]/50 focus:outline-none"
+                  />
+                </label>
+                <label className="text-sm font-semibold text-gray-700">
+                  Độ dài ngẫu nhiên
+                  <input
+                    type="number"
+                    min="4"
+                    max="24"
+                    value={codeForm.length}
+                    onChange={(e) => setCodeForm({ ...codeForm, length: e.target.value })}
+                    className="mt-1.5 w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm font-normal focus:border-[#425733]/50 focus:outline-none"
+                  />
+                </label>
+                <label className="text-sm font-semibold text-gray-700">
+                  Lượt dùng / mã
+                  <input
+                    type="number"
+                    min="1"
+                    max="1000"
+                    value={codeForm.usageLimit}
+                    onChange={(e) => setCodeForm({ ...codeForm, usageLimit: e.target.value })}
+                    className="mt-1.5 w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm font-normal focus:border-[#425733]/50 focus:outline-none"
+                  />
+                </label>
+              </div>
+
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <button
+                  type="button"
+                  onClick={handleGenerateCodes}
+                  disabled={codesSubmitting}
+                  className="flex min-h-10 items-center gap-2 rounded-xl bg-[#425733] px-4 text-sm font-semibold text-white transition-colors hover:bg-[#364a29] disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {codesSubmitting ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
+                  Tạo mã ngẫu nhiên
+                </button>
+                <button
+                  type="button"
+                  onClick={handleDownloadCodes}
+                  disabled={privateCodes.length === 0}
+                  className="flex min-h-10 items-center gap-2 rounded-xl border border-gray-200 px-4 text-sm font-semibold text-gray-600 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  <Download className="h-4 w-4" />
+                  Tải CSV
+                </button>
+              </div>
+
+              <div className="overflow-hidden rounded-xl border border-gray-200">
+                {codesLoading ? (
+                  <div className="flex items-center justify-center gap-2 py-12 text-sm text-gray-400">
+                    <RefreshCw className="h-4 w-4 animate-spin" /> Đang tải mã...
+                  </div>
+                ) : privateCodes.length === 0 ? (
+                  <div className="py-12 text-center text-sm text-gray-400">Chưa có mã riêng. Hãy tạo lô mã đầu tiên.</div>
+                ) : (
+                  <div className="max-h-[360px] overflow-y-auto">
+                    <table className="w-full text-left text-sm">
+                      <thead className="sticky top-0 bg-gray-50 text-xs uppercase text-gray-500">
+                        <tr>
+                          <th className="px-4 py-3">Mã</th>
+                          <th className="px-4 py-3">Trạng thái</th>
+                          <th className="px-4 py-3">Lượt dùng</th>
+                          <th className="px-4 py-3 text-right">Thao tác</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-100">
+                        {privateCodes.map((code) => (
+                          <tr key={code.id}>
+                            <td className="px-4 py-3 font-mono font-semibold text-gray-800">{code.code}</td>
+                            <td className="px-4 py-3">
+                              <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${
+                                code.status === "ACTIVE"
+                                  ? "bg-green-50 text-green-700"
+                                  : code.status === "USED"
+                                  ? "bg-blue-50 text-blue-700"
+                                  : "bg-gray-100 text-gray-600"
+                              }`}>
+                                {code.status === "ACTIVE" ? "Đang hoạt động" : code.status === "USED" ? "Đã dùng" : "Đã khóa"}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3 text-gray-600">
+                              {code.usageCount}{code.usageLimit ? ` / ${code.usageLimit}` : ""}
+                            </td>
+                            <td className="px-4 py-3">
+                              <div className="flex justify-end gap-1">
+                                <button
+                                  type="button"
+                                  onClick={() => void handleCopyCode(code.code)}
+                                  className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition-colors hover:bg-[#e3ebdd] hover:text-[#425733]"
+                                  title="Sao chép mã"
+                                >
+                                  <Copy className="h-4 w-4" />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => void handleToggleCode(code)}
+                                  disabled={codesSubmitting || code.status === "USED"}
+                                  className="rounded-lg px-2.5 py-1.5 text-xs font-semibold text-gray-500 transition-colors hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-40"
+                                >
+                                  {code.status === "DISABLED" ? "Mở" : "Khóa"}
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => void handleDeleteCode(code)}
+                                  disabled={codesSubmitting || code.usageCount > 0 || code.status === "USED"}
+                                  className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition-colors hover:bg-red-50 hover:text-red-500 disabled:cursor-not-allowed disabled:opacity-40"
+                                  title="Xóa mã chưa dùng"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       )}

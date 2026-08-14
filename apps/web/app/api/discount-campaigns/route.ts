@@ -10,7 +10,10 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get("status");
 
     const campaigns = await prisma.discountCampaign.findMany({
-      where: status ? { status: status as any } : {},
+      where: {
+        deletedAt: null,
+        ...(status ? { status: status as any } : {}),
+      },
       include: {
         applicables: true,
       },

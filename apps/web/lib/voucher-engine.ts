@@ -22,6 +22,8 @@ export interface ValidationResult {
   isFreeShipping?: boolean;
   campaign?: any;
   approvalClaimId?: string;
+  discountCodeId?: string;
+  discountCodeUsageLimit?: number | null;
 }
 
 export interface CartItem {
@@ -40,18 +42,35 @@ export async function validateCoupon(
   subtotal: number,
   customerId?: string
 ): Promise<ValidationResult> {
-  // Find campaign by code
-  const campaign = await prisma.discountCampaign.findUnique({
-    where: { code },
-    include: { applicables: true },
-  });
+  // A private code takes precedence over the legacy campaign code.
+  const [privateCode, legacyCampaign] = await Promise.all([
+    prisma.discountCode.findUnique({
+      where: { code },
+      include: { campaign: { include: { applicables: true } } },
+    }),
+    prisma.discountCampaign.findUnique({
+      where: { code },
+      include: { applicables: true },
+    }),
+  ]);
+  const campaign = privateCode?.campaign ?? legacyCampaign;
 
   if (!campaign) {
     return { valid: false, error: "Invalid discount code" };
   }
 
+  if (privateCode) {
+    if (privateCode.status !== "ACTIVE") {
+      return { valid: false, error: "Mã giảm giá này không còn hoạt động" };
+    }
+
+    if (privateCode.usageLimit != null && privateCode.usageCount >= privateCode.usageLimit) {
+      return { valid: false, error: "Mã giảm giá này đã hết lượt sử dụng" };
+    }
+  }
+
   // Check campaign status
-  if (campaign.status !== "ACTIVE") {
+  if (campaign.status !== "ACTIVE" || campaign.deletedAt) {
     return { valid: false, error: "Mã giảm giá chưa được kích hoạt" };
   }
 
@@ -115,6 +134,8 @@ export async function validateCoupon(
       isFreeShipping: true,
       campaign,
       approvalClaimId,
+      discountCodeId: privateCode?.id,
+      discountCodeUsageLimit: privateCode?.usageLimit,
     };
   }
 
@@ -124,6 +145,8 @@ export async function validateCoupon(
     isFreeShipping: false,
     campaign,
     approvalClaimId,
+    discountCodeId: privateCode?.id,
+    discountCodeUsageLimit: privateCode?.usageLimit,
   };
 }
 
