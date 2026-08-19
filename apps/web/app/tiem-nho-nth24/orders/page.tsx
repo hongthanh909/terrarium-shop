@@ -5,6 +5,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { Eye, Package, ChevronDown } from "lucide-react";
 import { showToast } from "@/components/ui/custom-toast";
+import { requiresShippingQuote } from "@/lib/shipping-coverage";
 import {
   DataTable, FilterBar, SelectFilter, StatusBadge, Pagination,
   type Column,
@@ -16,6 +17,7 @@ interface Order {
   status: string;
   paymentStatus: string;
   total: number;
+  shippingQuoteRequired?: boolean;
   createdAt: string;
   customer: { id: string; name: string; email: string } | null;
   shippingInfo?: {
@@ -146,7 +148,12 @@ export default function AdminOrdersPage() {
       label: "Tổng Tiền",
       sortable: true,
       render: (o) => (
-        <span className="font-bold text-[#425733]">{o.total.toLocaleString("vi-VN")}₫</span>
+        <div>
+          <span className="font-bold text-[#425733]">{o.total.toLocaleString("vi-VN")}₫</span>
+          {(o.shippingQuoteRequired || requiresShippingQuote(o.shippingInfo?.province)) && (
+            <p className="mt-1 text-[11px] font-semibold text-[#a27625]">Chờ báo phí ship</p>
+          )}
+        </div>
       ),
     },
     {

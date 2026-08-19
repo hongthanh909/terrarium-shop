@@ -22,6 +22,7 @@ export async function GET(request: NextRequest) {
               { customer: { phone: { contains: search, mode: "insensitive" } } },
               { catalogProduct: { name: { contains: search, mode: "insensitive" } } },
               { marketplaceProduct: { title: { contains: search, mode: "insensitive" } } },
+              { order: { orderNumber: { contains: search, mode: "insensitive" } } },
             ],
           }
         : {}),

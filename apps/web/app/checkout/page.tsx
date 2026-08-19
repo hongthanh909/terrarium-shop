@@ -15,6 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { showToast } from "@/components/ui/custom-toast";
 import { getAnalyticsContext, trackEvent } from "@/lib/analytics-client";
+import { requiresShippingQuote } from "@/lib/shipping-coverage";
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -64,6 +65,7 @@ export default function CheckoutPage() {
   }, [session]);
 
   const subtotal = getSelectedTotal();
+  const shippingQuoteRequired = requiresShippingQuote(formData.province);
   const total = subtotal + shippingFee - discount;
 
   useEffect(() => {
@@ -79,6 +81,15 @@ export default function CheckoutPage() {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+
+    if (name === "province") {
+      setShippingFee(requiresShippingQuote(value) ? 0 : formData.shippingMethod === "GHN_EXPRESS" ? 50000 : 30000);
+    }
+
+    if (name === "shippingMethod" && !shippingQuoteRequired) {
+      setShippingFee(value === "GHN_EXPRESS" ? 50000 : value === "GRAB" ? 60000 : 30000);
+    }
+
     // Reset voucher state when user edits the voucher code
     if (name === "voucherCode") {
       setVoucherApplied(false);
@@ -86,7 +97,7 @@ export default function CheckoutPage() {
       setDiscount(0);
       setIsFreeShipping(false);
       if (!isFreeShipping) {
-        setShippingFee(formData.shippingMethod === "GHN_EXPRESS" ? 50000 : 30000);
+        setShippingFee(shippingQuoteRequired ? 0 : formData.shippingMethod === "GHN_EXPRESS" ? 50000 : 30000);
       }
     }
   };
@@ -117,7 +128,10 @@ export default function CheckoutPage() {
           setIsFreeShipping(true);
           setShippingFee(0);
           setDiscount(0);
-          showToast.success("Áp dụng thành công!", "Miễn phí vận chuyển cho đơn hàng này");
+          showToast.success(
+            "Áp dụng thành công!",
+            shippingQuoteRequired ? "Shop vẫn sẽ trao đổi lại phí vận chuyển theo địa chỉ nhận hàng" : "Miễn phí vận chuyển cho đơn hàng này",
+          );
         } else {
           setDiscount(data.discountAmount || 0);
           setIsFreeShipping(false);
@@ -213,6 +227,7 @@ export default function CheckoutPage() {
         orderNumber: order.orderNumber,
         method: formData.paymentMethod,
       });
+      if (order.chatConversation?.id) params.set("conversation", order.chatConversation.id);
       router.push(`/checkout/success?${params.toString()}`);
 
     } catch (error) {
@@ -290,6 +305,11 @@ export default function CheckoutPage() {
                   <div>
                     <Label htmlFor="province">Tỉnh/Thành *</Label>
                     <Input id="province" name="province" value={formData.province} onChange={handleInputChange} required placeholder="TP. Hồ Chí Minh" />
+                    {shippingQuoteRequired && (
+                      <p className="mt-2 text-xs font-medium leading-5 text-[#8a5a18]">
+                        Địa chỉ ngoài TP.HCM. Phí vận chuyển sẽ được shop trao đổi lại qua tin nhắn.
+                      </p>
+                    )}
                   </div>
                   <div>
                     <Label htmlFor="district">Quận/Huyện *</Label>
@@ -308,26 +328,42 @@ export default function CheckoutPage() {
                 <CardTitle>Phương Thức Vận Chuyển</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                <label className="flex items-center justify-between gap-3 p-4 border rounded-xl cursor-pointer hover:bg-muted/50">
-                  <div className="flex items-center gap-3">
-                    <input type="radio" name="shippingMethod" value="GHN_STANDARD" checked={formData.shippingMethod === "GHN_STANDARD"} onChange={(e) => { handleInputChange(e); setShippingFee(30000); }} className="h-4 w-4" />
-                    <div>
-                      <p className="font-semibold">Giao Hàng Tiêu Chuẩn</p>
-                      <p className="text-sm text-muted-foreground">3-5 ngày làm việc</p>
+                {shippingQuoteRequired ? (
+                  <div className="border border-[#e5d3ad] bg-[#fffaf0] p-4 text-sm text-[#6d531e]">
+                    <div className="flex items-start gap-3">
+                      <Truck className="mt-0.5 h-5 w-5 shrink-0 text-[#a27625]" />
+                      <div>
+                        <p className="font-semibold">Phí vận chuyển sẽ được trao đổi lại</p>
+                        <p className="mt-1 leading-5">
+                          Shop sẽ kiểm tra phí giao hàng thực tế và nhắn tin lại cho bạn trước khi chốt đơn.
+                        </p>
+                      </div>
                     </div>
                   </div>
-                  <p className="font-semibold">30.000₫</p>
-                </label>
-                <label className="flex items-center justify-between gap-3 p-4 border rounded-xl cursor-pointer hover:bg-muted/50">
-                  <div className="flex items-center gap-3">
-                    <input type="radio" name="shippingMethod" value="GHN_EXPRESS" checked={formData.shippingMethod === "GHN_EXPRESS"} onChange={(e) => { handleInputChange(e); setShippingFee(50000); }} className="h-4 w-4" />
-                    <div>
-                      <p className="font-semibold">Giao Hàng Nhanh</p>
-                      <p className="text-sm text-muted-foreground">1-2 ngày làm việc</p>
-                    </div>
-                  </div>
-                  <p className="font-semibold">50.000₫</p>
-                </label>
+                ) : (
+                  <>
+                    <label className="flex items-center justify-between gap-3 p-4 border rounded-xl cursor-pointer hover:bg-muted/50">
+                      <div className="flex items-center gap-3">
+                        <input type="radio" name="shippingMethod" value="GHN_STANDARD" checked={formData.shippingMethod === "GHN_STANDARD"} onChange={handleInputChange} className="h-4 w-4" />
+                        <div>
+                          <p className="font-semibold">Giao Hàng Tiêu Chuẩn</p>
+                          <p className="text-sm text-muted-foreground">3-5 ngày làm việc</p>
+                        </div>
+                      </div>
+                      <p className="font-semibold">30.000₫</p>
+                    </label>
+                    <label className="flex items-center justify-between gap-3 p-4 border rounded-xl cursor-pointer hover:bg-muted/50">
+                      <div className="flex items-center gap-3">
+                        <input type="radio" name="shippingMethod" value="GHN_EXPRESS" checked={formData.shippingMethod === "GHN_EXPRESS"} onChange={handleInputChange} className="h-4 w-4" />
+                        <div>
+                          <p className="font-semibold">Giao Hàng Nhanh</p>
+                          <p className="text-sm text-muted-foreground">1-2 ngày làm việc</p>
+                        </div>
+                      </div>
+                      <p className="font-semibold">50.000₫</p>
+                    </label>
+                  </>
+                )}
               </CardContent>
             </Card>
 
@@ -405,6 +441,8 @@ export default function CheckoutPage() {
                 ? "Đang kiểm tra voucher..."
                 : (formData.voucherCode.trim().length > 0 && !voucherApplied && !voucherError)
                 ? "Vui lòng kiểm tra voucher trước"
+                : shippingQuoteRequired
+                ? "Gửi yêu cầu - Trao đổi phí sau"
                 : `Đặt Hàng - ${total.toLocaleString("vi-VN")}₫`
               }
             </Button>
@@ -444,7 +482,7 @@ export default function CheckoutPage() {
                   </div>
                   <div className="flex justify-between text-muted-foreground">
                     <span>Phí vận chuyển</span>
-                    <span>{shippingFee.toLocaleString("vi-VN")}₫</span>
+                    <span>{shippingQuoteRequired ? "Trao đổi riêng" : `${shippingFee.toLocaleString("vi-VN")}₫`}</span>
                   </div>
                   {discount > 0 && (
                     <div className="flex justify-between text-[#425733] font-medium">
@@ -454,7 +492,7 @@ export default function CheckoutPage() {
                   )}
                   <Separator />
                   <div className="flex justify-between font-bold text-lg pt-2">
-                    <span>Tổng cộng</span>
+                    <span>{shippingQuoteRequired ? "Tạm tính" : "Tổng cộng"}</span>
                     <span className="text-primary">{total.toLocaleString("vi-VN")}₫</span>
                   </div>
                 </div>
@@ -465,8 +503,8 @@ export default function CheckoutPage() {
         <div className="fixed inset-x-0 bottom-0 z-40 border-t border-[#d8e4cf] bg-white/95 px-4 py-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] shadow-[0_-12px_30px_rgba(26,46,18,0.10)] backdrop-blur lg:hidden">
           <div className="mx-auto flex max-w-6xl items-center gap-3">
             <div className="min-w-0 flex-1">
-              <p className="text-xs font-semibold text-muted-foreground">Tá»•ng thanh toĂ¡n</p>
-              <p className="text-lg font-extrabold text-[#425733]">{total.toLocaleString("vi-VN")}â‚«</p>
+              <p className="text-xs font-semibold text-muted-foreground">{shippingQuoteRequired ? "Tạm tính" : "Tổng thanh toán"}</p>
+              <p className="text-lg font-extrabold text-[#425733]">{total.toLocaleString("vi-VN")}₫</p>
             </div>
             <Button
               type="submit"
@@ -477,7 +515,7 @@ export default function CheckoutPage() {
                 (formData.voucherCode.trim().length > 0 && !voucherApplied && !voucherError)
               }
             >
-              {loading ? "Äang xá»­ lĂ½..." : "Äáº·t hĂ ng"}
+              {loading ? "Đang xử lý..." : shippingQuoteRequired ? "Gửi yêu cầu" : "Đặt hàng"}
             </Button>
           </div>
         </div>

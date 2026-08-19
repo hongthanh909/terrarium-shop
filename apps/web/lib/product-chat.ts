@@ -83,6 +83,13 @@ export function serializeChatConversation(conversation: any) {
 
   return {
     ...conversation,
+    order: conversation.order
+      ? {
+          id: conversation.order.id,
+          orderNumber: conversation.order.orderNumber,
+          shippingQuoteRequired: conversation.order.shippingQuoteRequired,
+        }
+      : null,
     product,
     catalogProduct: undefined,
     marketplaceProduct: undefined,
@@ -93,6 +100,7 @@ export const chatConversationInclude = {
   customer: { select: { id: true, name: true, email: true, phone: true, image: true } },
   catalogProduct: { select: { id: true, name: true, slug: true, images: true } },
   marketplaceProduct: { select: { id: true, title: true, slug: true, images: true } },
+  order: { select: { id: true, orderNumber: true, shippingQuoteRequired: true } },
   messages: {
     take: 1,
     orderBy: { createdAt: "desc" as const },

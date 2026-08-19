@@ -4,8 +4,9 @@ import { useState, useEffect, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { ImageWrapper } from "@/components/ui/ImageWrapper";
-import { ArrowLeft, Check, X, Printer, ChevronDown } from "lucide-react";
+import { ArrowLeft, Check, X, Printer, ChevronDown, MessageCircle } from "lucide-react";
 import { showToast } from "@/components/ui/custom-toast";
+import { requiresShippingQuote } from "@/lib/shipping-coverage";
 
 interface Order {
   id: string;
@@ -15,6 +16,7 @@ interface Order {
   total: number;
   subtotal: number;
   shippingFee: number;
+  shippingQuoteRequired?: boolean;
   discount: number;
   createdAt: string;
   customer: {
@@ -29,6 +31,7 @@ interface Order {
     email?: string;
     address: string;
     fullAddress: string;
+    province?: string;
   };
   items: Array<{
     id: string;
@@ -49,6 +52,7 @@ export default function AdminOrderDetailPage() {
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
+  const [chatLoading, setChatLoading] = useState(false);
 
   const getOrderStatusStyles = (status: string) => {
     const styles: Record<string, string> = {
@@ -168,6 +172,25 @@ export default function AdminOrderDetailPage() {
     window.print();
   };
 
+  const shippingQuoteRequired = Boolean(
+    order?.shippingQuoteRequired || requiresShippingQuote(order?.shippingInfo?.province),
+  );
+
+  const openShippingChat = async () => {
+    if (!order || chatLoading) return;
+    setChatLoading(true);
+    try {
+      const response = await fetch(`/api/orders/${orderId}/chat`, { method: "POST" });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Không thể mở cuộc trò chuyện.");
+      router.push(`/tiem-nho-nth24/messages?conversation=${encodeURIComponent(data.conversation.id)}`);
+    } catch (chatError: any) {
+      showToast.error(chatError.message || "Không thể mở cuộc trò chuyện.");
+    } finally {
+      setChatLoading(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="text-center py-12">
@@ -200,6 +223,18 @@ export default function AdminOrderDetailPage() {
             In hóa đơn
           </button>
         </div>
+        {shippingQuoteRequired && (
+          <div className="mt-4 flex flex-col gap-3 border border-[#e5d3ad] bg-[#fffaf0] p-4 text-sm text-[#6d531e] sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="font-semibold">Đơn ngoài khu vực TP.HCM - cần trao đổi phí vận chuyển</p>
+              <p className="mt-1 text-xs leading-5">Mức phí hiện tại chưa phải phí cuối cùng. Hãy nhắn cho khách trước khi giao hàng.</p>
+            </div>
+            <button type="button" onClick={openShippingChat} disabled={chatLoading} className="inline-flex min-h-10 shrink-0 items-center justify-center gap-2 rounded-lg bg-[#425733] px-4 py-2 text-sm font-semibold text-white hover:bg-[#364a29] disabled:opacity-60">
+              <MessageCircle className="h-4 w-4" />
+              {chatLoading ? "Đang mở..." : "Nhắn với khách"}
+            </button>
+          </div>
+        )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -261,7 +296,7 @@ export default function AdminOrderDetailPage() {
               </div>
               <div className="flex justify-between text-gray-600">
                 <span>Phí vận chuyển</span>
-                <span>{order.shippingFee.toLocaleString("vi-VN")}₫</span>
+                <span>{shippingQuoteRequired ? "Trao đổi riêng" : `${order.shippingFee.toLocaleString("vi-VN")}₫`}</span>
               </div>
               {order.discount > 0 && (
                 <div className="flex justify-between text-[#425733] font-medium">

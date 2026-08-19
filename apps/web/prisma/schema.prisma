@@ -188,6 +188,7 @@ enum MarketplaceInquiryStatus {
 enum ChatProductType {
   CATALOG
   MARKETPLACE
+  ORDER
 }
 
 enum ChatConversationStatus {
@@ -497,6 +498,8 @@ model Order {
   paymentMethod  PaymentMethod
   paymentStatus  PaymentStatus  @default(PENDING)
   status         OrderStatus    @default(PENDING)
+  shippingQuoteRequired Boolean  @default(false)
+  shippingQuoteNote     String?
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @updatedAt
 
@@ -508,6 +511,7 @@ model Order {
   discounts            OrderDiscount[]
   shippingTracking     ShippingTracking?
   facebookVoucherClaim FacebookVoucherClaim?
+  chatConversation     ChatConversation?
 
   // ── Indexes cho query phổ biến ───────────────────────────────
   @@index([customerId, createdAt]) // lịch sử đơn của khách hàng
@@ -1086,6 +1090,7 @@ model ChatConversation {
   productType          ChatProductType
   catalogProductId     String?
   marketplaceProductId String?
+  orderId              String?                @unique
   status               ChatConversationStatus @default(OPEN)
   lastMessageAt        DateTime               @default(now())
   customerUnreadCount  Int                    @default(0)
@@ -1098,6 +1103,7 @@ model ChatConversation {
   customer           Customer            @relation("CustomerChatConversations", fields: [customerId], references: [id], onDelete: Cascade)
   catalogProduct     Product?            @relation("CatalogProductChatConversations", fields: [catalogProductId], references: [id], onDelete: Cascade)
   marketplaceProduct MarketplaceProduct? @relation("MarketplaceProductChatConversations", fields: [marketplaceProductId], references: [id], onDelete: Cascade)
+  order             Order?               @relation(fields: [orderId], references: [id], onDelete: Cascade)
   messages           ChatMessage[]
 
   @@unique([customerId, catalogProductId])

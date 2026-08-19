@@ -4,6 +4,7 @@ import { validateCoupon } from "@/lib/voucher-engine";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { recordPurchaseEvent } from "@/lib/analytics-server";
+import { requiresShippingQuote } from "@/lib/shipping-coverage";
 
 const serializeOrder = (order: any) => ({
   ...order,
@@ -122,7 +123,10 @@ export async function POST(request: NextRequest) {
       0
     );
 
-    let shippingFee = getShippingFee(validated.data.shippingMethod);
+    const shippingQuoteRequired = requiresShippingQuote(validated.data.shippingInfo?.province);
+    let shippingFee = shippingQuoteRequired
+      ? 0
+      : getShippingFee(validated.data.shippingMethod);
     let discount = 0;
     let appliedCampaign: any = null;
     let approvalClaimId: string | undefined;
@@ -236,6 +240,10 @@ export async function POST(request: NextRequest) {
           total,
           shippingMethod: validated.data.shippingMethod,
           paymentMethod: validated.data.paymentMethod,
+          shippingQuoteRequired,
+          shippingQuoteNote: shippingQuoteRequired
+            ? "Ngoài khu vực giao hàng TP.HCM - shop sẽ trao đổi lại phí vận chuyển qua tin nhắn."
+            : null,
           status: "PENDING",
           paymentStatus: "PENDING",
         },
@@ -259,6 +267,26 @@ export async function POST(request: NextRequest) {
           data: {
             orderId: newOrder.id,
             ...validated.data.shippingInfo,
+          },
+        });
+      }
+
+      if (shippingQuoteRequired && currentCustomerId) {
+        await tx.chatConversation.create({
+          data: {
+            customerId: currentCustomerId,
+            productType: "ORDER",
+            orderId: newOrder.id,
+            status: "OPEN",
+            lastMessageAt: new Date(),
+            adminUnreadCount: 1,
+            messages: {
+              create: {
+                senderId: currentCustomerId,
+                senderType: "CUSTOMER",
+                content: `Tôi vừa đặt đơn ${orderNumber}. Địa chỉ giao hàng ngoài TP.HCM, vui lòng trao đổi lại phí vận chuyển với tôi.`,
+              },
+            },
           },
         });
       }
@@ -296,6 +324,7 @@ export async function POST(request: NextRequest) {
           items: true,
           shippingInfo: true,
           discounts: true,
+          chatConversation: { select: { id: true } },
         },
       });
     });
@@ -335,6 +364,7 @@ export async function GET(request: NextRequest) {
           items: true,
           shippingInfo: true,
           statusLogs: true,
+          chatConversation: { select: { id: true } },
           discounts: {
             include: { campaign: true },
           },

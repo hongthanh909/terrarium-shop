@@ -1,13 +1,15 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
+import { useState } from "react";
 import Link from "next/link";
 import { ImageWrapper } from "@/components/ui/ImageWrapper";
 import { useQuery } from "@tanstack/react-query";
 import { useSession } from "next-auth/react";
 import {
-  ArrowLeft, Package, Clock, CheckCircle, Truck, XCircle, CreditCard
+  ArrowLeft, Package, Clock, CheckCircle, Truck, XCircle, CreditCard, MessageCircle
 } from "lucide-react";
+import { requiresShippingQuote } from "@/lib/shipping-coverage";
 
 const ORDER_STATUS_STEPS = [
   { key: "PENDING",    label: "Chờ xác nhận",  icon: Clock },
@@ -43,6 +45,7 @@ export default function OrderDetailPage() {
   const router = useRouter();
   const { data: session, status: sessionStatus } = useSession();
   const orderId = params.id as string;
+  const [chatLoading, setChatLoading] = useState(false);
 
   const { data: order, isLoading, error } = useQuery({
     queryKey: ["order-detail", orderId],
@@ -86,10 +89,26 @@ export default function OrderDetailPage() {
   }
 
   const isCancelled = order.status === "CANCELLED";
+  const shippingQuoteRequired = Boolean(order.shippingQuoteRequired || requiresShippingQuote(order.shippingInfo?.province));
   const cancelLog = order.statusLogs?.find((l: any) => l.status === "CANCELLED");
   const isAdminCancelled = cancelLog?.note === "Admin đã huỷ đơn hàng";
   
   const currentStepIndex = ORDER_STATUS_STEPS.findIndex((s) => s.key === order.status);
+
+  const openShippingChat = async () => {
+    if (chatLoading) return;
+    setChatLoading(true);
+    try {
+      const response = await fetch(`/api/orders/${orderId}/chat`, { method: "POST" });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Không thể mở cuộc trò chuyện.");
+      router.push(`/messages?conversation=${encodeURIComponent(data.conversation.id)}`);
+    } catch (chatError) {
+      console.error("Open order chat error:", chatError);
+    } finally {
+      setChatLoading(false);
+    }
+  };
 
   const getStatusBadge = (status: string) => {
     const badges: Record<string, string> = {
@@ -148,6 +167,19 @@ export default function OrderDetailPage() {
               {PAYMENT_METHOD_LABELS[order.paymentMethod] || order.paymentMethod}
             </span>
           </div>
+
+          {shippingQuoteRequired && (
+            <div className="mb-6 flex flex-col gap-3 border border-[#e5d3ad] bg-[#fffaf0] p-4 text-sm text-[#6d531e] sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="font-semibold">Phí vận chuyển sẽ được trao đổi lại</p>
+                <p className="mt-1 text-xs leading-5">Shop sẽ nhắn tin báo phí theo địa chỉ giao hàng trước khi chốt đơn.</p>
+              </div>
+              <button type="button" onClick={openShippingChat} disabled={chatLoading} className="inline-flex min-h-10 shrink-0 items-center justify-center gap-2 rounded-lg bg-[#425733] px-4 py-2 text-sm font-semibold text-white hover:bg-[#364a29] disabled:opacity-60">
+                <MessageCircle className="h-4 w-4" />
+                {chatLoading ? "Đang mở..." : "Trao đổi với shop"}
+              </button>
+            </div>
+          )}
 
           {/* Progress Timeline */}
           {!isCancelled ? (
@@ -246,7 +278,7 @@ export default function OrderDetailPage() {
             </div>
             <div className="flex justify-between text-gray-600">
               <span>Phí vận chuyển</span>
-              <span>{order.shippingFee.toLocaleString("vi-VN")}₫</span>
+              <span>{shippingQuoteRequired ? "Trao đổi riêng" : `${order.shippingFee.toLocaleString("vi-VN")}₫`}</span>
             </div>
             {order.discount > 0 && (
               <div className="flex justify-between text-[#425733]">

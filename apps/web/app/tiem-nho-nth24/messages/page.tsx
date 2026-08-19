@@ -36,6 +36,7 @@ type Conversation = {
   lastMessageAt: string;
   customer: { id: string; name: string | null; email: string; phone: string | null; image: string | null };
   product: { id: string; type: "CATALOG" | "MARKETPLACE"; name: string; image: string | null; href: string } | null;
+  order: { id: string; orderNumber: string; shippingQuoteRequired: boolean } | null;
   messages: ChatMessage[];
 };
 
@@ -236,7 +237,7 @@ export default function AdminMessagesPage() {
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2"><p className="truncate text-sm font-bold text-[#26361f]">{conversation.customer.name || conversation.customer.email}</p><span className="ml-auto shrink-0 text-[11px] text-[#84907e]">{relativeTime(conversation.lastMessageAt)}</span></div>
-                  <p className="mt-0.5 truncate text-xs font-medium text-[#617058]">{conversation.product?.name || "Sản phẩm không còn tồn tại"}</p>
+                  <p className="mt-0.5 truncate text-xs font-medium text-[#617058]">{conversation.order ? `Đơn hàng #${conversation.order.orderNumber}` : conversation.product?.name || "Sản phẩm không còn tồn tại"}</p>
                   <div className="mt-1 flex items-center gap-2"><p className={cn("truncate text-xs", conversation.adminUnreadCount ? "font-semibold text-[#344c2a]" : "text-[#84907e]")}>{last?.senderType === "ADMIN" ? "Bạn: " : ""}{last?.content || (last?.imageUrl ? "Đã gửi một ảnh" : "Chưa có tin nhắn")}</p>{conversation.adminUnreadCount > 0 && <span className="ml-auto grid min-w-5 shrink-0 place-items-center rounded-full bg-[#d93434] px-1.5 py-0.5 text-[10px] font-bold text-white">{conversation.adminUnreadCount > 99 ? "99+" : conversation.adminUnreadCount}</span>}</div>
                 </div>
               </button>
@@ -252,7 +253,7 @@ export default function AdminMessagesPage() {
           <>
             <header className="flex min-h-16 items-center gap-3 border-b border-[#e4eadf] px-3 py-2.5 sm:px-4">
               <button type="button" onClick={() => setSelectedId(null)} className="grid h-9 w-9 shrink-0 place-items-center rounded-lg text-[#526248] hover:bg-[#edf3e9] lg:hidden" aria-label="Quay lại danh sách"><ArrowLeft className="h-4.5 w-4.5" /></button>
-              <div className="min-w-0 flex-1"><p className="truncate text-sm font-bold text-[#26361f]">{selected.customer.name || selected.customer.email}</p><p className="truncate text-xs text-[#73806d]">{selected.customer.email}{selected.customer.phone ? ` · ${selected.customer.phone}` : ""}</p></div>
+              <div className="min-w-0 flex-1"><p className="truncate text-sm font-bold text-[#26361f]">{selected.customer.name || selected.customer.email}</p><p className="truncate text-xs text-[#73806d]">{selected.order ? `Đơn hàng #${selected.order.orderNumber} · ` : ""}{selected.customer.email}{selected.customer.phone ? ` · ${selected.customer.phone}` : ""}</p></div>
               {selected.product && <Link href={selected.product.href} target="_blank" className="grid h-9 w-9 shrink-0 place-items-center rounded-lg border border-[#d8e2d2] text-[#526248] hover:bg-[#edf3e9]" aria-label="Mở sản phẩm" title="Mở sản phẩm"><ExternalLink className="h-4 w-4" /></Link>}
               <button type="button" onClick={toggleStatus} className={cn("grid h-9 w-9 shrink-0 place-items-center rounded-lg border", selected.status === "OPEN" ? "border-[#ead1d1] text-red-600 hover:bg-red-50" : "border-[#cfe0c7] text-[#487038] hover:bg-[#eef6ea]")} aria-label={selected.status === "OPEN" ? "Đóng hội thoại" : "Mở lại hội thoại"} title={selected.status === "OPEN" ? "Đóng hội thoại" : "Mở lại hội thoại"}>{selected.status === "OPEN" ? <XCircle className="h-4 w-4" /> : <CheckCircle2 className="h-4 w-4" />}</button>
             </header>

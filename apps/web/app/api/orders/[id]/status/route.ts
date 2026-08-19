@@ -25,6 +25,7 @@ export async function GET(
         status: true,
         paymentStatus: true,
         paymentMethod: true,
+        shippingQuoteRequired: true,
         total: true,
         subtotal: true,
         discount: true,
@@ -85,6 +86,7 @@ export async function GET(
 
     return NextResponse.json({
       paymentStatus: order.paymentStatus,
+      shippingQuoteRequired: order.shippingQuoteRequired,
       status: expired ? "CANCELLED" : order.status,
       expired,
       remainingSeconds:

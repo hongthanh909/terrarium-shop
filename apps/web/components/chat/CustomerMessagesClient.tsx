@@ -39,6 +39,7 @@ type Conversation = {
     image: string | null;
     href: string;
   } | null;
+  order: { id: string; orderNumber: string; shippingQuoteRequired: boolean } | null;
   messages: ChatMessage[];
 };
 
@@ -236,14 +237,14 @@ export function CustomerMessagesClient() {
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2">
-                        <p className="truncate text-sm font-bold text-[#26361f]">{conversation.product?.name || "Sản phẩm không còn tồn tại"}</p>
+                        <p className="truncate text-sm font-bold text-[#26361f]">{conversation.order ? `Đơn hàng #${conversation.order.orderNumber}` : conversation.product?.name || "Sản phẩm không còn tồn tại"}</p>
                         <span className="ml-auto shrink-0 text-[11px] text-[#84907e]">{relativeTime(conversation.lastMessageAt)}</span>
                       </div>
                       <p className="mt-1 truncate text-xs text-[#788472]">
                         {last?.senderType === "CUSTOMER" ? "Bạn: " : "Admin: "}{last?.content || (last?.imageUrl ? "Đã gửi một ảnh" : "Chưa có tin nhắn")}
                       </p>
                       <div className="mt-1.5 flex items-center gap-2">
-                        <span className="text-[11px] font-medium text-[#718069]">{conversation.product?.type === "MARKETPLACE" ? "Marketplace" : "Sản phẩm cửa hàng"}</span>
+                        <span className="text-[11px] font-medium text-[#718069]">{conversation.order ? "Trao đổi phí vận chuyển" : conversation.product?.type === "MARKETPLACE" ? "Marketplace" : "Sản phẩm cửa hàng"}</span>
                         {conversation.customerUnreadCount > 0 && <span className="ml-auto grid min-w-5 place-items-center rounded-full bg-[#d93434] px-1.5 py-0.5 text-[10px] font-bold text-white">{conversation.customerUnreadCount > 99 ? "99+" : conversation.customerUnreadCount}</span>}
                       </div>
                     </div>
@@ -263,7 +264,7 @@ export function CustomerMessagesClient() {
                 <header className="flex min-h-16 items-center gap-3 border-b border-[#e4eadf] px-3 py-2.5 sm:px-4">
                   <button type="button" onClick={() => setSelectedId(null)} className="grid h-9 w-9 shrink-0 place-items-center rounded-lg text-[#526248] hover:bg-[#edf3e9] lg:hidden" aria-label="Quay lại danh sách"><ArrowLeft className="h-4.5 w-4.5" /></button>
                   <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-[#e5ece0]">{selected.product?.image ? <img src={selected.product.image} alt="" className="h-full w-full object-cover" /> : <div className="grid h-full place-items-center"><MessageCircle className="h-4 w-4 text-[#617058]" /></div>}</div>
-                  <div className="min-w-0 flex-1"><p className="truncate text-sm font-bold text-[#26361f]">{selected.product?.name || "Sản phẩm không còn tồn tại"}</p><p className="truncate text-xs text-[#73806d]">Tư vấn trực tiếp với admin</p></div>
+                  <div className="min-w-0 flex-1"><p className="truncate text-sm font-bold text-[#26361f]">{selected.order ? `Đơn hàng #${selected.order.orderNumber}` : selected.product?.name || "Sản phẩm không còn tồn tại"}</p><p className="truncate text-xs text-[#73806d]">{selected.order ? "Trao đổi phí vận chuyển với admin" : "Tư vấn trực tiếp với admin"}</p></div>
                   {selected.product && <Link href={selected.product.href} className="grid h-9 w-9 shrink-0 place-items-center rounded-lg border border-[#d8e2d2] text-[#526248] hover:bg-[#edf3e9]" aria-label="Mở sản phẩm" title="Mở sản phẩm"><ExternalLink className="h-4 w-4" /></Link>}
                 </header>
 

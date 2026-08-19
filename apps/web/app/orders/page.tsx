@@ -10,6 +10,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { showToast } from "@/components/ui/custom-toast";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { OrderTimeline } from "@/components/ui/order-timeline";
+import { requiresShippingQuote } from "@/lib/shipping-coverage";
 
 
 
@@ -22,6 +23,8 @@ interface Order {
   total: number;
   subtotal: number;
   shippingFee: number;
+  shippingQuoteRequired?: boolean;
+  shippingInfo?: { province?: string } | null;
   discount: number;
   createdAt: string;
   items: Array<{
@@ -353,7 +356,7 @@ export default function MyOrdersPage() {
                         </div>
                         <div className="flex justify-between text-gray-600">
                           <span>Phí vận chuyển</span>
-                          <span>{order.shippingFee.toLocaleString("vi-VN")}₫</span>
+                          <span>{order.shippingQuoteRequired || requiresShippingQuote(order.shippingInfo?.province) ? "Trao đổi riêng" : `${order.shippingFee.toLocaleString("vi-VN")}₫`}</span>
                         </div>
                         {order.discount > 0 && (
                           <div className="flex justify-between text-[#425733]">

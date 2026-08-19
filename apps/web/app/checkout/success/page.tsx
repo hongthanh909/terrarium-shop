@@ -21,11 +21,13 @@ export default function CheckoutSuccessPage() {
   const searchParams = useSearchParams();
   const orderId     = searchParams.get("orderId")     || "";
   const orderNumber = searchParams.get("orderNumber") || "";
+  const conversationId = searchParams.get("conversation") || "";
 
   const [serverTotal, setServerTotal] = useState<number | null>(null);
   const [subtotal, setSubtotal]       = useState<number>(0);
   const [discount, setDiscount]       = useState<number>(0);
   const [shippingFee, setShippingFee] = useState<number>(0);
+  const [shippingQuoteRequired, setShippingQuoteRequired] = useState(false);
   const [orderItems, setOrderItems]   = useState<OrderItem[]>([]);
   const [loadingOrder, setLoadingOrder] = useState(true);
 
@@ -40,6 +42,7 @@ export default function CheckoutSuccessPage() {
       if (data.subtotal != null) setSubtotal(data.subtotal);
       if (data.discount != null) setDiscount(data.discount);
       if (data.shippingFee != null) setShippingFee(data.shippingFee);
+      setShippingQuoteRequired(Boolean(data.shippingQuoteRequired));
       if (data.items) setOrderItems(data.items);
     } catch (e) {
       console.error("[success] fetch error:", e);
@@ -92,12 +95,14 @@ export default function CheckoutSuccessPage() {
             </div>
 
             <h1 className="text-2xl font-bold text-[#2d4a1e] mb-2">
-              Đặt Hàng Thành Công!
+              {shippingQuoteRequired ? "Đã tiếp nhận yêu cầu!" : "Đặt Hàng Thành Công!"}
             </h1>
             <p className="text-gray-500 text-sm mb-6 leading-relaxed">
               Cảm ơn bạn đã tin tưởng và mua hàng tại{" "}
               <span className="font-semibold text-[#425733]">Tiệm Rêu Décor</span>.<br />
-              Đơn hàng của bạn đã được tiếp nhận và sẽ sớm được xử lý.
+              {shippingQuoteRequired
+                ? "Shop sẽ nhắn tin lại để trao đổi phí vận chuyển trước khi chốt đơn."
+                : "Đơn hàng của bạn đã được tiếp nhận và sẽ sớm được xử lý."}
             </p>
 
             {/* Mã đơn hàng */}
@@ -133,7 +138,7 @@ export default function CheckoutSuccessPage() {
                 </div>
                 <div className="flex justify-between text-gray-500">
                   <span>Phí vận chuyển</span>
-                  <span className="text-gray-700">{shippingFee.toLocaleString("vi-VN")}đ</span>
+                  <span className="text-gray-700">{shippingQuoteRequired ? "Trao đổi riêng" : `${shippingFee.toLocaleString("vi-VN")}đ`}</span>
                 </div>
                 {discount > 0 && (
                   <div className="flex justify-between text-[#425733] font-medium">
@@ -142,7 +147,7 @@ export default function CheckoutSuccessPage() {
                   </div>
                 )}
                 <div className="border-t pt-2 flex justify-between font-bold text-base">
-                  <span>Tổng cộng</span>
+                  <span>{shippingQuoteRequired ? "Tạm tính" : "Tổng cộng"}</span>
                   <span className="text-[#425733]">{safeTotal.toLocaleString("vi-VN")}đ</span>
                 </div>
               </div>
@@ -205,6 +210,13 @@ export default function CheckoutSuccessPage() {
 
             {/* Buttons */}
             <div className="space-y-3">
+              {conversationId && (
+                <Button className="w-full bg-[#edf5e8] hover:bg-[#e0eed8] h-12 text-base font-semibold rounded-xl text-[#425733]" asChild>
+                  <Link href={`/messages?conversation=${encodeURIComponent(conversationId)}`}>
+                    Trao đổi phí vận chuyển với shop
+                  </Link>
+                </Button>
+              )}
               <Button className="w-full bg-[#425733] hover:bg-[#364a29] h-12 text-base font-semibold rounded-xl" asChild>
                 <Link href="/orders" className="flex items-center justify-center gap-2">
                   Xem Đơn Hàng Của Tôi
