@@ -22,9 +22,9 @@ export default async function Footer() {
   ];
 
   return (
-    <footer className="border-t border-border bg-white pb-8 pt-16">
-      <div className="max-w-7xl mx-auto px-6">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+    <footer className="border-t border-border bg-white pb-[max(2rem,env(safe-area-inset-bottom))] pt-12 sm:pt-16">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6">
+        <div className="mb-10 grid grid-cols-1 gap-9 sm:grid-cols-2 md:mb-12 md:grid-cols-4 md:gap-12">
           {/* Brand */}
           <div className="space-y-4">
             <Link href="/" className="flex flex-col group">
@@ -68,24 +68,24 @@ export default async function Footer() {
           {/* Quick Links */}
           <div>
             <h3 className="mb-4 font-bold text-foreground">Khám phá</h3>
-            <ul className="space-y-3 text-sm text-muted-foreground">
+            <ul className="space-y-1 text-sm text-muted-foreground sm:space-y-2">
               <li>
-                <Link href="/products" className="transition-colors hover:text-foreground">
+                <Link href="/products" className="inline-flex min-h-11 items-center transition-colors hover:text-foreground">
                   Tất cả sản phẩm
                 </Link>
               </li>
               <li>
-                <Link href="/explore" className="transition-colors hover:text-foreground">
+                <Link href="/explore" className="inline-flex min-h-11 items-center transition-colors hover:text-foreground">
                   Được chọn tuần này
                 </Link>
               </li>
               <li>
-                <Link href="/blog" className="transition-colors hover:text-foreground">
+                <Link href="/blog" className="inline-flex min-h-11 items-center transition-colors hover:text-foreground">
                   Blog & Kiến thức
                 </Link>
               </li>
               <li>
-                <Link href="/about" className="transition-colors hover:text-foreground">
+                <Link href="/about" className="inline-flex min-h-11 items-center transition-colors hover:text-foreground">
                   Về chúng tôi
                 </Link>
               </li>
@@ -95,7 +95,7 @@ export default async function Footer() {
           {/* Contact */}
           <div>
             <h3 className="mb-4 font-bold text-foreground">Liên hệ</h3>
-            <ul className="space-y-3 text-sm text-muted-foreground">
+            <ul className="space-y-1 text-sm text-muted-foreground sm:space-y-2">
               {emails.length > 0 ? (
                 emails.map((item: any, idx: number) => (
                   <li key={idx} className="flex items-center gap-2">
@@ -164,27 +164,27 @@ export default async function Footer() {
             <h3 className="mb-4 font-bold text-foreground">Chính sách</h3>
             <ul className="space-y-3 text-sm text-muted-foreground">
               <li>
-                <Link href="/policies/warranty" className="transition-colors hover:text-foreground">
+                <Link href="/policies/warranty" className="inline-flex min-h-11 items-center transition-colors hover:text-foreground">
                   Bảo hành
                 </Link>
               </li>
               <li>
-                <Link href="/policies/shipping" className="transition-colors hover:text-foreground">
+                <Link href="/policies/shipping" className="inline-flex min-h-11 items-center transition-colors hover:text-foreground">
                   Vận chuyển
                 </Link>
               </li>
               <li>
-                <Link href="/policies/returns" className="transition-colors hover:text-foreground">
+                <Link href="/policies/returns" className="inline-flex min-h-11 items-center transition-colors hover:text-foreground">
                   Đổi trả
                 </Link>
               </li>
               <li>
-                <Link href="/policies/privacy" className="transition-colors hover:text-foreground">
+                <Link href="/policies/privacy" className="inline-flex min-h-11 items-center transition-colors hover:text-foreground">
                   Bảo mật
                 </Link>
               </li>
               <li>
-                <Link href="/policies/faq" className="transition-colors hover:text-foreground">
+                <Link href="/policies/faq" className="inline-flex min-h-11 items-center transition-colors hover:text-foreground">
                   Câu hỏi thường gặp
                 </Link>
               </li>

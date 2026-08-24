@@ -1225,14 +1225,16 @@ export default function ChatWidget() {
             className={`fixed z-[9999] cw-panel flex min-h-0 flex-col ${expanded ? "cw-expanded" : ""}`}
             style={{
               right: panelRect.right,
-              bottom: panelRect.bottom,
+              bottom: isMobilePanel
+                ? `calc(${panelRect.bottom}px + env(safe-area-inset-bottom))`
+                : panelRect.bottom,
               width: panelRect.width,
               height: panelRect.height,
               "--cw-scale": panelScale,
-              borderRadius: 16,
+              borderRadius: 8,
               overflow: "hidden",
               background: "var(--cw-surface)",
-              boxShadow: "0 12px 48px rgba(26,46,18,0.12), 0 0 0 1px rgba(227,235,221,0.6)",
+              boxShadow: "0 12px 48px rgba(25,28,24,0.14), 0 0 0 1px rgba(25,28,24,0.08)",
             } as React.CSSProperties}
           >
             {!isMobilePanel && (["n", "s", "e", "w", "ne", "nw", "se", "sw"] as ResizeHandle[]).map((handle) => (
@@ -1255,7 +1257,7 @@ export default function ChatWidget() {
               onPointerUp={onPanelDragEnd}
               onPointerCancel={onPanelDragEnd}
               style={{
-                background: "linear-gradient(135deg, #1a2f18 0%, #243d20 100%)",
+                background: "#191c18",
                 borderBottom: "1px solid rgba(255,255,255,0.06)",
               }}
             >
@@ -1805,7 +1807,12 @@ export default function ChatWidget() {
             exit={{ scale: 0, opacity: 0 }}
             transition={{ type: "spring", stiffness: 500, damping: 25 }}
             className="cw-floating-launcher fixed z-[9999] select-none touch-none"
-            style={{ right: bubblePos.right, bottom: bubblePos.bottom }}
+            style={{
+              right: bubblePos.right,
+              bottom: viewport.w < 640
+                ? `calc(${bubblePos.bottom}px + env(safe-area-inset-bottom))`
+                : bubblePos.bottom,
+            }}
             onPointerDown={onPointerDown}
             onPointerMove={onPointerMove}
             onPointerUp={onPointerUp}

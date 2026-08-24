@@ -54,15 +54,15 @@ export function AnalyticsTracker() {
   if (consent !== null) return null;
 
   return (
-    <aside data-analytics-consent className="fixed inset-x-3 bottom-3 z-[10020] mx-auto max-w-2xl rounded-lg border border-border bg-white p-4 shadow-[0_12px_36px_rgba(25,28,24,0.14)] sm:flex sm:items-center sm:gap-4" aria-label="Tùy chọn thống kê truy cập">
-      <p className="flex-1 text-sm leading-6 text-gray-700">
+    <aside data-analytics-consent className="fixed inset-x-0 bottom-0 z-[10020] mx-auto border-x-0 border-b-0 border-t border-border bg-white px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-4 shadow-[0_-12px_36px_rgba(25,28,24,0.12)] sm:inset-x-3 sm:bottom-3 sm:max-w-2xl sm:rounded-lg sm:border sm:p-4 sm:shadow-[0_12px_36px_rgba(25,28,24,0.14)] md:flex md:items-center md:gap-4" aria-label="Tùy chọn thống kê truy cập">
+      <p className="flex-1 text-[13px] leading-5 text-gray-700 sm:text-sm sm:leading-6">
         Tiệm Rêu dùng thống kê ẩn danh để cải thiện trải nghiệm. Không ghi nội dung chat, biểu mẫu hoặc thông tin thanh toán.
       </p>
-      <div className="mt-3 flex shrink-0 gap-2 sm:mt-0">
-        <button type="button" onClick={() => setAnalyticsConsent(false)} className="min-h-11 rounded-md border border-border px-4 text-sm font-semibold text-foreground hover:bg-muted">
+      <div className="mt-3 grid shrink-0 grid-cols-2 gap-2 md:mt-0">
+        <button type="button" onClick={() => setAnalyticsConsent(false)} className="min-h-11 rounded-md border border-border px-3 text-sm font-semibold text-foreground hover:bg-muted sm:px-4">
           Chỉ cần thiết
         </button>
-        <button type="button" onClick={() => setAnalyticsConsent(true)} className="min-h-11 rounded-md bg-foreground px-4 text-sm font-semibold text-white hover:bg-foreground/85">
+        <button type="button" onClick={() => setAnalyticsConsent(true)} className="min-h-11 rounded-md bg-foreground px-3 text-sm font-semibold text-white hover:bg-foreground/85 sm:px-4">
           Cho phép thống kê
         </button>
       </div>
