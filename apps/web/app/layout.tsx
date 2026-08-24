@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Dancing_Script } from "next/font/google";
+import { Dancing_Script, Inter, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -28,6 +28,13 @@ const dancingScript = Dancing_Script({
   weight: ["400", "600", "700"],
 });
 
+const playfair = Playfair_Display({
+  subsets: ["latin", "latin-ext"],
+  variable: "--font-playfair",
+  display: "swap",
+  weight: ["500", "600", "700"],
+});
+
 export const metadata: Metadata = {
   metadataBase: new URL(
     process.env.NEXT_PUBLIC_SITE_URL || "https://tiemreudecor.com"
@@ -37,7 +44,7 @@ export const metadata: Metadata = {
     template: "%s | Tiệm Rêu Décor",
   },
   description:
-    "Khám phá bộ sưu tập terrarium và moss art thủ công tại Tiệm Rêu Décor. Giao hàng toàn quốc, chăm sóc tận tâm.",
+    "Khám phá terrarium và moss art thủ công tại Tiệm Rêu Décor. Giao tiêu chuẩn trong TP.HCM; các khu vực khác được tư vấn phí riêng.",
   icons: {
     icon: [
       { url: "/favicon.ico", sizes: "32x32", type: "image/x-icon" },
@@ -60,7 +67,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Tiệm Rêu Décor - Terrarium & Moss Art Thủ Công",
     description:
-      "Khám phá bộ sưu tập terrarium và moss art thủ công. Giao hàng toàn quốc.",
+      "Terrarium và moss art thủ công. Giao tiêu chuẩn trong TP.HCM; các khu vực khác được tư vấn phí riêng.",
     type: "website",
     locale: "vi_VN",
     siteName: "Tiệm Rêu Décor",
@@ -97,12 +104,7 @@ export default async function RootLayout({
 }) {
   const facebookGroupPromo = await getFacebookGroupPromoPayload();
   return (
-    <html lang="vi" className={`${inter.variable} ${dancingScript.variable}`}>
-      <head>
-        {/* Preconnect Google Fonts — gi\u1ea3m DNS lookup + TLS latency cho fonts */}
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-      </head>
+    <html lang="vi" className={`${inter.variable} ${dancingScript.variable} ${playfair.variable}`}>
       <body
         className={`${inter.className} antialiased min-h-[100dvh] flex flex-col`}
       >

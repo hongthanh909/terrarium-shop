@@ -1802,7 +1802,7 @@ export default function ChatWidget() {
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0, opacity: 0 }}
             transition={{ type: "spring", stiffness: 500, damping: 25 }}
-            className="fixed z-[9999] select-none touch-none"
+            className="cw-floating-launcher fixed z-[9999] select-none touch-none"
             style={{ right: bubblePos.right, bottom: bubblePos.bottom }}
             onPointerDown={onPointerDown}
             onPointerMove={onPointerMove}

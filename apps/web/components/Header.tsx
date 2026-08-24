@@ -36,47 +36,20 @@ const NAV_LINKS = [
 function NavLink({ href, label }: { href: string; label: string }) {
   const pathname = usePathname();
   const isActive = pathname === href || (href !== "/" && pathname?.startsWith(href));
-  const [hovered, setHovered] = useState(false);
   return (
     <Link
       href={href}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      style={{ position: "relative", display: "inline-block" }}
-      className="px-3 py-1.5 text-sm select-none"
+      className={`group relative inline-flex min-h-10 items-center px-3 text-sm font-medium transition-colors ${
+        isActive ? "text-foreground" : "text-muted-foreground hover:text-foreground"
+      }`}
     >
-      {/* Underline indicator */}
       <span
-        aria-hidden
-        style={{
-          position: "absolute",
-          bottom: 0,
-          left: "0.75rem",
-          right: "0.75rem",
-          height: "2px",
-          background: "#3d5a2a",
-          borderRadius: "2px",
-          opacity: (isActive || hovered) ? 1 : 0,
-          transform: (isActive || hovered) ? "scaleX(1)" : "scaleX(0)",
-          transition: "opacity 0.25s ease, transform 0.3s cubic-bezier(0.65, 0, 0.076, 1)",
-          transformOrigin: "left",
-          pointerEvents: "none",
-        }}
+        aria-hidden="true"
+        className={`absolute inset-x-3 bottom-0 h-px origin-left bg-foreground transition-transform duration-200 ${
+          isActive ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100"
+        }`}
       />
-      {/* Label */}
-      <span
-        style={{
-          position: "relative",
-          zIndex: 1,
-          color: isActive ? "#2d4520" : hovered ? "#3d5a2a" : "#4a5e38",
-          fontWeight: isActive ? 600 : 500,
-          transition: "color 0.25s ease",
-          display: "block",
-          whiteSpace: "nowrap",
-        }}
-      >
-        {label}
-      </span>
+      <span className="relative z-10 whitespace-nowrap">{label}</span>
     </Link>
   );
 }
@@ -193,28 +166,11 @@ export default function Header() {
 
   return (
     <>
-      {/* ─── CSS Marquee left-to-right ───────────────────────────────────── */}
-      <style>{`
-        @keyframes cw-marquee {
-          0% { transform: translateX(-50%); }
-          100% { transform: translateX(0); }
-        }
-        .cw-marquee-track {
-          display: flex;
-          width: max-content;
-          animation: cw-marquee 30s linear infinite;
-        }
-        .cw-marquee-track:hover {
-          animation-play-state: paused;
-        }
-      `}</style>
-
-      {/* ─── Full-Width Navbar — LIGHT CREAM ──────────────────────────────── */}
       <motion.header
         className={`sticky top-0 z-40 w-full transition-colors duration-300 ${
           scrolled
-            ? "bg-white/96 backdrop-blur-xl shadow-[0_1px_16px_rgba(61,90,42,0.08)] border-b border-[#dde5d3]/80"
-            : "bg-[#faf9f7]/95 backdrop-blur-md border-b border-[#e8ede0]/60"
+            ? "border-b border-border bg-white/96 shadow-[0_1px_14px_rgba(25,28,24,0.06)] backdrop-blur-xl"
+            : "border-b border-border/80 bg-white/96 backdrop-blur-md"
         }`}
       >
         <div className="flex items-center justify-between px-3 py-2.5 sm:px-6 sm:py-3 max-w-7xl mx-auto">
@@ -222,7 +178,7 @@ export default function Header() {
           <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
             {/* Hamburger — chỉ hiện trên mobile */}
             <button
-              className="md:hidden w-11 h-11 flex items-center justify-center rounded-full text-[#425733]/80 hover:text-[#293a20] hover:bg-[#eceee5] transition-colors flex-shrink-0"
+              className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground md:hidden"
               onClick={() => setMobileMenuOpen(true)}
               aria-label="Mở menu"
             >
@@ -232,20 +188,20 @@ export default function Header() {
             {/* Logo — nằm bên trái */}
             <Link href="/" className="flex flex-col items-start group flex-shrink-0">
               <span
-                className="text-lg sm:text-xl text-[#2d4520] group-hover:text-[#3d5a2a] transition-colors leading-tight whitespace-nowrap"
+                className="whitespace-nowrap text-lg leading-tight text-foreground transition-colors group-hover:text-foreground/75 sm:text-xl"
                 style={{ fontFamily: "'Dancing Script', cursive", fontWeight: 600 }}
               >
                 tiệm Rêu Décor
               </span>
               <div className="flex items-center gap-1 mt-0.5 w-full">
-                <div className="flex-1 h-px bg-[#c5d4b5]/60" />
+                <div className="h-px flex-1 bg-border" />
                 <span
-                  className="hidden sm:inline text-[9px] tracking-wider text-[#5a7a48]/60 whitespace-nowrap px-1"
+                  className="hidden whitespace-nowrap px-1 text-[9px] text-muted-foreground sm:inline"
                   style={{ fontFamily: "'Dancing Script', cursive" }}
                 >
                   Terrarium &amp; Decor
                 </span>
-                <div className="flex-1 h-px bg-[#c5d4b5]/60" />
+                <div className="h-px flex-1 bg-border" />
               </div>
             </Link>
           </div>
@@ -262,7 +218,7 @@ export default function Header() {
           <div className="flex items-center justify-end gap-1 sm:gap-1.5 flex-1 min-w-0">
             {/* Search trigger — desktop */}
             <button
-              className="hidden md:flex w-9 h-9 items-center justify-center rounded-full text-[#4a5e38]/70 hover:text-[#293a20] hover:bg-[#eceee5] transition-colors"
+              className="hidden h-10 w-10 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground md:flex"
               onClick={() => setSearchOpen(true)}
               aria-label="Tìm kiếm"
             >
@@ -271,7 +227,7 @@ export default function Header() {
 
             {/* Search — mobile */}
             <button
-              className="md:hidden w-11 h-11 flex items-center justify-center rounded-full text-[#4a5e38]/80 hover:text-[#293a20] hover:bg-[#eceee5] transition-colors"
+              className="flex h-11 w-11 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground md:hidden"
               onClick={() => setSearchOpen(true)}
               aria-label="Mở tìm kiếm"
             >
@@ -279,12 +235,12 @@ export default function Header() {
             </button>
 
             {/* Separator 1 — desktop only */}
-            <div className="hidden md:block w-px h-5 bg-[#c5d4b5]/80 mx-0.5" />
+            <div className="mx-0.5 hidden h-5 w-px bg-border md:block" />
 
             {isCustomerSession && (
               <Link
                 href="/messages"
-                className="relative hidden h-9 w-9 items-center justify-center rounded-full text-[#4a5e38]/80 transition-colors hover:bg-[#eceee5] hover:text-[#293a20] md:flex"
+                className="relative hidden h-10 w-10 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground md:flex"
                 aria-label={`Tin nhắn với admin${chatUnread > 0 ? `, ${chatUnread} tin chưa đọc` : ""}`}
                 title="Tin nhắn với admin"
               >
@@ -299,7 +255,7 @@ export default function Header() {
 
             {/* Cart */}
             <button
-              className="relative w-11 h-11 md:w-9 md:h-9 flex items-center justify-center rounded-full text-[#4a5e38]/80 hover:text-[#293a20] hover:bg-[#eceee5] transition-colors"
+              className="relative flex h-11 w-11 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground md:h-10 md:w-10"
               onClick={() => {
                 if (!session) {
                   window.location.href = "/login?callbackUrl=/";
@@ -319,7 +275,7 @@ export default function Header() {
                     animate={{ scale: 1 }}
                     exit={{ scale: 0 }}
                     transition={{ type: "spring", stiffness: 500, damping: 15 }}
-                    className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] bg-[#5f7a45] text-white text-[10px] font-bold rounded-full flex items-center justify-center shadow px-0.5"
+                    className="absolute -right-0.5 -top-0.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-foreground px-0.5 text-[10px] font-bold text-white shadow"
                   >
                     {cartCount}
                   </motion.span>
@@ -328,7 +284,7 @@ export default function Header() {
             </button>
 
             {/* Separator 2 — desktop only */}
-            <div className="hidden md:block w-px h-5 bg-[#c5d4b5]/80 mx-0.5" />
+            <div className="mx-0.5 hidden h-5 w-px bg-border md:block" />
 
             {/* User - desktop only */}
             <div className="hidden md:flex items-center">
@@ -336,29 +292,29 @@ export default function Header() {
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <button
-                      className="flex items-center gap-1.5 hover:bg-[#eceee5] transition-colors focus:outline-none py-1 px-2.5 rounded-full flex-shrink-0 text-[#293a20] border border-[#c5d4b5]/60"
+                      className="flex flex-shrink-0 items-center gap-1.5 rounded-md border border-border px-2.5 py-1 text-foreground transition-colors hover:bg-muted focus:outline-none"
                       aria-label="Mở menu tài khoản"
                       title={session.user?.name || "Tài khoản"}
                     >
-                      <div className="w-6 h-6 rounded-full overflow-hidden bg-[#dde8d0] flex items-center justify-center relative flex-shrink-0 text-[#2d4520] font-bold text-xs">
+                      <div className="relative flex h-6 w-6 flex-shrink-0 items-center justify-center overflow-hidden rounded-full bg-muted text-xs font-bold text-foreground">
                         {session.user?.image ? (
                           <ImageWrapper src={session.user.image} alt={session.user.name || "Avatar"} fill sizes="24px" noRound className="object-cover" />
                         ) : (
                           <span>{(session.user?.name || "U").substring(0, 1).toUpperCase()}</span>
                         )}
                       </div>
-                      <span className="hidden sm:inline-block text-xs font-semibold max-w-[100px] truncate text-[#293a20] leading-none">
+                      <span className="hidden max-w-[100px] truncate text-xs font-semibold leading-none text-foreground sm:inline-block">
                         {session.user?.name}
                       </span>
-                      <ChevronDown className="w-3.5 h-3.5 text-[#4a5e38]/70 flex-shrink-0" />
+                      <ChevronDown className="h-3.5 w-3.5 flex-shrink-0 text-muted-foreground" />
                     </button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="rounded-xl shadow-lg border border-[#e3ebdd] bg-white min-w-[185px]">
+                  <DropdownMenuContent align="end" className="min-w-[185px] rounded-lg border border-border bg-white shadow-lg">
                     <div className="px-3 py-2.5">
                       <p className="font-semibold text-sm text-gray-800 truncate">{session.user?.name}</p>
                       <p className="text-xs text-gray-400 truncate">{session.user?.email}</p>
                       {(session.user as any)?.role === "ADMIN" && (
-                        <span className="inline-block mt-1 text-[10px] font-bold uppercase tracking-wider bg-[#425733] text-[#ffffff] px-2 py-0.5 rounded-full">Admin</span>
+                        <span className="mt-1 inline-block rounded bg-foreground px-2 py-0.5 text-[10px] font-bold uppercase text-white">Admin</span>
                       )}
                     </div>
                     <DropdownMenuSeparator />
@@ -366,7 +322,7 @@ export default function Header() {
                       <DropdownMenuItem asChild>
                         <Link
                           href={(session.user as any)?.adminSession === true ? "/tiem-nho-nth24" : "/tiem-nho-nth24/login"}
-                          className="cursor-pointer flex items-center gap-2 text-[#425733] font-semibold focus:bg-[#e3ebdd]"
+                          className="flex cursor-pointer items-center gap-2 font-semibold text-foreground focus:bg-muted"
                         >
                           <LayoutDashboard className="w-4 h-4" /> Quản lý
                         </Link>
@@ -410,7 +366,7 @@ export default function Header() {
               ) : (
                 <Link href="/login">
                   <button
-                    className="w-9 h-9 flex items-center justify-center rounded-full text-[#4a5e38]/80 hover:text-[#293a20] hover:bg-[#eceee5] transition-colors flex-shrink-0"
+                    className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
                     aria-label="Đăng nhập"
                     title="Đăng nhập"
                   >
@@ -422,48 +378,24 @@ export default function Header() {
           </div>
         </div>
 
-        {/* ── Marquee contact bar — light #ECEEE5 ──────────────────────────── */}
-        <div
-          className="hidden sm:block w-full overflow-hidden"
-          style={{
-            background: "#ECEEE5",
-            borderTop: "1px solid rgba(61, 90, 42, 0.10)",
-          }}
-        >
-          <div className="cw-marquee-track py-1.5">
-            {[0, 1].map((dup) => (
-              <span
-                key={dup}
-                className="flex items-center gap-8 text-xs text-[#3d5a2a] whitespace-nowrap px-8 font-medium"
-                style={{ fontFamily: "inherit" }}
-                aria-hidden={dup === 1}
-              >
-                <span className="inline-flex items-center gap-1.5">
-                  <MessageCircle className="w-3 h-3 text-[#3d5a2a]/70" />
-                  <span>Fanpage: <strong className="text-[#2d4520] font-semibold">tiemreudecor</strong></span>
-                </span>
-                <span className="text-[#3d5a2a]/20">·</span>
-                <span className="inline-flex items-center gap-1.5">
-                  <MapPin className="w-3 h-3 text-[#3d5a2a]/70" />
-                  <span>Long Trường, Hồ Chí Minh</span>
-                </span>
-                <span className="text-[#3d5a2a]/20">·</span>
-                <span className="inline-flex items-center gap-1.5">
-                  <Sprout className="w-3 h-3 text-[#3d5a2a]/70" />
-                  <span>Thiết kế Terrarium theo yêu cầu</span>
-                </span>
-                <span className="text-[#3d5a2a]/20">·</span>
-                <span className="inline-flex items-center gap-1.5">
-                  <Truck className="w-3 h-3 text-[#3d5a2a]/70" />
-                  <span>Giao hàng toàn quốc</span>
-                </span>
-                <span className="text-[#3d5a2a]/20">·</span>
-                <span className="inline-flex items-center gap-1.5">
-                  <ShieldCheck className="w-3 h-3 text-[#3d5a2a]/70" />
-                  <span>Bảo hành thực vật miễn phí</span>
-                </span>
-              </span>
-            ))}
+        <div className="hidden w-full border-t border-border bg-[#f7f8f6] sm:block">
+          <div className="mx-auto flex max-w-7xl items-center justify-center gap-6 overflow-hidden px-6 py-2 text-[11px] font-medium text-muted-foreground lg:gap-10">
+            <span className="inline-flex shrink-0 items-center gap-1.5">
+              <MapPin className="h-3.5 w-3.5" aria-hidden="true" />
+              Long Trường, TP.HCM
+            </span>
+            <span className="hidden shrink-0 items-center gap-1.5 md:inline-flex">
+              <Sprout className="h-3.5 w-3.5" aria-hidden="true" />
+              Thiết kế terrarium theo yêu cầu
+            </span>
+            <span className="inline-flex shrink-0 items-center gap-1.5">
+              <Truck className="h-3.5 w-3.5" aria-hidden="true" />
+              Ngoài TP.HCM: tư vấn phí qua tin nhắn
+            </span>
+            <span className="hidden shrink-0 items-center gap-1.5 lg:inline-flex">
+              <ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" />
+              Bảo hành thực vật miễn phí
+            </span>
           </div>
         </div>
       </motion.header>
@@ -474,25 +406,25 @@ export default function Header() {
       {/* ─── Mobile Menu Drawer ────────────────────────────────────────────── */}
       <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
         <SheetContent side="left" className="w-[280px] sm:w-[320px] p-0 border-0">
-          <div className="flex flex-col h-full bg-[#faf9f7]">
+          <div className="flex h-full flex-col bg-white">
             {/* Header */}
-            <SheetHeader className="px-6 pt-6 pb-4 border-b border-[#e0e8d5]">
+            <SheetHeader className="border-b border-border px-6 pb-4 pt-6">
               <SheetTitle className="text-left">
                 <span
-                  className="text-xl text-[#2d4520]"
+                  className="text-xl text-foreground"
                   style={{ fontFamily: "'Dancing Script', cursive", fontWeight: 600 }}
                 >
                   tiệm Rêu Décor
                 </span>
               </SheetTitle>
-              <SheetDescription className="text-[#5a7a48]/60 text-xs text-left">
+              <SheetDescription className="text-left text-xs text-muted-foreground">
                 Terrarium & Decor
               </SheetDescription>
             </SheetHeader>
 
             {/* Navigation Links */}
             <nav className="flex-1 overflow-y-auto px-4 py-4 space-y-5">
-              <p className="text-[10px] uppercase tracking-wider text-[#3d5a2a]/40 font-semibold px-3 mb-2">Điều hướng</p>
+              <p className="mb-2 px-3 text-[10px] font-semibold uppercase text-muted-foreground">Điều hướng</p>
               {NAV_LINKS.map((link) => {
                 const isActive = pathname === link.href || (link.href !== "/" && pathname?.startsWith(link.href));
                 return (
@@ -501,8 +433,8 @@ export default function Header() {
                     href={link.href}
                     className={`flex items-center gap-3 px-3 py-3 rounded-xl text-base font-semibold transition-colors duration-200 ${
                       isActive
-                        ? "bg-[#eceee5] text-[#2d4520]"
-                        : "text-[#4a5e38]/80 hover:text-[#2d4520] hover:bg-[#eceee5]"
+                        ? "bg-muted text-foreground"
+                        : "text-muted-foreground hover:bg-muted hover:text-foreground"
                     }`}
                   >
                     {link.label}
@@ -510,28 +442,28 @@ export default function Header() {
                 );
               })}
 
-              <div className="h-px bg-[#e0e8d5]" />
+              <div className="h-px bg-border" />
 
               <Link
                 href="/policies"
-                className="flex items-center gap-3 px-3 py-3 rounded-xl text-base font-semibold text-[#4a5e38]/80 hover:text-[#2d4520] hover:bg-[#eceee5] transition-colors duration-200"
+                className="flex items-center gap-3 rounded-md px-3 py-3 text-base font-semibold text-muted-foreground transition-colors duration-200 hover:bg-muted hover:text-foreground"
               >
                 Chính sách
               </Link>
             </nav>
 
             {/* Bottom actions */}
-            <div className="px-4 py-4 border-t border-[#e0e8d5] space-y-2">
+            <div className="space-y-2 border-t border-border px-4 py-4">
               {session ? (
                 <>
                   <div className="px-3 py-2">
-                    <p className="text-sm font-semibold text-[#2d4520] truncate">{session.user?.name}</p>
-                    <p className="text-xs text-[#5a7a48]/60 truncate">{session.user?.email}</p>
+                    <p className="truncate text-sm font-semibold text-foreground">{session.user?.name}</p>
+                    <p className="truncate text-xs text-muted-foreground">{session.user?.email}</p>
                   </div>
                   {SHOP_FORUM_ENABLED && (session.user as any)?.role !== "ADMIN" && (
                     <Link
                       href={sellerStatus?.href || "/seller/register"}
-                      className="flex items-center gap-2 px-3 py-3 rounded-xl text-base font-semibold text-[#4a5e38]/80 hover:text-[#2d4520] hover:bg-[#eceee5] transition-colors duration-200"
+                      className="flex items-center gap-2 rounded-md px-3 py-3 text-base font-semibold text-muted-foreground transition-colors duration-200 hover:bg-muted hover:text-foreground"
                     >
                       <Store className="w-4 h-4" /> {sellerStatus?.label || "Mở shop"}
                     </Link>
@@ -539,7 +471,7 @@ export default function Header() {
                   {(session.user as any)?.role !== "ADMIN" && (
                     <Link
                       href="/messages"
-                      className="flex items-center gap-2 px-3 py-3 rounded-xl text-base font-semibold text-[#4a5e38]/80 hover:text-[#2d4520] hover:bg-[#eceee5] transition-colors duration-200"
+                      className="flex items-center gap-2 rounded-md px-3 py-3 text-base font-semibold text-muted-foreground transition-colors duration-200 hover:bg-muted hover:text-foreground"
                     >
                       <MessageCircle className="w-4 h-4" /> Tin nhắn với admin
                       {chatUnread > 0 && <span className="ml-auto grid min-w-5 place-items-center rounded-full bg-[#d93434] px-1.5 py-0.5 text-[10px] font-bold text-white">{chatUnread > 99 ? "99+" : chatUnread}</span>}
@@ -547,7 +479,7 @@ export default function Header() {
                   )}
                   <Link
                     href="/profile/favorites"
-                    className="flex items-center gap-2 px-3 py-3 rounded-xl text-base font-semibold text-[#4a5e38]/80 hover:text-[#2d4520] hover:bg-[#eceee5] transition-colors duration-200"
+                    className="flex items-center gap-2 rounded-md px-3 py-3 text-base font-semibold text-muted-foreground transition-colors duration-200 hover:bg-muted hover:text-foreground"
                   >
                     <Heart className="w-4 h-4 fill-red-400 text-red-400" /> Sản phẩm yêu thích
                   </Link>
@@ -561,7 +493,7 @@ export default function Header() {
               ) : (
                 <Link
                   href="/login"
-                  className="w-full flex items-center justify-center gap-2 px-3 py-3.5 rounded-xl text-base font-semibold bg-[#3d5a2a] text-white hover:bg-[#2d4520] transition-colors"
+                  className="flex w-full items-center justify-center gap-2 rounded-md bg-foreground px-3 py-3.5 text-base font-semibold text-white transition-colors hover:bg-foreground/85"
                 >
                   <User className="w-4 h-4" /> Đăng nhập
                 </Link>
@@ -576,7 +508,7 @@ export default function Header() {
         <SheetContent className="w-full sm:max-w-md flex flex-col p-4 sm:p-6">
           <SheetHeader className="pb-4 border-b">
             <SheetTitle className="flex items-center gap-2 text-lg font-bold text-gray-800">
-              <ShoppingBasket className="w-5 h-5 text-[#425733]" />
+              <ShoppingBasket className="h-5 w-5 text-foreground" />
               Giỏ Hàng
             </SheetTitle>
             <SheetDescription className="text-gray-500">
@@ -587,8 +519,8 @@ export default function Header() {
           <div className="flex-1 overflow-y-auto py-4 -mx-1 px-1">
             {items.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-center py-12">
-                <div className="w-20 h-20 rounded-full bg-[#e3ebdd] flex items-center justify-center mb-4">
-                  <ShoppingBasket className="w-10 h-10 text-[#6d8c5a]" />
+                <div className="mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-muted">
+                  <ShoppingBasket className="h-10 w-10 text-muted-foreground" />
                 </div>
                 <p className="font-semibold text-gray-700 mb-1">Giỏ hàng trống</p>
                 {!session ? (
@@ -597,7 +529,7 @@ export default function Header() {
                     <Link
                       href="/login"
                       onClick={() => setCartOpen(false)}
-                      className="px-5 py-2.5 bg-[#425733] text-white rounded-full text-sm font-semibold hover:bg-[#364a29] transition-colors flex items-center gap-2"
+                      className="flex items-center gap-2 rounded-md bg-foreground px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-foreground/85"
                     >
                       <Lock className="w-4 h-4" /> Đăng nhập
                     </Link>
@@ -608,7 +540,7 @@ export default function Header() {
                     <Link
                       href="/products"
                       onClick={() => setCartOpen(false)}
-                      className="px-5 py-2.5 bg-[#425733] text-white rounded-full text-sm font-semibold hover:bg-[#364a29] transition-colors"
+                      className="rounded-md bg-foreground px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-foreground/85"
                     >
                       Khám phá sản phẩm
                     </Link>
@@ -618,13 +550,13 @@ export default function Header() {
             ) : (
               <div className="space-y-3">
                 {items.map((item: CartItem) => (
-                  <div key={`${item.productId}-${JSON.stringify(item.variants)}`} className="flex gap-3 p-3.5 rounded-2xl bg-gray-50 border border-gray-100">
-                    <div className="w-20 h-20 sm:w-16 sm:h-16 rounded-lg overflow-hidden bg-[#e3ebdd] flex-shrink-0">
+                  <div key={`${item.productId}-${JSON.stringify(item.variants)}`} className="flex gap-3 rounded-lg border border-border bg-muted/60 p-3.5">
+                    <div className="h-20 w-20 flex-shrink-0 overflow-hidden rounded-md bg-muted sm:h-16 sm:w-16">
                       {item.productImage ? (
                         <ImageWrapper src={item.productImage} alt={item.productName} width={64} height={64} className="w-full h-full object-cover" />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">
-                          <Package className="w-6 h-6 text-[#6d8c5a]" />
+                          <Package className="h-6 w-6 text-muted-foreground" />
                         </div>
                       )}
                     </div>
@@ -638,13 +570,13 @@ export default function Header() {
                             .join(" · ")}
                         </p>
                       )}
-                      <p className="text-sm font-bold text-[#425733] mt-1">{item.price.toLocaleString("vi-VN")}₫</p>
+                      <p className="mt-1 text-sm font-bold text-foreground">{item.price.toLocaleString("vi-VN")}₫</p>
                       <div className="flex items-center gap-2 mt-2">
-                        <button onClick={() => updateQuantity(item.productId, item.quantity - 1, item.variants)} className="min-w-11 min-h-11 rounded-full bg-white border border-gray-200 flex items-center justify-center hover:border-[#425733] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#425733]/30" aria-label={`Giảm số lượng ${item.productName}`}>
+                        <button onClick={() => updateQuantity(item.productId, item.quantity - 1, item.variants)} className="flex min-h-11 min-w-11 items-center justify-center rounded-md border border-border bg-white transition-colors hover:border-foreground/30" aria-label={`Giảm số lượng ${item.productName}`}>
                           <Minus className="w-4 h-4" />
                         </button>
                         <span className="text-sm font-semibold w-6 text-center">{item.quantity}</span>
-                        <button onClick={() => updateQuantity(item.productId, item.quantity + 1, item.variants)} className="min-w-11 min-h-11 rounded-full bg-white border border-gray-200 flex items-center justify-center hover:border-[#425733] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#425733]/30" aria-label={`Tăng số lượng ${item.productName}`}>
+                        <button onClick={() => updateQuantity(item.productId, item.quantity + 1, item.variants)} className="flex min-h-11 min-w-11 items-center justify-center rounded-md border border-border bg-white transition-colors hover:border-foreground/30" aria-label={`Tăng số lượng ${item.productName}`}>
                           <Plus className="w-4 h-4" />
                         </button>
                         <button onClick={() => removeItem(item.productId, item.variants)} className="ml-auto min-w-11 min-h-11 rounded-full bg-white border border-gray-200 flex items-center justify-center hover:border-red-300 hover:text-red-500 transition-colors text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-200" aria-label={`Xóa ${item.productName} khỏi giỏ hàng`}>
@@ -662,20 +594,20 @@ export default function Header() {
             <div className="sticky bottom-0 -mx-4 sm:-mx-6 px-4 sm:px-6 pt-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] border-t bg-white/95 backdrop-blur space-y-3">
               <div className="flex justify-between items-center">
                 <span className="font-semibold text-gray-700">Tạm tính</span>
-                <span className="text-xl font-bold text-[#425733]">{cartTotal.toLocaleString("vi-VN")}₫</span>
+                <span className="text-xl font-bold text-foreground">{cartTotal.toLocaleString("vi-VN")}₫</span>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <Link
                   href="/products"
                   onClick={() => setCartOpen(false)}
-                  className="py-3.5 rounded-xl border-2 border-[#425733] text-[#425733] text-sm font-semibold text-center hover:bg-[#e3ebdd] transition-colors"
+                  className="rounded-md border border-foreground py-3.5 text-center text-sm font-semibold text-foreground transition-colors hover:bg-muted"
                 >
                   Tiếp tục mua
                 </Link>
                 <Link
                   href="/checkout"
                   onClick={() => setCartOpen(false)}
-                  className="py-3.5 rounded-xl bg-[#425733] text-white text-sm font-semibold text-center hover:bg-[#364a29] transition-colors"
+                  className="rounded-md bg-foreground py-3.5 text-center text-sm font-semibold text-white transition-colors hover:bg-foreground/85"
                 >
                   Thanh toán →
                 </Link>

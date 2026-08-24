@@ -1,4 +1,5 @@
 import { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { ImageWrapper } from "@/components/ui/ImageWrapper";
 import { Suspense } from "react";
@@ -94,7 +95,7 @@ function BrandGallerySkeleton() {
       <div className="max-w-7xl mx-auto">
         <div className="flex gap-4">
           {["h-56", "h-40", "h-64", "h-48"].map((h, i) => (
-            <div key={i} className={`flex-1 ${h} rounded-2xl bg-[#f0f4ec] animate-pulse`} />
+            <div key={i} className={`flex-1 ${h} rounded-lg bg-muted animate-pulse`} />
           ))}
         </div>
       </div>
@@ -117,27 +118,27 @@ async function FeaturedProductsSection() {
   }
 
   return (
-    <section className="py-24 px-6 bg-white">
+    <section className="border-t border-border bg-white px-5 py-20 sm:px-6 sm:py-24">
       <div className="max-w-7xl mx-auto">
         <ScrollReveal direction="up">
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4">
             <div>
-              <p className="text-[#425733] font-bold text-sm uppercase tracking-wide mb-3">Được Lựa Chọn Cho Bạn</p>
-              <h2 className="text-3xl md:text-4xl font-bold" style={{ background: 'linear-gradient(135deg, #1a2e12, #425733)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Sản Phẩm Nổi Bật</h2>
+              <p className="mb-3 text-xs font-semibold uppercase text-muted-foreground">Được lựa chọn cho bạn</p>
+              <h2 className="font-serif text-3xl font-semibold text-foreground md:text-4xl">Sản phẩm nổi bật</h2>
             </div>
-            <Button variant="outline" asChild className="self-start md:self-auto border-2 border-[#6d8c5a] text-[#425733] hover:bg-[#e3ebdd]">
+            <Button variant="outline" asChild className="self-start border-border bg-white text-foreground hover:bg-muted md:self-auto">
               <Link href="/products" className="group">
                 Xem Tất Cả
                 <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </Link>
             </Button>
           </div>
-          <div className="w-full h-[1.5px] bg-gradient-to-r from-[#daebd0] via-[#a8c098]/40 to-transparent mb-12" />
+          <div className="mb-12 h-px w-full bg-border" />
         </ScrollReveal>
         {products.length === 0 ? (
           <ScrollReveal direction="up" initiallyVisible>
-            <div className="text-center py-24 bg-[#f0f4ec] rounded-3xl">
-              <Sprout className="w-16 h-16 mx-auto text-[#5a7a48] mb-4" />
+            <div className="rounded-lg bg-muted py-24 text-center">
+              <Sprout className="mx-auto mb-4 h-16 w-16 text-muted-foreground" />
               <p className="text-[hsl(220,14%,45%)] font-semibold text-lg mb-1">Chưa có sản phẩm nổi bật</p>
               <p className="text-sm text-[hsl(220,14%,55%)]">Hãy quay lại sau nhé.</p>
             </div>
@@ -193,27 +194,27 @@ async function LatestBlogSection() {
   ];
 
   return (
-    <section className="py-24 px-6 bg-white">
+    <section className="border-t border-border bg-[#f7f8f6] px-5 py-20 sm:px-6 sm:py-24">
       <div className="max-w-7xl mx-auto">
         <ScrollReveal direction="up">
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4">
             <div>
 
-              <h2 className="text-3xl md:text-4xl font-bold" style={{ background: 'linear-gradient(135deg, #1a2e12, #425733)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Góc Chia Sẻ</h2>
+              <h2 className="font-serif text-3xl font-semibold text-foreground md:text-4xl">Góc chia sẻ</h2>
             </div>
-            <Button variant="outline" asChild className="self-start md:self-auto border-2 border-[#6d8c5a] text-[#425733] hover:bg-[#e3ebdd]">
+            <Button variant="outline" asChild className="self-start border-border bg-white text-foreground hover:bg-muted md:self-auto">
               <Link href="/blog" className="group">
                 Xem Tất Cả Bài Viết
                 <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </Link>
             </Button>
           </div>
-          <div className="w-full h-[1.5px] bg-gradient-to-r from-[#daebd0] via-[#a8c098]/40 to-transparent mb-12" />
+          <div className="mb-12 h-px w-full bg-border" />
         </ScrollReveal>
         {latestPosts.length === 0 ? (
           <ScrollReveal direction="up">
-            <div className="text-center py-24 bg-[#f0f4ec] rounded-3xl">
-              <FileText className="w-16 h-16 mx-auto text-[#5a7a48] mb-4" />
+            <div className="rounded-lg bg-white py-24 text-center">
+              <FileText className="mx-auto mb-4 h-16 w-16 text-muted-foreground" />
               <p className="text-[hsl(220,14%,45%)] font-semibold text-lg mb-1">Chưa có bài viết nào</p>
               <p className="text-sm text-[hsl(220,14%,55%)]">Hãy quay lại sau!</p>
             </div>
@@ -223,19 +224,19 @@ async function LatestBlogSection() {
             {latestPosts.map((post: any, index: number) => (
               <ScrollReveal key={post.id} direction="up" delay={index * 0.1} className="h-full">
                 <Link href={`/blog/${post.slug}`} className="block h-full">
-                  <Card className="overflow-hidden hover:shadow-soft-xl transition-all duration-300 hover:-translate-y-1 group border-0 rounded-2xl h-full flex flex-col">
+                  <Card className="group flex h-full flex-col overflow-hidden rounded-lg border border-border bg-white transition-[border-color,box-shadow] duration-200 hover:border-foreground/25 hover:shadow-soft-lg">
                     <CardContent className="p-0 flex flex-col h-full">
-                      <div className="aspect-video relative overflow-hidden bg-[#f0f4ec]">
+                      <div className="relative aspect-video overflow-hidden bg-muted">
                         <ImageWrapper src={post.thumbnail || post.images?.[0] || fallbackImages[index % 3]} alt={post.title} fill noRound className="object-cover group-hover:scale-105 transition-transform duration-500" sizes="(max-width: 768px) 100vw, 33vw" />
                         <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors duration-300" />
                       </div>
                       <div className="p-6 flex-1 flex flex-col">
                         {post.category && (
-                          <Badge variant="secondary" className="text-xs mb-3 w-fit bg-[#e3ebdd] text-[#425733]">{post.category.name}</Badge>
+                          <Badge variant="secondary" className="mb-3 w-fit bg-muted text-xs text-foreground">{post.category.name}</Badge>
                         )}
-                        <h3 className="font-bold text-xl text-[hsl(220,14%,25%)] mb-3 line-clamp-2 group-hover:text-[#425733] transition-colors min-h-[3.5rem]">{post.title}</h3>
+                        <h3 className="mb-3 min-h-[3.5rem] line-clamp-2 text-xl font-bold text-foreground transition-colors group-hover:text-foreground/70">{post.title}</h3>
                         <p className="text-sm text-[hsl(220,14%,45%)] line-clamp-3 mb-4 flex-1">{(post.content || post.intro || post.body || '').replace(/<[^>]*>/g, '').slice(0, 150)}...</p>
-                        <div className="flex items-center gap-2 text-xs font-semibold text-[#6d8c5a] uppercase tracking-wider">
+                        <div className="flex items-center gap-2 text-xs font-semibold uppercase text-muted-foreground">
                           <Calendar className="w-3.5 h-3.5" />
                           <span>{post.publishedAt ? new Date(post.publishedAt).toLocaleDateString('vi-VN') : "Mới đây"}</span>
                         </div>
@@ -260,16 +261,16 @@ function ProductsSkeleton() {
   return (
     <section className="py-24 px-6 bg-white">
       <div className="max-w-7xl mx-auto">
-        <div className="h-8 w-52 bg-[#f0f4ec] rounded-lg animate-pulse mb-16" />
+        <div className="mb-16 h-8 w-52 animate-pulse rounded-md bg-muted" />
         <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
           {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="rounded-2xl bg-white border border-[#e3ebdd] overflow-hidden shadow-sm">
-              <div className="aspect-[4/3] bg-[#f0f4ec] animate-pulse" />
+            <div key={i} className="overflow-hidden rounded-lg border border-border bg-white">
+              <div className="aspect-[4/3] animate-pulse bg-muted" />
               <div className="p-4 space-y-2">
-                <div className="h-3 w-14 bg-[#e8efe2] rounded animate-pulse" />
-                <div className="h-5 w-full bg-[#e8efe2] rounded animate-pulse" />
-                <div className="h-6 w-24 bg-[#e8efe2] rounded animate-pulse" />
-                <div className="h-9 w-full bg-[#e8efe2] rounded-lg animate-pulse" />
+                <div className="h-3 w-14 animate-pulse rounded bg-muted" />
+                <div className="h-5 w-full animate-pulse rounded bg-muted" />
+                <div className="h-6 w-24 animate-pulse rounded bg-muted" />
+                <div className="h-9 w-full animate-pulse rounded-md bg-muted" />
               </div>
             </div>
           ))}
@@ -281,17 +282,17 @@ function ProductsSkeleton() {
 
 function BlogSkeleton() {
   return (
-    <section className="py-24 px-6 bg-white">
+    <section className="bg-[#f7f8f6] px-6 py-24">
       <div className="max-w-7xl mx-auto">
-        <div className="h-8 w-48 bg-[#f0f4ec] rounded-lg animate-pulse mb-16" />
+        <div className="mb-16 h-8 w-48 animate-pulse rounded-md bg-muted" />
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="rounded-2xl bg-white border border-[#e3ebdd] overflow-hidden shadow-sm">
-              <div className="aspect-video bg-[#f0f4ec] animate-pulse" />
+            <div key={i} className="overflow-hidden rounded-lg border border-border bg-white">
+              <div className="aspect-video animate-pulse bg-muted" />
               <div className="p-6 space-y-3">
-                <div className="h-3 w-20 bg-[#e8efe2] rounded-full animate-pulse" />
-                <div className="h-6 w-full bg-[#e8efe2] rounded animate-pulse" />
-                <div className="h-4 w-4/5 bg-[#e8efe2] rounded animate-pulse" />
+                <div className="h-3 w-20 animate-pulse rounded bg-muted" />
+                <div className="h-6 w-full animate-pulse rounded bg-muted" />
+                <div className="h-4 w-4/5 animate-pulse rounded bg-muted" />
               </div>
             </div>
           ))}
@@ -305,55 +306,50 @@ function BlogSkeleton() {
 
 export default async function Home() {
   return (
-    <main className="min-h-[100dvh]" style={{ background: "#ECEEE5" }}>
+    <div className="min-h-[100dvh] bg-white">
 
       {/* ── Hero Section: full-width image banner, preserving original artwork ── */}
       <section
         id="about"
-        className="relative overflow-hidden bg-[#ECEEE5]"
+        className="relative overflow-hidden bg-white"
       >
         <div className="relative min-h-[clamp(620px,calc(100dvh-96px),780px)] w-full sm:min-h-[calc(100dvh-96px)]">
-          <img
+          <Image
             src="/home-hero-full-banner.png"
             alt="Banner terrarium Tiệm Rêu Décor với sản phẩm rêu decor và lời giới thiệu"
-            className="absolute inset-0 block h-full w-full select-none object-cover object-[58%_center] blur-sm scale-[1.03] sm:hidden"
-            fetchPriority="high"
-            aria-hidden="true"
-          />
-          <img
-            src="/home-hero-full-banner.png"
-            alt="Banner terrarium Tiệm Rêu Décor với sản phẩm rêu decor và lời giới thiệu"
-            className="absolute inset-0 block h-full w-full select-none object-contain object-center sm:object-cover"
-            fetchPriority="high"
+            fill
+            priority
+            sizes="100vw"
+            className="select-none object-cover object-[61%_center] sm:object-center"
           />
           <div className="absolute left-5 right-5 top-[12%] z-10 sm:left-[5.8%] sm:right-auto sm:top-[19%] sm:w-[39%] lg:w-[36%]">
-            <h1 className="max-w-[10.5ch] font-serif text-[clamp(2.1rem,10vw,3rem)] font-semibold leading-[1.08] tracking-[0] text-[#263b20] drop-shadow-[0_1px_0_rgba(255,255,255,0.35)] sm:max-w-[11ch] sm:text-5xl lg:text-6xl">
+            <h1 className="max-w-[10.5ch] font-serif text-[clamp(2.1rem,10vw,3rem)] font-semibold leading-[1.08] text-foreground drop-shadow-[0_1px_0_rgba(255,255,255,0.5)] sm:max-w-[11ch] sm:text-5xl lg:text-6xl">
               Một chút rêu - một chút xanh
             </h1>
-            <p className="mt-3 max-w-[24rem] text-sm font-medium leading-relaxed text-[#2f3f2b] sm:mt-4 sm:max-w-xl sm:text-lg lg:text-xl">
+            <p className="mt-3 max-w-[24rem] text-sm font-medium leading-relaxed text-foreground/80 sm:mt-4 sm:max-w-xl sm:text-lg lg:text-xl">
               Một góc xanh nhỏ, một khoảng bình yên riêng
             </p>
             <div className="mt-5 flex max-w-full flex-wrap items-center gap-3 sm:mt-8">
               <Link
                 href="/products"
-                className="group relative flex h-11 min-w-[118px] items-center justify-center overflow-hidden rounded-full bg-[#3f5d33] px-5 text-sm font-semibold text-white shadow-[0_8px_18px_rgba(39,59,33,0.16)] ring-1 ring-white/15 transition-all duration-300 ease-out hover:-translate-y-0.5 hover:bg-[#314d28] hover:shadow-[0_12px_24px_rgba(39,59,33,0.22)] focus:outline-none focus:ring-2 focus:ring-[#3f5d33] focus:ring-offset-2 active:translate-y-0 active:scale-[0.985] sm:h-12 sm:min-w-[148px] sm:px-8"
+                className="group relative flex h-11 min-w-[118px] items-center justify-center overflow-hidden rounded-md bg-foreground px-5 text-sm font-semibold text-white shadow-[0_8px_18px_rgba(25,28,24,0.14)] transition-[background-color,box-shadow,transform] duration-200 hover:-translate-y-0.5 hover:bg-foreground/85 hover:shadow-[0_12px_24px_rgba(25,28,24,0.18)] active:translate-y-0 sm:h-12 sm:min-w-[148px] sm:px-8"
               >
                 <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/16 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
                 <span className="relative">Mua ngay</span>
               </Link>
               <Link
                 href="/explore"
-                className="group flex h-11 min-w-0 max-w-full flex-1 basis-[178px] items-center justify-center rounded-full border border-[#3f5d33]/20 bg-[#fffaf0] px-4 text-[13px] font-semibold text-[#263b20] shadow-[0_5px_14px_rgba(55,70,44,0.08)] transition-all duration-300 ease-out hover:-translate-y-0.5 hover:border-[#3f5d33]/35 hover:bg-white hover:shadow-[0_10px_22px_rgba(39,59,33,0.12)] focus:outline-none focus:ring-2 focus:ring-[#3f5d33] focus:ring-offset-2 active:translate-y-0 active:scale-[0.985] sm:h-12 sm:min-w-[216px] sm:flex-none sm:bg-[#fffaf0]/92 sm:px-7 sm:text-sm sm:backdrop-blur-[2px]"
+                className="group flex h-11 min-w-0 max-w-full flex-1 basis-[178px] items-center justify-center rounded-md border border-border bg-white/92 px-4 text-[13px] font-semibold text-foreground shadow-[0_5px_14px_rgba(25,28,24,0.06)] backdrop-blur-sm transition-[background-color,border-color,box-shadow,transform] duration-200 hover:-translate-y-0.5 hover:border-foreground/25 hover:bg-white hover:shadow-[0_10px_22px_rgba(25,28,24,0.1)] active:translate-y-0 sm:h-12 sm:min-w-[216px] sm:flex-none sm:px-7 sm:text-sm"
               >
                 Khám phá bộ sưu tập
                 <ArrowRight className="ml-2 h-4 w-4 stroke-[1.8] transition-transform duration-300 group-hover:translate-x-1" />
               </Link>
             </div>
           </div>
-          <div className="absolute inset-x-0 bottom-0 bg-[#526044]/88 text-white shadow-[0_-6px_18px_rgba(30,45,26,0.12)] backdrop-blur-sm">
+          <div className="absolute inset-x-0 bottom-0 border-t border-border bg-white/94 text-foreground shadow-[0_-6px_18px_rgba(25,28,24,0.07)] backdrop-blur-md">
             <div className="mx-auto grid max-w-6xl grid-cols-3">
               {[
-                { icon: Truck, title: "Giao Hàng Nhanh", subtitle: "Toàn quốc nhanh chóng" },
+                { icon: Truck, title: "Giao hàng TP.HCM", subtitle: "Khu vực khác sẽ được tư vấn phí" },
                 { icon: BookOpen, title: "Hướng Dẫn Chăm Sóc", subtitle: "Mẹo để terrarium luôn xanh" },
                 { icon: ShieldCheck, title: "Bảo Mật Thanh Toán", subtitle: "Thanh toán an toàn 100%" },
               ].map((item, index) => {
@@ -362,12 +358,12 @@ export default async function Home() {
                   <Link
                     href="/policies"
                     key={item.title}
-                    className={`group flex min-h-[58px] flex-col items-center justify-center gap-1 px-1 py-2 text-center transition-all duration-300 hover:bg-white/8 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70 active:scale-[0.985] sm:min-h-[66px] sm:flex-row sm:gap-3 sm:px-5 sm:text-left ${index > 0 ? "border-l border-white/20 sm:border-white/28" : ""}`}
+                    className={`group flex min-h-[58px] flex-col items-center justify-center gap-1 px-1 py-2 text-center transition-colors duration-200 hover:bg-muted/70 sm:min-h-[66px] sm:flex-row sm:gap-3 sm:px-5 sm:text-left ${index > 0 ? "border-l border-border" : ""}`}
                   >
-                    <Icon className="h-4 w-4 shrink-0 stroke-[1.55] text-white/90 transition-transform duration-300 group-hover:-translate-y-0.5 sm:h-6 sm:w-6" />
+                    <Icon className="h-4 w-4 shrink-0 stroke-[1.55] text-foreground/75 sm:h-6 sm:w-6" />
                     <span className="min-w-0">
                       <span className="block text-[10px] sm:text-[15px] font-semibold leading-tight tracking-[0]">{item.title}</span>
-                      <span className="mt-0.5 hidden text-xs leading-snug text-white/78 sm:block">{item.subtitle}</span>
+                      <span className="mt-0.5 hidden text-xs leading-snug text-muted-foreground sm:block">{item.subtitle}</span>
                     </span>
                   </Link>
                 );
@@ -400,6 +396,6 @@ export default async function Home() {
 
 
 
-    </main>
+    </div>
   );
 }

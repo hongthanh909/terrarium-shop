@@ -22,11 +22,11 @@ export interface GlassCardProps extends HTMLMotionProps<"div"> {
 
 const variantStyles = {
   default:
-    "bg-white/60 backdrop-blur-xl border border-white/30 shadow-[0_4px_24px_rgba(66,87,51,0.08)]",
+    "border border-border bg-white/85 shadow-[0_4px_24px_rgba(25,28,24,0.06)] backdrop-blur-xl",
   subtle:
-    "bg-white/40 backdrop-blur-md border border-white/20 shadow-[0_2px_12px_rgba(66,87,51,0.05)]",
+    "border border-border/80 bg-white/70 shadow-[0_2px_12px_rgba(25,28,24,0.04)] backdrop-blur-md",
   solid:
-    "bg-[#eef3ea] border border-[#d2dec9] shadow-[0_4px_20px_rgba(66,87,51,0.06)]",
+    "border border-border bg-white shadow-[0_4px_20px_rgba(25,28,24,0.05)]",
 };
 
 export const GlassCard = forwardRef<HTMLDivElement, GlassCardProps>(
@@ -56,8 +56,8 @@ export const GlassCard = forwardRef<HTMLDivElement, GlassCardProps>(
         }
         transition={{ duration: 0.35, ease: "easeOut" }}
         className={cn(
-          "rounded-2xl overflow-hidden transition-shadow duration-300",
-          "hover:shadow-[0_8px_32px_rgba(66,87,51,0.12)]",
+          "overflow-hidden rounded-lg transition-shadow duration-200",
+          "hover:shadow-[0_8px_32px_rgba(25,28,24,0.1)]",
           variantStyles[variant],
           className
         )}

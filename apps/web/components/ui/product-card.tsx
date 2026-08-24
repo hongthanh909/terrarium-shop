@@ -87,12 +87,12 @@ export function ProductCard({
     <GlassCard
       variant="solid"
       className={cn(
-        "group relative flex flex-col p-2.5 sm:p-4 h-full transition-shadow duration-300 hover:shadow-xl cursor-pointer",
+        "group relative flex h-full cursor-pointer flex-col p-2.5 transition-shadow duration-200 hover:shadow-lg sm:p-4",
         className
       )}
     >
       {/* Image area */}
-      <Link href={`/products/${slug}`} className="block relative overflow-hidden rounded-xl sm:rounded-2xl bg-white mb-3 sm:mb-4 aspect-square flex-shrink-0">
+      <Link href={`/products/${slug}`} className="relative mb-3 block aspect-square flex-shrink-0 overflow-hidden rounded-md bg-muted sm:mb-4">
         {activeImage ? (
           <ImageWrapper
             key={activeImage}
@@ -106,7 +106,7 @@ export function ProductCard({
             }}
           />
         ) : (
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-[#eef3e9] px-4 text-center text-[#526248]">
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-muted px-4 text-center text-muted-foreground">
             <Package className="w-10 h-10" />
             <span className="text-xs font-medium">Ảnh đang được cập nhật</span>
           </div>
@@ -119,12 +119,12 @@ export function ProductCard({
             </span>
           )}
           {isNew && !isOnSale && (
-            <span className="px-2 py-0.5 rounded-md bg-[#425733] text-white text-xs font-semibold shadow-sm tracking-wide">
+            <span className="rounded-md bg-foreground px-2 py-0.5 text-xs font-semibold text-white shadow-sm">
               Mới
             </span>
           )}
           {isBestseller && (
-            <span className="px-2 py-0.5 rounded-md bg-[#425733] text-white text-xs font-semibold shadow-sm tracking-wide">
+            <span className="rounded-md bg-foreground px-2 py-0.5 text-xs font-semibold text-white shadow-sm">
               Bán chạy
             </span>
           )}
@@ -133,11 +133,11 @@ export function ProductCard({
         <button
           onClick={(e) => { e.preventDefault(); onToggleWishlist?.(); }}
           className={cn(
-            "absolute top-2 left-2 z-10 w-9 h-9 sm:w-8 sm:h-8 rounded-full flex items-center justify-center shadow-sm transition-opacity duration-200",
+            "absolute left-2 top-2 z-10 flex h-11 w-11 items-center justify-center rounded-full shadow-sm transition-opacity duration-200 sm:h-11 sm:w-11",
             "opacity-80 sm:opacity-0 sm:group-hover:opacity-100",
             wished
               ? "bg-red-500 text-white scale-100 opacity-100"
-              : "bg-white text-[#526248] hover:bg-gray-50 hover:scale-110 active:scale-95"
+              : "bg-white text-muted-foreground hover:bg-muted active:scale-95"
           )}
           aria-label="Yêu thích"
         >
@@ -148,19 +148,19 @@ export function ProductCard({
       {/* Info section */}
       <div className="flex flex-col flex-1">
         {/* Category */}
-        <span className="text-[#526248] text-[11px] sm:text-xs font-semibold uppercase tracking-wider mb-1 block truncate">
+        <span className="mb-1 block truncate text-[11px] font-semibold uppercase text-muted-foreground sm:text-xs">
           {category?.name || "SẢN PHẨM"}
         </span>
 
         {/* Name & Price Row */}
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-1 sm:gap-2 mb-1.5">
           <Link href={`/products/${slug}`} className="flex-1 min-w-0">
-            <h3 className="font-bold text-gray-900 line-clamp-2 group-hover:text-[#425733] transition-colors leading-snug text-sm sm:text-base">
+            <h3 className="line-clamp-2 text-sm font-bold leading-snug text-foreground transition-colors group-hover:text-foreground/70 sm:text-base">
               {name}
             </h3>
           </Link>
           <div className="flex flex-row sm:flex-col items-baseline sm:items-end gap-1 sm:gap-0 flex-shrink-0 sm:pl-1">
-            <span className="text-sm sm:text-base font-bold text-[#2d3d23]">
+            <span className="text-sm font-bold text-foreground sm:text-base">
               {displayPrice.toLocaleString("vi-VN")}₫
             </span>
             {isOnSale && (
@@ -182,17 +182,17 @@ export function ProductCard({
               <span className="text-xs font-semibold text-gray-700">
                 {rating > 0 ? rating.toFixed(1) : ""}
               </span>
-              <span className="text-xs text-[#526248]">({reviewCount})</span>
+              <span className="text-xs text-muted-foreground">({reviewCount})</span>
             </>
           ) : (
-            <span className="text-xs text-[#526248] italic">Chưa có đánh giá</span>
+            <span className="text-xs italic text-muted-foreground">Chưa có đánh giá</span>
           )}
         </div>
 
         {/* Variant Selector */}
         {isBểProduct && (
           <div className="mb-3 sm:mb-4">
-            <p className="text-xs font-bold text-[#526248] uppercase tracking-widest mb-1.5">Chọn phiên bản</p>
+            <p className="mb-1.5 text-xs font-bold uppercase text-muted-foreground">Chọn phiên bản</p>
             <div className="grid grid-cols-3 gap-1">
               {(["basic", "standard", "advanced"] as const).map((key) => {
                 const label = key === "basic" ? "Cơ bản" : key === "standard" ? "Tiêu chuẩn" : "Nâng cao";
@@ -206,10 +206,10 @@ export function ProductCard({
                       setSelectedPackage(key);
                     }}
                     className={cn(
-                      "py-1.5 px-0.5 rounded-lg font-bold text-xs transition-colors duration-200 border-2 text-center leading-tight",
+                      "min-h-11 rounded-md border px-0.5 py-1.5 text-center text-xs font-bold leading-tight transition-colors duration-200",
                       isSelected
-                        ? "border-[#425733] bg-[#425733] text-white shadow-sm"
-                        : "border-gray-200 bg-white text-gray-600 hover:border-[#425733]/50 hover:bg-[#f8faf6]"
+                        ? "border-foreground bg-foreground text-white shadow-sm"
+                        : "border-border bg-white text-muted-foreground hover:border-foreground/30 hover:bg-muted"
                     )}
                   >
                     {label}
@@ -223,7 +223,7 @@ export function ProductCard({
         {/* Quantity & Add to Cart Row */}
         <div className="flex items-center justify-between gap-2 mt-auto">
           {/* Quantity Selector */}
-          <div className="hidden sm:flex items-center bg-[#f3f7ef] rounded-lg border border-[#e3ebdd] overflow-hidden p-0.5 flex-shrink-0">
+          <div className="hidden flex-shrink-0 items-center overflow-hidden rounded-md border border-border bg-muted p-0.5 sm:flex">
             <button
               type="button"
               onClick={(e) => {
@@ -232,7 +232,7 @@ export function ProductCard({
               }}
               disabled={isOutOfStock}
               aria-label="Giảm số lượng"
-              className="w-7 h-7 flex items-center justify-center text-[#425733] hover:bg-[#d4dec9] rounded transition-colors"
+              className="flex h-9 w-9 items-center justify-center rounded text-foreground transition-colors hover:bg-white"
             >
               <Minus className="w-3.5 h-3.5" />
             </button>
@@ -247,7 +247,7 @@ export function ProductCard({
               }}
               disabled={isOutOfStock || (inventory !== undefined && quantity >= inventory)}
               aria-label="Tăng số lượng"
-              className="w-7 h-7 flex items-center justify-center text-[#425733] hover:bg-[#d4dec9] rounded transition-colors"
+              className="flex h-9 w-9 items-center justify-center rounded text-foreground transition-colors hover:bg-white"
             >
               <Plus className="w-3.5 h-3.5" />
             </button>
@@ -263,11 +263,11 @@ export function ProductCard({
             }}
             disabled={isOutOfStock}
             className={cn(
-              "flex-1 min-h-10 py-2 px-2 sm:px-3 rounded-lg text-white text-xs sm:text-sm font-bold transition-colors flex items-center justify-center gap-1.5",
+              "flex min-h-11 flex-1 items-center justify-center gap-1.5 rounded-md px-2 py-2 text-xs font-bold text-white transition-colors sm:px-3 sm:text-sm",
               isOutOfStock
                 ? "bg-gray-300 text-gray-600 cursor-not-allowed"
-                : "bg-gradient-to-r from-[#3a5229] to-[#4a6a35] hover:from-[#2d3d23] hover:to-[#3a5229] active:scale-[0.97]",
-              "shadow-[0_2px_8px_rgba(58,82,41,0.15)] hover:shadow-[0_4px_12px_rgba(58,82,41,0.25)]"
+                : "bg-foreground hover:bg-foreground/85 active:scale-[0.97]",
+              "shadow-[0_2px_8px_rgba(25,28,24,0.12)] hover:shadow-[0_4px_12px_rgba(25,28,24,0.18)]"
             )}
           >
             {isOutOfStock ? "Hết hàng" : "Thêm vào giỏ"}

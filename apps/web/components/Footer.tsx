@@ -22,30 +22,30 @@ export default async function Footer() {
   ];
 
   return (
-    <footer className="bg-gradient-to-b from-[#e3ebdd] to-white pt-16 pb-8 border-t border-[#c8d5be]">
+    <footer className="border-t border-border bg-white pb-8 pt-16">
       <div className="max-w-7xl mx-auto px-6">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
           {/* Brand */}
           <div className="space-y-4">
             <Link href="/" className="flex flex-col group">
               <span 
-                className="text-xl text-[#425733] group-hover:text-[#364a29] transition-colors leading-tight"
+                className="text-xl leading-tight text-foreground transition-colors group-hover:text-foreground/75"
                 style={{ fontFamily: "'Dancing Script', cursive", fontWeight: 600 }}
               >
                 tiệm Rêu Décor
               </span>
               <div className="flex items-center gap-1.5 mt-0.5">
-                <div className="flex-1 h-px bg-[#8ba57a]" />
+                <div className="h-px flex-1 bg-border" />
                 <span 
-                  className="text-[9px] tracking-wider text-[#5f7d50] whitespace-nowrap"
+                  className="whitespace-nowrap text-[9px] text-muted-foreground"
                   style={{ fontFamily: "'Dancing Script', cursive", fontWeight: 400 }}
                 >
                   Terrarium & Moss Art
                 </span>
-                <div className="w-5 h-px bg-[#8ba57a]" />
+                <div className="h-px w-5 bg-border" />
               </div>
             </Link>
-            <p className="text-[hsl(220,14%,30%)] text-sm leading-relaxed">
+            <p className="text-sm leading-relaxed text-muted-foreground">
               Terrarium thủ công mang thiên nhiên vào không gian sống của bạn. Mỗi sản phẩm là một hệ sinh thái thu nhỏ, được tạo hình tỉ mỉ.
             </p>
             {/* Social Links */}
@@ -56,7 +56,7 @@ export default async function Footer() {
                   href={item.value}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-9 h-9 rounded-full bg-[#e3ebdd] hover:bg-[#c8d5be] flex items-center justify-center text-[hsl(220,14%,30%)] hover:text-[#425733] transition-[background-color,color,transform] hover:scale-110 hover:-translate-y-0.5"
+                  className="flex h-11 w-11 items-center justify-center rounded-md border border-border bg-white text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
                   aria-label={item.label}
                 >
                   <item.Icon className="w-4 h-4" />
@@ -67,25 +67,25 @@ export default async function Footer() {
 
           {/* Quick Links */}
           <div>
-            <h3 className="font-bold text-[hsl(220,14%,25%)] mb-4">Khám phá</h3>
-            <ul className="space-y-3 text-sm text-[hsl(220,14%,30%)]">
+            <h3 className="mb-4 font-bold text-foreground">Khám phá</h3>
+            <ul className="space-y-3 text-sm text-muted-foreground">
               <li>
-                <Link href="/products" className="relative hover:text-[#425733] transition-colors after:absolute after:bottom-0 after:left-0 after:w-full after:h-[1px] after:bg-[#425733] after:origin-left after:scale-x-0 hover:after:scale-x-100 after:transition-transform after:duration-300">
+                <Link href="/products" className="transition-colors hover:text-foreground">
                   Tất cả sản phẩm
                 </Link>
               </li>
               <li>
-                <Link href="/explore" className="relative hover:text-[#425733] transition-colors after:absolute after:bottom-0 after:left-0 after:w-full after:h-[1px] after:bg-[#425733] after:origin-left after:scale-x-0 hover:after:scale-x-100 after:transition-transform after:duration-300">
+                <Link href="/explore" className="transition-colors hover:text-foreground">
                   Được chọn tuần này
                 </Link>
               </li>
               <li>
-                <Link href="/blog" className="relative hover:text-[#425733] transition-colors after:absolute after:bottom-0 after:left-0 after:w-full after:h-[1px] after:bg-[#425733] after:origin-left after:scale-x-0 hover:after:scale-x-100 after:transition-transform after:duration-300">
+                <Link href="/blog" className="transition-colors hover:text-foreground">
                   Blog & Kiến thức
                 </Link>
               </li>
               <li>
-                <Link href="/about" className="relative hover:text-[#425733] transition-colors after:absolute after:bottom-0 after:left-0 after:w-full after:h-[1px] after:bg-[#425733] after:origin-left after:scale-x-0 hover:after:scale-x-100 after:transition-transform after:duration-300">
+                <Link href="/about" className="transition-colors hover:text-foreground">
                   Về chúng tôi
                 </Link>
               </li>
@@ -94,21 +94,21 @@ export default async function Footer() {
 
           {/* Contact */}
           <div>
-            <h3 className="font-bold text-[hsl(220,14%,25%)] mb-4">Liên hệ</h3>
-            <ul className="space-y-3 text-sm text-[hsl(220,14%,30%)]">
+            <h3 className="mb-4 font-bold text-foreground">Liên hệ</h3>
+            <ul className="space-y-3 text-sm text-muted-foreground">
               {emails.length > 0 ? (
                 emails.map((item: any, idx: number) => (
                   <li key={idx} className="flex items-center gap-2">
-                    <Mail className="w-4 h-4 text-[#425733]" />
-                    <a href={`mailto:${item.value}`} className="hover:text-[#425733] transition-colors">
+                    <Mail className="h-4 w-4 text-foreground" />
+                    <a href={`mailto:${item.value}`} className="transition-colors hover:text-foreground">
                       {item.value}
                     </a>
                   </li>
                 ))
               ) : (
                 <li className="flex items-center gap-2">
-                  <Mail className="w-4 h-4 text-[#425733]" />
-                  <a href="mailto:tiemreudecor@gmail.com" className="hover:text-[#425733] transition-colors">
+                  <Mail className="h-4 w-4 text-foreground" />
+                  <a href="mailto:tiemreudecor@gmail.com" className="transition-colors hover:text-foreground">
                     tiemreudecor@gmail.com
                   </a>
                 </li>
@@ -116,16 +116,16 @@ export default async function Footer() {
               {fanpages.length > 0 ? (
                 fanpages.map((item: any, idx: number) => (
                   <li key={idx} className="flex items-center gap-2">
-                    <Facebook className="w-4 h-4 text-[#425733]" />
-                    <a href={item.value} target="_blank" rel="noopener noreferrer" className="hover:text-[#425733] transition-colors">
+                    <Facebook className="h-4 w-4 text-foreground" />
+                    <a href={item.value} target="_blank" rel="noopener noreferrer" className="transition-colors hover:text-foreground">
                       Fanpage: {item.label}
                     </a>
                   </li>
                 ))
               ) : (
                 <li className="flex items-center gap-2">
-                  <Facebook className="w-4 h-4 text-[#425733]" />
-                  <a href="https://www.facebook.com/tiemreudecor" target="_blank" rel="noopener noreferrer" className="hover:text-[#425733] transition-colors">
+                  <Facebook className="h-4 w-4 text-foreground" />
+                  <a href="https://www.facebook.com/tiemreudecor" target="_blank" rel="noopener noreferrer" className="transition-colors hover:text-foreground">
                     Fanpage: tiemreudecor
                   </a>
                 </li>
@@ -133,26 +133,26 @@ export default async function Footer() {
               {addresses.length > 0 ? (
                 addresses.map((item: any, idx: number) => (
                   <li key={idx} className="flex items-start gap-2">
-                    <MapPin className="w-4 h-4 text-[#425733] mt-0.5" />
+                    <MapPin className="mt-0.5 h-4 w-4 text-foreground" />
                     <span>{item.value}</span>
                   </li>
                 ))
               ) : (
                 <li className="flex items-start gap-2">
-                  <MapPin className="w-4 h-4 text-[#425733] mt-0.5" />
+                  <MapPin className="mt-0.5 h-4 w-4 text-foreground" />
                   <span>Long Trường, Hồ Chí Minh</span>
                 </li>
               )}
               {workingHours.length > 0 ? (
                 workingHours.map((item: any, idx: number) => (
                   <li key={idx} className="flex items-center gap-2">
-                    <Clock className="w-4 h-4 text-[#425733]" />
+                    <Clock className="h-4 w-4 text-foreground" />
                     <span>{item.value}</span>
                   </li>
                 ))
               ) : (
                 <li className="flex items-center gap-2">
-                  <Clock className="w-4 h-4 text-[#425733]" />
+                  <Clock className="h-4 w-4 text-foreground" />
                   <span>Thứ 2 - Chủ nhật: 9:00 - 21:00</span>
                 </li>
               )}
@@ -161,30 +161,30 @@ export default async function Footer() {
 
           {/* Policies */}
           <div>
-            <h3 className="font-bold text-[hsl(220,14%,25%)] mb-4">Chính sách</h3>
-            <ul className="space-y-3 text-sm text-[hsl(220,14%,30%)]">
+            <h3 className="mb-4 font-bold text-foreground">Chính sách</h3>
+            <ul className="space-y-3 text-sm text-muted-foreground">
               <li>
-                <Link href="/policies/warranty" className="hover:text-[#425733] transition-colors">
+                <Link href="/policies/warranty" className="transition-colors hover:text-foreground">
                   Bảo hành
                 </Link>
               </li>
               <li>
-                <Link href="/policies/shipping" className="hover:text-[#425733] transition-colors">
+                <Link href="/policies/shipping" className="transition-colors hover:text-foreground">
                   Vận chuyển
                 </Link>
               </li>
               <li>
-                <Link href="/policies/returns" className="hover:text-[#425733] transition-colors">
+                <Link href="/policies/returns" className="transition-colors hover:text-foreground">
                   Đổi trả
                 </Link>
               </li>
               <li>
-                <Link href="/policies/privacy" className="hover:text-[#425733] transition-colors">
+                <Link href="/policies/privacy" className="transition-colors hover:text-foreground">
                   Bảo mật
                 </Link>
               </li>
               <li>
-                <Link href="/policies/faq" className="hover:text-[#425733] transition-colors">
+                <Link href="/policies/faq" className="transition-colors hover:text-foreground">
                   Câu hỏi thường gặp
                 </Link>
               </li>
@@ -193,8 +193,8 @@ export default async function Footer() {
         </div>
 
         {/* Bottom */}
-          <div className="border-t border-[#c8d5be] pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
-          <p className="text-sm text-[hsl(220,14%,30%)]">
+          <div className="flex flex-col items-center justify-between gap-4 border-t border-border pt-8 md:flex-row">
+          <p className="text-sm text-muted-foreground">
             © {new Date().getFullYear()} Tiệm Rêu Décor. All rights reserved.
           </p>
         </div>

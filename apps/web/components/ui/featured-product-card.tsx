@@ -67,7 +67,7 @@ export function FeaturedProductCard(props: FeaturedProductCardProps) {
       quantity,
       variants,
     });
-    showToast.success(`Đã thêm "${props.name}" vào giỏ hàng 🛒`);
+    showToast.success(`Đã thêm "${props.name}" vào giỏ hàng`);
   };
 
   return (

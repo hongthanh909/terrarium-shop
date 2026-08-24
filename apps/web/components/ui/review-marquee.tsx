@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { motion } from "framer-motion";
 import {
-  Star, Leaf, ShoppingBag, Sprout, Trophy
+  Star, ShoppingBag, Sprout, Trophy
 } from "lucide-react";
 import { NumberTicker } from "./number-ticker";
 
@@ -15,7 +16,7 @@ const reviews = [
     rating: 5,
     location: "Hà Nội",
     text: "Mua làm quà tặng sinh nhật bạn, được khen không ngớt. Thiết kế tinh tế, rất đáng tiền.",
-    avatarBg: "from-[#daebd0] to-[#a8c098]",
+    avatarBg: "from-[#c5b8aa] to-[#8d7b6a]",
     initials: "TH",
     isGreenBg: true,
     tiltClass: "md:-rotate-1"
@@ -26,7 +27,7 @@ const reviews = [
     rating: 5,
     location: "Hồ Chí Minh",
     text: "Shop tư vấn rất nhiệt tình, giao hàng nhanh. Terrarium đặt bàn làm việc trông sang lắm.",
-    avatarBg: "from-[#a8c098] to-[#8fa87f]",
+    avatarBg: "from-[#d6d3ce] to-[#9c9890]",
     initials: "MK",
     isGreenBg: false,
     tiltClass: "md:rotate-1"
@@ -37,7 +38,7 @@ const reviews = [
     rating: 5,
     location: "Đà Nẵng",
     text: "Chất lượng tuyệt vời, nhân viên support nhiệt tình. Terrarium vẫn xanh tốt sau 3 tháng!",
-    avatarBg: "from-[#8fa87f] to-[#6d8c5a]",
+    avatarBg: "from-[#bca28d] to-[#8a705c]",
     initials: "VH",
     isGreenBg: true,
     tiltClass: "md:-rotate-1"
@@ -48,7 +49,7 @@ const reviews = [
     rating: 5,
     location: "Nha Trang",
     text: "Terrarium đẹp hơn hình rất nhiều! Cây rất khỏe, đóng gói cẩn thận. Sẽ mua lại!",
-    avatarBg: "from-[#e3ebdd] to-[#a8c098]",
+    avatarBg: "from-[#d8d6d1] to-[#aaa69e]",
     initials: "TL",
     isGreenBg: false,
     tiltClass: "md:rotate-1"
@@ -59,7 +60,7 @@ const reviews = [
     rating: 5,
     location: "Hải Phòng",
     text: "Terrarium hệ kín rất dễ chăm sóc, đúng như quảng cáo. Trợ lý AI Tiệm Rêu hướng dẫn rất chi tiết.",
-    avatarBg: "from-[#6d8c5a] to-[#425733]",
+    avatarBg: "from-[#a99887] to-[#736557]",
     initials: "HN",
     isGreenBg: true,
     tiltClass: "md:-rotate-0.5"
@@ -70,7 +71,7 @@ const reviews = [
     rating: 5,
     location: "Cần Thơ",
     text: "Bể rêu đẹp lung linh, đóng gói cẩn thận không sứt mẻ gì. Rất thích chính sách bảo hành thực vật của shop.",
-    avatarBg: "from-[#edf3ea] to-[#daebd0]",
+    avatarBg: "from-[#e3dfda] to-[#b9b2a9]",
     initials: "TC",
     isGreenBg: false,
     tiltClass: "md:rotate-0.5"
@@ -80,11 +81,11 @@ const reviews = [
 function ReviewCard({ rev }: { rev: typeof reviews[0] }) {
   return (
     <div
-      className={`group rounded-2xl p-4 md:p-5 border transition-all duration-300 flex items-start gap-4 cursor-default opacity-90 hover:opacity-100 shadow-[0_8px_30px_rgba(41,58,32,0.04)] hover:shadow-[0_20px_45px_rgba(41,58,32,0.15)] hover:scale-[1.03] hover:-translate-y-1 hover:rotate-0 ${
+      className={`group flex cursor-default items-start gap-4 rounded-lg border p-4 opacity-95 transition-[border-color,box-shadow] duration-200 hover:border-foreground/20 hover:opacity-100 hover:shadow-soft-lg md:p-5 ${
         rev.isGreenBg 
-          ? "bg-[#e8efe2]/90 border-[#daebd0] hover:bg-[#d5e0cd] hover:border-[#425733]" 
-          : "bg-white/90 border-[#daebd0] hover:bg-[#fafbf9] hover:border-[#425733]"
-      } ${rev.tiltClass}`}
+          ? "border-border bg-[#f7f8f6]"
+          : "border-border bg-white"
+      }`}
     >
       {/* Left Column: Avatar */}
       <div className={`w-11 h-11 rounded-full overflow-hidden bg-gradient-to-tr ${rev.avatarBg} flex items-center justify-center text-white text-sm font-extrabold shadow-inner flex-shrink-0`}>
@@ -131,25 +132,13 @@ export function ReviewMarquee({ className }: { className?: string }) {
   const [isDashboardActive, setIsDashboardActive] = useState(false);
 
   return (
-    <section className={`py-24 px-6 bg-gradient-to-br from-[#fafbf8] to-[#edf3ea] overflow-hidden relative ${className || ""}`}>
-      {/* Decorative leaf shapes in background */}
-      <div className="absolute top-10 left-10 text-[#425733]/5 pointer-events-none select-none">
-        <Leaf size={140} className="rotate-45" />
-      </div>
-      <div className="absolute bottom-10 right-10 text-[#425733]/5 pointer-events-none select-none">
-        <Leaf size={140} className="-rotate-12" />
-      </div>
- 
-      {/* Decorative Dot Patterns */}
-      <div className="absolute top-12 right-12 w-16 h-16 opacity-20 hidden lg:block" style={{ backgroundImage: "radial-gradient(#425733 2px, transparent 0)", backgroundSize: "8px 8px" }} />
-      <div className="absolute bottom-12 left-12 w-16 h-16 opacity-20 hidden lg:block" style={{ backgroundImage: "radial-gradient(#425733 2px, transparent 0)", backgroundSize: "8px 8px" }} />
- 
+    <section className={`relative overflow-hidden border-t border-border bg-white px-6 py-24 ${className || ""}`}>
       <div className="max-w-7xl mx-auto">
         {/* Centered section header with underline */}
         <div className="text-center mb-16 max-w-3xl mx-auto">
-          <h2 className="text-3xl md:text-4xl font-bold pb-4 relative inline-block" style={{ background: 'linear-gradient(135deg, #1a2e12, #425733)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+          <h2 className="relative inline-block pb-4 font-serif text-3xl font-semibold text-foreground md:text-4xl">
             Feedback từ khách hàng đến Rêu
-            <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-28 h-1 bg-gradient-to-r from-[#6d8c5a] to-[#425733] rounded-full shadow-sm" />
+            <span className="absolute bottom-0 left-1/2 h-px w-28 -translate-x-1/2 bg-foreground/30" />
           </h2>
         </div>
 
@@ -178,34 +167,34 @@ export function ReviewMarquee({ className }: { className?: string }) {
               {/* Left Stats Cards (col-span-3) */}
               <div className="col-span-12 md:col-span-3 space-y-4 flex flex-col justify-center order-2 md:order-1">
                 {/* Stat 1: 2.500+ Khách hàng hài lòng */}
-                <div className="bg-white rounded-2xl p-4 border border-[#daebd0] shadow-[0_8px_30px_rgba(41,58,32,0.04)] hover:shadow-[0_15px_40px_rgba(41,58,32,0.1)] hover:-translate-y-0.5 transition-all duration-300 relative text-center flex flex-col items-center">
-                  <div className="mb-2 text-[#425733] bg-[#edf3ea] p-2 rounded-xl">
+                <div className="relative flex flex-col items-center rounded-lg border border-border bg-white p-4 text-center transition-shadow duration-200 hover:shadow-soft-lg">
+                  <div className="mb-2 rounded-md bg-muted p-2 text-foreground">
                     <ShoppingBag className="w-5 h-5 stroke-[1.5]" />
                   </div>
-                  <span className="text-xl md:text-2xl font-extrabold text-[#293a20] tracking-tight">
+                  <span className="text-xl font-extrabold text-foreground md:text-2xl">
                     <NumberTicker value={2500} suffix="+" />
                   </span>
                   <span className="mt-1 text-[11px] text-gray-500 font-bold tracking-wide">Khách hàng hài lòng</span>
                   
                   {/* SVG Arrow pointing Right */}
-                  <svg className="w-14 h-8 text-[#425733]/30 absolute top-1/2 -right-16 -translate-y-1/2 hidden xl:block pointer-events-none" viewBox="0 0 60 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <svg className="pointer-events-none absolute -right-16 top-1/2 hidden h-8 w-14 -translate-y-1/2 text-foreground/20 xl:block" viewBox="0 0 60 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M5 5C25 15 40 5 55 10" stroke="currentColor" strokeWidth="1.5" strokeDasharray="3 3" strokeLinecap="round" />
                     <path d="M48 5L55 10L49 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                 </div>
 
                 {/* Stat 2: 500+ Sản phẩm handmade */}
-                <div className="bg-white rounded-2xl p-4 border border-[#daebd0] shadow-[0_8px_30px_rgba(41,58,32,0.04)] hover:shadow-[0_15px_40px_rgba(41,58,32,0.1)] hover:-translate-y-0.5 transition-all duration-300 relative text-center flex flex-col items-center">
-                  <div className="mb-2 text-[#425733] bg-[#edf3ea] p-2 rounded-xl">
+                <div className="relative flex flex-col items-center rounded-lg border border-border bg-white p-4 text-center transition-shadow duration-200 hover:shadow-soft-lg">
+                  <div className="mb-2 rounded-md bg-muted p-2 text-foreground">
                     <Sprout className="w-5 h-5 stroke-[1.5]" />
                   </div>
-                  <span className="text-xl md:text-2xl font-extrabold text-[#293a20] tracking-tight">
+                  <span className="text-xl font-extrabold text-foreground md:text-2xl">
                     <NumberTicker value={500} suffix="+" />
                   </span>
                   <span className="mt-1 text-[11px] text-gray-500 font-bold tracking-wide">Sản phẩm handmade</span>
 
                   {/* SVG Arrow pointing Right-up */}
-                  <svg className="w-14 h-8 text-[#425733]/30 absolute top-1/2 -right-16 -translate-y-1/2 hidden xl:block pointer-events-none" viewBox="0 0 60 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <svg className="pointer-events-none absolute -right-16 top-1/2 hidden h-8 w-14 -translate-y-1/2 text-foreground/20 xl:block" viewBox="0 0 60 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M5 15C25 5 40 15 55 10" stroke="currentColor" strokeWidth="1.5" strokeDasharray="3 3" strokeLinecap="round" />
                     <path d="M48 14L55 10L49 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
@@ -215,17 +204,19 @@ export function ReviewMarquee({ className }: { className?: string }) {
               {/* Smartphone Mockup in the Center (col-span-6) */}
               <div className="col-span-12 md:col-span-6 flex justify-center relative order-1 md:order-2 select-none">
                 <div className="relative w-[380px] h-auto drop-shadow-[0_25px_50px_rgba(26,46,18,0.22)]">
-                  <img
+                  <Image
                     src="/fb.svg"
                     alt="Facebook profile mockup"
-                    className="w-full h-auto"
+                    width={1080}
+                    height={1080}
+                    className="h-auto w-full"
                   />
 
                   {/* Hotspot 1: Bottom Bar Notification Bell */}
                   <button
                     type="button"
                     onClick={() => setIsNotificationOn(!isNotificationOn)}
-                    className="absolute bottom-[4.8%] left-[69.5%] w-[12%] h-[6.5%] cursor-pointer rounded-full hover:bg-black/5 active:bg-black/10 transition-colors z-30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#425733]"
+                    className="absolute bottom-[4.8%] left-[69.5%] z-30 h-[6.5%] w-[12%] cursor-pointer rounded-full transition-colors hover:bg-black/5 active:bg-black/10"
                     aria-pressed={isNotificationOn}
                     aria-label="Bật tắt thông báo"
                     title="Bấm để bật/tắt Thông báo"
@@ -240,7 +231,7 @@ export function ReviewMarquee({ className }: { className?: string }) {
                   <button
                     type="button"
                     onClick={() => setIsOpenStatus(!isOpenStatus)}
-                    className="absolute top-[43.8%] left-[10%] w-[38%] h-[3%] cursor-pointer rounded hover:bg-black/5 active:bg-black/10 transition-colors z-30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#425733]"
+                    className="absolute left-[10%] top-[43.8%] z-30 h-[3%] w-[38%] cursor-pointer rounded transition-colors hover:bg-black/5 active:bg-black/10"
                     aria-pressed={isOpenStatus}
                     aria-label="Bật tắt trạng thái mở cửa"
                     title="Bấm để đóng/mở cửa Tiệm Rêu"
@@ -260,7 +251,7 @@ export function ReviewMarquee({ className }: { className?: string }) {
                   <button
                     type="button"
                     onClick={() => setIsDashboardActive(!isDashboardActive)}
-                    className="absolute top-[32%] left-[11%] w-[41%] h-[4%] cursor-pointer rounded-lg hover:bg-white/10 active:bg-white/20 transition-colors z-30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#425733]"
+                    className="absolute left-[11%] top-[32%] z-30 h-[4%] w-[41%] cursor-pointer rounded-md transition-colors hover:bg-white/10 active:bg-white/20"
                     aria-pressed={isDashboardActive}
                     aria-label="Bật tắt trạng thái dashboard"
                     title="Bấm để bật/tắt trạng thái Dashboard"
@@ -281,34 +272,34 @@ export function ReviewMarquee({ className }: { className?: string }) {
               {/* Right Stats Cards (col-span-3) */}
               <div className="col-span-12 md:col-span-3 space-y-4 flex flex-col justify-center order-3">
                 {/* Stat 3: 98% Đánh giá 5 sao */}
-                <div className="bg-white rounded-2xl p-4 border border-[#daebd0] shadow-[0_8px_30px_rgba(41,58,32,0.04)] hover:shadow-[0_15px_40px_rgba(41,58,32,0.1)] hover:-translate-y-0.5 transition-all duration-300 relative text-center flex flex-col items-center">
-                  <div className="mb-2 text-[#425733] bg-[#edf3ea] p-2 rounded-xl">
+                <div className="relative flex flex-col items-center rounded-lg border border-border bg-white p-4 text-center transition-shadow duration-200 hover:shadow-soft-lg">
+                  <div className="mb-2 rounded-md bg-muted p-2 text-foreground">
                     <Star className="w-5 h-5 stroke-[1.5]" />
                   </div>
-                  <span className="text-xl md:text-2xl font-extrabold text-[#293a20] tracking-tight">
+                  <span className="text-xl font-extrabold text-foreground md:text-2xl">
                     <NumberTicker value={98} suffix="%" />
                   </span>
                   <span className="mt-1 text-[11px] text-gray-500 font-bold tracking-wide">Đánh giá 5 sao</span>
 
                   {/* SVG Arrow pointing Left */}
-                  <svg className="w-14 h-8 text-[#425733]/30 absolute top-1/2 -left-16 -translate-y-1/2 hidden xl:block pointer-events-none" viewBox="0 0 60 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <svg className="pointer-events-none absolute -left-16 top-1/2 hidden h-8 w-14 -translate-y-1/2 text-foreground/20 xl:block" viewBox="0 0 60 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M55 5C35 15 20 5 5 10" stroke="currentColor" strokeWidth="1.5" strokeDasharray="3 3" strokeLinecap="round" />
                     <path d="M12 5L5 10L11 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                 </div>
 
                 {/* Stat 4: 3 năm Kinh nghiệm */}
-                <div className="bg-white rounded-2xl p-4 border border-[#daebd0] shadow-[0_8px_30px_rgba(41,58,32,0.04)] hover:shadow-[0_15px_40px_rgba(41,58,32,0.1)] hover:-translate-y-0.5 transition-all duration-300 relative text-center flex flex-col items-center">
-                  <div className="mb-2 text-[#425733] bg-[#edf3ea] p-2 rounded-xl">
+                <div className="relative flex flex-col items-center rounded-lg border border-border bg-white p-4 text-center transition-shadow duration-200 hover:shadow-soft-lg">
+                  <div className="mb-2 rounded-md bg-muted p-2 text-foreground">
                     <Trophy className="w-5 h-5 stroke-[1.5]" />
                   </div>
-                  <span className="text-xl md:text-2xl font-extrabold text-[#293a20] tracking-tight">
+                  <span className="text-xl font-extrabold text-foreground md:text-2xl">
                     <NumberTicker value={3} suffix=" năm" />
                   </span>
                   <span className="mt-1 text-[11px] text-gray-500 font-bold tracking-wide">Kinh nghiệm</span>
 
                   {/* SVG Arrow pointing Left-up */}
-                  <svg className="w-14 h-8 text-[#425733]/30 absolute top-1/2 -left-16 -translate-y-1/2 hidden xl:block pointer-events-none" viewBox="0 0 60 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <svg className="pointer-events-none absolute -left-16 top-1/2 hidden h-8 w-14 -translate-y-1/2 text-foreground/20 xl:block" viewBox="0 0 60 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M55 15C35 5 20 15 5 10" stroke="currentColor" strokeWidth="1.5" strokeDasharray="3 3" strokeLinecap="round" />
                     <path d="M12 14L5 10L11 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
@@ -336,8 +327,8 @@ export function ReviewMarquee({ className }: { className?: string }) {
         </div>
 
         {/* Centered quote block below */}
-        <div className="mt-16 text-center max-w-3xl mx-auto border-t border-[#daebd0] pt-10">
-          <p className="text-lg md:text-2xl font-bold italic text-[#293a20] leading-relaxed font-serif">
+        <div className="mx-auto mt-16 max-w-3xl border-t border-border pt-10 text-center">
+          <p className="font-serif text-lg font-bold italic leading-relaxed text-foreground md:text-2xl">
             “ Sự hài lòng, yêu mến và tin tưởng của quý khách hàng là động lực chăm sóc mảng xanh mỗi ngày của Tiệm Rêu Décor ”
           </p>
         </div>

@@ -101,7 +101,7 @@ export function BrandGallery({ images }: BrandGalleryProps) {
                 <button
                   key={img.id}
                   onClick={() => setLightboxIndex(globalIdx)}
-                  className={`relative ${heightClass} w-full rounded-2xl overflow-hidden group cursor-zoom-in shadow-sm hover:shadow-xl transition-all duration-500 hover:-translate-y-1 focus:outline-none focus:ring-2 focus:ring-[#425733] focus:ring-offset-2`}
+                  className={`group relative ${heightClass} w-full cursor-zoom-in overflow-hidden rounded-lg border border-border shadow-sm transition-[border-color,box-shadow] duration-200 hover:border-foreground/20 hover:shadow-lg`}
                 >
                   <ImageWrapper
                     src={img.imageUrl}
@@ -112,9 +112,9 @@ export function BrandGallery({ images }: BrandGalleryProps) {
                     sizes={`(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw`}
                   />
                   {/* Overlay on hover */}
-                  <div className="absolute inset-0 bg-[#425733]/0 group-hover:bg-[#425733]/20 transition-all duration-500 flex items-center justify-center">
-                    <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-white/90 rounded-full p-2.5 shadow-lg">
-                      <ZoomIn className="w-5 h-5 text-[#425733]" />
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/0 transition-colors duration-200 group-hover:bg-black/15">
+                    <div className="rounded-md bg-white/95 p-2.5 opacity-0 shadow-lg transition-opacity duration-200 group-hover:opacity-100">
+                      <ZoomIn className="h-5 w-5 text-foreground" />
                     </div>
                   </div>
                 </button>

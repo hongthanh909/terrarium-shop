@@ -20,14 +20,14 @@ module.exports = {
   		}
   	},
   	extend: {
-  		fontFamily: {
-  			sans: [
-  				'Plus Jakarta Sans',
-  				'sans-serif'
-  			],
-  			serif: [
-  				'Playfair Display',
-  				'serif'
+		fontFamily: {
+			sans: [
+				'var(--font-inter)',
+				'sans-serif'
+			],
+			serif: [
+				'var(--font-playfair)',
+				'serif'
   			]
   		},
   		colors: {
@@ -81,23 +81,7 @@ module.exports = {
   					height: 'var(--radix-accordion-content-height)'
   				}
   			},
-  			'accordion-up': {
-  				from: {
-  					height: 'var(--radix-accordion-content-height)'
-  				},
-  				to: {
-  					height: '0'
-  				}
-  			},
-  			'accordion-down': {
-  				from: {
-  					height: '0'
-  				},
-  				to: {
-  					height: 'var(--radix-accordion-content-height)'
-  				}
-  			},
-  			'accordion-up': {
+			'accordion-up': {
   				from: {
   					height: 'var(--radix-accordion-content-height)'
   				},
@@ -106,11 +90,9 @@ module.exports = {
   				}
   			}
   		},
-  		animation: {
-  			'accordion-down': 'accordion-down 0.2s ease-out',
-  			'accordion-up': 'accordion-up 0.2s ease-out',
-  			'accordion-down': 'accordion-down 0.2s ease-out',
-  			'accordion-up': 'accordion-up 0.2s ease-out'
+		animation: {
+			'accordion-down': 'accordion-down 0.2s ease-out',
+			'accordion-up': 'accordion-up 0.2s ease-out'
   		}
   	}
   },
