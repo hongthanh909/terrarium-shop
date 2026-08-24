@@ -87,9 +87,10 @@ export default function BlogInteraction({ postId, slug }: BlogInteractionProps) 
 
   // Real-time reply listener
   useEffect(() => {
-    if (!currentCustomerId) return;
+    if (!currentCustomerId || !supabaseClient) return;
+    const client = supabaseClient;
 
-    const channel = supabaseClient
+    const channel = client
       .channel("new-replies-toast")
       .on(
         "postgres_changes",
@@ -124,7 +125,7 @@ export default function BlogInteraction({ postId, slug }: BlogInteractionProps) 
       .subscribe();
 
     return () => {
-      supabaseClient.removeChannel(channel);
+      client.removeChannel(channel);
     };
   }, [currentCustomerId, fetchComments]);
 

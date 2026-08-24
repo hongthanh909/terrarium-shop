@@ -113,7 +113,7 @@ export function ProductsClient({
       quantity,
       variants,
     });
-    showToast.success(`Đã thêm "${product.name}" vào giỏ hàng 🛒`);
+    showToast.success(`Đã thêm "${product.name}" vào giỏ hàng`);
   };
 
   const handleSearch = (e: React.FormEvent) => {
@@ -136,27 +136,30 @@ export function ProductsClient({
 
   return (
     <PageTransition>
-      <main className="min-h-[100dvh] bg-[#fafbf8] py-6 px-4 sm:py-10 sm:px-6">
+      <div className="min-h-[100dvh] bg-white px-4 pb-20 pt-8 sm:px-6 sm:pb-24 sm:pt-12">
         <div className="max-w-7xl mx-auto">
 
           {/* Header */}
-          <SlideInHeading className="mb-8">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <SlideInHeading className="mb-10 border-b border-border pb-8 sm:mb-12 sm:pb-10">
+            <div className="grid gap-6 md:grid-cols-[1fr_auto] md:items-end">
               <div>
-                <h1 className="text-3xl sm:text-4xl font-bold text-[#1a2e12]">Sản Phẩm</h1>
-                <p className="text-gray-500 text-sm mt-1">{totalProducts} sản phẩm đang có</p>
+                <p className="mb-3 text-xs font-semibold uppercase text-muted-foreground">Bộ sưu tập Tiệm Rêu</p>
+                <h1 className="max-w-xl font-serif text-4xl font-semibold text-foreground sm:text-5xl">Terrarium cho từng khoảng sống</h1>
+                <p className="mt-4 max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base">
+                  Khám phá {totalProducts} thiết kế thủ công, từ những bể nhỏ để bàn đến hệ sinh thái làm theo yêu cầu.
+                </p>
               </div>
 
               {/* Search */}
-              <form onSubmit={handleSearch} className="flex w-full items-center gap-2 md:w-auto">
+              <form onSubmit={handleSearch} className="flex w-full items-center gap-2 md:w-auto" role="search">
                 <Input
                   type="text"
                   placeholder="Tìm kiếm sản phẩm..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="h-11 flex-1 rounded-full border-[#c8d5be] focus:border-[#425733] md:w-64"
+                  className="h-12 flex-1 rounded-md border-border bg-white md:w-72"
                 />
-                <Button type="submit" size="sm" className="h-11 w-11 rounded-full bg-[#425733] hover:bg-[#364a29]">
+                <Button type="submit" size="sm" className="h-12 w-12 rounded-md bg-foreground hover:bg-foreground/85" aria-label="Tìm kiếm sản phẩm">
                   <Search className="w-4 h-4" />
                 </Button>
               </form>
@@ -165,26 +168,26 @@ export function ProductsClient({
 
           {/* Category Filter */}
           <motion.div
-            className="mb-10"
+            className="sticky top-[65px] z-20 -mx-4 mb-12 border-b border-border bg-white/95 px-4 py-4 backdrop-blur-md sm:top-[101px] sm:mx-0 sm:rounded-lg sm:border sm:px-5"
             initial={prefersReducedMotion ? false : { opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.15, duration: 0.4 }}
           >
-            <div className="flex items-center gap-3 mb-4">
-              <Filter className="w-4 h-4 text-[#425733] flex-shrink-0" />
-              <span className="text-xs font-semibold uppercase tracking-wider text-[#5f7057]">
+            <div className="mb-3 flex items-center gap-3">
+              <Filter className="h-4 w-4 flex-shrink-0 text-foreground" />
+              <span className="text-xs font-semibold uppercase text-muted-foreground">
                 Danh mục
               </span>
-              <div className="flex-1 h-px bg-[#d4dec9]" />
+              <div className="h-px flex-1 bg-border" />
             </div>
 
             <div className="flex flex-nowrap sm:flex-wrap gap-2.5 overflow-x-auto pb-2 scrollbar-none -mx-4 px-4 sm:mx-0 sm:px-0">
               <button
                 onClick={() => handleCategoryChange(null)}
-                className={`min-h-11 whitespace-nowrap px-5 py-2 rounded-full text-sm font-semibold transition-colors duration-200 border-2 ${
+                className={`min-h-11 whitespace-nowrap rounded-md border px-4 py-2 text-sm font-semibold transition-colors duration-200 ${
                   selectedCategory === null
-                    ? "bg-[#425733] text-white border-[#425733] shadow-[0_4px_14px_rgba(66,87,51,0.35)]"
-                    : "bg-white text-gray-500 border-[#c8d5be] hover:border-[#425733] hover:text-[#425733] hover:bg-[#f3f7ef]"
+                    ? "border-foreground bg-foreground text-white"
+                    : "border-border bg-white text-muted-foreground hover:border-foreground/30 hover:bg-muted hover:text-foreground"
                 }`}
               >
                 Tất Cả
@@ -193,10 +196,10 @@ export function ProductsClient({
                 <button
                   key={cat.id}
                   onClick={() => handleCategoryChange(cat.id)}
-                  className={`min-h-11 whitespace-nowrap px-5 py-2 rounded-full text-sm font-semibold transition-colors duration-200 border-2 ${
+                  className={`min-h-11 whitespace-nowrap rounded-md border px-4 py-2 text-sm font-semibold transition-colors duration-200 ${
                     selectedCategory === cat.id
-                      ? "bg-[#425733] text-white border-[#425733] shadow-[0_4px_14px_rgba(66,87,51,0.35)]"
-                      : "bg-white text-gray-500 border-[#c8d5be] hover:border-[#425733] hover:text-[#425733] hover:bg-[#f3f7ef]"
+                      ? "border-foreground bg-foreground text-white"
+                      : "border-border bg-white text-muted-foreground hover:border-foreground/30 hover:bg-muted hover:text-foreground"
                   }`}
                 >
                   {cat.name}
@@ -213,18 +216,18 @@ export function ProductsClient({
               animate={{ opacity: 1 }}
               transition={{ delay: 0.2 }}
             >
-              <Package className="w-16 h-16 mx-auto text-[#a8c098] mb-4" />
-              <p className="text-[#5f7057] mb-4">Không tìm thấy sản phẩm nào.</p>
+              <Package className="mx-auto mb-4 h-16 w-16 text-muted-foreground" />
+              <p className="mb-4 text-muted-foreground">Không tìm thấy sản phẩm nào.</p>
               <Button
                 variant="outline"
                 onClick={() => { setSelectedCategory(null); setSearchQuery(""); router.push("/products"); }}
-                className="border-[#425733] text-[#425733] hover:bg-[#f0f4ed]"
+                className="border-foreground text-foreground hover:bg-muted"
               >
                 Xem tất cả sản phẩm
               </Button>
             </motion.div>
           ) : isGroupedView ? (
-            <div className="space-y-10 sm:space-y-14">
+            <div className="space-y-14 sm:space-y-20">
               {groupedProducts.map((group, groupIndex) => (
                 <motion.section
                   key={group.category.id}
@@ -233,9 +236,9 @@ export function ProductsClient({
                   transition={{ delay: 0.12 + groupIndex * 0.05, duration: 0.4 }}
                   className="scroll-mt-24"
                 >
-                  <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 mb-4 sm:mb-5 border-t border-[#d4dec9] pt-5">
+                  <div className="mb-6 flex flex-col gap-3 border-t border-border pt-6 sm:mb-8 sm:flex-row sm:items-end sm:justify-between">
                     <div>
-                      <h2 className="text-2xl font-bold text-[#1f3518]">
+                      <h2 className="font-serif text-3xl font-semibold text-foreground">
                         {group.category.name}
                       </h2>
                       <p className="text-sm text-gray-500 mt-1">
@@ -244,13 +247,13 @@ export function ProductsClient({
                     </div>
                     <button
                       onClick={() => handleCategoryChange(group.category.id)}
-                      className="self-start sm:self-auto px-4 py-2 rounded-full border border-[#c8d5be] bg-white text-sm font-semibold text-[#425733] hover:bg-[#f3f7ef] transition-colors"
+                      className="min-h-11 self-start rounded-md border border-border bg-white px-4 py-2 text-sm font-semibold text-foreground transition-colors hover:bg-muted sm:self-auto"
                     >
                       Xem riêng danh mục
                     </button>
                   </div>
 
-                  <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
+                  <div className="grid grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-3">
                     {group.products.map((product) => {
                       const ratingSummary = getProductRatingSummary(product);
                       return (
@@ -278,7 +281,7 @@ export function ProductsClient({
               ))}
             </div>
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
+            <div className="grid grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-3">
               {initialProducts.map((product) => {
                 const ratingSummary = getProductRatingSummary(product);
                 return (
@@ -304,7 +307,7 @@ export function ProductsClient({
             </div>
           )}
         </div>
-      </main>
+      </div>
     </PageTransition>
   );
 }

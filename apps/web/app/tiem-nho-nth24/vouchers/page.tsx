@@ -5,6 +5,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Plus, Edit, Trash2, Save, X, Clock, Copy, Download, KeyRound, RefreshCw } from "lucide-react";
 import Link from "next/link";
 import { showToast } from "@/components/ui/custom-toast";
+import { ImageWrapper } from "@/components/ui/ImageWrapper";
 
 // ─── Helpers: Vietnam Timezone (UTC+7) ─────────────────────────────────────
 // datetime-local input cần format "YYYY-MM-DDTHH:mm" theo local time
@@ -380,7 +381,7 @@ export default function AdminVouchersPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-16 gap-2 text-gray-400">
-        <div className="w-5 h-5 border-2 border-[#425733] border-t-transparent rounded-full animate-spin" />
+        <div className="h-5 w-5 animate-spin rounded-full border-2 border-gray-950 border-t-transparent" />
         Đang tải...
       </div>
     );
@@ -390,15 +391,15 @@ export default function AdminVouchersPage() {
     <div>
       {/* Header */}
       <div className="mb-6">
-        <Link href="/tiem-nho-nth24" className="inline-flex items-center text-[#425733] hover:underline mb-4 text-sm">
+        <Link href="/tiem-nho-nth24" className="mb-4 inline-flex items-center text-sm text-gray-600 hover:text-gray-950 hover:underline">
           <ArrowLeft className="w-4 h-4 mr-1" />
           Quay Lại Admin
         </Link>
         <div className="flex justify-between items-center">
-          <h2 className="text-3xl font-bold text-gray-800">Phiếu Giảm Giá</h2>
+          <h2 className="text-3xl font-semibold text-gray-950">Phiếu giảm giá</h2>
           <button
             onClick={() => handleOpenModal()}
-            className="flex items-center gap-2 bg-[#425733] text-white px-6 py-3 rounded-full font-semibold shadow hover:-translate-y-0.5 hover:shadow-lg hover:bg-[#364a29] transition-all"
+            className="flex items-center gap-2 rounded-md bg-gray-950 px-6 py-3 font-semibold text-white shadow-sm transition-colors hover:bg-gray-700"
           >
             <Plus className="w-5 h-5" />
             Phiếu Giảm Giá Mới
@@ -407,7 +408,7 @@ export default function AdminVouchersPage() {
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-200">
+      <div className="overflow-x-auto rounded-md border border-gray-200 bg-white shadow-sm">
         <table className="w-full">
           <thead className="bg-gray-50 border-b">
             <tr>
@@ -494,7 +495,7 @@ export default function AdminVouchersPage() {
       {/* Modal */}
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+          <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-md bg-white shadow-2xl">
             <div className="flex items-center justify-between px-6 py-5 border-b">
               <div>
                 <h3 className="text-xl font-bold text-gray-800">
@@ -502,9 +503,9 @@ export default function AdminVouchersPage() {
                 </h3>
                 {/* Real-time Vietnam clock */}
                 <div className="flex items-center gap-1.5 mt-1">
-                  <Clock className="w-3.5 h-3.5 text-[#425733]" />
+                  <Clock className="h-3.5 w-3.5 text-gray-950" />
                   <span className="text-xs text-gray-500 font-mono">
-                    🇻🇳 Giờ VN: <span className="text-[#425733] font-semibold">{vnClock}</span>
+                    Giờ Việt Nam: <span className="font-semibold text-gray-950">{vnClock}</span>
                   </span>
                 </div>
               </div>
@@ -555,7 +556,7 @@ export default function AdminVouchersPage() {
                       <label className="block text-sm font-semibold text-gray-700 mb-1.5">Áp dụng cho loại ship *</label>
                       <div className="space-y-2">
                         <label className={`flex items-center gap-3 p-2.5 rounded-xl border-2 cursor-pointer transition-all ${
-                          formData.value === "30000" ? "border-[#425733] bg-[#f6faf4]" : "border-gray-200 hover:border-[#425733]/40"
+                          formData.value === "30000" ? "border-gray-950 bg-gray-50" : "border-gray-200 hover:border-gray-400"
                         }`}>
                           <input
                             type="radio"
@@ -570,7 +571,7 @@ export default function AdminVouchersPage() {
                           </div>
                         </label>
                         <label className={`flex items-center gap-3 p-2.5 rounded-xl border-2 cursor-pointer transition-all ${
-                          formData.value === "50000" ? "border-[#425733] bg-[#f6faf4]" : "border-gray-200 hover:border-[#425733]/40"
+                          formData.value === "50000" ? "border-gray-950 bg-gray-50" : "border-gray-200 hover:border-gray-400"
                         }`}>
                           <input
                             type="radio"
@@ -728,8 +729,8 @@ export default function AdminVouchersPage() {
                           }}
                           className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all border ${
                             isSelected
-                              ? "bg-[#425733] text-white border-[#425733]"
-                              : "bg-white text-gray-600 border-gray-200 hover:border-[#425733]/50"
+                              ? "border-gray-950 bg-gray-950 text-white"
+                              : "border-gray-200 bg-white text-gray-600 hover:border-gray-400"
                           }`}
                         >
                           {isSelected && <span className="mr-1">✓</span>}
@@ -739,7 +740,7 @@ export default function AdminVouchersPage() {
                     })}
                   </div>
                   {selectedCategoryIds.length > 0 && (
-                    <p className="text-xs text-[#425733] mt-1.5 font-medium">Đã chọn {selectedCategoryIds.length} danh mục</p>
+                    <p className="mt-1.5 text-xs font-medium text-gray-950">Đã chọn {selectedCategoryIds.length} danh mục</p>
                   )}
                 </div>
               )}
@@ -764,7 +765,7 @@ export default function AdminVouchersPage() {
                           <label
                             key={p.id}
                             className={`flex items-center gap-3 p-2 rounded-lg cursor-pointer transition-all ${
-                              isSelected ? "bg-[#f6faf4] border border-[#425733]/30" : "hover:bg-gray-50 border border-transparent"
+                              isSelected ? "border border-gray-300 bg-gray-50" : "border border-transparent hover:bg-gray-50"
                             }`}
                           >
                             <input
@@ -780,7 +781,7 @@ export default function AdminVouchersPage() {
                             {/* Thumbnail */}
                             <div className="w-10 h-10 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
                               {p.images?.[0] ? (
-                                <img src={p.images[0]} alt={p.name} className="w-full h-full object-cover" />
+                                <ImageWrapper src={p.images[0]} alt={p.name} fill sizes="40px" noRound className="object-cover" />
                               ) : (
                                 <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs">—</div>
                               )}
@@ -794,7 +795,7 @@ export default function AdminVouchersPage() {
                       })}
                   </div>
                   {selectedProductIds.length > 0 && (
-                    <p className="text-xs text-[#425733] mt-1.5 font-medium">Đã chọn {selectedProductIds.length} sản phẩm</p>
+                    <p className="mt-1.5 text-xs font-medium text-gray-950">Đã chọn {selectedProductIds.length} sản phẩm</p>
                   )}
                 </div>
               )}
@@ -824,7 +825,7 @@ export default function AdminVouchersPage() {
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="flex items-center gap-2 bg-[#425733] text-white px-6 py-2.5 rounded-full text-sm font-semibold hover:bg-[#364a29] transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                  className="flex items-center gap-2 rounded-md bg-gray-950 px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-gray-700 disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {submitting
                     ? <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> Đang lưu...</>
@@ -838,7 +839,7 @@ export default function AdminVouchersPage() {
 
       {showCodesModal && codeCampaign && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-3xl overflow-hidden rounded-2xl bg-white shadow-2xl">
+          <div className="w-full max-w-3xl overflow-hidden rounded-md bg-white shadow-2xl">
             <div className="flex items-center justify-between border-b px-6 py-5">
               <div>
                 <h3 className="text-xl font-bold text-gray-800">Mã riêng của {codeCampaign.code}</h3>
@@ -907,7 +908,7 @@ export default function AdminVouchersPage() {
                   type="button"
                   onClick={handleGenerateCodes}
                   disabled={codesSubmitting}
-                  className="flex min-h-10 items-center gap-2 rounded-xl bg-[#425733] px-4 text-sm font-semibold text-white transition-colors hover:bg-[#364a29] disabled:cursor-not-allowed disabled:opacity-60"
+                  className="flex min-h-10 items-center gap-2 rounded-md bg-gray-950 px-4 text-sm font-semibold text-white transition-colors hover:bg-gray-700 disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {codesSubmitting ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
                   Tạo mã ngẫu nhiên

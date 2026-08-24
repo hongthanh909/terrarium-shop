@@ -77,60 +77,40 @@ export default function AdminLoginPage() {
   };
 
   return (
-    <main className="min-h-[100dvh] relative flex items-center justify-center overflow-hidden bg-gradient-to-br from-[#dce5d5] via-[#e8efe2] to-[#f0f4ee] px-4 py-12">
-      {/* Background blobs */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div
-          className="absolute top-1/4 -left-32 w-[500px] h-[500px] rounded-full blur-[120px] opacity-35"
-          style={{ background: "radial-gradient(circle, #a8c098 0%, transparent 70%)" }}
-        />
-        <div
-          className="absolute bottom-1/3 -right-32 w-[400px] h-[400px] rounded-full blur-[100px] opacity-25"
-          style={{ background: "radial-gradient(circle, #8ba57a 0%, transparent 70%)" }}
-        />
-        {/* Subtle grid pattern overlay */}
-        <div
-          className="absolute inset-0 opacity-[0.03]"
-          style={{
-            backgroundImage: "radial-gradient(circle, #425733 1px, transparent 1px)",
-            backgroundSize: "24px 24px",
-          }}
-        />
-      </div>
-
-      <div className="relative z-10 w-full max-w-md">
+    <main className="flex min-h-[100dvh] items-center justify-center overflow-hidden bg-white px-4 py-12">
+      <div className="w-full max-w-md">
         {/* Card */}
         <motion.div
-          initial={{ opacity: 0, y: 24, scale: 0.97 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: "easeOut" }}
-          className="relative rounded-3xl overflow-hidden bg-white/80 backdrop-blur-xl border border-white/60 shadow-[0_20px_60px_rgba(66,87,51,0.12)]"
+          className="relative overflow-hidden rounded-md border border-gray-200 bg-white shadow-[0_20px_60px_rgba(0,0,0,0.10)]"
         >
           {/* Header */}
           <div className="px-8 pt-8 pb-6 border-b border-gray-100 text-center">
             <Link href="/" className="inline-flex flex-col items-center group mb-3">
               <span
-                className="text-3xl text-[#425733] group-hover:text-[#364a29] transition-colors leading-tight"
+                className="text-3xl leading-tight text-gray-950 transition-colors group-hover:text-gray-600"
                 style={{ fontFamily: "'Dancing Script', cursive", fontWeight: 700 }}
               >
                 tiệm Rêu Décor
               </span>
               <div className="flex items-center gap-1.5 mt-1">
-                <div className="w-8 h-px bg-[#8ba57a]" />
+                <div className="h-px w-8 bg-gray-200" />
                 <span
-                  className="text-[10px] tracking-wider text-[#5f7d50] whitespace-nowrap"
+                  className="whitespace-nowrap text-[10px] text-gray-500"
                   style={{ fontFamily: "'Dancing Script', cursive", fontWeight: 400 }}
                 >
                   Terrarium &amp; Moss Art
                 </span>
-                <div className="w-8 h-px bg-[#8ba57a]" />
+                <div className="h-px w-8 bg-gray-200" />
               </div>
             </Link>
 
             {/* Admin Badge */}
-            <div className="inline-flex items-center gap-1.5 bg-[#e3ebdd] px-3 py-1 rounded-full mt-3">
-              <ShieldCheck className="w-3 h-3 text-[#425733]" />
-              <span className="text-[10px] font-bold uppercase tracking-widest text-[#425733]">
+            <div className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-gray-100 px-3 py-1">
+              <ShieldCheck className="h-3 w-3 text-gray-950" />
+              <span className="text-[10px] font-bold uppercase text-gray-950">
                 Admin Dashboard
               </span>
             </div>
@@ -153,16 +133,16 @@ export default function AdminLoginPage() {
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
                     transition={{ delay: 0.15, type: "spring", stiffness: 300, damping: 20 }}
-                    className="w-20 h-20 bg-[#e3ebdd] rounded-full flex items-center justify-center mb-6 border border-[#d0dcc6]"
+                    className="mb-6 flex h-20 w-20 items-center justify-center rounded-full border border-gray-200 bg-gray-100"
                   >
-                    <CheckCircle2 className="w-10 h-10 text-[#425733]" />
+                    <CheckCircle2 className="h-10 w-10 text-gray-950" />
                   </motion.div>
                   <h2 className="text-xl font-bold text-gray-800 mb-2">Đăng nhập thành công!</h2>
                   <p className="text-gray-400 text-sm max-w-xs mx-auto mb-5">
                     Chào mừng Quản trị viên trở lại
                   </p>
-                  <div className="inline-flex items-center gap-2 text-xs text-[#425733] font-semibold bg-[#e3ebdd] px-4 py-2 rounded-full">
-                    <span className="w-2 h-2 rounded-full bg-[#8fba6f] animate-pulse" />
+                  <div className="inline-flex items-center gap-2 rounded-full bg-gray-100 px-4 py-2 text-xs font-semibold text-gray-950">
+                    <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-500" />
                     Đang mở bảng điều khiển...
                   </div>
                 </motion.div>
@@ -201,7 +181,7 @@ export default function AdminLoginPage() {
                           required
                           value={email}
                           onChange={(e) => { setEmail(e.target.value); setError(""); }}
-                          className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-gray-50 border border-gray-200 text-gray-800 placeholder:text-gray-300 text-sm focus:outline-none focus:border-[#425733] focus:ring-2 focus:ring-[#425733]/10 focus:shadow-[0_0_0_3px_rgba(66,87,51,0.08)] transition-all"
+                          className="w-full rounded-md border border-gray-200 bg-gray-50 py-2.5 pl-10 pr-4 text-sm text-gray-800 transition-all placeholder:text-gray-400 focus:border-gray-950 focus:outline-none focus:ring-2 focus:ring-gray-950/10"
                           placeholder="admin@tiemreudecor.com"
                           autoComplete="email"
                         />
@@ -221,7 +201,7 @@ export default function AdminLoginPage() {
                           required
                           value={password}
                           onChange={(e) => { setPassword(e.target.value); setError(""); }}
-                          className="w-full pl-10 pr-10 py-2.5 rounded-xl bg-gray-50 border border-gray-200 text-gray-800 placeholder:text-gray-300 text-sm focus:outline-none focus:border-[#425733] focus:ring-2 focus:ring-[#425733]/10 focus:shadow-[0_0_0_3px_rgba(66,87,51,0.08)] transition-all"
+                          className="w-full rounded-md border border-gray-200 bg-gray-50 py-2.5 pl-10 pr-10 text-sm text-gray-800 transition-all placeholder:text-gray-400 focus:border-gray-950 focus:outline-none focus:ring-2 focus:ring-gray-950/10"
                           placeholder="••••••••"
                           autoComplete="current-password"
                         />

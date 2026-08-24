@@ -57,9 +57,8 @@ export function useIdleLogout({
       `Phiên sắp hết — bạn sẽ tự động đăng xuất sau ${warnMinutes} phút nếu không có hoạt động.`
     );
     warnTimer.current = setTimeout(handleLogout, WARN_MS);
-  }, [warnMinutes, WARN_MS, clearTimers, handleLogout]);
+  }, [warnMinutes, WARN_MS, handleLogout]);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   const startTimers = useCallback(() => {
     clearTimers();
     idleTimer.current = setTimeout(showWarning, IDLE_MS);

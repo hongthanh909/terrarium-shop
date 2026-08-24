@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { showToast } from "@/components/ui/custom-toast";
 import { useCartStore } from "@/lib/store/cartStore";
+import { ImageWrapper } from "@/components/ui/ImageWrapper";
 
 interface Order {
   id: string;
@@ -211,12 +212,12 @@ export default function ProfilePage() {
 
   if (status === "loading" || loading) {
     return (
-      <main className="min-h-[100dvh] flex items-center justify-center">
+      <div className="flex min-h-[70dvh] items-center justify-center">
         <div className="text-center">
-          <div className="w-10 h-10 border-4 border-[#425733] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+          <div className="mx-auto mb-3 h-10 w-10 animate-spin rounded-full border-4 border-foreground border-t-transparent" />
           <p className="text-gray-500">Đang tải...</p>
         </div>
-      </main>
+      </div>
     );
   }
 
@@ -229,20 +230,20 @@ export default function ProfilePage() {
     : 100;
 
   return (
-    <main className="min-h-[100dvh] bg-gray-50 py-8">
+    <div className="min-h-[100dvh] bg-white py-10">
       <div className="max-w-4xl mx-auto px-4">
         {/* Back */}
-        <Link href="/" className="inline-flex items-center text-gray-500 hover:text-[#425733] mb-6 text-sm">
+        <Link href="/" className="mb-6 inline-flex items-center text-sm text-gray-500 hover:text-foreground">
           <ArrowLeft className="w-4 h-4 mr-1" /> Trang chủ
         </Link>
 
         {/* ─── Hero Card ─────────────────────────────────────────────────────────── */}
-        <div className={`relative rounded-2xl overflow-hidden mb-6 bg-gradient-to-r ${tier.color} p-6 text-white shadow-lg`}>
+        <div className="relative mb-6 overflow-hidden border border-foreground bg-foreground p-6 text-white shadow-sm">
           <div className="flex items-center gap-5">
             {/* Avatar */}
             <div className="w-20 h-20 rounded-full overflow-hidden bg-white/20 backdrop-blur flex items-center justify-center text-3xl font-bold border-2 border-white/40 flex-shrink-0 relative">
               {profile.image ? (
-                <img src={profile.image} alt={profile.name} className="w-full h-full object-cover" />
+                <ImageWrapper src={profile.image} alt={profile.name} fill sizes="80px" noRound className="object-cover" />
               ) : (
                 profile.name?.charAt(0)?.toUpperCase() || "U"
               )}
@@ -291,7 +292,7 @@ export default function ProfilePage() {
         </div>
 
         {/* ─── Tabs ──────────────────────────────────────────────────────────────── */}
-        <div className="flex gap-1 bg-white border border-gray-200 rounded-xl p-1 mb-6 shadow-sm">
+        <div className="mb-6 flex gap-1 border-b border-gray-200 bg-white p-1">
           {[
             { id: "info" as TabType,     label: "Thông tin",    icon: User },
             { id: "orders" as TabType,   label: "Đơn hàng",     icon: ShoppingBag },
@@ -300,10 +301,10 @@ export default function ProfilePage() {
             <button
               key={id}
               onClick={() => setActiveTab(id)}
-              className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-semibold transition-all ${
+              className={`flex flex-1 items-center justify-center gap-2 border-b-2 py-2.5 text-sm font-semibold transition-all ${
                 activeTab === id
-                  ? "bg-[#425733] text-white shadow-sm"
-                  : "text-gray-500 hover:text-gray-700"
+                  ? "border-foreground text-foreground"
+                  : "border-transparent text-gray-500 hover:text-gray-700"
               }`}
             >
               <Icon className="w-4 h-4" />
@@ -314,16 +315,16 @@ export default function ProfilePage() {
 
         {/* ─── Tab: Thông tin cá nhân ──────────────────────────────────────────── */}
         {activeTab === "info" && (
-          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
-            <h2 className="text-lg font-semibold text-gray-800 mb-5">Thông tin cá nhân</h2>
+          <div className="border border-gray-200 bg-white p-6 shadow-sm">
+            <h2 className="mb-5 font-serif text-2xl font-semibold text-gray-900">Thông tin cá nhân</h2>
 
             {/* Avatar Upload */}
-            <div className="flex items-center gap-4 p-4 bg-[#f8faf6] border border-[#e3ebdd] rounded-2xl mb-6">
-              <div className="relative w-16 h-16 rounded-full overflow-hidden border-2 border-[#425733]/20 bg-white flex items-center justify-center flex-shrink-0 shadow-sm">
+            <div className="mb-6 flex items-center gap-4 border border-border bg-muted/35 p-4">
+              <div className="relative flex h-16 w-16 flex-shrink-0 items-center justify-center overflow-hidden rounded-full border border-border bg-white shadow-sm">
                 {profile.image ? (
-                  <img src={profile.image} alt="Avatar" className="w-full h-full object-cover" />
+                  <ImageWrapper src={profile.image} alt="Avatar" fill sizes="64px" noRound className="object-cover" />
                 ) : (
-                  <span className="text-[#425733] text-xl font-bold">{(name || "U").charAt(0).toUpperCase()}</span>
+                  <span className="text-xl font-bold text-foreground">{(name || "U").charAt(0).toUpperCase()}</span>
                 )}
                 {uploading && (
                   <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-10">
@@ -344,7 +345,7 @@ export default function ProfilePage() {
                   />
                   <label
                     htmlFor="avatar-upload"
-                    className="inline-flex items-center justify-center text-xs font-bold px-3 py-1.5 rounded-lg border-2 border-[#c8d5be] text-[#425733] bg-white cursor-pointer hover:bg-[#e3ebdd] hover:border-[#425733]/40 transition-colors disabled:opacity-60"
+                    className="inline-flex cursor-pointer items-center justify-center border border-border bg-white px-3 py-1.5 text-xs font-bold text-foreground transition-colors hover:border-foreground/40 hover:bg-muted disabled:opacity-60"
                   >
                     {uploading ? "Đang tải..." : "Chọn ảnh mới"}
                   </label>
@@ -372,7 +373,7 @@ export default function ProfilePage() {
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#6d8c5a] focus:border-transparent outline-none transition-all"
+                  className="w-full border border-gray-200 px-4 py-2.5 outline-none transition-all focus:border-foreground focus:ring-2 focus:ring-foreground/10"
                   placeholder="Nhập họ và tên"
                   required
                 />
@@ -387,7 +388,7 @@ export default function ProfilePage() {
                   type="email"
                   value={profile.email}
                   readOnly
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl bg-gray-50 text-gray-500 cursor-not-allowed"
+                  className="w-full cursor-not-allowed border border-gray-200 bg-gray-50 px-4 py-2.5 text-gray-500"
                 />
                 <p className="text-xs text-gray-400 mt-1">Email không thể thay đổi</p>
               </div>
@@ -401,7 +402,7 @@ export default function ProfilePage() {
                   type="tel"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#6d8c5a] focus:border-transparent outline-none transition-all"
+                  className="w-full border border-gray-200 px-4 py-2.5 outline-none transition-all focus:border-foreground focus:ring-2 focus:ring-foreground/10"
                   placeholder="VD: 0901234567"
                 />
               </div>
@@ -418,7 +419,7 @@ export default function ProfilePage() {
                 <button
                   type="submit"
                   disabled={saving}
-                  className="flex items-center gap-2 bg-[#425733] text-white px-6 py-2.5 rounded-full font-semibold hover:bg-[#364a29] disabled:opacity-60 transition-all"
+                  className="flex items-center gap-2 bg-foreground px-6 py-2.5 font-semibold text-white transition-colors hover:bg-foreground/85 disabled:opacity-60"
                 >
                   <Save className="w-4 h-4" />
                   {saving ? "Đang lưu..." : "Lưu thay đổi"}
@@ -430,12 +431,12 @@ export default function ProfilePage() {
 
         {/* ─── Tab: Đơn hàng gần đây ───────────────────────────────────────────── */}
         {activeTab === "orders" && (
-          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+          <div className="border border-gray-200 bg-white p-6 shadow-sm">
             <div className="flex items-center justify-between mb-5">
               <h2 className="text-lg font-semibold text-gray-800">Đơn hàng gần đây</h2>
               <Link
                 href="/orders"
-                className="text-sm text-[#425733] hover:text-[#364a29] font-medium flex items-center gap-1"
+                className="flex items-center gap-1 text-sm font-medium text-foreground hover:text-foreground/70"
               >
                 Xem tất cả <ChevronRight className="w-4 h-4" />
               </Link>
@@ -447,7 +448,7 @@ export default function ProfilePage() {
                 <p>Bạn chưa có đơn hàng nào</p>
                 <Link
                   href="/products"
-                  className="mt-3 inline-block text-sm text-[#425733] font-medium hover:underline"
+                  className="mt-3 inline-block text-sm font-medium text-foreground hover:underline"
                 >
                   Khám phá sản phẩm →
                 </Link>
@@ -460,10 +461,10 @@ export default function ProfilePage() {
                     <Link
                       key={order.id}
                       href={`/orders/${order.id}`}
-                      className="flex items-center justify-between p-4 border border-gray-100 rounded-xl hover:border-[#6d8c5a] hover:shadow-sm transition-all group"
+                      className="group flex items-center justify-between border border-gray-100 p-4 transition-all hover:border-foreground/40 hover:shadow-sm"
                     >
                       <div>
-                        <p className="font-semibold text-gray-800 group-hover:text-[#425733] transition-colors">
+                        <p className="font-semibold text-gray-800 transition-colors group-hover:text-foreground">
                           #{order.orderNumber}
                         </p>
                         <p className="text-xs text-gray-400 mt-0.5">
@@ -476,10 +477,10 @@ export default function ProfilePage() {
                         <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${s.color}`}>
                           {s.label}
                         </span>
-                        <span className="font-bold text-[#425733]">
+                        <span className="font-bold text-foreground">
                           {Number(order.total).toLocaleString("vi-VN")}₫
                         </span>
-                        <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-[#425733] transition-colors" />
+                        <ChevronRight className="h-4 w-4 text-gray-300 transition-colors group-hover:text-foreground" />
                       </div>
                     </Link>
                   );
@@ -491,8 +492,8 @@ export default function ProfilePage() {
 
         {/* ─── Tab: Đổi mật khẩu ───────────────────────────────────────────────── */}
         {activeTab === "password" && (
-          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
-            <h2 className="text-lg font-semibold text-gray-800 mb-5">Đổi mật khẩu</h2>
+          <div className="border border-gray-200 bg-white p-6 shadow-sm">
+            <h2 className="mb-5 font-serif text-2xl font-semibold text-gray-900">Đổi mật khẩu</h2>
             <form onSubmit={handleChangePassword} className="space-y-4 max-w-md">
               {/* Current password */}
               <div>
@@ -503,7 +504,7 @@ export default function ProfilePage() {
                     value={currentPassword}
                     onChange={(e) => setCurrentPassword(e.target.value)}
                     required
-                    className="w-full px-4 py-2.5 pr-10 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#6d8c5a] focus:border-transparent outline-none transition-all"
+                    className="w-full border border-gray-200 px-4 py-2.5 pr-10 outline-none transition-all focus:border-foreground focus:ring-2 focus:ring-foreground/10"
                     placeholder="••••••••"
                   />
                   <button
@@ -526,7 +527,7 @@ export default function ProfilePage() {
                     onChange={(e) => setNewPassword(e.target.value)}
                     required
                     minLength={6}
-                    className="w-full px-4 py-2.5 pr-10 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#6d8c5a] focus:border-transparent outline-none transition-all"
+                    className="w-full border border-gray-200 px-4 py-2.5 pr-10 outline-none transition-all focus:border-foreground focus:ring-2 focus:ring-foreground/10"
                     placeholder="Ít nhất 6 ký tự"
                   />
                   <button
@@ -547,7 +548,7 @@ export default function ProfilePage() {
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   required
-                  className={`w-full px-4 py-2.5 border rounded-xl focus:ring-2 focus:ring-[#6d8c5a] focus:border-transparent outline-none transition-all ${
+                  className={`w-full border px-4 py-2.5 outline-none transition-all focus:border-foreground focus:ring-2 focus:ring-foreground/10 ${
                     confirmPassword && confirmPassword !== newPassword
                       ? "border-red-300 bg-red-50"
                       : "border-gray-200"
@@ -562,7 +563,7 @@ export default function ProfilePage() {
               <button
                 type="submit"
                 disabled={saving || (!!confirmPassword && confirmPassword !== newPassword)}
-                className="flex items-center gap-2 bg-[#425733] text-white px-6 py-2.5 rounded-full font-semibold hover:bg-[#364a29] disabled:opacity-60 transition-all"
+                className="flex items-center gap-2 bg-foreground px-6 py-2.5 font-semibold text-white transition-colors hover:bg-foreground/85 disabled:opacity-60"
               >
                 <Lock className="w-4 h-4" />
                 {saving ? "Đang đổi..." : "Đổi mật khẩu"}
@@ -578,7 +579,7 @@ export default function ProfilePage() {
             { label: "Điểm tích lũy",  value: profile.loyaltyPoints.toLocaleString("vi-VN"), icon: "⭐" },
             { label: "Hạng thành viên", value: tier.label, icon: tier.icon },
           ].map(({ label, value, icon }) => (
-            <div key={label} className="bg-white rounded-2xl border border-gray-200 shadow-sm p-4 text-center">
+            <div key={label} className="border border-gray-200 bg-white p-4 text-center shadow-sm">
               <div className="text-2xl mb-1">{icon}</div>
               <p className="text-xl font-bold text-gray-800">{value}</p>
               <p className="text-xs text-gray-500 mt-0.5">{label}</p>
@@ -586,6 +587,6 @@ export default function ProfilePage() {
           ))}
         </div>
       </div>
-    </main>
+    </div>
   );
 }

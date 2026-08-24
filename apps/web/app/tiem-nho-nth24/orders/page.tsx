@@ -149,7 +149,7 @@ export default function AdminOrdersPage() {
       sortable: true,
       render: (o) => (
         <div>
-          <span className="font-bold text-[#425733]">{o.total.toLocaleString("vi-VN")}₫</span>
+          <span className="font-bold text-gray-950">{o.total.toLocaleString("vi-VN")}₫</span>
           {(o.shippingQuoteRequired || requiresShippingQuote(o.shippingInfo?.province)) && (
             <p className="mt-1 text-[11px] font-semibold text-[#a27625]">Chờ báo phí ship</p>
           )}
@@ -166,7 +166,7 @@ export default function AdminOrdersPage() {
             CONFIRMED:  "bg-blue-50 text-blue-700 border-blue-200 focus:ring-blue-500/20",
             PROCESSING: "bg-purple-50 text-purple-700 border-purple-200 focus:ring-purple-500/20",
             SHIPPING:   "bg-indigo-50 text-indigo-700 border-indigo-200 focus:ring-indigo-500/20",
-            DELIVERED:  "bg-[#e3ebdd] text-[#364a29] border-[#c2d6b0] focus:ring-[#364a29]/20",
+            DELIVERED:  "bg-emerald-50 text-emerald-800 border-emerald-200 focus:ring-emerald-700/20",
             CANCELLED:  "bg-red-50 text-red-700 border-red-200 focus:ring-red-500/20",
           };
           return styles[status] || "bg-gray-100 text-gray-600 border-gray-200";
@@ -215,7 +215,7 @@ export default function AdminOrdersPage() {
         <Link
           href={`/tiem-nho-nth24/orders/${o.id}`}
           onClick={(e) => e.stopPropagation()}
-          className="inline-flex items-center gap-1 text-[#425733] hover:text-[#364a29] font-semibold text-xs px-2 py-1 rounded-lg hover:bg-[#e3ebdd] transition-colors"
+          className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-semibold text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-950"
         >
           <Eye className="w-3.5 h-3.5" />
           Chi tiết

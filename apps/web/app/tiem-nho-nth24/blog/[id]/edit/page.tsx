@@ -1,5 +1,7 @@
 "use client";
 
+/* eslint-disable @next/next/no-img-element -- Editor previews may use local object URLs. */
+
 import { useState, useEffect, useRef } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { ArrowLeft, Save, Eye, EyeOff, Upload, X, Image as ImageIcon, Clock, ImagePlus, Loader2 } from "lucide-react";

@@ -98,7 +98,7 @@ function StatCard({
   iconColor?: string;
 }) {
   const card = (
-    <div className="bg-white rounded-2xl border border-gray-100 p-5 flex items-start gap-4 min-h-[125px] hover:shadow-[0_8px_30px_rgba(0,0,0,0.04)] transition-all duration-200 group relative overflow-hidden">
+    <div className="group relative flex min-h-[125px] items-start gap-4 overflow-hidden rounded-md border border-gray-200 bg-white p-5 transition-all duration-200 hover:shadow-[0_8px_30px_rgba(0,0,0,0.04)]">
       {/* Subtle background glow accent */}
       <div
         className="absolute top-0 right-0 w-24 h-24 rounded-full blur-2xl opacity-10 transition-opacity group-hover:opacity-25"
@@ -173,7 +173,7 @@ export default function AdminDashboard() {
   return (
     <div className="space-y-6 max-w-[1280px] mx-auto">
       {/* ── Top Header & Filter Controls ── */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-gray-100 shadow-[0_2px_12px_rgba(0,0,0,0.02)]">
+      <div className="flex flex-col justify-between gap-4 rounded-md border border-gray-200 bg-white p-5 shadow-sm lg:flex-row lg:items-center">
         <div>
           <div className="flex items-center gap-2">
             <h2 className="text-2xl font-extrabold text-gray-800 tracking-tight">Bảng Điều Khiển</h2>
@@ -188,7 +188,7 @@ export default function AdminDashboard() {
 
         {/* Time Period Filter Pills */}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-          <div className="flex items-center bg-[#fafbf8] p-1 rounded-xl border border-gray-200/80 gap-1 overflow-x-auto">
+          <div className="flex items-center gap-1 overflow-x-auto rounded-md border border-gray-200 bg-gray-50 p-1">
             {PERIOD_OPTIONS.map((opt) => {
               const active = period === opt.id;
               return (
@@ -217,7 +217,7 @@ export default function AdminDashboard() {
             <motion.div
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
-              className="flex items-center gap-2 bg-[#fafbf8] p-1.5 rounded-xl border border-gray-200/80 text-xs"
+              className="flex items-center gap-2 rounded-md border border-gray-200 bg-gray-50 p-1.5 text-xs"
             >
               <input
                 type="date"
@@ -234,7 +234,7 @@ export default function AdminDashboard() {
               />
               <button
                 onClick={() => refetch()}
-                className="bg-[#2f4a23] text-white px-3 py-1 rounded-md font-medium text-xs hover:bg-[#1a2e12] transition-colors"
+                className="rounded-md bg-gray-950 px-3 py-1 text-xs font-medium text-white transition-colors hover:bg-gray-700"
               >
                 Lọc
               </button>
@@ -244,12 +244,12 @@ export default function AdminDashboard() {
       </div>
 
       {loading ? (
-        <div className="flex flex-col items-center justify-center py-24 bg-white rounded-2xl border border-gray-100">
+        <div className="flex flex-col items-center justify-center rounded-md border border-gray-200 bg-white py-24">
           <div className="w-10 h-10 border-4 border-[#2f4a23] border-t-transparent rounded-full animate-spin mb-3" />
           <p className="text-xs text-gray-400 font-medium">Đang tải thống kê doanh thu...</p>
         </div>
       ) : error ? (
-        <div className="p-6 bg-red-50 border border-red-100 rounded-2xl text-red-700 text-sm">
+        <div className="rounded-md border border-red-100 bg-red-50 p-6 text-sm text-red-700">
           ⚠️ Không thể tải thống kê: {(error as Error).message}
         </div>
       ) : (
@@ -299,7 +299,7 @@ export default function AdminDashboard() {
             {(stats?.pendingOrders || 0) > 0 && (
               <Link
                 href="/tiem-nho-nth24/orders"
-                className="flex-1 flex items-center gap-3 px-4 py-3 bg-amber-50/80 border border-amber-200/70 rounded-2xl hover:bg-amber-100/60 transition-colors shadow-xs"
+                className="flex flex-1 items-center gap-3 rounded-md border border-amber-200/70 bg-amber-50/80 px-4 py-3 shadow-xs transition-colors hover:bg-amber-100/60"
               >
                 <div className="w-9 h-9 rounded-xl bg-amber-100 flex items-center justify-center flex-shrink-0 text-amber-700">
                   <Clock className="w-4 h-4" />
@@ -313,7 +313,7 @@ export default function AdminDashboard() {
             {(stats?.pendingReviews || 0) > 0 && (
               <Link
                 href="/tiem-nho-nth24/reviews"
-                className="flex-1 flex items-center gap-3 px-4 py-3 bg-blue-50/80 border border-blue-200/70 rounded-2xl hover:bg-blue-100/60 transition-colors shadow-xs"
+                className="flex flex-1 items-center gap-3 rounded-md border border-blue-200/70 bg-blue-50/80 px-4 py-3 shadow-xs transition-colors hover:bg-blue-100/60"
               >
                 <div className="w-9 h-9 rounded-xl bg-blue-100 flex items-center justify-center flex-shrink-0 text-blue-700">
                   <Star className="w-4 h-4" />
@@ -329,7 +329,7 @@ export default function AdminDashboard() {
           {/* ── Tables row — Orders + Top Products ── */}
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-5">
             {/* Recent Orders — 3/5 width */}
-            <div className="lg:col-span-3 bg-white rounded-2xl border border-gray-100 shadow-[0_2px_12px_rgba(0,0,0,0.02)] overflow-hidden">
+            <div className="overflow-hidden rounded-md border border-gray-200 bg-white shadow-sm lg:col-span-3">
               <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
                 <div className="flex items-center gap-2">
                   <ShoppingCart className="w-4 h-4 text-[#2f4a23]" />
@@ -337,7 +337,7 @@ export default function AdminDashboard() {
                 </div>
                 <Link
                   href="/tiem-nho-nth24/orders"
-                  className="text-xs text-[#4a6d38] hover:text-[#1a2e12] font-semibold transition-colors flex items-center gap-1"
+                  className="flex items-center gap-1 text-xs font-semibold text-gray-600 transition-colors hover:text-gray-950"
                 >
                   Xem tất cả →
                 </Link>
@@ -350,7 +350,7 @@ export default function AdminDashboard() {
                     <Link
                       key={order.id}
                       href={`/tiem-nho-nth24/orders/${order.id}`}
-                      className="flex items-center justify-between px-6 py-4 hover:bg-[#fafbf8] transition-colors group"
+                      className="group flex items-center justify-between px-6 py-4 transition-colors hover:bg-gray-50"
                     >
                       <div className="min-w-0 flex-1">
                         <p className="font-bold text-gray-800 text-sm truncate group-hover:text-[#2f4a23] transition-colors">
@@ -375,7 +375,7 @@ export default function AdminDashboard() {
             </div>
 
             {/* Top Products — 2/5 width */}
-            <div className="lg:col-span-2 bg-white rounded-2xl border border-gray-100 shadow-[0_2px_12px_rgba(0,0,0,0.02)] overflow-hidden">
+            <div className="overflow-hidden rounded-md border border-gray-200 bg-white shadow-sm lg:col-span-2">
               <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
                 <div className="flex items-center gap-2">
                   <Package className="w-4 h-4 text-[#c28b2d]" />
@@ -383,7 +383,7 @@ export default function AdminDashboard() {
                 </div>
                 <Link
                   href="/tiem-nho-nth24/products"
-                  className="text-xs text-[#4a6d38] hover:text-[#1a2e12] font-semibold transition-colors flex items-center gap-1"
+                  className="flex items-center gap-1 text-xs font-semibold text-gray-600 transition-colors hover:text-gray-950"
                 >
                   Tất cả →
                 </Link>
@@ -395,7 +395,7 @@ export default function AdminDashboard() {
                   {topProducts.map((product: any, index: number) => (
                     <div
                       key={product.slug}
-                      className="flex items-center gap-3.5 px-6 py-3.5 hover:bg-[#fafbf8] transition-colors"
+                      className="flex items-center gap-3.5 px-6 py-3.5 transition-colors hover:bg-gray-50"
                     >
                       <span
                         className={`w-7 h-7 rounded-lg text-xs font-black flex items-center justify-center shrink-0 shadow-xs ${
@@ -424,7 +424,7 @@ export default function AdminDashboard() {
           </div>
 
           {/* ── Quick Actions ── */}
-          <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-[0_2px_12px_rgba(0,0,0,0.02)]">
+          <div className="rounded-md border border-gray-200 bg-white p-6 shadow-sm">
             <h3 className="font-bold text-gray-800 text-base mb-4 flex items-center gap-2">
               <Layers className="w-4 h-4 text-[#2f4a23]" />
               Hành Động Nhanh
@@ -440,7 +440,7 @@ export default function AdminDashboard() {
                 <Link
                   key={href}
                   href={href}
-                  className="group flex min-h-28 flex-col items-center justify-center gap-2.5 rounded-xl border border-gray-100 p-4 text-center transition-all hover:border-[#c5dcb8] hover:bg-[#fafbf8] hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8fba6f]/60"
+                  className="group flex min-h-28 flex-col items-center justify-center gap-2.5 rounded-md border border-gray-200 p-4 text-center transition-all hover:border-gray-400 hover:bg-gray-50 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-950/30"
                 >
                   <div
                     className="w-11 h-11 rounded-xl flex items-center justify-center transition-transform duration-200 group-hover:scale-110 shadow-xs"

@@ -160,6 +160,8 @@ export default function CheckoutPage() {
 
     setPendingAutoVoucherCode(null);
     void handleApplyVoucher();
+    // The callback intentionally runs only when the pending code is copied into the form.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formData.voucherCode, pendingAutoVoucherCode]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -240,20 +242,20 @@ export default function CheckoutPage() {
 
   if (itemsToCheckout.length === 0) {
     return (
-      <main className="min-h-[100dvh] bg-background py-8 px-4 sm:px-6">
+      <div className="min-h-[70dvh] bg-background px-4 py-16 sm:px-6">
         <div className="max-w-2xl mx-auto text-center">
-          <h1 className="text-3xl font-bold mb-4">Giỏ Hàng Trống</h1>
+          <h1 className="mb-4 font-serif text-4xl font-semibold">Giỏ hàng trống</h1>
           <p className="text-muted-foreground mb-8">Hãy thêm sản phẩm vào giỏ hàng trước!</p>
           <Button asChild>
             <Link href="/products">Xem Sản Phẩm</Link>
           </Button>
         </div>
-      </main>
+      </div>
     );
   }
 
   return (
-    <main className="min-h-[100dvh] bg-background px-4 pb-28 pt-6 sm:px-6 sm:py-8 lg:pb-8">
+    <div className="min-h-[100dvh] bg-background px-4 pb-28 pt-6 sm:px-6 sm:py-10 lg:pb-12">
       <div className="max-w-6xl mx-auto">
         <div className="mb-6">
           <Link href="/products" className="inline-flex items-center text-muted-foreground hover:text-primary">
@@ -262,14 +264,22 @@ export default function CheckoutPage() {
           </Link>
         </div>
 
-        <h1 className="text-3xl font-bold mb-8">Thanh Toán</h1>
+        <div className="mb-8 border-b border-border pb-6">
+          <p className="mb-2 text-xs font-semibold uppercase text-muted-foreground">Hoàn tất đơn hàng</p>
+          <h1 className="font-serif text-4xl font-semibold sm:text-5xl">Thanh toán</h1>
+          <ol className="mt-6 grid max-w-2xl grid-cols-3 gap-3 text-xs font-semibold text-muted-foreground" aria-label="Tiến trình thanh toán">
+            <li className="border-t-2 border-foreground pt-2 text-foreground">1. Thông tin</li>
+            <li className="border-t-2 border-border pt-2">2. Xác nhận</li>
+            <li className="border-t-2 border-border pt-2">3. Hoàn tất</li>
+          </ol>
+        </div>
 
         <form onSubmit={handleSubmit}>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
           <div className="lg:col-span-2 space-y-5 sm:space-y-6">
-            <Card>
+            <Card className="border-border shadow-none">
               <CardHeader>
-                <CardTitle>Thông Tin Khách Hàng</CardTitle>
+                <CardTitle className="font-serif text-2xl font-semibold">Thông tin khách hàng</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 [&_input]:min-h-11 [&_label]:mb-1.5 [&_label]:block">
@@ -289,11 +299,11 @@ export default function CheckoutPage() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="border-border shadow-none">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+                <CardTitle className="flex items-center gap-2 font-serif text-2xl font-semibold">
                   <Truck className="w-5 h-5" />
-                  Địa Chỉ Giao Hàng
+                  Địa chỉ giao hàng
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -323,9 +333,9 @@ export default function CheckoutPage() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="border-border shadow-none">
               <CardHeader>
-                <CardTitle>Phương Thức Vận Chuyển</CardTitle>
+                <CardTitle className="font-serif text-2xl font-semibold">Phương thức vận chuyển</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 {shippingQuoteRequired ? (
@@ -342,7 +352,7 @@ export default function CheckoutPage() {
                   </div>
                 ) : (
                   <>
-                    <label className="flex items-center justify-between gap-3 p-4 border rounded-xl cursor-pointer hover:bg-muted/50">
+                    <label className="flex cursor-pointer items-center justify-between gap-3 border p-4 hover:bg-muted/50">
                       <div className="flex items-center gap-3">
                         <input type="radio" name="shippingMethod" value="GHN_STANDARD" checked={formData.shippingMethod === "GHN_STANDARD"} onChange={handleInputChange} className="h-4 w-4" />
                         <div>
@@ -352,7 +362,7 @@ export default function CheckoutPage() {
                       </div>
                       <p className="font-semibold">30.000₫</p>
                     </label>
-                    <label className="flex items-center justify-between gap-3 p-4 border rounded-xl cursor-pointer hover:bg-muted/50">
+                    <label className="flex cursor-pointer items-center justify-between gap-3 border p-4 hover:bg-muted/50">
                       <div className="flex items-center gap-3">
                         <input type="radio" name="shippingMethod" value="GHN_EXPRESS" checked={formData.shippingMethod === "GHN_EXPRESS"} onChange={handleInputChange} className="h-4 w-4" />
                         <div>
@@ -367,15 +377,15 @@ export default function CheckoutPage() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="border-border shadow-none">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+                <CardTitle className="flex items-center gap-2 font-serif text-2xl font-semibold">
                   <CreditCard className="w-5 h-5" />
-                  Phương Thức Thanh Toán
+                  Phương thức thanh toán
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                <label className="flex items-start p-4 border rounded-xl cursor-pointer hover:bg-muted/50">
+                <label className="flex cursor-pointer items-start border p-4 hover:bg-muted/50">
                   <input type="radio" name="paymentMethod" value="COD" checked={formData.paymentMethod === "COD"} onChange={handleInputChange} className="mt-1 mr-3 h-4 w-4" />
                   <div>
                     <p className="font-semibold">Thanh Toán Khi Nhận Hàng (COD)</p>
@@ -386,9 +396,9 @@ export default function CheckoutPage() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="border-border shadow-none">
               <CardHeader>
-                <CardTitle>Mã Giảm Giá</CardTitle>
+                <CardTitle className="font-serif text-2xl font-semibold">Mã giảm giá</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
@@ -404,11 +414,11 @@ export default function CheckoutPage() {
                 </div>
                 {/* Voucher status messages */}
                 {voucherApplied && (
-                  <div className="mt-3 flex items-center gap-2 bg-[#f0f7ea] border border-[#c2d6b0] rounded-lg px-3 py-2">
-                    <span className="w-5 h-5 rounded-full bg-[#425733] flex items-center justify-center flex-shrink-0">
+                  <div className="mt-3 flex items-center gap-2 border border-emerald-200 bg-emerald-50 px-3 py-2">
+                    <span className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-emerald-700">
                       <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
                     </span>
-                    <span className="text-sm text-[#2d4a1e] font-medium">
+                    <span className="text-sm font-medium text-emerald-800">
                       {isFreeShipping ? "Miễn phí vận chuyển!" : `Giảm ${discount.toLocaleString("vi-VN")}₫`}
                     </span>
                   </div>
@@ -428,7 +438,7 @@ export default function CheckoutPage() {
             <Button
               type="submit"
               size="lg"
-              className="hidden lg:flex w-full bg-[#425733] hover:bg-[#364a29]"
+              className="hidden w-full lg:flex"
               disabled={
                 loading ||
                 voucherChecking ||
@@ -449,9 +459,9 @@ export default function CheckoutPage() {
           </div>
 
           <div className="order-first lg:order-none lg:col-span-1">
-            <Card className="sticky top-24">
+            <Card className="sticky top-24 border-foreground shadow-none">
               <CardHeader>
-                <CardTitle>Tổng Đơn Hàng</CardTitle>
+                <CardTitle className="font-serif text-2xl font-semibold">Tóm tắt đơn hàng</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4 mb-6 max-h-56 lg:max-h-64 overflow-y-auto">
@@ -485,7 +495,7 @@ export default function CheckoutPage() {
                     <span>{shippingQuoteRequired ? "Trao đổi riêng" : `${shippingFee.toLocaleString("vi-VN")}₫`}</span>
                   </div>
                   {discount > 0 && (
-                    <div className="flex justify-between text-[#425733] font-medium">
+                    <div className="flex justify-between font-medium text-emerald-700">
                       <span>Giảm giá</span>
                       <span>-{discount.toLocaleString("vi-VN")}₫</span>
                     </div>
@@ -500,15 +510,15 @@ export default function CheckoutPage() {
             </Card>
           </div>
         </div>
-        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-[#d8e4cf] bg-white/95 px-4 py-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] shadow-[0_-12px_30px_rgba(26,46,18,0.10)] backdrop-blur lg:hidden">
+        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-white/95 px-4 py-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] shadow-[0_-12px_30px_rgba(0,0,0,0.08)] backdrop-blur lg:hidden">
           <div className="mx-auto flex max-w-6xl items-center gap-3">
             <div className="min-w-0 flex-1">
               <p className="text-xs font-semibold text-muted-foreground">{shippingQuoteRequired ? "Tạm tính" : "Tổng thanh toán"}</p>
-              <p className="text-lg font-extrabold text-[#425733]">{total.toLocaleString("vi-VN")}₫</p>
+              <p className="text-lg font-extrabold text-foreground">{total.toLocaleString("vi-VN")}₫</p>
             </div>
             <Button
               type="submit"
-              className="h-12 min-w-[148px] rounded-xl bg-[#425733] px-4 text-sm font-bold text-white hover:bg-[#364a29]"
+              className="h-12 min-w-[148px] px-4 text-sm font-bold"
               disabled={
                 loading ||
                 voucherChecking ||
@@ -521,6 +531,6 @@ export default function CheckoutPage() {
         </div>
         </form>
       </div>
-    </main>
+    </div>
   );
 }

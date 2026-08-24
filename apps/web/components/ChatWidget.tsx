@@ -1,5 +1,7 @@
 "use client";
 
+/* eslint-disable @next/next/no-img-element -- Chat previews can be object URLs or user-generated images. */
+
 import { useState, useRef, useEffect, useLayoutEffect, useMemo, useCallback } from "react";
 import { usePathname } from "next/navigation";
 import { trackEvent } from "@/lib/analytics-client";
@@ -894,21 +896,21 @@ export default function ChatWidget() {
           min-height: 420px;
           max-width: calc(100% - 16px);
           max-height: calc(100dvh - 16px);
-          --cw-primary: #425733;
-          --cw-primary-strong: #2d4a22;
-          --cw-primary-soft: #eef4ea;
+          --cw-primary: #171717;
+          --cw-primary-strong: #000000;
+          --cw-primary-soft: #f3f4f6;
           --cw-surface: #ffffff;
-          --cw-surface-muted: #fafbf8;
-          --cw-border: #e3ebdd;
-          --cw-border-strong: #9ab88a;
-          --cw-text: #1e3319;
-          --cw-muted: #526248;
+          --cw-surface-muted: #f9fafb;
+          --cw-border: #e5e7eb;
+          --cw-border-strong: #9ca3af;
+          --cw-text: #171717;
+          --cw-muted: #6b7280;
           --cw-danger: #dc2626;
-          --cw-focus: rgba(66,87,51,0.38);
+          --cw-focus: rgba(23,23,23,0.28);
         }
         @media (max-width: 639px) {
           .cw-panel {
-            border-radius: 18px !important;
+            border-radius: 8px !important;
             min-width: min(320px, calc(100% - 16px));
             min-height: min(360px, calc(100dvh - 16px));
             max-width: calc(100% - 16px);
@@ -1824,18 +1826,18 @@ export default function ChatWidget() {
                 className="text-[11.5px] font-medium px-3.5 py-1.5 rounded-full cursor-pointer whitespace-nowrap"
                 style={{
                   background: "#ffffff",
-                  color: "#2d4a22",
-                  boxShadow: "0 2px 14px rgba(45,74,34,0.14), 0 0 0 1px rgba(220,235,215,0.8)",
+                  color: "#171717",
+                  boxShadow: "0 2px 14px rgba(0,0,0,0.10), 0 0 0 1px rgba(229,231,235,0.9)",
                 }}
               >
                 Chat với Rêu
               </motion.div>
 
-              {/* Bubble — forest gradient */}
+              {/* Bubble */}
               <div
                 className="cw-bubble-idle relative w-14 h-14 flex items-center justify-center cursor-pointer rounded-full"
                 style={{
-                  background: "linear-gradient(135deg, #2d4a22 0%, #3d6b2e 60%, #4a7a38 100%)",
+                  background: "#171717",
                   transition: "transform 0.2s ease",
                 }}
               >

@@ -1,9 +1,16 @@
 import { Suspense } from "react";
+import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import { ProductsClient } from "./ProductsClient";
 import ProductsLoading from "./loading";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
+
+export const metadata: Metadata = {
+  title: "Terrarium thủ công",
+  description: "Khám phá terrarium và moss art thủ công cho bàn làm việc, không gian sống và quà tặng tại Tiệm Rêu Décor.",
+  alternates: { canonical: "/products" },
+};
 
 // Tách data fetch ra component riêng để Suspense streaming hoạt động
 async function ProductsData({

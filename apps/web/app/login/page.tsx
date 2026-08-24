@@ -14,9 +14,9 @@ import { trackEvent } from "@/lib/analytics-client";
 export default function AuthPageWrapper() {
   return (
     <Suspense fallback={
-      <main className="min-h-[100dvh] flex items-center justify-center bg-gradient-to-br from-[#e3ebdd] to-[#f5f7f4]">
-        <div className="w-10 h-10 border-4 border-[#425733] border-t-transparent rounded-full animate-spin" />
-      </main>
+      <div className="flex min-h-[70dvh] items-center justify-center bg-white">
+        <div className="h-10 w-10 animate-spin rounded-full border-4 border-foreground border-t-transparent" />
+      </div>
     }>
       <AuthPage />
     </Suspense>
@@ -179,50 +179,39 @@ function AuthPage() {
   };
 
   return (
-    <main className="min-h-[100dvh] relative flex items-center justify-center overflow-hidden bg-gradient-to-br from-[#dce5d5] via-[#e8efe2] to-[#f0f4ee]">
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div
-          className="absolute top-1/4 -left-32 w-[500px] h-[500px] rounded-full blur-[100px] opacity-40"
-          style={{ background: "radial-gradient(circle, #b5cda3 0%, transparent 70%)" }}
-        />
-        <div
-          className="absolute bottom-1/4 -right-32 w-[400px] h-[400px] rounded-full blur-[100px] opacity-30"
-          style={{ background: "radial-gradient(circle, #8ba57a 0%, transparent 70%)" }}
-        />
-      </div>
-
-      <div className="relative z-10 w-full max-w-md px-4">
+    <div className="flex min-h-[calc(100dvh-7rem)] items-center justify-center bg-white py-10">
+      <div className="w-full max-w-md px-4">
         <Link
           href="/"
-          className="inline-flex items-center gap-2 text-[#425733]/60 hover:text-[#425733] mb-8 transition-colors text-sm"
+          className="mb-8 inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
         >
           <ArrowLeft className="w-4 h-4" />
           Quay lại trang chủ
         </Link>
 
         <motion.div
-          initial={{ opacity: 0, y: 24, scale: 0.97 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: "easeOut" }}
-          className="relative rounded-3xl overflow-hidden bg-white/80 backdrop-blur-xl border border-white/60 shadow-[0_20px_60px_rgba(66,87,51,0.12)]"
+          className="relative overflow-hidden border border-border bg-white shadow-[0_18px_50px_rgba(0,0,0,0.08)]"
         >
           <div className="px-8 pt-8 pb-6 border-b border-gray-100 text-center">
             <Link href="/" className="inline-flex flex-col items-center group mb-4">
               <span
-                className="text-2xl text-[#425733] group-hover:text-[#364a29] transition-colors leading-tight"
+                className="text-2xl leading-tight text-foreground transition-colors group-hover:text-foreground/70"
                 style={{ fontFamily: "'Dancing Script', cursive", fontWeight: 600 }}
               >
                 tiệm Rêu Décor
               </span>
               <div className="flex items-center gap-1.5 mt-0.5">
-                <div className="w-6 h-px bg-[#8ba57a]" />
+                <div className="h-px w-6 bg-border" />
                 <span
-                  className="text-[9px] tracking-wider text-[#5f7d50] whitespace-nowrap"
+                  className="whitespace-nowrap text-[9px] text-muted-foreground"
                   style={{ fontFamily: "'Dancing Script', cursive", fontWeight: 400 }}
                 >
                   Terrarium &amp; Moss Art
                 </span>
-                <div className="w-6 h-px bg-[#8ba57a]" />
+                <div className="h-px w-6 bg-border" />
               </div>
             </Link>
             <AnimatePresence mode="wait">
@@ -233,7 +222,7 @@ function AuthPage() {
                 exit={{ opacity: 0, y: -6 }}
                 transition={{ duration: 0.2 }}
               >
-                <h1 className="text-xl font-bold text-gray-800 mb-1">
+                <h1 className="mb-1 font-serif text-2xl font-semibold text-gray-900">
                   {isLogin ? "Chào mừng trở lại" : isVerifyingRegistration ? "Xác minh email" : "Tạo tài khoản mới"}
                 </h1>
                 <p className="text-gray-400 text-sm">
@@ -279,7 +268,7 @@ function AuthPage() {
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: "auto" }}
                     exit={{ opacity: 0, height: 0 }}
-                    className="p-3 bg-red-50 border border-red-200 text-red-600 rounded-xl text-sm text-center"
+                    className="border border-red-200 bg-red-50 p-3 text-center text-sm text-red-600"
                   >
                     {error}
                   </motion.div>
@@ -315,7 +304,7 @@ function AuthPage() {
                       type="button"
                       onClick={handleRegister}
                       disabled={loading}
-                      className="w-full text-xs text-[#425733] hover:text-[#364a29] font-medium disabled:opacity-60"
+                      className="w-full text-xs font-medium text-foreground hover:text-foreground/70 disabled:opacity-60"
                     >
                       Gửi lại mã xác minh
                     </button>
@@ -341,7 +330,7 @@ function AuthPage() {
                       <div className="flex justify-between items-center mb-1.5">
                         <Label htmlFor="password" className="text-gray-600 text-sm">Mật khẩu</Label>
                         {isLogin && (
-                          <Link href="/forgot-password" className="text-xs text-[#425733] hover:text-[#364a29] transition-colors font-medium">
+                          <Link href="/forgot-password" className="text-xs font-medium text-foreground transition-colors hover:text-foreground/70">
                             Quên mật khẩu?
                           </Link>
                         )}
@@ -357,7 +346,7 @@ function AuthPage() {
                           onChange={handleInputChange}
                           required
                           minLength={isLogin ? 1 : 6}
-                          className="w-full pl-10 pr-10 py-2.5 rounded-xl bg-gray-50 border border-gray-200 text-gray-800 placeholder:text-gray-300 text-sm focus:outline-none focus:border-[#425733] focus:ring-2 focus:ring-[#425733]/10 focus:shadow-[0_0_0_3px_rgba(66,87,51,0.08)] transition-all"
+                          className="w-full border border-gray-200 bg-gray-50 py-2.5 pl-10 pr-10 text-sm text-gray-800 transition-all placeholder:text-gray-400 focus:border-foreground focus:outline-none focus:ring-2 focus:ring-foreground/10"
                         />
                         <button
                           type="button"
@@ -396,7 +385,7 @@ function AuthPage() {
               <button
                 type="button"
                 onClick={isVerifyingRegistration ? () => { setVerificationEmail(null); setVerificationCode(""); setError(null); } : switchMode}
-                className="text-[#425733] font-semibold hover:text-[#364a29] transition-colors"
+                className="font-semibold text-foreground transition-colors hover:text-foreground/70"
               >
                 {isLogin ? "Đăng ký ngay" : isVerifyingRegistration ? "Sửa thông tin" : "Đăng nhập"}
               </button>
@@ -404,7 +393,7 @@ function AuthPage() {
           </div>
         </motion.div>
       </div>
-    </main>
+    </div>
   );
 }
 
@@ -420,11 +409,11 @@ function SocialLoginButton({ provider, label, loading, disabled, onClick }: {
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className="relative flex min-h-11 w-full items-center justify-center rounded-xl border border-gray-200 bg-white px-4 text-sm font-semibold text-gray-700 shadow-sm transition-all hover:border-gray-300 hover:bg-gray-50 active:translate-y-px disabled:cursor-not-allowed disabled:opacity-60"
+      className="relative flex min-h-11 w-full items-center justify-center border border-gray-200 bg-white px-4 text-sm font-semibold text-gray-700 shadow-sm transition-all hover:border-gray-400 hover:bg-gray-50 active:translate-y-px disabled:cursor-not-allowed disabled:opacity-60"
     >
       <span className="absolute left-4 flex h-5 w-5 items-center justify-center">
         {loading ? (
-          <span className="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-[#425733]" />
+          <span className="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-foreground" />
         ) : (
           <Image
             src={`/brands/${provider}.svg`}
@@ -454,7 +443,7 @@ function LightField({ icon, label, id, ...inputProps }: {
         <input
           id={id}
           {...inputProps}
-          className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-gray-50 border border-gray-200 text-gray-800 placeholder:text-gray-300 text-sm focus:outline-none focus:border-[#425733] focus:ring-2 focus:ring-[#425733]/10 focus:shadow-[0_0_0_3px_rgba(66,87,51,0.08)] transition-all"
+          className="w-full border border-gray-200 bg-gray-50 py-2.5 pl-10 pr-4 text-sm text-gray-800 transition-all placeholder:text-gray-400 focus:border-foreground focus:outline-none focus:ring-2 focus:ring-foreground/10"
         />
       </div>
     </div>

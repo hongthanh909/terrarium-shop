@@ -24,7 +24,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   // If we are on the admin login page, render children directly without the sidebar & header
   if (pathname === "/tiem-nho-nth24/login") {
     return (
-      <div className="min-h-[100dvh] bg-[#fafbf8]">
+      <div className="min-h-[100dvh] bg-white">
 
         {children}
       </div>
@@ -61,29 +61,29 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   };
 
   return (
-    <div className="min-h-[100dvh] bg-[#fafbf8]">
+    <div className="min-h-[100dvh] bg-gray-50/60">
 
 
       {/* Sidebar */}
-      <aside className="fixed left-0 top-0 hidden h-full w-60 flex-col bg-[#1a2e12] text-white shadow-[4px_0_24px_rgba(26,46,18,0.3)] lg:flex">
+      <aside className="fixed left-0 top-0 hidden h-full w-60 flex-col border-r border-gray-200 bg-white text-gray-800 lg:flex">
         {/* Logo */}
-        <div className="px-5 py-5 border-b border-white/10">
+        <div className="border-b border-gray-200 px-5 py-5">
           <Link href="/" className="flex flex-col group">
             <span
-              className="text-[22px] text-white group-hover:text-[#e3ebdd] transition-colors leading-tight"
+              className="text-[22px] leading-tight text-gray-950 transition-colors group-hover:text-gray-600"
               style={{ fontFamily: "'Dancing Script', cursive", fontWeight: 600 }}
             >
               tiệm Rêu Décor
             </span>
             <div className="flex items-center gap-1.5 mt-0.5">
-              <div className="flex-1 h-px bg-white/20" />
+              <div className="h-px flex-1 bg-gray-200" />
               <span
-                className="text-[9px] tracking-wider text-white/40 whitespace-nowrap"
+                className="whitespace-nowrap text-[9px] text-gray-400"
                 style={{ fontFamily: "'Dancing Script', cursive", fontWeight: 400 }}
               >
                 Admin Dashboard
               </span>
-              <div className="w-4 h-px bg-white/20" />
+              <div className="h-px w-4 bg-gray-200" />
             </div>
           </Link>
         </div>
@@ -97,14 +97,14 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                 key={item.href}
                 href={item.href}
                 aria-current={active ? "page" : undefined}
-                className={`flex min-h-11 items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8fba6f]/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#1a2e12] ${
+                className={`flex min-h-11 items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/30 focus-visible:ring-offset-2 ${
                   active
-                    ? "bg-white/15 text-white shadow-sm"
-                    : "text-white/70 hover:bg-white/10 hover:text-white"
+                    ? "bg-gray-950 text-white shadow-sm"
+                    : "text-gray-600 hover:bg-gray-100 hover:text-gray-950"
                 }`}
               >
                 <item.icon
-                  className={`flex-shrink-0 ${active ? "text-[#8fba6f]" : ""}`}
+                  className="flex-shrink-0"
                   style={{ width: "18px", height: "18px" }}
                 />
                 <span>{item.label}</span>
@@ -113,24 +113,24 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                     {(item.badge ?? 0) > 99 ? "99+" : item.badge}
                   </span>
                 )}
-                {active && <div className="ml-auto w-1.5 h-1.5 rounded-full bg-[#8fba6f]" />}
+                {active && <div className="ml-auto h-1.5 w-1.5 rounded-full bg-white" />}
               </Link>
             );
           })}
         </nav>
 
         {/* Footer */}
-        <div className="border-t border-white/10 p-3 space-y-0.5">
+        <div className="space-y-0.5 border-t border-gray-200 p-3">
           <Link
             href="/"
-            className="flex min-h-11 items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-white/60 transition-colors hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8fba6f]/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#1a2e12]"
+            className="flex min-h-11 items-center gap-3 rounded-md px-3 py-2.5 text-sm text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/30 focus-visible:ring-offset-2"
           >
             <ExternalLink className="flex-shrink-0" style={{ width: "18px", height: "18px" }} />
             <span>Xem cửa hàng</span>
           </Link>
           <button
             onClick={handleLogout}
-            className="flex min-h-11 w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-red-400/80 transition-colors hover:bg-red-950/40 hover:text-red-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#1a2e12]"
+            className="flex min-h-11 w-full items-center gap-3 rounded-md px-3 py-2.5 text-sm text-red-600 transition-colors hover:bg-red-50 hover:text-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-300 focus-visible:ring-offset-2"
           >
             <LogOut className="flex-shrink-0" style={{ width: "18px", height: "18px" }} />
             <span>Đăng xuất</span>
@@ -140,7 +140,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
       {/* Main Content */}
       <div className="flex min-h-[100dvh] flex-col lg:ml-60">
-        <header className="sticky top-0 z-10 border-b border-[#e3ebdd] bg-white px-4 py-3 shadow-[0_1px_8px_rgba(66,87,51,0.06)] sm:px-6 lg:px-8">
+        <header className="sticky top-0 z-10 border-b border-gray-200 bg-white/95 px-4 py-3 backdrop-blur sm:px-6 lg:px-8">
           <div className="flex items-center justify-between gap-4">
           <div>
             <h1 className="text-lg font-semibold text-gray-800">
@@ -152,7 +152,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             <AdminChatNotifier onUnreadChange={setChatUnread} />
             <Link
               href="/"
-              className="flex min-h-10 items-center gap-2 rounded-full border border-transparent px-3 py-2 text-xs font-medium text-gray-500 transition-colors hover:border-[#c2d6b0] hover:bg-[#f0f4ee] hover:text-[#425733] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8fba6f]/60"
+              className="flex min-h-10 items-center gap-2 rounded-md border border-transparent px-3 py-2 text-xs font-medium text-gray-500 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:text-gray-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/30"
             >
               <ExternalLink className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">Xem cửa hàng</span>
@@ -167,10 +167,10 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                   key={item.href}
                   href={item.href}
                   aria-current={active ? "page" : undefined}
-                  className={`flex min-h-10 shrink-0 items-center gap-2 rounded-full border px-3 py-2 text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8fba6f]/60 ${
+                  className={`flex min-h-10 shrink-0 items-center gap-2 rounded-md border px-3 py-2 text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/30 ${
                     active
-                      ? "border-[#7fa95e] bg-[#eef5e8] text-[#2f4a23]"
-                      : "border-[#e3ebdd] bg-white text-gray-600 hover:border-[#c2d6b0] hover:text-[#425733]"
+                      ? "border-gray-950 bg-gray-950 text-white"
+                      : "border-gray-200 bg-white text-gray-600 hover:border-gray-400 hover:text-gray-950"
                   }`}
                 >
                   <item.icon className="h-4 w-4 shrink-0" />

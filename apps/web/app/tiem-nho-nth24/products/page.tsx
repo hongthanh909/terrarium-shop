@@ -284,7 +284,7 @@ export default function AdminProductsPage() {
 
   const getStatusBadge = (status: string) => {
     const badges: Record<string, string> = {
-      ACTIVE: "bg-[#e3ebdd] text-[#364a29]",
+      ACTIVE: "bg-emerald-50 text-emerald-800",
       DRAFT: "bg-gray-100 text-gray-800",
       ARCHIVED: "bg-red-100 text-red-800",
     };
@@ -300,7 +300,7 @@ export default function AdminProductsPage() {
         </div>
         <Link
           href="/tiem-nho-nth24/products/create"
-          className="flex items-center gap-2 bg-[#425733] text-white px-6 py-3 rounded-full font-semibold shadow-soft hover:-translate-y-0.5 hover:shadow-[0_4px_20px_rgba(66,87,51,0.4)] hover:bg-[#364a29] transition-colors"
+          className="flex items-center gap-2 rounded-md bg-gray-950 px-6 py-3 font-semibold text-white shadow-sm transition-colors hover:bg-gray-700"
         >
           <Plus className="w-5 h-5" />
           Thêm Sản Phẩm Mới
@@ -317,7 +317,7 @@ export default function AdminProductsPage() {
               placeholder="Tìm kiếm sản phẩm..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#6d8c5a]"
+              className="w-full rounded-md border py-2 pl-10 pr-4 focus:ring-2 focus:ring-gray-950/15"
             />
           </div>
           <div className="flex items-center gap-2">
@@ -325,7 +325,7 @@ export default function AdminProductsPage() {
             <select
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
-              className="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#6d8c5a]"
+              className="rounded-md border px-4 py-2 focus:ring-2 focus:ring-gray-950/15"
             >
               <option value="all">Tất Cả Trạng Thái</option>
               <option value="ACTIVE">Hoạt Động</option>
@@ -339,7 +339,7 @@ export default function AdminProductsPage() {
               placeholder="Giá từ..."
               value={minPrice}
               onChange={(e) => setMinPrice(e.target.value)}
-              className="w-28 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#6d8c5a] text-sm"
+              className="w-28 rounded-md border px-3 py-2 text-sm focus:ring-2 focus:ring-gray-950/15"
             />
             <span className="text-gray-500">-</span>
             <input
@@ -347,7 +347,7 @@ export default function AdminProductsPage() {
               placeholder="Đến..."
               value={maxPrice}
               onChange={(e) => setMaxPrice(e.target.value)}
-              className="w-28 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#6d8c5a] text-sm"
+              className="w-28 rounded-md border px-3 py-2 text-sm focus:ring-2 focus:ring-gray-950/15"
             />
           </div>
           {selectedIds.length > 0 && (
@@ -378,7 +378,7 @@ export default function AdminProductsPage() {
         ) : filteredProducts.length === 0 ? (
           <div className="p-8 text-center text-gray-500">
             Không tìm thấy sản phẩm.{" "}
-            <Link href="/tiem-nho-nth24/products/create" className="text-[#425733] hover:underline">
+            <Link href="/tiem-nho-nth24/products/create" className="text-gray-950 hover:underline">
               Thêm sản phẩm đầu tiên
             </Link>
           </div>
@@ -532,14 +532,14 @@ export default function AdminProductsPage() {
                       <Link
                         href={`/products/${product.slug}`}
                         target="_blank"
-                        className="text-[#425733] hover:text-[#364a29] p-1"
+                        className="p-1 text-gray-600 hover:text-gray-950"
                         title="View"
                       >
                         <Eye className="w-4 h-4" />
                       </Link>
                       <Link
                         href={`/tiem-nho-nth24/products/${product.id}/edit`}
-                        className="text-[#6d8c5a] hover:text-yellow-900 p-1"
+                        className="p-1 text-amber-600 hover:text-amber-900"
                         title="Edit"
                       >
                         <Edit className="w-4 h-4" />

@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { Calendar, Tag, BookOpen, ImageOff } from "lucide-react";
 import { PageTransition } from "@/components/ui/page-transition";
 import { motion, useReducedMotion } from "framer-motion";
@@ -40,7 +41,7 @@ export function BlogClient({
 
   return (
     <PageTransition>
-      <main className="min-h-[100dvh] bg-[#fafbf8] py-10 px-6">
+      <div className="min-h-[100dvh] bg-white px-4 py-12 sm:px-6">
         <div className="max-w-7xl mx-auto">
 
           {/* Hero */}
@@ -50,11 +51,11 @@ export function BlogClient({
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <div className="inline-flex items-center gap-2 bg-[#e3ebdd] px-4 py-2 rounded-full text-sm font-medium text-[#425733] mb-4">
+            <div className="mb-4 inline-flex items-center gap-2 border border-border bg-muted px-4 py-2 text-sm font-medium text-foreground">
               <BookOpen className="w-4 h-4" />
               <span>Kiến thức terrarium</span>
             </div>
-            <h1 className="text-5xl font-bold mb-4" style={{ background: 'linear-gradient(135deg, #1a2e12, #425733)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Blog</h1>
+            <h1 className="mb-4 font-serif text-5xl font-semibold text-foreground sm:text-6xl">Nhật ký Tiệm Rêu</h1>
             <p className="text-gray-500 max-w-2xl mx-auto">
               Mẹo chăm sóc cây, hướng dẫn và cảm hứng từ thế giới terrarium
             </p>
@@ -69,10 +70,10 @@ export function BlogClient({
           >
             <button
               onClick={() => setSelectedCategory(null)}
-              className={`px-5 py-2 rounded-full text-sm font-semibold transition-all duration-200 border-2 ${
+              className={`min-h-11 border px-5 py-2 text-sm font-semibold transition-colors duration-200 ${
                 selectedCategory === null
-                  ? "bg-[#425733] text-white border-[#425733] shadow-[0_4px_14px_rgba(66,87,51,0.35)]"
-                  : "bg-white text-gray-500 border-[#c8d5be] hover:border-[#425733] hover:text-[#425733]"
+                  ? "border-foreground bg-foreground text-white"
+                  : "border-border bg-white text-gray-500 hover:border-foreground hover:text-foreground"
               }`}
             >
               Tất Cả
@@ -81,10 +82,10 @@ export function BlogClient({
               <button
                 key={cat.id}
                 onClick={() => setSelectedCategory(cat.id)}
-                className={`px-5 py-2 rounded-full text-sm font-semibold transition-all duration-200 border-2 ${
+                className={`min-h-11 border px-5 py-2 text-sm font-semibold transition-colors duration-200 ${
                   selectedCategory === cat.id
-                    ? "bg-[#425733] text-white border-[#425733] shadow-[0_4px_14px_rgba(66,87,51,0.35)]"
-                    : "bg-white text-gray-500 border-[#c8d5be] hover:border-[#425733] hover:text-[#425733]"
+                    ? "border-foreground bg-foreground text-white"
+                    : "border-border bg-white text-gray-500 hover:border-foreground hover:text-foreground"
                 }`}
               >
                 {cat.name}
@@ -110,15 +111,17 @@ export function BlogClient({
                   whileHover={prefersReducedMotion ? undefined : { y: -4 }}
                 >
                   <Link href={`/blog/${post.slug}`} className="block h-full">
-                    <div className="group h-full bg-white border border-[#e3ebdd] rounded-2xl overflow-hidden shadow-[0_2px_12px_rgba(66,87,51,0.06)] hover:shadow-[0_16px_40px_rgba(66,87,51,0.12)] hover:border-[#b8d8b8] transition-all duration-300">
+                    <article className="group h-full overflow-hidden border border-border bg-white shadow-sm transition-shadow duration-300 hover:shadow-lg">
                       
                       {/* Thumbnail Image */}
-                      <div className="relative w-full aspect-[16/9] overflow-hidden bg-[#f0f4ed]">
+                      <div className="relative aspect-[16/9] w-full overflow-hidden bg-muted">
                         {post.thumbnail ? (
-                          <img
+                          <Image
                             src={post.thumbnail}
                             alt={post.title}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                            fill
+                            sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                            className="object-cover transition-transform duration-500 group-hover:scale-105"
                           />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center">
@@ -130,7 +133,7 @@ export function BlogClient({
                         )}
                         {/* Category overlay badge */}
                         {post.category && (
-                          <span className="absolute top-3 left-3 inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/90 backdrop-blur-sm text-[#425733] text-[10px] font-bold uppercase tracking-wider shadow-sm border border-white/50">
+                          <span className="absolute left-3 top-3 inline-flex items-center gap-1 border border-white/50 bg-white/90 px-2.5 py-1 text-[10px] font-bold uppercase text-foreground shadow-sm backdrop-blur-sm">
                             <Tag className="w-3 h-3" />
                             {post.category.name}
                           </span>
@@ -139,7 +142,7 @@ export function BlogClient({
 
                       {/* Content */}
                       <div className="p-5">
-                        <h3 className="text-lg font-bold text-[#1a2e12] mb-2 group-hover:text-[#425733] transition-colors line-clamp-2 leading-snug">
+                        <h3 className="mb-2 line-clamp-2 font-serif text-xl font-semibold leading-snug text-foreground transition-colors group-hover:text-foreground/70">
                           {post.title}
                         </h3>
                         <p className="text-gray-500 text-sm line-clamp-2 mb-4 leading-relaxed">
@@ -152,19 +155,19 @@ export function BlogClient({
                               {new Date(post.publishedAt).toLocaleDateString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh" })}
                             </div>
                           )}
-                          <span className="text-xs font-semibold text-[#425733] group-hover:underline">
-                            Đọc thêm →
+                          <span className="text-xs font-semibold text-foreground group-hover:underline">
+                            Đọc thêm
                           </span>
                         </div>
                       </div>
-                    </div>
+                    </article>
                   </Link>
                 </motion.div>
               ))}
             </div>
           )}
         </div>
-      </main>
+      </div>
     </PageTransition>
   );
 }

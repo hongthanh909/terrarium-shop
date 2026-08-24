@@ -72,17 +72,17 @@ export default function FavoritesPage() {
   };
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-10">
+    <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
       {/* Header */}
       <div className="flex items-center gap-4 mb-8">
         <Link
           href="/profile"
-          className="p-2 rounded-full hover:bg-[#e3ebdd] text-[#425733] transition-colors"
+          className="p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
         >
           <ArrowLeft className="w-5 h-5" />
         </Link>
         <div>
-          <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
+          <h1 className="flex items-center gap-2 font-serif text-4xl font-semibold text-gray-900">
             <Heart className="w-6 h-6 fill-red-500 text-red-500" />
             Sản phẩm yêu thích
           </h1>
@@ -95,22 +95,22 @@ export default function FavoritesPage() {
       {/* Loading state */}
       {loading && (
         <div className="flex flex-col items-center justify-center py-32 gap-4">
-          <Loader2 className="w-12 h-12 text-[#425733] animate-spin" />
-          <p className="text-sm text-[#6d8c5a] font-medium">Đang tải danh sách yêu thích...</p>
+          <Loader2 className="h-12 w-12 animate-spin text-foreground" />
+          <p className="text-sm font-medium text-muted-foreground">Đang tải danh sách yêu thích...</p>
         </div>
       )}
 
       {/* Empty state */}
       {!loading && products.length === 0 && (
         <div className="text-center py-20 flex flex-col items-center gap-4">
-          <div className="w-20 h-20 rounded-2xl bg-[#dfe8da] flex items-center justify-center">
-            <Heart className="w-10 h-10 text-[#6d8c5a]" />
+          <div className="flex h-20 w-20 items-center justify-center border border-border bg-muted">
+            <Heart className="h-10 w-10 text-muted-foreground" />
           </div>
           <p className="font-bold text-gray-700 text-lg">Chưa có sản phẩm yêu thích</p>
           <p className="text-gray-400 text-sm max-w-xs">
-            Hãy nhấn vào biểu tượng ❤️ trên các sản phẩm để lưu vào đây.
+            Nhấn biểu tượng yêu thích trên sản phẩm để lưu vào đây.
           </p>
-          <Button asChild className="rounded-full mt-2 bg-[#425733] hover:bg-[#364a29]">
+          <Button asChild className="mt-2">
             <Link href="/products">Khám phá sản phẩm</Link>
           </Button>
         </div>
@@ -118,11 +118,11 @@ export default function FavoritesPage() {
 
       {/* Product grid */}
       {!loading && products.length > 0 && (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+        <div className="grid grid-cols-2 gap-4 md:grid-cols-3 md:gap-6">
           {products.map((product) => (
             <div
               key={product.id}
-              className="group bg-[#eef3ea] rounded-2xl border border-[#d2dec9] overflow-hidden hover:shadow-xl hover:scale-[1.03] transition-all duration-300"
+              className="group overflow-hidden border border-border bg-white transition-shadow duration-300 hover:shadow-lg"
             >
               {/* Image */}
               <Link href={`/products/${product.slug}`} className="block relative aspect-square bg-white">
@@ -137,7 +137,7 @@ export default function FavoritesPage() {
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center">
-                    <Package className="w-10 h-10 text-[#6d8c5a]" />
+                    <Package className="h-10 w-10 text-muted-foreground" />
                   </div>
                 )}
                 {/* Unvote button */}
@@ -152,20 +152,20 @@ export default function FavoritesPage() {
 
               {/* Info */}
               <div className="p-3">
-                <p className="text-xs text-[#6d8c5a] font-medium mb-0.5">{product.category.name}</p>
+                <p className="mb-0.5 text-xs font-medium text-muted-foreground">{product.category.name}</p>
                 <Link href={`/products/${product.slug}`}>
-                  <h3 className="text-sm font-semibold text-gray-800 line-clamp-2 hover:text-[#425733] transition-colors">
+                  <h3 className="line-clamp-2 text-sm font-semibold text-gray-800 transition-colors hover:text-foreground/70">
                     {product.name}
                   </h3>
                 </Link>
-                <p className="text-[#425733] font-bold mt-1 text-sm">
+                <p className="mt-1 text-sm font-bold text-foreground">
                   {product.basePrice.toLocaleString("vi-VN")}₫
                 </p>
 
                 {/* Add to cart */}
                 <button
                   onClick={() => handleAddToCart(product)}
-                  className="mt-2 w-full flex items-center justify-center gap-1.5 py-2 bg-[#425733] text-white text-xs font-semibold rounded-full hover:bg-[#364a29] transition-colors"
+                  className="mt-3 flex min-h-11 w-full items-center justify-center gap-1.5 bg-foreground py-2 text-xs font-semibold text-white transition-colors hover:bg-foreground/85"
                 >
                   <ShoppingBag className="w-3.5 h-3.5" />
                   Thêm vào giỏ

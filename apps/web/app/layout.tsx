@@ -1,5 +1,6 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Dancing_Script, Inter, Playfair_Display } from "next/font/google";
+import { Suspense } from "react";
 import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -11,9 +12,6 @@ import { NavigationProgress } from "@/components/ui/navigation-progress";
 import { ChatWidgetClient } from "@/components/ChatWidgetClient";
 import { AnalyticsTracker } from "@/components/AnalyticsTracker";
 import { FacebookGroupVoucherPopup } from "@/components/FacebookGroupVoucherPopup";
-import { getFacebookGroupPromoPayload } from "@/lib/facebook-group-promo";
-
-export const dynamic = "force-dynamic";
 
 const inter = Inter({
   subsets: ["latin", "latin-ext"],
@@ -64,6 +62,8 @@ export const metadata: Metadata = {
     "tiệm rêu décor",
   ],
   authors: [{ name: "Tiệm Rêu Décor" }],
+  manifest: "/manifest.webmanifest",
+  alternates: { canonical: "/" },
   openGraph: {
     title: "Tiệm Rêu Décor - Terrarium & Moss Art Thủ Công",
     description:
@@ -93,16 +93,22 @@ export const metadata: Metadata = {
   },
 };
 
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: "#ffffff",
+  colorScheme: "light",
+};
+
 /**
  * Root layout — Server Component (không dùng headers() để tránh ChunkLoadError).
  * ShopLayout (client) sẽ tự detect admin path bằng usePathname().
  */
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const facebookGroupPromo = await getFacebookGroupPromoPayload();
   return (
     <html lang="vi" className={`${inter.variable} ${dancingScript.variable} ${playfair.variable}`}>
       <body
@@ -110,10 +116,14 @@ export default async function RootLayout({
       >
         <AuthProvider>
           <QueryProvider>
-            <NavigationProgress />
-            <AnalyticsTracker />
+            <Suspense fallback={null}>
+              <NavigationProgress />
+            </Suspense>
+            <Suspense fallback={null}>
+              <AnalyticsTracker />
+            </Suspense>
             <CustomToastContainer />
-            <FacebookGroupVoucherPopup initialPromo={facebookGroupPromo} />
+            <FacebookGroupVoucherPopup />
             <ShopLayout
               header={<Header />}
               footer={<Footer />}

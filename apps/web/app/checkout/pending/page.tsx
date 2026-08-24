@@ -83,6 +83,7 @@ export default function CheckoutPendingPage() {
     // 2. Đăng ký Supabase Realtime lắng nghe sự thay đổi của đơn hàng
     console.log(`[Supabase Realtime] Đang đăng ký lắng nghe thay đổi đơn hàng: ${orderId}`);
     const channel = supabaseClient
+      ? supabaseClient
       .channel(`order-status-${orderId}`)
       .on(
         "postgres_changes",
@@ -106,7 +107,8 @@ export default function CheckoutPendingPage() {
       )
       .subscribe((status) => {
         console.log(`[Supabase Realtime] Trạng thái kết nối kênh: ${status}`);
-      });
+      })
+      : null;
 
     // 3. Cơ chế Polling dự phòng (15 giây) phòng trường hợp mạng yếu hoặc chưa bật Replication
     const interval = setInterval(checkStatus, 15000);
@@ -114,7 +116,7 @@ export default function CheckoutPendingPage() {
     // Cleanup khi rời trang
     return () => {
       clearInterval(interval);
-      supabaseClient.removeChannel(channel);
+      if (supabaseClient && channel) supabaseClient.removeChannel(channel);
     };
   }, [orderId, orderNumber, checkStatus, router]);
 

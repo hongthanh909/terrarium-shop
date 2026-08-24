@@ -490,7 +490,7 @@ export function ProductDetailClient({
     finally { setIsVoting(false); }
   };
 
-  if (loading) return <main className="min-h-[100dvh] flex items-center justify-center"><p className="text-muted-foreground">Đang tải...</p></main>;
+  if (loading) return <div className="flex min-h-[70dvh] items-center justify-center"><p className="text-muted-foreground">Đang tải...</p></div>;
   if (!product) return null;
 
   const { price: finalPrice, base: originalPrice, isSale } = getPriceWithVariants();
@@ -509,7 +509,7 @@ export function ProductDetailClient({
   const dbVariants = (product.variantOptions || []).filter((v: any) => v.variantType !== LAMP_VARIANT_TYPE);
 
   return (
-    <main className="min-h-[100dvh] bg-background pb-28 lg:pb-0">
+    <div className="min-h-[100dvh] bg-background pb-28 lg:pb-0">
 
       {/* ── Lightbox ──────────────────────────────────────────────────────── */}
       {lightboxOpen && product?.images && (
@@ -583,7 +583,7 @@ export function ProductDetailClient({
                   <label htmlFor="selectAll" className="text-sm font-medium cursor-pointer">Chọn tất cả</label>
                 </div>
                 {items.map((item: CartItem) => (
-                  <Card key={item.id} className={item.selected ? "border-[#425733] bg-[#f8faf6]" : "opacity-80"}>
+                  <Card key={item.id} className={item.selected ? "border-foreground bg-muted/40" : "opacity-80"}>
                     <CardContent className="p-4">
                       <div className="flex items-start gap-4">
                         <input type="checkbox" className="mt-2 w-4 h-4 rounded border-gray-300" checked={item.selected || false} onChange={() => toggleSelectItem(item.id)} />
@@ -618,7 +618,7 @@ export function ProductDetailClient({
           {items.length > 0 && (
             <div className="mt-4 pt-4 border-t">
               <div className="flex justify-between text-lg font-semibold mb-4"><span>Tổng cộng:</span><span className="text-primary">{getSelectedTotal().toLocaleString("vi-VN")}₫</span></div>
-              <Button className="w-full bg-[#425733] hover:bg-[#364a29]" asChild={getSelectedItems().length > 0} disabled={getSelectedItems().length === 0} onClick={() => { if (getSelectedItems().length > 0) setCartOpen(false); }}>
+              <Button className="w-full" asChild={getSelectedItems().length > 0} disabled={getSelectedItems().length === 0} onClick={() => { if (getSelectedItems().length > 0) setCartOpen(false); }}>
                 {getSelectedItems().length > 0 ? <Link href="/checkout">Tiến hành thanh toán</Link> : <span>Vui lòng chọn sản phẩm</span>}
               </Button>
             </div>
@@ -627,7 +627,7 @@ export function ProductDetailClient({
       </Sheet>
 
       {/* ── Back ──────────────────────────────────────────────────────────── */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 sm:py-4">
+      <div className="mx-auto max-w-7xl px-4 py-5 sm:px-6">
         <Link href="/products" className="inline-flex items-center text-muted-foreground hover:text-primary transition-colors text-sm">
           <ArrowLeft className="w-4 h-4 mr-2" /> Quay lại sản phẩm
         </Link>
@@ -635,7 +635,7 @@ export function ProductDetailClient({
 
       {/* ── Product Layout ────────────────────────────────────────────────── */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 pb-12">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 xl:gap-12 mb-10 lg:mb-12">
+        <div className="mb-12 grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1.08fr)_minmax(420px,0.92fr)] lg:gap-12 xl:gap-16">
 
           {/* ── LEFT: Gallery ── */}
           <div className="flex flex-col gap-4">
@@ -643,7 +643,7 @@ export function ProductDetailClient({
             <div className="w-full">
               {galleryMedia.length > 0 ? (
                 <div
-                  className={`relative rounded-2xl overflow-hidden bg-[#f8faf6] border border-[#eaefeb] shadow-sm group w-full ${galleryMedia[currentMediaIndex]?.type === "image" ? "cursor-zoom-in" : ""}`}
+                  className={`group relative w-full overflow-hidden border border-border bg-muted/30 shadow-sm ${galleryMedia[currentMediaIndex]?.type === "image" ? "cursor-zoom-in" : ""}`}
                   style={{ aspectRatio: "1/1", maxHeight: "min(550px, 72dvh)" }}
                   onClick={() => {
                     if (galleryMedia[currentMediaIndex]?.type === "image") {
@@ -686,7 +686,7 @@ export function ProductDetailClient({
 
                   {/* Sale badge */}
                   {isSale && (
-                    <div className="absolute top-3 left-3 bg-gradient-to-r from-red-600 to-red-500 text-white text-xs font-bold px-2.5 py-1 rounded-full shadow z-10 flex items-center space-x-1">
+                    <div className="absolute left-3 top-3 z-10 flex items-center space-x-1 bg-red-600 px-2.5 py-1 text-xs font-bold text-white shadow">
                       <span>-{discountPercent}%</span>
                       {product.saleEndDate && (
                         <CountdownTimer endsAt={product.saleEndDate} className="ml-1" />
@@ -724,7 +724,7 @@ export function ProductDetailClient({
                   )}
                 </div>
               ) : (
-                <div className="bg-muted rounded-2xl flex items-center justify-center w-full animate-pulse" style={{ aspectRatio: "1/1", maxHeight: "550px" }}>
+                <div className="flex w-full animate-pulse items-center justify-center border border-border bg-muted" style={{ aspectRatio: "1/1", maxHeight: "550px" }}>
                   <span className="text-muted-foreground text-sm">Chưa có ảnh hoặc video</span>
                 </div>
               )}
@@ -737,10 +737,10 @@ export function ProductDetailClient({
                   <button
                     key={`${media.type}-${media.url}`}
                     onClick={() => setCurrentMediaIndex(i)}
-                    className={`relative w-20 h-20 sm:w-[70px] sm:h-[70px] rounded-xl sm:rounded-lg overflow-hidden border-2 flex-shrink-0 transition-[opacity,border-color,box-shadow] duration-200 ${
+                    className={`relative h-20 w-20 flex-shrink-0 overflow-hidden border transition-[opacity,border-color,box-shadow] duration-200 sm:h-[70px] sm:w-[70px] ${
                       i === currentMediaIndex
-                        ? "border-[#425733] shadow-sm bg-white"
-                        : "border-gray-200 bg-white opacity-60 hover:opacity-100 hover:border-[#425733]/40"
+                        ? "border-foreground bg-white shadow-sm"
+                        : "border-border bg-white opacity-60 hover:border-foreground/40 hover:opacity-100"
                     }`}
                     aria-label={media.type === "video" ? "Xem video sản phẩm" : `Xem ảnh sản phẩm ${i + 1}`}
                   >
@@ -750,7 +750,7 @@ export function ProductDetailClient({
                           <ImageWrapper src={productImages[0]} alt="" fill sizes="80px" noRound className="object-cover" />
                         )}
                         <span className="absolute inset-0 flex items-center justify-center bg-black/35 text-white" aria-hidden="true">
-                          <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#425733] shadow-sm">
+                          <span className="flex h-9 w-9 items-center justify-center rounded-full bg-foreground shadow-sm">
                             <Play className="h-4 w-4 fill-current" />
                           </span>
                         </span>
@@ -765,12 +765,12 @@ export function ProductDetailClient({
           </div>
 
           {/* ── RIGHT: Product Info ── */}
-          <div className="flex flex-col">
+          <div className="flex flex-col lg:sticky lg:top-28 lg:self-start">
 
             {/* Top Row: Badges & Wishlist */}
             <div className="flex justify-between items-center mb-3">
               <div className="flex flex-wrap items-center gap-2">
-                <span className="bg-[#e3ebdd] text-[#425733] px-3 py-1 rounded-full text-xs font-semibold">
+                <span className="border border-border bg-muted px-3 py-1 text-xs font-semibold text-foreground">
                   {product.category.name}
                 </span>
                 {product.inventory > 0 ? (
@@ -812,7 +812,7 @@ export function ProductDetailClient({
             </div>
 
             {/* Title */}
-            <h1 className="text-2xl sm:text-3xl font-bold text-[#1a2e12] leading-tight mb-3 tracking-tight">
+            <h1 className="mb-3 font-serif text-4xl font-semibold leading-tight text-foreground sm:text-5xl">
               {product.name}
             </h1>
 
@@ -822,7 +822,7 @@ export function ProductDetailClient({
             </p>
 
             {/* Price section */}
-            <div className="flex flex-wrap items-baseline gap-3 mb-6 p-4 bg-[#f8faf6]/80 border border-[#eaefeb] rounded-2xl">
+            <div className="mb-6 flex flex-wrap items-baseline gap-3 border-y border-border py-5">
               {/* Old price */}
               {(isSale || hasPriceVoucher) && (
                 <span className="text-base text-red-500 font-semibold line-through">
@@ -832,7 +832,7 @@ export function ProductDetailClient({
               
               {/* Main Price */}
               <span className={`text-3xl sm:text-4xl font-extrabold ${
-                hasPriceVoucher ? "text-green-700" : "text-[#425733]"
+                hasPriceVoucher ? "text-emerald-700" : "text-foreground"
               }`}>
                 {priceAfterVoucher.toLocaleString("vi-VN")}₫
               </span>
@@ -846,7 +846,7 @@ export function ProductDetailClient({
 
               {appliedVoucher && appliedVoucher.type === "FREE_SHIPPING" && (
                 <span className="bg-blue-50 border border-blue-200 text-blue-700 text-xs font-bold px-2.5 py-1 rounded-full">
-                  🚚 Miễn phí vận chuyển
+                  Miễn phí vận chuyển
                 </span>
               )}
               {hasPriceVoucher && (
@@ -868,10 +868,10 @@ export function ProductDetailClient({
                         key={pkg.key}
                         type="button"
                         onClick={() => setSelectedPackage(pkg.key)}
-                        className={`flex flex-col items-center gap-1 px-3 py-3 rounded-xl font-semibold text-sm sm:text-xs transition-colors duration-200 border-2 ${
+                        className={`flex min-h-14 flex-col items-center gap-1 border px-3 py-3 text-sm font-semibold transition-colors duration-200 sm:text-xs ${
                           isSelected
-                            ? "border-[#425733] bg-[#425733] text-white shadow-sm"
-                            : "border-gray-200 bg-white text-gray-600 hover:border-[#425733]/60 hover:bg-[#f8faf6]"
+                            ? "border-foreground bg-foreground text-white shadow-sm"
+                            : "border-border bg-white text-gray-600 hover:border-foreground/60 hover:bg-muted/40"
                         }`}
                       >
                         <span className="font-bold leading-tight text-center">{pkg.label}</span>
@@ -899,8 +899,8 @@ export function ProductDetailClient({
                             key={opt}
                             type="button"
                             onClick={() => setSelectedVariants((prev) => ({ ...prev, [option.variantType]: opt }))}
-                            className={`min-h-11 px-4 py-2 rounded-xl font-medium text-sm transition-colors border-2 ${
-                              isSelected ? "border-[#425733] bg-[#425733] text-white shadow-md" : "border-gray-200 bg-white text-gray-700 hover:border-[#425733]/50 hover:bg-[#f8faf6]"
+                            className={`min-h-11 border px-4 py-2 text-sm font-medium transition-colors ${
+                              isSelected ? "border-foreground bg-foreground text-white shadow-sm" : "border-border bg-white text-gray-700 hover:border-foreground/50 hover:bg-muted/40"
                             }`}
                           >
                             {opt}
@@ -914,11 +914,11 @@ export function ProductDetailClient({
             )}
 
             {/* Voucher Section */}
-            <div className="border border-[#daebd0] rounded-2xl overflow-hidden bg-white mb-6">
+            <div className="mb-6 overflow-hidden border border-border bg-white">
               {/* Header */}
-              <div className="flex items-center gap-2 px-4 py-3 bg-[#f6faf4] border-b border-[#daebd0]">
-                <Tag className="w-4 h-4 text-[#425733] flex-shrink-0" />
-                <span className="text-sm font-bold text-[#2d4a1e]">Ưu đãi & Voucher</span>
+              <div className="flex items-center gap-2 border-b border-border bg-muted/35 px-4 py-3">
+                <Tag className="h-4 w-4 flex-shrink-0 text-foreground" />
+                <span className="text-sm font-bold text-foreground">Ưu đãi & Voucher</span>
                 {(() => {
                   const best = getBestVoucher(finalPrice);
                   if (!best) return null;
@@ -938,12 +938,12 @@ export function ProductDetailClient({
                   onChange={e => setVoucherInput(e.target.value.toUpperCase())}
                   onKeyDown={e => e.key === "Enter" && handleApplyVoucher()}
                   placeholder="Nhập mã voucher..."
-                  className="flex-1 min-h-11 px-3 py-2 text-sm border border-gray-200 rounded-xl outline-none focus:border-[#425733] focus:ring-1 focus:ring-[#425733]/20 transition-colors"
+                  className="min-h-11 flex-1 border border-border px-3 py-2 text-sm outline-none transition-colors focus:border-foreground focus:ring-1 focus:ring-foreground/20"
                 />
                 <button
                   onClick={() => handleApplyVoucher()}
                   disabled={voucherLoading || !voucherInput.trim()}
-                  className="min-h-11 px-4 py-2 text-sm font-bold bg-[#425733] text-white rounded-xl hover:bg-[#364a29] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  className="min-h-11 bg-foreground px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-foreground/85 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {voucherLoading ? "..." : "Áp dụng"}
                 </button>
@@ -951,7 +951,7 @@ export function ProductDetailClient({
 
               {/* Applied voucher confirmation */}
               {appliedVoucher && (
-                <div className="mx-4 mb-3 px-3 py-2 bg-green-50 border border-green-200 rounded-xl flex items-center gap-2">
+                <div className="mx-4 mb-3 flex items-center gap-2 border border-emerald-200 bg-emerald-50 px-3 py-2">
                   <CheckIcon className="w-4 h-4 text-green-600 flex-shrink-0" />
                   <span className="text-xs font-semibold text-green-700 flex-1">
                     Đã áp dụng <strong>{appliedVoucher.code}</strong>
@@ -980,13 +980,13 @@ export function ProductDetailClient({
                     return (
                       <label
                         key={v.id}
-                        className={`flex items-center gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all ${
+                        className={`flex cursor-pointer items-center gap-3 border p-3 transition-all ${
                           isApplied
-                            ? "border-[#425733] bg-[#f6faf4] shadow-sm"
+                            ? "border-foreground bg-muted/35 shadow-sm"
                             : isBest
                             ? "border-orange-300 bg-orange-50/50 hover:border-orange-400"
                             : meetsMin
-                            ? "border-gray-200 bg-white hover:border-[#425733]/40 hover:bg-[#f8faf6]"
+                            ? "border-border bg-white hover:border-foreground/40 hover:bg-muted/35"
                             : "border-gray-100 bg-gray-50 opacity-60 cursor-not-allowed"
                         }`}
                         onClick={(e) => {
@@ -1011,12 +1011,12 @@ export function ProductDetailClient({
                             }
                           }}
                           disabled={!meetsMin}
-                          className="w-4 h-4 text-[#425733] border-gray-300 focus:ring-[#425733] flex-shrink-0 accent-[#425733]"
+                          className="h-4 w-4 flex-shrink-0 border-gray-300 accent-foreground focus:ring-foreground"
                         />
 
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
-                            <span className={`text-sm font-bold ${isApplied ? "text-[#425733]" : "text-gray-800"}`}>
+                            <span className={`text-sm font-bold ${isApplied ? "text-foreground" : "text-gray-800"}`}>
                               {isFreeShip
                                 ? `Miễn phí ship ${Number(v.value) === 50000 ? "nhanh" : "tiêu chuẩn"}`
                                 : v.type === "PERCENTAGE"
@@ -1038,7 +1038,7 @@ export function ProductDetailClient({
 
                         <div className="flex flex-col items-end flex-shrink-0">
                           {meetsMin ? (
-                            <span className={`text-sm font-bold ${isApplied ? "text-green-600" : "text-[#425733]"}`}>
+                            <span className={`text-sm font-bold ${isApplied ? "text-emerald-700" : "text-foreground"}`}>
                               {isFreeShip ? "Miễn phí" : `-${discountAmt.toLocaleString("vi-VN")}₫`}
                             </span>
                           ) : (
@@ -1046,7 +1046,7 @@ export function ProductDetailClient({
                           )}
                           <button
                             onClick={(e) => { e.preventDefault(); e.stopPropagation(); copyCode(v.code); }}
-                            className="text-[10px] text-gray-400 hover:text-[#425733] flex items-center gap-0.5 mt-0.5"
+                            className="mt-0.5 flex items-center gap-0.5 text-[10px] text-gray-400 hover:text-foreground"
                           >
                             {copiedCode === v.code ? <CheckIcon className="w-3 h-3 text-green-500" /> : <Copy className="w-3 h-3" />}
                             Sao chép
@@ -1062,15 +1062,15 @@ export function ProductDetailClient({
             {/* Quantity Selector & CTAs */}
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 mb-5">
               {/* Qty stepper */}
-              <div className="flex items-center justify-between sm:justify-start h-12 border-2 border-gray-200 rounded-xl px-2 bg-white flex-shrink-0">
-                <button type="button" onClick={() => setQuantity(Math.max(1, quantity - 1))} className="w-9 h-9 flex items-center justify-center text-gray-500 hover:text-[#425733] transition-colors rounded-lg hover:bg-[#f8faf6]"><Minus className="w-4 h-4" /></button>
-                <span className="w-10 text-center text-base font-bold text-[#1a2e12]">{quantity}</span>
-                <button type="button" onClick={() => setQuantity(quantity + 1)} className="w-9 h-9 flex items-center justify-center text-gray-500 hover:text-[#425733] transition-colors rounded-lg hover:bg-[#f8faf6]"><Plus className="w-4 h-4" /></button>
+              <div className="flex h-12 flex-shrink-0 items-center justify-between border border-border bg-white px-2 sm:justify-start">
+                <button type="button" onClick={() => setQuantity(Math.max(1, quantity - 1))} className="flex h-9 w-9 items-center justify-center text-gray-500 transition-colors hover:bg-muted hover:text-foreground"><Minus className="w-4 h-4" /></button>
+                <span className="w-10 text-center text-base font-bold text-foreground">{quantity}</span>
+                <button type="button" onClick={() => setQuantity(quantity + 1)} className="flex h-9 w-9 items-center justify-center text-gray-500 transition-colors hover:bg-muted hover:text-foreground"><Plus className="w-4 h-4" /></button>
               </div>
               <Button 
                 size="lg" 
                 variant="outline" 
-                className="flex-1 h-12 border-2 border-[#425733] text-[#425733] hover:bg-[#f8faf6] rounded-xl font-bold text-sm" 
+                className="h-12 flex-1 border-foreground text-sm font-bold text-foreground hover:bg-muted"
                 onClick={handleAddToCart} 
                 disabled={product.inventory <= 0}
               >
@@ -1078,7 +1078,7 @@ export function ProductDetailClient({
               </Button>
               <Button 
                 size="lg" 
-                className="flex-1 h-12 bg-[#425733] hover:bg-[#364a29] text-white rounded-xl font-bold text-sm shadow-md hover:shadow-lg transition-all" 
+                className="h-12 flex-1 bg-foreground text-sm font-bold text-white shadow-sm transition-colors hover:bg-foreground/85"
                 onClick={handleBuyNow} 
                 disabled={product.inventory <= 0}
               >
@@ -1097,10 +1097,10 @@ export function ProductDetailClient({
 
             {/* Shipping line */}
             <div className="flex items-center gap-2.5 text-xs text-gray-500 mb-5 pb-3">
-              <svg className="w-5 h-5 text-[#425733] flex-shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <svg className="h-5 w-5 flex-shrink-0 text-foreground" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8l-.867 12.142A2 2 0 006.128 22h11.744a2 2 0 001.994-1.858L19 8M10 12v6m4-6v6" />
               </svg>
-              <span>Miễn phí vận chuyển cho đơn hàng từ <strong className="text-gray-700">500.000₫</strong></span>
+              <span>Giao trong TP.HCM; địa chỉ ngoài khu vực sẽ được shop báo phí qua tin nhắn.</span>
             </div>
 
             {/* Share product row */}
@@ -1120,7 +1120,7 @@ export function ProductDetailClient({
               <div className="flex-1" />
               <div 
                 onClick={handleCopyLink}
-                className="inline-flex items-center gap-2 px-3 py-1.5 bg-[#f8faf6] hover:bg-[#e3ebdd] border border-[#eaefeb] rounded-full text-xs font-medium text-[#425733] cursor-pointer transition-colors"
+                className="inline-flex cursor-pointer items-center gap-2 border border-border bg-muted/35 px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-muted"
               >
                 <span className="font-mono truncate max-w-[150px] sm:max-w-none">/san-pham/{product.slug}</span>
                 {copiedLink ? <CheckIcon className="w-3.5 h-3.5 text-green-600 flex-shrink-0" /> : <Copy className="w-3.5 h-3.5 flex-shrink-0" />}
@@ -1216,38 +1216,38 @@ export function ProductDetailClient({
               <div className="bg-white rounded-b-2xl rounded-tr-2xl border border-t-0 border-border p-6 sm:p-8">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
                   {product.careGuide.watering && (
-                    <div className="flex gap-4 p-4 bg-blue-50/50 rounded-xl border border-blue-100/50">
+                    <div className="flex gap-4 border border-blue-100/50 bg-blue-50/50 p-4">
                       <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0"><Droplets className="w-5 h-5 text-blue-600" /></div>
                       <div><p className="font-semibold text-blue-900 mb-1">Tưới nước</p><p className="text-sm text-blue-700 leading-relaxed">{product.careGuide.watering}</p></div>
                     </div>
                   )}
                   {product.careGuide.sunlight && (
-                    <div className="flex gap-4 p-4 bg-yellow-50/50 rounded-xl border border-yellow-100/50">
+                    <div className="flex gap-4 border border-yellow-100/50 bg-yellow-50/50 p-4">
                       <div className="w-10 h-10 rounded-full bg-yellow-100 flex items-center justify-center flex-shrink-0"><Sun className="w-5 h-5 text-yellow-600" /></div>
                       <div><p className="font-semibold text-yellow-900 mb-1">Ánh sáng</p><p className="text-sm text-yellow-700 leading-relaxed">{product.careGuide.sunlight}</p></div>
                     </div>
                   )}
                   {product.careGuide.temperature && (
-                    <div className="flex gap-4 p-4 bg-orange-50/50 rounded-xl border border-orange-100/50">
+                    <div className="flex gap-4 border border-orange-100/50 bg-orange-50/50 p-4">
                       <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center flex-shrink-0"><Thermometer className="w-5 h-5 text-orange-600" /></div>
                       <div><p className="font-semibold text-orange-900 mb-1">Nhiệt độ</p><p className="text-sm text-orange-700 leading-relaxed">{product.careGuide.temperature}</p></div>
                     </div>
                   )}
                   {product.careGuide.humidity && (
-                    <div className="flex gap-4 p-4 bg-green-50/50 rounded-xl border border-green-100/50">
+                    <div className="flex gap-4 border border-green-100/50 bg-green-50/50 p-4">
                       <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0"><Wind className="w-5 h-5 text-green-600" /></div>
                       <div><p className="font-semibold text-green-900 mb-1">Độ ẩm</p><p className="text-sm text-green-700 leading-relaxed">{product.careGuide.humidity}</p></div>
                     </div>
                   )}
                 </div>
                 {product.careGuide.commonIssues && (
-                  <div className="mb-6 p-4 bg-red-50/50 rounded-xl border border-red-100/50">
+                  <div className="mb-6 border border-red-100/50 bg-red-50/50 p-4">
                     <div className="flex items-center gap-2 mb-2"><AlertTriangle className="w-5 h-5 text-red-500" /><p className="font-semibold text-red-900">Vấn đề thường gặp & cách xử lý</p></div>
                     <p className="text-sm text-red-700 whitespace-pre-line leading-relaxed">{product.careGuide.commonIssues}</p>
                   </div>
                 )}
                 {product.careGuide.videoUrl && (
-                  <div className="p-4 bg-purple-50/50 rounded-xl border border-purple-100/50">
+                  <div className="border border-purple-100/50 bg-purple-50/50 p-4">
                     <div className="flex items-center gap-2 mb-3"><Play className="w-5 h-5 text-purple-600" /><p className="font-semibold text-purple-900">Video hướng dẫn chăm sóc</p></div>
                     <a href={product.careGuide.videoUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-purple-600 hover:text-purple-800 font-medium text-sm underline"><Play className="w-4 h-4" />Xem video hướng dẫn</a>
                   </div>
@@ -1259,9 +1259,9 @@ export function ProductDetailClient({
             {activeTab === "reviews" && (
               <div className="bg-white rounded-b-2xl rounded-tr-2xl border border-t-0 border-border p-6 sm:p-8">
                 {alreadyReviewed ? (
-                  <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-xl text-green-800 text-sm">Bạn đã gửi đánh giá. Đang chờ admin duyệt.</div>
+                  <div className="mb-6 border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800">Bạn đã gửi đánh giá. Đang chờ admin duyệt.</div>
                 ) : canReview ? (
-                  <form onSubmit={handleSubmitReview} className="mb-8 p-6 bg-[#f8faf6] border border-[#daebd0] rounded-xl">
+                  <form onSubmit={handleSubmitReview} className="mb-8 border border-border bg-muted/35 p-6">
                     <h3 className="font-semibold text-lg mb-4">Đánh giá sản phẩm của bạn</h3>
                     <div className="mb-4">
                       <label className="block text-sm font-medium mb-2">Xếp hạng *</label>
@@ -1281,14 +1281,14 @@ export function ProductDetailClient({
                       <label className="block text-sm font-medium mb-1">Nội dung *</label>
                       <textarea value={reviewForm.content} onChange={(e) => setReviewForm((p) => ({ ...p, content: e.target.value }))} rows={4} required className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#6d8c5a] focus:outline-none" placeholder="Chia sẻ trải nghiệm của bạn..." />
                     </div>
-                    <button type="submit" disabled={submittingReview} className="bg-[#425733] text-white px-6 py-2.5 rounded-full font-semibold hover:bg-[#364a29] disabled:bg-gray-300 transition-colors">
+                    <button type="submit" disabled={submittingReview} className="bg-foreground px-6 py-2.5 font-semibold text-white transition-colors hover:bg-foreground/85 disabled:bg-gray-300">
                       {submittingReview ? "Đang gửi..." : "Gửi Đánh Giá"}
                     </button>
                   </form>
                 ) : !session ? (
-                  <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-xl text-blue-800 text-sm"><a href="/login" className="underline font-medium">Đăng nhập</a> để đánh giá sản phẩm (chỉ dành cho khách hàng đã mua hàng)</div>
+                  <div className="mb-6 border border-blue-200 bg-blue-50 p-4 text-sm text-blue-800"><a href="/login" className="font-medium underline">Đăng nhập</a> để đánh giá sản phẩm (chỉ dành cho khách hàng đã mua hàng)</div>
                 ) : (
-                  <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-xl text-yellow-800 text-sm">Bạn cần mua sản phẩm này để có thể gửi đánh giá.</div>
+                  <div className="mb-6 border border-yellow-200 bg-yellow-50 p-4 text-sm text-yellow-800">Bạn cần mua sản phẩm này để có thể gửi đánh giá.</div>
                 )}
                 {reviewsLoading ? (
                   <div className="text-center py-8 text-gray-400">Đang tải đánh giá...</div>
@@ -1298,7 +1298,7 @@ export function ProductDetailClient({
                   <div className="space-y-4">
                     <h3 className="font-semibold text-lg">{reviews.length} đánh giá</h3>
                     {reviews.map((review: any) => (
-                      <div key={review.id} className="border rounded-xl p-5">
+                      <div key={review.id} className="border p-5">
                         <div className="flex justify-between items-start mb-2">
                           <div>
                             <p className="font-medium">{review.customer?.name || "Khách hàng"}</p>
@@ -1321,11 +1321,11 @@ export function ProductDetailClient({
 
           {/* Cột phải: Đánh giá khách hàng (4/12) */}
           <div className="lg:col-span-4">
-            <div className="bg-white rounded-2xl border border-border p-6">
+            <div className="border border-border bg-white p-6">
               <h3 className="font-bold text-lg text-[#1a2e12] mb-4">Đánh giá khách hàng</h3>
               
               <div className="flex flex-col sm:flex-row lg:flex-col items-center gap-4 mb-6">
-                <div className="text-center bg-[#f8faf6] border border-[#eaefeb] rounded-xl px-5 py-4 w-full sm:w-auto lg:w-full">
+                <div className="w-full border border-border bg-muted/35 px-5 py-4 text-center sm:w-auto lg:w-full">
                   <p className="text-5xl font-extrabold text-[#1a2e12]">{ratingSummary.rating.toFixed(1)}</p>
                   <div className="flex gap-0.5 mt-1.5 justify-center">
                     {[1, 2, 3, 4, 5].map((s) => (
@@ -1418,7 +1418,7 @@ export function ProductDetailClient({
         <div className="mx-auto flex max-w-7xl items-center gap-3">
           <div className="min-w-0 flex-1">
             <p className="truncate text-xs font-semibold text-[#526248]">{product.name}</p>
-            <p className="whitespace-nowrap text-[clamp(1.05rem,5vw,1.25rem)] font-extrabold leading-tight text-[#425733]">
+            <p className="whitespace-nowrap text-[clamp(1.05rem,5vw,1.25rem)] font-extrabold leading-tight text-foreground">
               {priceAfterVoucher.toLocaleString("vi-VN")}₫
             </p>
           </div>
@@ -1430,7 +1430,7 @@ export function ProductDetailClient({
             compact
           />
           <Button
-            className="h-12 min-w-[122px] shrink-0 rounded-xl bg-[#425733] px-3 text-sm font-bold text-white hover:bg-[#364a29] min-[380px]:min-w-[140px] min-[380px]:px-4"
+            className="h-12 min-w-[122px] shrink-0 bg-foreground px-3 text-sm font-bold text-white hover:bg-foreground/85 min-[380px]:min-w-[140px] min-[380px]:px-4"
             onClick={handleAddToCart}
             disabled={product.inventory <= 0}
           >
@@ -1439,6 +1439,6 @@ export function ProductDetailClient({
           </Button>
         </div>
       </div>
-    </main>
+    </div>
   );
 }

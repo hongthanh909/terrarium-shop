@@ -13,7 +13,7 @@ interface ShimmerButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
 
 export function ShimmerButton({
   shimmerColor = "rgba(255,255,255,0.35)",
-  background = "#425733",
+  background = "#171717",
   children,
   className,
   size = "md",
@@ -30,7 +30,7 @@ export function ShimmerButton({
       whileHover={{ scale: 1.02, y: -1 }}
       whileTap={{ scale: 0.98 }}
       className={cn(
-        "relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-full font-semibold text-white shadow-md transition-shadow hover:shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-[#425733] focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed",
+        "relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-md font-semibold text-white shadow-sm transition-shadow hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-950/40 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
         sizeClass,
         className
       )}
@@ -74,7 +74,7 @@ export function OutlineButton({
       whileHover={{ scale: 1.02, y: -1 }}
       whileTap={{ scale: 0.98 }}
       className={cn(
-        "relative inline-flex items-center justify-center gap-2 rounded-full border-2 border-[#425733] bg-transparent font-semibold text-[#425733] transition-colors hover:bg-[#425733] hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-[#425733] disabled:opacity-50",
+        "relative inline-flex items-center justify-center gap-2 rounded-md border border-gray-950 bg-transparent font-semibold text-gray-950 transition-colors hover:bg-gray-950 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-950/40 disabled:opacity-50",
         sizeClass,
         className
       )}
