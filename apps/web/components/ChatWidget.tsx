@@ -887,6 +887,8 @@ export default function ChatWidget() {
   // ═══════════════════════════════════════════════
   // RENDER
   // ═══════════════════════════════════════════════
+  if (pathname === "/consult") return null;
+
   return (
     <>
       <style>{`
