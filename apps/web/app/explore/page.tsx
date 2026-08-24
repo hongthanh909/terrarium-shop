@@ -1,7 +1,22 @@
+import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import { ExploreClient } from "./ExploreClient";
 
 export const revalidate = 60; // ISR: cache 60s at CDN edge
+
+export const metadata: Metadata = {
+  title: { absolute: "Khám phá terrarium nổi bật | Tiệm Rêu Décor" },
+  description:
+    "Khám phá các mẫu terrarium nổi bật, sản phẩm được yêu thích và thiết kế mới nhất từ Tiệm Rêu Décor.",
+  alternates: { canonical: "/explore" },
+  openGraph: {
+    title: "Khám phá terrarium nổi bật | Tiệm Rêu Décor",
+    description:
+      "Những thiết kế terrarium được lựa chọn, yêu thích và vừa hoàn thiện tại Tiệm Rêu Décor.",
+    url: "/explore",
+    type: "website",
+  },
+};
 
 const serializeProduct = (p: any) => ({
   ...JSON.parse(JSON.stringify(p)),
