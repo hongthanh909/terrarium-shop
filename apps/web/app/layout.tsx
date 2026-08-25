@@ -63,7 +63,6 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: "Tiệm Rêu Décor" }],
   manifest: "/manifest.webmanifest",
-  alternates: { canonical: "/" },
   openGraph: {
     title: "Tiệm Rêu Décor - Terrarium & Moss Art Thủ Công",
     description:

@@ -157,7 +157,7 @@ export function ProductsClient({
                   placeholder="Tìm kiếm sản phẩm..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="h-12 flex-1 rounded-md border-border bg-white md:w-72"
+                  className="h-12 flex-1 rounded-md border-border bg-white text-base md:w-72 md:text-sm"
                 />
                 <Button type="submit" size="sm" className="h-12 w-12 rounded-md bg-foreground hover:bg-foreground/85" aria-label="Tìm kiếm sản phẩm">
                   <Search className="w-4 h-4" />

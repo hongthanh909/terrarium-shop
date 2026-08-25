@@ -32,6 +32,7 @@ export const metadata: Metadata = {
   title: "Tiệm Rêu Décor | Một Chút Rêu, Một Chút Xanh",
   description:
     "Khám phá bộ sưu tập terrarium thủ công, những hệ sinh thái thu nhỏ biến không gian của bạn thành thiên nhiên trong trẻo.",
+  alternates: { canonical: "/" },
   openGraph: {
     title: "Tiệm Rêu Décor | Một Chút Rêu, Một Chút Xanh",
     description:

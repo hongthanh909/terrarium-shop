@@ -96,6 +96,12 @@ module.exports = {
   async headers() {
     const headers = [
       {
+        source: '/tiem-nho-nth24/:path*',
+        headers: [
+          { key: 'X-Robots-Tag', value: 'noindex, nofollow, noarchive' },
+        ],
+      },
+      {
         source: '/(.*)',
         headers: [
           { key: 'X-Content-Type-Options', value: 'nosniff' },

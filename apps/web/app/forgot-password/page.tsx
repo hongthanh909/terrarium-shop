@@ -103,7 +103,7 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <main className="flex min-h-[calc(100dvh-7rem)] items-center justify-center bg-white py-8 sm:py-10">
+    <div className="flex min-h-[calc(100dvh-7rem)] items-center justify-center bg-white py-8 sm:py-10">
       <div className="w-full max-w-md px-4">
         <Link
           href="/login"
@@ -279,6 +279,6 @@ export default function ForgotPasswordPage() {
           Bảo mật bởi Tiệm Rêu Décor
         </p>
       </div>
-    </main>
+    </div>
   );
 }

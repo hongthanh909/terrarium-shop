@@ -34,15 +34,18 @@ export async function generateMetadata({
       plainText ||
       `Đọc bài viết "${post.title}" trên blog Tiệm Rêu Décor. Kiến thức chăm sóc terrarium, moss art và cây cảnh mini.`;
 
-    const title = `${post.title} | Tiệm Rêu Décor Blog`;
+    const title = post.title;
+    const slug = (await params).slug;
 
     return {
       title,
       description,
+      alternates: { canonical: `/blog/${slug}` },
       openGraph: {
         title,
         description,
         type: "article",
+        url: `/blog/${slug}`,
         publishedTime: post.publishedAt?.toISOString(),
         locale: "vi_VN",
         siteName: "Tiệm Rêu Décor",
