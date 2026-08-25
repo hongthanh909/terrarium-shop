@@ -22,12 +22,14 @@ module.exports = {
   	extend: {
 		fontFamily: {
 			sans: [
-				'var(--font-inter)',
+				'var(--font-be-vietnam-pro)',
+				'"Segoe UI"',
 				'sans-serif'
 			],
 			serif: [
-				'var(--font-playfair)',
-				'serif'
+				'var(--font-be-vietnam-pro)',
+				'"Segoe UI"',
+				'sans-serif'
   			]
   		},
   		colors: {

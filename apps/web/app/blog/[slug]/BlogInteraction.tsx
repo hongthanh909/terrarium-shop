@@ -256,7 +256,7 @@ export default function BlogInteraction({ postId, slug }: BlogInteractionProps) 
               <button
                 type="submit"
                 disabled={submittingComment || !commentContent.trim()}
-                className="flex items-center gap-2 bg-[#425733] text-white px-5 py-2 rounded-full text-xs font-semibold hover:bg-[#364a29] transition-all disabled:bg-gray-300 disabled:cursor-not-allowed"
+                className="flex min-h-11 items-center gap-2 rounded-md border border-[#425733] bg-[#425733] px-5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#364a29] active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-gray-300"
               >
                 {submittingComment ? (
                   <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -272,7 +272,7 @@ export default function BlogInteraction({ postId, slug }: BlogInteractionProps) 
             <p className="text-sm text-gray-500 mb-3">Vui lòng đăng nhập để gửi bình luận và tương tác!</p>
             <Link
               href="/auth/login"
-              className="inline-block bg-[#425733] text-white px-6 py-2 rounded-full text-xs font-semibold hover:bg-[#364a29] transition-all"
+              className="inline-flex min-h-11 items-center rounded-md border border-[#425733] bg-[#425733] px-6 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#364a29] active:scale-[0.98]"
             >
               Đăng nhập ngay
             </Link>
@@ -378,7 +378,7 @@ export default function BlogInteraction({ postId, slug }: BlogInteractionProps) 
                       type="button"
                       onClick={() => handleReplySubmit(comment.id)}
                       disabled={submittingReply || !replyContent.trim()}
-                      className="px-4 py-2 bg-[#425733] text-white rounded-full text-xs font-semibold hover:bg-[#364a29] transition-all disabled:bg-gray-300 disabled:cursor-not-allowed shrink-0"
+                      className="min-h-11 shrink-0 rounded-md border border-[#425733] bg-[#425733] px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#364a29] active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-gray-300"
                     >
                       {submittingReply ? "Đang gửi..." : "Gửi"}
                     </button>

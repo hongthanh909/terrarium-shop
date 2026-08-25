@@ -1070,7 +1070,7 @@ export function ProductDetailClient({
               <Button 
                 size="lg" 
                 variant="outline" 
-                className="h-12 flex-1 border-foreground text-sm font-bold text-foreground hover:bg-muted"
+                className="h-12 w-full border-foreground text-sm font-bold text-foreground hover:bg-muted sm:flex-1"
                 onClick={handleAddToCart} 
                 disabled={product.inventory <= 0}
               >
@@ -1078,7 +1078,7 @@ export function ProductDetailClient({
               </Button>
               <Button 
                 size="lg" 
-                className="h-12 flex-1 bg-foreground text-sm font-bold text-white shadow-sm transition-colors hover:bg-foreground/85"
+                className="h-12 w-full bg-foreground text-sm font-bold text-white shadow-sm transition-colors hover:bg-foreground/85 sm:flex-1"
                 onClick={handleBuyNow} 
                 disabled={product.inventory <= 0}
               >

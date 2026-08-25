@@ -95,7 +95,7 @@ export default function AdminBlogPage() {
         </div>
         <Link
           href="/tiem-nho-nth24/blog/create"
-          className="flex items-center gap-2 bg-[#425733] text-white px-6 py-3 rounded-full font-semibold shadow hover:-translate-y-0.5 hover:shadow-lg hover:bg-[#364a29] transition-all"
+          className="flex min-h-12 items-center gap-2 rounded-md border border-[#425733] bg-[#425733] px-6 py-3 font-semibold text-white shadow-sm transition-colors hover:bg-[#364a29] active:scale-[0.98]"
         >
           <Plus className="w-5 h-5" />
           Bài Viết Mới

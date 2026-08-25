@@ -49,14 +49,14 @@ export default function GlobalError({
         <div className="flex gap-3 justify-center">
           <button
             onClick={() => window.location.reload()}
-            className="flex items-center gap-2 bg-[#425733] text-white px-5 py-2.5 rounded-full font-semibold hover:bg-[#364a29] transition-colors"
+            className="flex min-h-11 items-center gap-2 rounded-md border border-[#425733] bg-[#425733] px-5 py-2.5 font-semibold text-white shadow-sm transition-colors hover:bg-[#364a29] active:scale-[0.98]"
           >
             <RefreshCw className="w-4 h-4" />
             Thử lại
           </button>
           <Link
             href="/"
-            className="flex items-center gap-2 border border-[#c8d5be] text-[#425733] px-5 py-2.5 rounded-full font-semibold hover:bg-[#f0f4ec] transition-colors"
+            className="flex min-h-11 items-center gap-2 rounded-md border border-[#c8d5be] bg-white px-5 py-2.5 font-semibold text-[#425733] shadow-sm transition-colors hover:bg-[#f0f4ec] active:scale-[0.98]"
           >
             <Home className="w-4 h-4" />
             Trang chủ

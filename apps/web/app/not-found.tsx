@@ -12,7 +12,7 @@ export default function NotFound() {
       </p>
       <Link
         href="/"
-        className="inline-flex items-center gap-2 bg-[#425733] text-white px-6 py-3 rounded-full font-semibold hover:bg-[#364a29] transition-all"
+        className="inline-flex min-h-12 items-center gap-2 rounded-md border border-[#425733] bg-[#425733] px-6 py-3 font-semibold text-white shadow-sm transition-colors hover:bg-[#364a29] active:scale-[0.98]"
       >
         ← Về Trang Chủ
       </Link>

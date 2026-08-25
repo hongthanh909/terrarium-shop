@@ -105,7 +105,7 @@ export default function CreateBlogCategoryPage() {
           <button
             type="submit"
             disabled={saving}
-            className="flex items-center gap-2 bg-[#425733] text-white px-6 py-3 rounded-full font-semibold shadow-soft hover:-translate-y-0.5 hover:shadow-[0_4px_20px_rgba(66,87,51,0.4)] hover:bg-[#364a29] disabled:bg-gray-400"
+            className="flex min-h-12 items-center gap-2 rounded-md border border-[#425733] bg-[#425733] px-6 py-3 font-semibold text-white shadow-sm transition-colors hover:bg-[#364a29] active:scale-[0.98] disabled:bg-gray-400"
           >
             <Save className="w-5 h-5" />
             {saving ? "Đang lưu..." : "Lưu Danh Mục"}

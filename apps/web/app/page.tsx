@@ -333,14 +333,13 @@ export default async function Home() {
             <div className="mt-5 flex max-w-full flex-wrap items-center gap-3 sm:mt-8">
               <Link
                 href="/products"
-                className="group relative flex h-11 min-w-[118px] items-center justify-center overflow-hidden rounded-md bg-foreground px-5 text-sm font-semibold text-white shadow-[0_8px_18px_rgba(25,28,24,0.14)] transition-[background-color,box-shadow,transform] duration-200 hover:-translate-y-0.5 hover:bg-foreground/85 hover:shadow-[0_12px_24px_rgba(25,28,24,0.18)] active:translate-y-0 sm:h-12 sm:min-w-[148px] sm:px-8"
+                className="group relative flex h-11 min-w-[118px] items-center justify-center overflow-hidden rounded-md border border-foreground bg-foreground px-5 text-sm font-semibold text-white shadow-sm transition-[background-color,transform] duration-150 hover:bg-foreground/85 active:scale-[0.98] sm:h-12 sm:min-w-[148px] sm:px-8"
               >
-                <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/16 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
                 <span className="relative">Mua ngay</span>
               </Link>
               <Link
                 href="/explore"
-                className="group flex h-11 min-w-0 max-w-full flex-1 basis-[178px] items-center justify-center rounded-md border border-border bg-white/92 px-4 text-[13px] font-semibold text-foreground shadow-[0_5px_14px_rgba(25,28,24,0.06)] backdrop-blur-sm transition-[background-color,border-color,box-shadow,transform] duration-200 hover:-translate-y-0.5 hover:border-foreground/25 hover:bg-white hover:shadow-[0_10px_22px_rgba(25,28,24,0.1)] active:translate-y-0 sm:h-12 sm:min-w-[216px] sm:flex-none sm:px-7 sm:text-sm"
+                className="group flex h-11 min-w-0 max-w-full flex-1 basis-[178px] items-center justify-center rounded-md border border-border bg-white/92 px-4 text-[13px] font-semibold text-foreground shadow-sm backdrop-blur-sm transition-[background-color,border-color,transform] duration-150 hover:border-foreground/25 hover:bg-muted active:scale-[0.98] sm:h-12 sm:min-w-[216px] sm:flex-none sm:px-7 sm:text-sm"
               >
                 Khám phá bộ sưu tập
                 <ArrowRight className="ml-2 h-4 w-4 stroke-[1.8] transition-transform duration-300 group-hover:translate-x-1" />

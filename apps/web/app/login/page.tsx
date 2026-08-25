@@ -410,7 +410,11 @@ function SocialLoginButton({ provider, label, loading, disabled, onClick }: {
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className="relative flex min-h-12 w-full items-center justify-center border border-gray-200 bg-white px-4 text-sm font-semibold text-gray-700 shadow-sm transition-all hover:border-gray-400 hover:bg-gray-50 active:translate-y-px disabled:cursor-not-allowed disabled:opacity-60"
+      className={`relative flex min-h-12 w-full items-center justify-center rounded-md border px-4 text-sm font-semibold shadow-sm transition-[background-color,border-color,transform] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60 ${
+        provider === "facebook"
+          ? "border-[#0866ff] bg-[#0866ff] text-white hover:border-[#075de5] hover:bg-[#075de5]"
+          : "border-gray-300 bg-white text-gray-800 hover:border-gray-400 hover:bg-gray-50"
+      }`}
     >
       <span className="absolute left-4 flex h-5 w-5 items-center justify-center">
         {loading ? (
@@ -421,7 +425,7 @@ function SocialLoginButton({ provider, label, loading, disabled, onClick }: {
             alt=""
             width={20}
             height={20}
-            className="h-5 w-5 object-contain"
+            className={`h-5 w-5 object-contain ${provider === "facebook" ? "brightness-0 invert" : ""}`}
           />
         )}
       </span>

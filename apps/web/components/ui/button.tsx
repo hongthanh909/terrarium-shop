@@ -5,30 +5,28 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  // Base: pill shape (radius.xl=50px từ DESIGN.md), transition 200ms (motion.duration.fast)
-  "inline-flex items-center justify-center whitespace-nowrap font-semibold transition-all duration-200 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-40 active:scale-[0.97]",
+  "inline-flex shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-md font-semibold tracking-normal transition-[background-color,border-color,color,box-shadow,transform] duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 active:scale-[0.98]",
   {
     variants: {
       variant: {
         default:
-          "bg-primary text-primary-foreground hover:bg-primary/90 shadow-soft hover:shadow-[0_4px_20px_rgba(66,87,51,0.4)] hover:-translate-y-0.5",
+          "border border-primary bg-primary text-primary-foreground shadow-sm hover:bg-primary/85",
         destructive:
-          "bg-destructive text-destructive-foreground hover:bg-destructive/90 shadow-soft hover:-translate-y-0.5",
+          "border border-destructive bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90",
         outline:
-          "border-2 border-primary/30 bg-background text-foreground hover:bg-primary/8 hover:text-primary hover:border-primary/60 hover:shadow-[0_2px_12px_rgba(66,87,51,0.2)]",
+          "border border-border bg-background text-foreground shadow-sm hover:border-foreground/25 hover:bg-muted",
         secondary:
-          "bg-secondary text-secondary-foreground hover:bg-secondary/80 shadow-soft hover:-translate-y-0.5",
+          "border border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/75",
         ghost:
-          "hover:bg-primary/10 hover:text-primary",
+          "border border-transparent hover:bg-muted hover:text-foreground",
         link:
           "text-primary underline-offset-4 hover:underline",
       },
       size: {
-        // radius.xl = 50px → rounded-full (pill), radius.md = 20px → rounded-2xl
-        default: "h-10 px-6 rounded-full text-sm tracking-wide",
-        sm:      "h-8  px-4 rounded-full text-xs tracking-wide",
-        lg:      "h-12 px-8 rounded-full text-base tracking-wide",
-        icon:    "h-10 w-10 rounded-full",
+        default: "h-11 px-5 text-sm",
+        sm:      "h-11 px-3 text-sm sm:h-10",
+        lg:      "h-12 px-6 text-base",
+        icon:    "h-11 w-11 px-0",
       },
     },
     defaultVariants: {
@@ -49,6 +47,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     const Comp = asChild ? Slot : "button"
     return (
       <Comp
+        data-ui="button"
         className={cn(buttonVariants({ variant, size, className }))}
         ref={ref}
         {...props}

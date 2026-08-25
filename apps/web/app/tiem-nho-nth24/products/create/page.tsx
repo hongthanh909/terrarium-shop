@@ -520,7 +520,7 @@ export default function CreateProductPage() {
               <div className="flex-1">
                 <p className="text-xs text-gray-500 mb-2">Ảnh chính hiển thị trong danh sách sản phẩm và trang chi tiết. Khuyến nghị: tỷ lệ 1:1, tối thiểu 600×600px. Hệ thống sẽ tải ảnh trực tiếp, không cần cắt thủ công.</p>
                 <div className="flex flex-wrap gap-2">
-                  <button type="button" onClick={() => mainImageInputRef.current?.click()} disabled={uploadingMain} className="flex items-center gap-2 bg-[#425733] text-white px-4 py-2 rounded-full text-sm font-semibold hover:bg-[#364a29] disabled:opacity-50 transition-colors">
+                  <button type="button" onClick={() => mainImageInputRef.current?.click()} disabled={uploadingMain} className="flex min-h-11 items-center gap-2 rounded-md border border-[#425733] bg-[#425733] px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#364a29] active:scale-[0.98] disabled:opacity-50">
                     <Upload className="w-4 h-4" />
                     {uploadingMain ? "Đang tải..." : mainImage ? "Thay ảnh chính" : "Tải ảnh chính"}
                   </button>
@@ -694,7 +694,7 @@ export default function CreateProductPage() {
         {/* ── Submit ─────────────────────────────────────────── */}
         <div className="flex justify-end gap-3">
           <Link href="/tiem-nho-nth24/products" className="px-6 py-2.5 border border-gray-200 rounded-full text-gray-600 text-sm font-medium hover:bg-gray-50 transition-colors">Hủy</Link>
-          <button type="submit" disabled={loading} className="flex items-center gap-2 bg-[#425733] text-white px-6 py-2.5 rounded-full font-semibold text-sm shadow hover:-translate-y-0.5 hover:bg-[#364a29] hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all">
+          <button type="submit" disabled={loading} className="flex min-h-11 items-center gap-2 rounded-md border border-[#425733] bg-[#425733] px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#364a29] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50">
             <Save className="w-4 h-4" />
             {loading ? "Đang tạo..." : "Tạo sản phẩm"}
           </button>

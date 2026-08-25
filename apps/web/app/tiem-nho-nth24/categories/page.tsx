@@ -455,7 +455,7 @@ export default function AdminCategoriesPage() {
         </div>
         <button
           onClick={() => setShowCreateModal(true)}
-          className="flex items-center gap-2 bg-[#425733] text-white px-5 py-2.5 rounded-full font-semibold text-sm shadow hover:-translate-y-0.5 hover:bg-[#364a29] transition-all"
+          className="flex min-h-11 items-center gap-2 rounded-md border border-[#425733] bg-[#425733] px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#364a29] active:scale-[0.98]"
         >
           <Plus className="w-4 h-4" /> Thêm Danh Mục Mới
         </button>
@@ -654,7 +654,7 @@ export default function AdminCategoriesPage() {
                 <button type="button" onClick={() => setShowCreateModal(false)} className="px-5 py-2.5 border border-gray-200 rounded-full text-sm text-gray-600 hover:bg-gray-50 disabled:opacity-50" disabled={submitting}>
                   Hủy
                 </button>
-                <button type="submit" disabled={submitting} className="px-6 py-2.5 bg-[#425733] text-white rounded-full text-sm font-semibold hover:bg-[#364a29] transition-colors flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed">
+                <button type="submit" disabled={submitting} className="flex min-h-11 items-center gap-2 rounded-md border border-[#425733] bg-[#425733] px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#364a29] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60">
                   {submitting
                     ? <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> Đang tạo...</>
                     : "Tạo Danh Mục"}

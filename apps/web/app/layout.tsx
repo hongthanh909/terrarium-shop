@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Dancing_Script, Inter, Playfair_Display } from "next/font/google";
+import { Be_Vietnam_Pro, Dancing_Script } from "next/font/google";
 import { Suspense } from "react";
 import "./globals.css";
 import Header from "@/components/Header";
@@ -13,10 +13,11 @@ import { ChatWidgetClient } from "@/components/ChatWidgetClient";
 import { AnalyticsTracker } from "@/components/AnalyticsTracker";
 import { FacebookGroupVoucherPopup } from "@/components/FacebookGroupVoucherPopup";
 
-const inter = Inter({
-  subsets: ["latin", "latin-ext"],
-  variable: "--font-inter",
+const beVietnamPro = Be_Vietnam_Pro({
+  subsets: ["latin", "vietnamese"],
+  variable: "--font-be-vietnam-pro",
   display: "swap",
+  weight: ["300", "400", "500", "600", "700", "800"],
 });
 
 const dancingScript = Dancing_Script({
@@ -24,13 +25,6 @@ const dancingScript = Dancing_Script({
   variable: "--font-dancing",
   display: "swap",
   weight: ["400", "600", "700"],
-});
-
-const playfair = Playfair_Display({
-  subsets: ["latin", "latin-ext"],
-  variable: "--font-playfair",
-  display: "swap",
-  weight: ["500", "600", "700"],
 });
 
 export const metadata: Metadata = {
@@ -109,9 +103,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="vi" className={`${inter.variable} ${dancingScript.variable} ${playfair.variable}`}>
+    <html lang="vi" className={`${beVietnamPro.variable} ${dancingScript.variable}`}>
       <body
-        className={`${inter.className} antialiased min-h-[100dvh] flex flex-col`}
+        className={`${beVietnamPro.className} antialiased min-h-[100dvh] flex flex-col`}
       >
         <AuthProvider>
           <QueryProvider>

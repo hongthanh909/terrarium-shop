@@ -235,7 +235,7 @@ export default function AdminReviewsPage() {
                       <button
                         onClick={() => handleApprove(review.id)}
                         disabled={processingId !== null}
-                        className="flex items-center gap-1 px-3 py-1 bg-[#425733] text-white rounded-full font-semibold shadow-soft hover:-translate-y-0.5 hover:shadow-[0_4px_20px_rgba(66,87,51,0.4)] hover:bg-[#364a29] disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="flex min-h-10 items-center gap-1 rounded-md border border-[#425733] bg-[#425733] px-3 py-1 font-semibold text-white shadow-sm transition-colors hover:bg-[#364a29] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
                       >
                         <Check className="w-4 h-4" />
                         Duyệt

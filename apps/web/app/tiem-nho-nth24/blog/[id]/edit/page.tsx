@@ -398,7 +398,7 @@ export default function EditBlogPostPage() {
             Hủy
           </Link>
           <button type="submit" disabled={saving}
-            className="flex items-center gap-2 bg-[#425733] text-white px-6 py-2.5 rounded-full font-semibold shadow hover:bg-[#364a29] transition-all disabled:bg-gray-400 disabled:cursor-not-allowed text-sm">
+            className="flex min-h-11 items-center gap-2 rounded-md border border-[#425733] bg-[#425733] px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#364a29] active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-gray-400">
             <Save className="w-4 h-4" />
             {saving ? "Đang lưu..." : "Cập Nhật Bài Viết"}
           </button>
