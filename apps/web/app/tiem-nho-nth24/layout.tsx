@@ -10,7 +10,7 @@ import {
   Grid3X3, ExternalLink, Star, ShieldCheck, Compass, Brain, Store, BarChart3, MessagesSquare, TicketPercent, Menu,
 } from "lucide-react";
 import { AdminChatNotifier } from "@/components/chat/AdminChatNotifier";
-import { SHOP_FORUM_ENABLED } from "@/lib/features";
+import { AI_CHAT_ENABLED, SHOP_FORUM_ENABLED } from "@/lib/features";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 
 
@@ -50,7 +50,9 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       { href: "/tiem-nho-nth24/marketplace-categories", label: "Danh mục diễn đàn", icon: Grid3X3 },
     ] : []),
     { href: "/tiem-nho-nth24/policies", label: "Chính sách", icon: ShieldCheck },
-    { href: "/tiem-nho-nth24/ai-knowledge", label: "Kiến thức AI", icon: Brain },
+    ...(AI_CHAT_ENABLED ? [
+      { href: "/tiem-nho-nth24/ai-knowledge", label: "Kiến thức AI", icon: Brain },
+    ] : []),
   ];
 
   const isActive = (href: string) => {

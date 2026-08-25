@@ -277,7 +277,7 @@ function ProductCardHero({
         className="p-5 flex flex-col flex-1 overflow-hidden"
       >
         {/* Category */}
-        <span className="text-gray-400 text-[11px] font-semibold uppercase tracking-wider mb-1 block">
+        <span className="mb-1 block text-xs font-semibold uppercase tracking-wider text-gray-500">
           {product.category?.name || "SẢN PHẨM"}
         </span>
 

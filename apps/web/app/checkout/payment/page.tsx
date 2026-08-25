@@ -11,7 +11,7 @@ export default function CheckoutPaymentPage() {
   const orderNumber = searchParams.get("order");
 
   return (
-    <main className="min-h-[100dvh] bg-background py-12 px-6">
+    <main className="min-h-[100dvh] bg-white px-4 py-8 sm:px-6 sm:py-12">
       <div className="max-w-lg mx-auto space-y-6">
         <Card className="text-center border-yellow-200">
           <CardHeader>
@@ -25,7 +25,7 @@ export default function CheckoutPaymentPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             {orderNumber && (
-              <div className="bg-yellow-50 rounded-xl p-4 text-center">
+              <div className="rounded-lg bg-yellow-50 p-4 text-center">
                 <p className="text-xs text-muted-foreground mb-1">Mã đơn hàng</p>
                 <p className="font-mono text-lg font-bold text-yellow-700">{orderNumber}</p>
               </div>
@@ -36,13 +36,13 @@ export default function CheckoutPaymentPage() {
             </p>
 
             <div className="pt-4 space-y-3">
-              <Button className="w-full" asChild>
+              <Button className="h-12 w-full" asChild>
                 <Link href="/orders" className="flex items-center justify-center gap-2">
                   <RefreshCw className="w-4 h-4" />
                   Xem Đơn Hàng
                 </Link>
               </Button>
-              <Button variant="outline" className="w-full" asChild>
+              <Button variant="outline" className="h-12 w-full" asChild>
                 <Link href="/products" className="flex items-center justify-center gap-2">
                   <ArrowLeft className="w-4 h-4" />
                   Quay Lại Cửa Hàng

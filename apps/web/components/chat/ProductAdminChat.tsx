@@ -263,7 +263,7 @@ export function ProductAdminChat({
                           )}
                           {message.content && <p className="whitespace-pre-wrap break-words px-3.5 py-2.5">{message.content}</p>}
                         </div>
-                        <p className={cn("mt-1 px-1 text-[11px] text-[#83907d]", mine && "text-right")}>{mine ? "Bạn" : "Admin"} · {messageTime(message.createdAt)}</p>
+                        <p className={cn("mt-1 px-1 text-xs text-[#6f7d69]", mine && "text-right")}>{mine ? "Bạn" : "Admin"} · {messageTime(message.createdAt)}</p>
                       </div>
                     </div>
                   );

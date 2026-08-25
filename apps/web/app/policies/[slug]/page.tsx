@@ -73,7 +73,7 @@ export default async function PolicyDetailPage({ params }: Props) {
 
           <div className="min-w-0">
             <header className="border-b border-border pb-8 sm:pb-10">
-              <h1 className="font-serif text-4xl font-semibold leading-tight text-foreground sm:text-5xl">
+              <h1 className="font-serif text-3xl font-semibold leading-tight text-foreground sm:text-5xl">
                 {policy.title}
               </h1>
               <p className="mt-4 text-sm text-muted-foreground">

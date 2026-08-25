@@ -183,26 +183,24 @@ export default function OrderDetailPage() {
 
           {/* Progress Timeline */}
           {!isCancelled ? (
-            <div className="flex items-center gap-0 overflow-x-auto pb-1">
+            <div className="grid w-full grid-cols-4">
               {ORDER_STATUS_STEPS.map((step, index) => {
                 const done = index <= currentStepIndex;
                 const active = index === currentStepIndex;
                 return (
-                  <div key={step.key} className="flex items-center flex-shrink-0">
-                    <div className="flex flex-col items-center">
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs transition-all ${
+                  <div key={step.key} className="relative flex min-w-0 flex-col items-center">
+                    {index > 0 && (
+                      <div className={`absolute right-1/2 top-4 h-0.5 w-full ${index <= currentStepIndex ? "bg-[#6d8c5a]" : "bg-gray-200"}`} />
+                    )}
+                    <div className={`relative z-10 flex h-8 w-8 items-center justify-center rounded-full text-xs transition-all ${
                         active ? "bg-[#425733] text-white ring-2 ring-[#6d8c5a] ring-offset-1" :
                         done ? "bg-[#6d8c5a] text-white" : "bg-gray-100 text-gray-400"
                       }`}>
                         <step.icon className="w-4 h-4" />
-                      </div>
-                      <span className={`text-[10px] mt-1 whitespace-nowrap ${done ? "text-[#425733] font-medium" : "text-gray-400"}`}>
-                        {step.label}
-                      </span>
                     </div>
-                    {index < ORDER_STATUS_STEPS.length - 1 && (
-                      <div className={`h-0.5 w-10 mx-1 mb-4 flex-shrink-0 ${index < currentStepIndex ? "bg-[#6d8c5a]" : "bg-gray-200"}`} />
-                    )}
+                    <span className={`mt-1 w-full px-0.5 text-center text-xs leading-tight ${done ? "font-medium text-[#425733]" : "text-gray-400"}`}>
+                      {step.label}
+                    </span>
                   </div>
                 );
               })}

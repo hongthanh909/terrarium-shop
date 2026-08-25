@@ -55,7 +55,7 @@ export default function CheckoutSuccessPage() {
 
   if (loadingOrder) {
     return (
-      <main className="min-h-[100dvh] bg-[#f4f8f0] flex items-center justify-center px-4">
+      <main className="flex min-h-[100dvh] items-center justify-center bg-white px-4">
         <div className="w-full max-w-md text-center">
           <div className="w-12 h-12 border-4 border-[#425733] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
           <p className="text-gray-500 text-sm">Đang tải thông tin đơn hàng...</p>
@@ -65,11 +65,11 @@ export default function CheckoutSuccessPage() {
   }
 
   return (
-    <main className="min-h-[100dvh] bg-[#f4f8f0] flex items-center justify-center px-4 py-12">
+    <main className="flex min-h-[100dvh] items-center justify-center bg-white px-4 py-8 sm:py-12">
       <div className="w-full max-w-lg">
-        <div className="bg-white rounded-3xl shadow-xl overflow-hidden">
+        <div className="overflow-hidden rounded-lg border border-border bg-white shadow-lg">
           <div className="h-1.5 bg-gradient-to-r from-[#425733] via-[#6aad4a] to-[#425733]" />
-          <div className="px-8 py-10 text-center">
+          <div className="px-4 py-8 text-center sm:px-8 sm:py-10">
             {/* Success icon */}
             <div className="relative inline-block mb-6">
               <div className="w-20 h-20 rounded-full bg-[#e8f5e1] flex items-center justify-center mx-auto">
@@ -106,7 +106,7 @@ export default function CheckoutSuccessPage() {
             </p>
 
             {/* Mã đơn hàng */}
-            <div className="bg-[#f0f7ea] border border-[#c8d5be] rounded-2xl px-6 py-4 mb-6 w-full">
+            <div className="mb-6 w-full rounded-lg border border-[#c8d5be] bg-[#f0f7ea] px-4 py-4 sm:px-6">
               <p className="text-xs text-[#5a7a48] mb-1 font-medium">Mã đơn hàng</p>
               <p className="font-mono text-xl font-bold text-[#2d4a1e] tracking-wider">{orderNumber}</p>
             </div>
@@ -115,13 +115,13 @@ export default function CheckoutSuccessPage() {
             {orderItems.length > 0 && (
               <div className="mb-6 space-y-2">
                 {orderItems.map((item) => (
-                  <div key={item.id} className="flex items-center gap-3 bg-[#f6faf4] border border-[#daebd0] rounded-xl p-3">
+                  <div key={item.id} className="flex items-center gap-3 rounded-lg border border-[#daebd0] bg-[#f6faf4] p-3">
                     <div className="relative w-12 h-12 rounded-lg overflow-hidden bg-white border border-gray-200 shrink-0">
                       <ImageWrapper src={item.productImage} alt={item.productName} fill sizes="48px" noRound className="object-cover" />
                     </div>
                     <div className="flex-1 text-left min-w-0">
                       <p className="text-xs font-bold text-[#2d4a1e] truncate">{item.productName}</p>
-                      <p className="text-[10px] text-gray-400">SL: {item.quantity} × {item.price.toLocaleString("vi-VN")}đ</p>
+                      <p className="text-xs text-gray-500">SL: {item.quantity} × {item.price.toLocaleString("vi-VN")}đ</p>
                     </div>
                     <p className="text-sm font-bold text-[#425733] shrink-0">{(item.price * item.quantity).toLocaleString("vi-VN")}đ</p>
                   </div>
@@ -130,7 +130,7 @@ export default function CheckoutSuccessPage() {
             )}
 
             {/* Chi tiết giá */}
-            <div className="bg-white border border-gray-100 rounded-xl mb-6 text-left">
+            <div className="mb-6 rounded-lg border border-gray-100 bg-white text-left">
               <div className="px-4 py-3 space-y-2 text-sm">
                 <div className="flex justify-between text-gray-500">
                   <span>Tạm tính</span>
@@ -154,7 +154,7 @@ export default function CheckoutSuccessPage() {
             </div>
 
             {/* Tình trạng đơn hàng */}
-            <div className="bg-[#f6faf4] border border-[#daebd0] rounded-xl p-4 mb-6 text-left">
+            <div className="mb-6 rounded-lg border border-[#daebd0] bg-[#f6faf4] p-4 text-left">
               <p className="text-xs font-bold text-[#2d4a1e] mb-3">Tình trạng đơn hàng</p>
               <div className="space-y-3">
                 <div className="flex items-start gap-3">
@@ -163,7 +163,7 @@ export default function CheckoutSuccessPage() {
                   </div>
                   <div>
                     <p className="text-sm font-semibold text-[#2d4a1e]">Đã tiếp nhận</p>
-                    <p className="text-[11px] text-gray-400">Đơn hàng đã được ghi nhận thành công</p>
+                    <p className="text-xs text-gray-500">Đơn hàng đã được ghi nhận thành công</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
@@ -172,7 +172,7 @@ export default function CheckoutSuccessPage() {
                   </div>
                   <div>
                     <p className="text-sm font-medium text-gray-500">Đang đóng gói</p>
-                    <p className="text-[11px] text-gray-400">Shop sẽ sớm chuẩn bị đơn hàng cho bạn</p>
+                    <p className="text-xs text-gray-500">Shop sẽ sớm chuẩn bị đơn hàng cho bạn</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
@@ -181,7 +181,7 @@ export default function CheckoutSuccessPage() {
                   </div>
                   <div>
                     <p className="text-sm font-medium text-gray-400">Đang giao hàng</p>
-                    <p className="text-[11px] text-gray-400">Dự kiến giao hàng: 1-3 ngày làm việc</p>
+                    <p className="text-xs text-gray-500">Dự kiến giao hàng: 1-3 ngày làm việc</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
@@ -190,7 +190,7 @@ export default function CheckoutSuccessPage() {
                   </div>
                   <div>
                     <p className="text-sm font-medium text-gray-400">Hoàn tất</p>
-                    <p className="text-[11px] text-gray-400">Đơn hàng đã được giao thành công</p>
+                    <p className="text-xs text-gray-500">Đơn hàng đã được giao thành công</p>
                   </div>
                 </div>
               </div>
@@ -198,12 +198,12 @@ export default function CheckoutSuccessPage() {
 
             {/* Thông tin thêm */}
             <div className="grid grid-cols-2 gap-3 mb-6 text-left">
-              <div className="bg-[#f6faf4] border border-[#daebd0] rounded-xl p-3">
-                <p className="text-[10px] text-gray-400 mb-0.5">Thanh toán</p>
+              <div className="rounded-lg border border-[#daebd0] bg-[#f6faf4] p-3">
+                <p className="mb-0.5 text-xs text-gray-500">Thanh toán</p>
                 <p className="text-xs font-bold text-[#2d4a1e]">COD - Khi nhận hàng</p>
               </div>
-              <div className="bg-[#f6faf4] border border-[#daebd0] rounded-xl p-3">
-                <p className="text-[10px] text-gray-400 mb-0.5">Thời gian giao hàng</p>
+              <div className="rounded-lg border border-[#daebd0] bg-[#f6faf4] p-3">
+                <p className="mb-0.5 text-xs text-gray-500">Thời gian giao hàng</p>
                 <p className="text-xs font-bold text-[#2d4a1e]">1-3 ngày làm việc</p>
               </div>
             </div>
@@ -211,18 +211,18 @@ export default function CheckoutSuccessPage() {
             {/* Buttons */}
             <div className="space-y-3">
               {conversationId && (
-                <Button className="w-full bg-[#edf5e8] hover:bg-[#e0eed8] h-12 text-base font-semibold rounded-xl text-[#425733]" asChild>
+                <Button className="h-12 w-full rounded-md bg-[#edf5e8] text-base font-semibold text-[#425733] hover:bg-[#e0eed8]" asChild>
                   <Link href={`/messages?conversation=${encodeURIComponent(conversationId)}`}>
                     Trao đổi phí vận chuyển với shop
                   </Link>
                 </Button>
               )}
-              <Button className="w-full bg-[#425733] hover:bg-[#364a29] h-12 text-base font-semibold rounded-xl" asChild>
+              <Button className="h-12 w-full rounded-md bg-[#425733] text-base font-semibold hover:bg-[#364a29]" asChild>
                 <Link href="/orders" className="flex items-center justify-center gap-2">
                   Xem Đơn Hàng Của Tôi
                 </Link>
               </Button>
-              <Button variant="outline" className="w-full h-12 text-base rounded-xl border-[#c8d5be] text-[#425733] hover:bg-[#f0f7ea]" asChild>
+              <Button variant="outline" className="h-12 w-full rounded-md border-[#c8d5be] text-base text-[#425733] hover:bg-[#f0f7ea]" asChild>
                 <Link href="/products" className="flex items-center justify-center gap-2">
                   Tiếp Tục Mua Sắm
                   <ArrowRight className="w-4 h-4" />

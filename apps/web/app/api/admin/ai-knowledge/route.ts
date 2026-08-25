@@ -2,10 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { verifyAdminRequest, unauthorizedResponse } from "@/lib/admin-auth";
 import { logAdminAction } from "@/lib/audit";
+import { aiDisabledResponse, isAiServerEnabled } from "@/lib/ai/feature";
 
 // GET — Lấy tất cả knowledge entries
 export async function GET(request: NextRequest) {
   try {
+    if (!isAiServerEnabled()) return aiDisabledResponse(404);
+
     const admin = await verifyAdminRequest(request);
     if (!admin) return unauthorizedResponse();
 
@@ -23,6 +26,8 @@ export async function GET(request: NextRequest) {
 // POST — Tạo mới entry
 export async function POST(request: NextRequest) {
   try {
+    if (!isAiServerEnabled()) return aiDisabledResponse(404);
+
     const admin = await verifyAdminRequest(request);
     if (!admin) return unauthorizedResponse();
 
@@ -58,6 +63,8 @@ export async function POST(request: NextRequest) {
 // PUT — Cập nhật entry (bulk hoặc single bằng id trong body)
 export async function PUT(request: NextRequest) {
   try {
+    if (!isAiServerEnabled()) return aiDisabledResponse(404);
+
     const admin = await verifyAdminRequest(request);
     if (!admin) return unauthorizedResponse();
 
@@ -94,6 +101,8 @@ export async function PUT(request: NextRequest) {
 // DELETE — Xóa entry
 export async function DELETE(request: NextRequest) {
   try {
+    if (!isAiServerEnabled()) return aiDisabledResponse(404);
+
     const admin = await verifyAdminRequest(request);
     if (!admin) return unauthorizedResponse();
 

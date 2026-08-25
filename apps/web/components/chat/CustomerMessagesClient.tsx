@@ -193,14 +193,14 @@ export function CustomerMessagesClient() {
   };
 
   return (
-    <div className="min-h-[calc(100dvh-7rem)] bg-white px-3 py-6 sm:px-5 sm:py-10">
+    <div className={cn("min-h-[calc(100dvh-4rem)] bg-white px-3 py-6 sm:px-5 sm:py-10", selectedId && "px-0 py-0 sm:px-5 sm:py-10")}>
       <div className="mx-auto max-w-[1400px]">
-        <header className="mb-5 flex items-end justify-between gap-4 border-b border-border pb-5">
+        <header className={cn("mb-5 flex items-end justify-between gap-4 border-b border-border pb-5", selectedId && "hidden lg:flex")}>
           <div>
             <Link href="/profile" className="inline-flex min-h-11 items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground">
               <ArrowLeft className="h-3.5 w-3.5" /> Tài khoản
             </Link>
-            <h1 className="mt-2 font-serif text-4xl font-semibold text-foreground sm:text-5xl">Tin nhắn với admin</h1>
+            <h1 className="mt-2 font-serif text-3xl font-semibold leading-tight text-foreground sm:text-5xl">Tin nhắn với admin</h1>
             <p className="mt-2 text-sm text-muted-foreground">Xem lại tư vấn và tiếp tục trao đổi theo từng sản phẩm.</p>
           </div>
           <div className="hidden h-11 w-11 place-items-center border border-border bg-muted text-foreground sm:grid">
@@ -208,8 +208,8 @@ export function CustomerMessagesClient() {
           </div>
         </header>
 
-        <div className="overflow-hidden border border-border bg-white shadow-[0_10px_32px_rgba(0,0,0,0.06)] lg:grid lg:h-[calc(100dvh-14rem)] lg:min-h-[620px] lg:grid-cols-[350px_minmax(0,1fr)]">
-          <aside className={cn("min-h-[600px] border-r border-border bg-gray-50/60 lg:min-h-0", selectedId && "hidden lg:flex lg:flex-col")}>
+        <div className={cn("overflow-hidden border border-border bg-white shadow-[0_10px_32px_rgba(0,0,0,0.06)] lg:grid lg:h-[calc(100dvh-14rem)] lg:min-h-[620px] lg:grid-cols-[350px_minmax(0,1fr)]", selectedId ? "h-[calc(100dvh-4rem)] border-x-0 sm:border-x" : "min-h-[480px]")}>
+          <aside className={cn("h-full border-r border-border bg-gray-50/60 lg:min-h-0", selectedId && "hidden lg:flex lg:flex-col")}>
             <div className="border-b border-border px-4 py-4">
               <h2 className="text-sm font-bold text-foreground">Các cuộc trò chuyện</h2>
               <p className="mt-1 text-xs text-muted-foreground">Lịch sử được lưu theo tài khoản của bạn</p>
@@ -238,14 +238,14 @@ export function CustomerMessagesClient() {
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2">
                         <p className="truncate text-sm font-bold text-foreground">{conversation.order ? `Đơn hàng #${conversation.order.orderNumber}` : conversation.product?.name || "Sản phẩm không còn tồn tại"}</p>
-                        <span className="ml-auto shrink-0 text-[11px] text-muted-foreground">{relativeTime(conversation.lastMessageAt)}</span>
+                        <span className="ml-auto shrink-0 text-xs text-muted-foreground">{relativeTime(conversation.lastMessageAt)}</span>
                       </div>
                       <p className="mt-1 truncate text-xs text-muted-foreground">
                         {last?.senderType === "CUSTOMER" ? "Bạn: " : "Admin: "}{last?.content || (last?.imageUrl ? "Đã gửi một ảnh" : "Chưa có tin nhắn")}
                       </p>
                       <div className="mt-1.5 flex items-center gap-2">
-                        <span className="text-[11px] font-medium text-muted-foreground">{conversation.order ? "Trao đổi phí vận chuyển" : conversation.product?.type === "MARKETPLACE" ? "Marketplace" : "Sản phẩm cửa hàng"}</span>
-                        {conversation.customerUnreadCount > 0 && <span className="ml-auto grid min-w-5 place-items-center rounded-full bg-[#d93434] px-1.5 py-0.5 text-[10px] font-bold text-white">{conversation.customerUnreadCount > 99 ? "99+" : conversation.customerUnreadCount}</span>}
+                        <span className="text-xs font-medium text-muted-foreground">{conversation.order ? "Trao đổi phí vận chuyển" : conversation.product?.type === "MARKETPLACE" ? "Marketplace" : "Sản phẩm cửa hàng"}</span>
+                        {conversation.customerUnreadCount > 0 && <span className="ml-auto grid min-w-5 place-items-center rounded-full bg-[#d93434] px-1.5 py-0.5 text-xs font-bold text-white">{conversation.customerUnreadCount > 99 ? "99+" : conversation.customerUnreadCount}</span>}
                       </div>
                     </div>
                   </button>
@@ -254,7 +254,7 @@ export function CustomerMessagesClient() {
             </div>
           </aside>
 
-          <section className={cn("min-h-[600px] min-w-0 flex-col lg:min-h-0", selectedId ? "flex" : "hidden lg:flex")}>
+          <section className={cn("h-full min-w-0 flex-col lg:min-h-0", selectedId ? "flex" : "hidden lg:flex")}>
             {!selected ? (
               <div className="grid flex-1 place-items-center bg-white px-8 text-center">
                 <div><div className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-muted text-foreground"><MessageCircle className="h-6 w-6" /></div><h2 className="mt-4 font-bold text-foreground">Chọn một cuộc trò chuyện</h2><p className="mt-1 text-sm text-muted-foreground">Nội dung tư vấn và ảnh đã gửi sẽ hiện tại đây.</p></div>
@@ -276,7 +276,7 @@ export function CustomerMessagesClient() {
                   ) : (
                     <div className="space-y-3">{messages.map((message) => {
                       const mine = message.senderType === "CUSTOMER";
-                      return <div key={message.id} className={cn("flex", mine ? "justify-end" : "justify-start")}><div className="max-w-[84%]"><div className={cn("overflow-hidden border text-sm leading-6", mine ? "border-foreground bg-foreground text-white" : "border-border bg-white text-foreground")}>{message.imageUrl && <a href={message.imageUrl} target="_blank" rel="noreferrer" className="block bg-black/5"><img src={message.imageUrl} alt="Ảnh trong cuộc trò chuyện" className="max-h-80 w-full object-contain" /></a>}{message.content && <p className="whitespace-pre-wrap break-words px-3.5 py-2.5">{message.content}</p>}</div><p className={cn("mt-1 px-1 text-[11px] text-muted-foreground", mine && "text-right")}>{mine ? "Bạn" : "Admin"} · {messageTime(message.createdAt)}</p></div></div>;
+                      return <div key={message.id} className={cn("flex", mine ? "justify-end" : "justify-start")}><div className="max-w-[84%]"><div className={cn("overflow-hidden border text-sm leading-6", mine ? "border-foreground bg-foreground text-white" : "border-border bg-white text-foreground")}>{message.imageUrl && <a href={message.imageUrl} target="_blank" rel="noreferrer" className="block bg-black/5"><img src={message.imageUrl} alt="Ảnh trong cuộc trò chuyện" className="max-h-80 w-full object-contain" /></a>}{message.content && <p className="whitespace-pre-wrap break-words px-3.5 py-2.5">{message.content}</p>}</div><p className={cn("mt-1 px-1 text-xs text-muted-foreground", mine && "text-right")}>{mine ? "Bạn" : "Admin"} · {messageTime(message.createdAt)}</p></div></div>;
                     })}</div>
                   )}
                 </div>

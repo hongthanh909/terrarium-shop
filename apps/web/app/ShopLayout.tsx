@@ -2,6 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import { useIdleLogout } from "@/hooks/useIdleLogout";
+import { MobileBottomNav } from "@/components/MobileBottomNav";
 
 /**
  * ShopLayout — Client wrapper để ẩn Header/Footer/Chat trên admin pages.
@@ -49,6 +50,7 @@ export default function ShopLayout({
       {header}
       <main id="main-content" className="flex-1" tabIndex={-1}>{children}</main>
       {footer}
+      <MobileBottomNav />
       {chat}
     </>
   );

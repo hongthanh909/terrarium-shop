@@ -82,7 +82,7 @@ export default function FavoritesPage() {
           <ArrowLeft className="w-5 h-5" />
         </Link>
         <div>
-          <h1 className="flex items-center gap-2 font-serif text-4xl font-semibold text-gray-900">
+          <h1 className="flex items-center gap-2 font-serif text-3xl font-semibold leading-tight text-gray-900 sm:text-4xl">
             <Heart className="w-6 h-6 fill-red-500 text-red-500" />
             Sản phẩm yêu thích
           </h1>

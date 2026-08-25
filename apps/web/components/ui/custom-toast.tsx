@@ -144,7 +144,7 @@ function ToastItem({
         {/* Text */}
         <div className="flex-1 min-w-0 pt-0.5">
           {/* Status label */}
-          <p className="text-[11px] font-semibold uppercase tracking-wide mb-0.5" style={{ color: config.bar }}>
+          <p className="mb-0.5 text-xs font-semibold uppercase tracking-wide" style={{ color: config.bar }}>
             {config.label}
           </p>
           <p className="text-sm font-semibold text-gray-900 leading-snug">{toast.title}</p>

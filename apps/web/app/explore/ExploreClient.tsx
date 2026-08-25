@@ -180,7 +180,7 @@ export function ExploreClient({
                 <p className="mb-3 text-xs font-semibold uppercase text-muted-foreground">
                   Tuyển chọn từ Tiệm Rêu
                 </p>
-                <h1 className="max-w-3xl font-serif text-4xl font-semibold leading-tight text-foreground sm:text-5xl">
+                <h1 className="max-w-3xl font-serif text-3xl font-semibold leading-tight text-foreground sm:text-5xl">
                   Khám phá những khoảng xanh đáng chú ý
                 </h1>
                 <p className="mt-4 max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base">
@@ -224,7 +224,7 @@ export function ExploreClient({
                       <p className="text-xs font-semibold uppercase text-muted-foreground">
                         {leadItem.product.category?.name || "Sản phẩm nổi bật"}
                       </p>
-                      <h2 className="mt-3 font-serif text-3xl font-semibold text-foreground sm:text-4xl">
+                      <h2 className="mt-3 font-serif text-2xl font-semibold text-foreground sm:text-4xl">
                         {leadItem.product.name}
                       </h2>
                       <p className="mt-4 max-w-md text-sm leading-6 text-muted-foreground">
@@ -383,6 +383,8 @@ function ProductArtwork({
       fill
       noRound
       priority={priority}
+      loading={priority ? "eager" : "lazy"}
+      fetchPriority={priority ? "high" : "auto"}
       sizes={sizes}
       className={className}
       onError={() => {
@@ -426,7 +428,7 @@ function ProductSection({
           <div className="mb-4 flex h-9 w-9 items-center justify-center rounded-md border border-border bg-white text-foreground">
             {icon}
           </div>
-          <h2 className="font-serif text-3xl font-semibold text-foreground sm:text-4xl">
+          <h2 className="font-serif text-2xl font-semibold text-foreground sm:text-4xl">
             {title}
           </h2>
           <p className="mt-3 text-sm leading-6 text-muted-foreground sm:text-base">{subtitle}</p>

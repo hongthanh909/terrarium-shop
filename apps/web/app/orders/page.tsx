@@ -171,31 +171,31 @@ export default function MyOrdersPage() {
             <ArrowLeft className="w-4 h-4 mr-2" />
             Trang chủ
           </Link>
-          <h1 className="font-serif text-4xl font-semibold text-gray-900 sm:text-5xl">Đơn hàng của tôi</h1>
+          <h1 className="font-serif text-3xl font-semibold leading-tight text-gray-900 sm:text-5xl">Đơn hàng của tôi</h1>
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-          <div className="border border-border bg-white p-6 shadow-sm">
+        <div className="mb-8 grid grid-cols-2 gap-3 sm:gap-6">
+          <div className="border border-border bg-white p-4 shadow-sm sm:p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-gray-500 text-sm mb-1">Tổng đơn hàng</p>
-                <p className="text-3xl font-bold text-gray-800">{orders.length}</p>
+                <p className="text-2xl font-bold text-gray-800 sm:text-3xl">{orders.length}</p>
               </div>
-              <div className="bg-blue-100 p-3 rounded-full">
-                <Package className="w-6 h-6 text-blue-600" />
+              <div className="hidden rounded-full bg-blue-100 p-3 min-[390px]:block">
+                <Package className="h-5 w-5 text-blue-600 sm:h-6 sm:w-6" />
               </div>
             </div>
           </div>
-          <div className="border border-border bg-white p-6 shadow-sm">
+          <div className="border border-border bg-white p-4 shadow-sm sm:p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-gray-500 text-sm mb-1">Tổng chi tiêu</p>
-                <p className="text-3xl font-bold text-gray-800">
+                <p className="break-words text-xl font-bold text-gray-800 sm:text-3xl">
                   {totalSpent.toLocaleString("vi-VN")}₫
                 </p>
               </div>
-              <div className="bg-muted p-3">
+              <div className="hidden bg-muted p-3 min-[390px]:block">
                 <TrendingUp className="h-6 w-6 text-foreground" />
               </div>
             </div>
@@ -285,26 +285,24 @@ export default function MyOrdersPage() {
 
                     {/* Progress Timeline (horizontal) */}
                     {!isCancelled && (
-                      <div className="flex items-center gap-0 mb-4 overflow-x-auto pb-1">
-                        {ORDER_STATUS_STEPS.map((step, index) => {
+                    <div className="mb-4 grid w-full grid-cols-4">
+                      {ORDER_STATUS_STEPS.map((step, index) => {
                           const done = index <= currentStep;
                           const active = index === currentStep;
                           return (
-                            <div key={step.key} className="flex items-center flex-shrink-0">
-                              <div className="flex flex-col items-center">
-                                <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs transition-all ${
+                            <div key={step.key} className="relative flex min-w-0 flex-col items-center">
+                              {index > 0 && (
+                                <div className={`absolute right-1/2 top-3.5 h-0.5 w-full ${index <= currentStep ? "bg-gray-600" : "bg-gray-200"}`} />
+                              )}
+                              <div className={`relative z-10 flex h-7 w-7 items-center justify-center rounded-full text-xs transition-all ${
                                   active ? "bg-foreground text-white ring-2 ring-foreground/20 ring-offset-2" :
                                   done ? "bg-gray-600 text-white" : "bg-gray-100 text-gray-400"
                                 }`}>
                                   <step.icon className="w-3.5 h-3.5" />
-                                </div>
-                                <span className={`mt-1 whitespace-nowrap text-[10px] ${done ? "font-medium text-foreground" : "text-gray-400"}`}>
-                                  {step.label}
-                                </span>
                               </div>
-                              {index < ORDER_STATUS_STEPS.length - 1 && (
-                                <div className={`mx-1 mb-4 h-0.5 w-8 flex-shrink-0 ${index < currentStep ? "bg-gray-600" : "bg-gray-200"}`} />
-                              )}
+                              <span className={`mt-1 w-full px-0.5 text-center text-xs leading-tight ${done ? "font-medium text-foreground" : "text-gray-400"}`}>
+                                {step.label}
+                              </span>
                             </div>
                           );
                         })}

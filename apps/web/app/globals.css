@@ -70,7 +70,7 @@
     font-family: var(--font-be-vietnam-pro), "Segoe UI", Arial, sans-serif;
     font-size: 16px;
     line-height: 1.6;
-    min-width: 320px;
+    min-width: 280px;
     min-height: 100dvh;
     overflow-x: hidden;
     -webkit-font-smoothing: antialiased;

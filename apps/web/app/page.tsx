@@ -362,7 +362,7 @@ export default async function Home() {
                   >
                     <Icon className="h-4 w-4 shrink-0 stroke-[1.55] text-foreground/75 sm:h-6 sm:w-6" />
                     <span className="min-w-0">
-                      <span className="block text-[10px] sm:text-[15px] font-semibold leading-tight tracking-[0]">{item.title}</span>
+                      <span className="block text-xs font-semibold leading-tight tracking-[0] sm:text-[15px]">{item.title}</span>
                       <span className="mt-0.5 hidden text-xs leading-snug text-muted-foreground sm:block">{item.subtitle}</span>
                     </span>
                   </Link>

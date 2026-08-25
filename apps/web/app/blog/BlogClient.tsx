@@ -41,12 +41,12 @@ export function BlogClient({
 
   return (
     <PageTransition>
-      <div className="min-h-[100dvh] bg-white px-4 py-12 sm:px-6">
+      <div className="min-h-[100dvh] bg-white px-4 py-8 sm:px-6 sm:py-12">
         <div className="max-w-7xl mx-auto">
 
           {/* Hero */}
           <motion.div
-            className="text-center mb-12"
+            className="mb-8 text-center sm:mb-12"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
@@ -55,7 +55,7 @@ export function BlogClient({
               <BookOpen className="w-4 h-4" />
               <span>Kiến thức terrarium</span>
             </div>
-            <h1 className="mb-4 font-serif text-5xl font-semibold text-foreground sm:text-6xl">Nhật ký Tiệm Rêu</h1>
+            <h1 className="mb-4 font-serif text-3xl font-semibold leading-tight text-foreground sm:text-6xl">Nhật ký Tiệm Rêu</h1>
             <p className="text-gray-500 max-w-2xl mx-auto">
               Mẹo chăm sóc cây, hướng dẫn và cảm hứng từ thế giới terrarium
             </p>
@@ -63,14 +63,14 @@ export function BlogClient({
 
           {/* Category Filters */}
           <motion.div
-            className="flex items-center gap-2 mb-10 flex-wrap justify-center"
+            className="-mx-4 mb-8 flex flex-nowrap items-center gap-2 overflow-x-auto px-4 pb-2 scrollbar-none sm:mx-0 sm:mb-10 sm:flex-wrap sm:justify-center sm:px-0"
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.15, duration: 0.4 }}
           >
             <button
               onClick={() => setSelectedCategory(null)}
-              className={`min-h-11 border px-5 py-2 text-sm font-semibold transition-colors duration-200 ${
+              className={`min-h-11 shrink-0 whitespace-nowrap border px-5 py-2 text-sm font-semibold transition-colors duration-200 ${
                 selectedCategory === null
                   ? "border-foreground bg-foreground text-white"
                   : "border-border bg-white text-gray-500 hover:border-foreground hover:text-foreground"
@@ -82,7 +82,7 @@ export function BlogClient({
               <button
                 key={cat.id}
                 onClick={() => setSelectedCategory(cat.id)}
-                className={`min-h-11 border px-5 py-2 text-sm font-semibold transition-colors duration-200 ${
+                className={`min-h-11 shrink-0 whitespace-nowrap border px-5 py-2 text-sm font-semibold transition-colors duration-200 ${
                   selectedCategory === cat.id
                     ? "border-foreground bg-foreground text-white"
                     : "border-border bg-white text-gray-500 hover:border-foreground hover:text-foreground"
@@ -133,7 +133,7 @@ export function BlogClient({
                         )}
                         {/* Category overlay badge */}
                         {post.category && (
-                          <span className="absolute left-3 top-3 inline-flex items-center gap-1 border border-white/50 bg-white/90 px-2.5 py-1 text-[10px] font-bold uppercase text-foreground shadow-sm backdrop-blur-sm">
+                          <span className="absolute left-3 top-3 inline-flex items-center gap-1 border border-white/50 bg-white/90 px-2.5 py-1 text-xs font-bold uppercase text-foreground shadow-sm backdrop-blur-sm">
                             <Tag className="w-3 h-3" />
                             {post.category.name}
                           </span>

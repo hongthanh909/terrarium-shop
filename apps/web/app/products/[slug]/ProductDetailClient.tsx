@@ -7,7 +7,8 @@ import { useRouter } from "next/navigation";
 import {
   ArrowLeft, ShoppingBag, Minus, Plus, Star,
   Droplets, Sun, Thermometer, Wind, AlertTriangle, Play,
-  Package, Sprout, Heart, Tag, ChevronRight, Copy, Check as CheckIcon, Zap, Lightbulb, Wrench
+  Package, Sprout, Heart, Tag, ChevronRight, ChevronDown, Copy,
+  Check as CheckIcon, CheckCircle2, Zap, Lightbulb, Wrench, Share2, Truck
 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { showToast } from "@/components/ui/custom-toast";
@@ -72,26 +73,6 @@ type VoucherData = {
 
 type TabType = "details" | "care" | "reviews";
 
-const FacebookIcon = () => (
-  <svg className="w-5 h-5 text-gray-400 hover:text-blue-600 transition-colors" fill="currentColor" viewBox="0 0 24 24">
-    <path d="M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.84 3.44 8.87 8 9.8V15H8v-3h2V9.5C10 7.57 11.57 6 13.5 6H16v3h-2c-.55 0-1 .45-1 1v2h3v3h-3v6.95c4.56-.93 8-4.96 8-9.75z" />
-  </svg>
-);
-
-const InstagramIcon = () => (
-  <svg className="w-5 h-5 text-gray-400 hover:text-pink-600 transition-colors" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-    <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
-    <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
-    <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
-  </svg>
-);
-
-const TikTokIcon = () => (
-  <svg className="w-5 h-5 text-gray-400 hover:text-black transition-colors" fill="currentColor" viewBox="0 0 24 24">
-    <path d="M12.53.02C13.84 0 15.14.01 16.44 0c.08 1.53.63 3.09 1.75 4.17 1.12.98 2.66 1.41 4.12 1.48v3.08c-1.87-.07-3.69-.76-5.02-2.07-.05 2.76-.04 5.51-.05 8.27-.1 1.95-1.04 3.91-2.73 4.96-2.08 1.4-4.92 1.51-7.05.3-2.12-1.12-3.41-3.52-3.21-5.96.1-2.16 1.46-4.22 3.52-4.92 1.63-.59 3.5-.42 5.02.43-.01-1.39-.02-2.79-.02-4.18-1.57-.43-3.18-.33-4.66.42C5.97 7.02 4.19 8.87 3.39 11.13c-.99 2.59-.72 5.57.8 7.84 1.51 2.37 4.29 3.86 7.15 3.79 2.89.04 5.74-1.35 7.18-3.86 1.34-2.19 1.47-5.01 1.41-7.53h-3.06c.05 2.18-.01 4.38-.85 6.42-.78 1.92-2.61 3.44-4.73 3.55-2.09.16-4.26-.95-5.18-2.85-.92-1.81-.68-4.21.73-5.74.96-1.08 2.38-1.74 3.83-1.8 1.31-.08 2.68.22 3.77.96.02-3.95.01-7.9.01-11.85z" />
-  </svg>
-);
-
 export function ProductDetailClient({
   initialProduct,
   initialRelated,
@@ -133,6 +114,7 @@ export function ProductDetailClient({
   const [appliedVoucher, setAppliedVoucher] = useState<VoucherData | null>(null);
   const [voucherLoading, setVoucherLoading] = useState(false);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
+  const [showPublicVouchers, setShowPublicVouchers] = useState(false);
 
   useEffect(() => {
     if (!product) return;
@@ -263,7 +245,7 @@ export function ProductDetailClient({
   const [copiedLink, setCopiedLink] = useState(false);
 
   const handleCopyLink = () => {
-    const linkText = `${window.location.origin}/san-pham/${product.slug}`;
+    const linkText = `${window.location.origin}/products/${product.slug}`;
     navigator.clipboard.writeText(linkText).then(() => {
       setCopiedLink(true);
       showToast.success("Đã sao chép liên kết sản phẩm!");
@@ -271,6 +253,19 @@ export function ProductDetailClient({
     }).catch(() => {
       showToast.error("Không thể sao chép liên kết");
     });
+  };
+
+  const handleShare = async () => {
+    const url = `${window.location.origin}/products/${product.slug}`;
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: product.name, url });
+        return;
+      } catch (error) {
+        if (error instanceof DOMException && error.name === "AbortError") return;
+      }
+    }
+    handleCopyLink();
   };
 
   // ── Lightbox & Zoom ───────────────────────────────────────────────────
@@ -499,6 +494,27 @@ export function ProductDetailClient({
   const priceAfterVoucher = Math.max(0, finalPrice - voucherDiscountAmount);
   const hasPriceVoucher = voucherDiscountAmount > 0;
   const priceBeforeDisplayedDiscount = hasPriceVoucher ? finalPrice : originalPrice;
+  const bestVoucher = getBestVoucher(finalPrice);
+  const bestVoucherDiscountAmount = getVoucherDiscountAmount(bestVoucher, finalPrice);
+  const bestVoucherDiscountLabel = bestVoucherDiscountAmount >= 1000
+    ? `${Math.round(bestVoucherDiscountAmount / 1000)}K`
+    : `${bestVoucherDiscountAmount.toLocaleString("vi-VN")}₫`;
+  const mobileVoucherLabel = appliedVoucher
+    ? `Đã dùng ${appliedVoucher.code}`
+    : bestVoucher
+      ? bestVoucher.type === "FREE_SHIPPING"
+        ? "Voucher freeship"
+        : `Voucher -${bestVoucherDiscountLabel}`
+      : "Nhập mã voucher";
+
+  const focusVoucherSection = () => {
+    const voucherSection = document.getElementById("product-vouchers");
+    voucherSection?.scrollIntoView({ behavior: "smooth", block: "center" });
+
+    window.setTimeout(() => {
+      voucherSection?.querySelector<HTMLInputElement>('input[aria-label="Mã giảm giá"]')?.focus();
+    }, 450);
+  };
   const hasCareGuide = !!(product.careGuide && (product.careGuide.watering || product.careGuide.sunlight || product.careGuide.temperature || product.careGuide.humidity));
   const ratingSummary = getProductRatingSummary({ ...product, reviews });
   const ratingBreakdown = getPositiveRatingBreakdown(ratingSummary.rating, ratingSummary.reviewCount);
@@ -509,7 +525,7 @@ export function ProductDetailClient({
   const dbVariants = (product.variantOptions || []).filter((v: any) => v.variantType !== LAMP_VARIANT_TYPE);
 
   return (
-    <div className="min-h-[100dvh] bg-background pb-28 lg:pb-0">
+    <div className="min-h-[100dvh] scroll-pb-40 bg-background pb-40 lg:scroll-pb-0 lg:pb-0">
 
       {/* ── Lightbox ──────────────────────────────────────────────────────── */}
       {lightboxOpen && product?.images && (
@@ -627,15 +643,15 @@ export function ProductDetailClient({
       </Sheet>
 
       {/* ── Back ──────────────────────────────────────────────────────────── */}
-      <div className="mx-auto max-w-7xl px-4 py-5 sm:px-6">
+      <div className="mx-auto max-w-7xl px-4 py-2 sm:px-6 sm:py-5">
         <Link href="/products" className="inline-flex min-h-11 items-center text-sm text-muted-foreground transition-colors hover:text-primary">
           <ArrowLeft className="w-4 h-4 mr-2" /> Quay lại sản phẩm
         </Link>
       </div>
 
       {/* ── Product Layout ────────────────────────────────────────────────── */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 pb-12">
-        <div className="mb-12 grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1.08fr)_minmax(420px,0.92fr)] lg:gap-12 xl:gap-16">
+      <div className="mx-auto max-w-7xl px-4 pb-12 sm:px-6">
+        <div className="mb-10 grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1.08fr)_minmax(420px,0.92fr)] lg:gap-12 xl:gap-16">
 
           {/* ── LEFT: Gallery ── */}
           <div className="flex flex-col gap-4">
@@ -643,8 +659,7 @@ export function ProductDetailClient({
             <div className="w-full">
               {galleryMedia.length > 0 ? (
                 <div
-                  className={`group relative w-full overflow-hidden border border-border bg-muted/30 shadow-sm ${galleryMedia[currentMediaIndex]?.type === "image" ? "cursor-zoom-in" : ""}`}
-                  style={{ aspectRatio: "1/1", maxHeight: "min(550px, 72dvh)" }}
+                  className={`group relative aspect-[16/11] max-h-[34dvh] w-full overflow-hidden rounded-lg border border-border bg-muted/30 shadow-sm sm:aspect-square sm:max-h-[550px] ${galleryMedia[currentMediaIndex]?.type === "image" ? "cursor-zoom-in" : ""}`}
                   onClick={() => {
                     if (galleryMedia[currentMediaIndex]?.type === "image") {
                       handleOpenLightbox(currentMediaIndex);
@@ -663,26 +678,20 @@ export function ProductDetailClient({
                       aria-label={`Video sản phẩm ${product.name}`}
                       onClick={(event) => event.stopPropagation()}
                     />
-                  ) : (
-                    productImages.map((imageUrl, imageIndex) => {
-                      const isActive = imageIndex === currentMediaIndex;
-                      return (
-                        <ImageWrapper
-                          key={imageUrl}
-                          src={imageUrl}
-                          alt={isActive ? product.name : ""}
-                          aria-hidden={!isActive}
-                          fill
-                          sizes="(max-width: 1024px) 100vw, 50vw"
-                          loading="eager"
-                          fetchPriority={imageIndex === 0 ? "high" : "low"}
-                          noRound
-                          wrapperClassName={`absolute inset-0 transition-opacity duration-150 ${isActive ? "opacity-100" : "pointer-events-none opacity-0"}`}
-                          className={`object-contain transition-transform duration-300 ${isActive ? "group-hover:scale-[1.03]" : ""}`}
-                        />
-                      );
-                    })
-                  )}
+                  ) : galleryMedia[currentMediaIndex] ? (
+                    <ImageWrapper
+                      key={galleryMedia[currentMediaIndex].url}
+                      src={galleryMedia[currentMediaIndex].url}
+                      alt={product.name}
+                      fill
+                      sizes="(max-width: 1024px) 100vw, 50vw"
+                      loading={currentMediaIndex === 0 ? "eager" : "lazy"}
+                      fetchPriority={currentMediaIndex === 0 ? "high" : "auto"}
+                      noRound
+                      wrapperClassName="absolute inset-0"
+                      className="object-contain transition-transform duration-300 group-hover:scale-[1.02]"
+                    />
+                  ) : null}
 
                   {/* Sale badge */}
                   {isSale && (
@@ -724,7 +733,7 @@ export function ProductDetailClient({
                   )}
                 </div>
               ) : (
-                <div className="flex w-full animate-pulse items-center justify-center border border-border bg-muted" style={{ aspectRatio: "1/1", maxHeight: "550px" }}>
+                <div className="flex aspect-[16/11] max-h-[34dvh] w-full animate-pulse items-center justify-center rounded-lg border border-border bg-muted sm:aspect-square sm:max-h-[550px]">
                   <span className="text-muted-foreground text-sm">Chưa có ảnh hoặc video</span>
                 </div>
               )}
@@ -732,12 +741,12 @@ export function ProductDetailClient({
 
             {/* Horizontal thumbnail strip */}
             {galleryMedia.length > 1 && (
-              <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
+              <div className="flex snap-x gap-2 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
                 {galleryMedia.map((media, i: number) => (
                   <button
                     key={`${media.type}-${media.url}`}
                     onClick={() => setCurrentMediaIndex(i)}
-                    className={`relative h-20 w-20 flex-shrink-0 overflow-hidden border transition-[opacity,border-color,box-shadow] duration-200 sm:h-[70px] sm:w-[70px] ${
+                    className={`relative h-14 w-14 flex-shrink-0 snap-start overflow-hidden rounded-md border transition-[opacity,border-color,box-shadow] duration-200 sm:h-[70px] sm:w-[70px] ${
                       i === currentMediaIndex
                         ? "border-foreground bg-white shadow-sm"
                         : "border-border bg-white opacity-60 hover:border-foreground/40 hover:opacity-100"
@@ -765,7 +774,7 @@ export function ProductDetailClient({
           </div>
 
           {/* ── RIGHT: Product Info ── */}
-          <div className="flex flex-col lg:sticky lg:top-28 lg:self-start">
+            <div className="flex flex-col lg:sticky lg:top-28 lg:self-start">
 
             {/* Top Row: Badges & Wishlist */}
             <div className="flex justify-between items-center mb-3">
@@ -812,17 +821,17 @@ export function ProductDetailClient({
             </div>
 
             {/* Title */}
-            <h1 className="mb-3 font-serif text-4xl font-semibold leading-tight text-foreground sm:text-5xl">
+            <h1 className="mb-3 text-[28px] font-extrabold leading-[1.2] text-foreground sm:text-4xl lg:text-[42px]">
               {product.name}
             </h1>
 
             {/* Short Description */}
-            <p className="text-[15px] text-gray-600 leading-relaxed mb-5">
-              Bể kính terrarium với thiết kế tinh tế, kết hợp cây sống và tiểu cảnh thiên nhiên thu nhỏ, mang lại không gian xanh mát, thư giãn. Phù hợp trang trí bàn làm việc hoặc làm quà tặng ý nghĩa.
+            <p className="mb-5 line-clamp-3 text-[15px] leading-relaxed text-gray-600 sm:line-clamp-none">
+              {product.description || "Terrarium thủ công với cây sống và tiểu cảnh thiên nhiên thu nhỏ, phù hợp trang trí không gian hoặc làm quà tặng."}
             </p>
 
             {/* Price section */}
-            <div className="mb-6 flex flex-wrap items-baseline gap-3 border-y border-border py-5">
+            <div className="mb-5 flex flex-wrap items-baseline gap-3 border-y border-border py-4 sm:mb-6 sm:py-5">
               {/* Old price */}
               {(isSale || hasPriceVoucher) && (
                 <span className="text-base text-red-500 font-semibold line-through">
@@ -831,7 +840,7 @@ export function ProductDetailClient({
               )}
               
               {/* Main Price */}
-              <span className={`text-3xl sm:text-4xl font-extrabold ${
+              <span className={`text-[28px] font-extrabold sm:text-4xl ${
                 hasPriceVoucher ? "text-emerald-700" : "text-foreground"
               }`}>
                 {priceAfterVoucher.toLocaleString("vi-VN")}₫
@@ -859,8 +868,8 @@ export function ProductDetailClient({
             {/* 3-tier Package selector */}
             {isBểProduct && (
               <div className="mb-5">
-                <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2.5">Chọn phiên bản</p>
-                <div className="grid grid-cols-1 gap-2 min-[380px]:grid-cols-3">
+                <p className="mb-2.5 text-xs font-bold uppercase text-gray-500">Chọn phiên bản</p>
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-3" role="radiogroup" aria-label="Chọn phiên bản sản phẩm">
                   {PACKAGES.map((pkg) => {
                     const isSelected = selectedPackage === pkg.key;
                     return (
@@ -868,16 +877,19 @@ export function ProductDetailClient({
                         key={pkg.key}
                         type="button"
                         onClick={() => setSelectedPackage(pkg.key)}
-                        className={`flex min-h-14 flex-col items-center gap-1 border px-3 py-3 text-sm font-semibold transition-colors duration-200 sm:text-xs ${
+                        role="radio"
+                        aria-checked={isSelected}
+                        className={`flex min-h-16 items-center justify-between gap-3 rounded-lg border px-4 py-3 text-sm font-semibold transition-colors duration-200 sm:flex-col sm:justify-center sm:px-3 sm:text-xs ${
                           isSelected
                             ? "border-foreground bg-foreground text-white shadow-sm"
                             : "border-border bg-white text-gray-600 hover:border-foreground/60 hover:bg-muted/40"
                         }`}
                       >
-                        <span className="font-bold leading-tight text-center">{pkg.label}</span>
-                        <span className={`text-[10px] leading-tight text-center ${
-                          isSelected ? "text-white/70" : "text-gray-400"
-                        }`}>{pkg.sub}</span>
+                        <span className="min-w-0 text-left sm:text-center">
+                          <span className="block font-bold leading-tight">{pkg.label}</span>
+                          <span className={`mt-1 block text-xs font-medium leading-tight ${isSelected ? "text-white/75" : "text-gray-500"}`}>{pkg.sub}</span>
+                        </span>
+                        {isSelected && <CheckCircle2 className="h-5 w-5 shrink-0 sm:hidden" aria-hidden="true" />}
                       </button>
                     );
                   })}
@@ -890,8 +902,8 @@ export function ProductDetailClient({
               <div className="space-y-4 mb-5">
                 {dbVariants.map((option: any) => (
                   <div key={option.id}>
-                    <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">{option.variantType}</p>
-                    <div className="flex flex-wrap gap-2">
+                    <p className="mb-2 text-xs font-bold uppercase text-gray-500">{option.variantType}</p>
+                    <div className="flex flex-wrap gap-2" role="radiogroup" aria-label={`Chọn ${option.variantType}`}>
                       {option.options.map((opt: string) => {
                         const isSelected = selectedVariants[option.variantType] === opt;
                         return (
@@ -899,7 +911,9 @@ export function ProductDetailClient({
                             key={opt}
                             type="button"
                             onClick={() => setSelectedVariants((prev) => ({ ...prev, [option.variantType]: opt }))}
-                            className={`min-h-11 border px-4 py-2 text-sm font-medium transition-colors ${
+                            role="radio"
+                            aria-checked={isSelected}
+                            className={`min-h-11 rounded-lg border px-4 py-2 text-sm font-medium transition-colors ${
                               isSelected ? "border-foreground bg-foreground text-white shadow-sm" : "border-border bg-white text-gray-700 hover:border-foreground/50 hover:bg-muted/40"
                             }`}
                           >
@@ -913,8 +927,18 @@ export function ProductDetailClient({
               </div>
             )}
 
+            <div className="mb-5 flex items-start gap-3 rounded-lg border border-border bg-muted/30 p-4">
+              <Truck className="mt-0.5 h-5 w-5 shrink-0 text-foreground" aria-hidden="true" />
+              <div>
+                <p className="text-sm font-bold text-foreground">Thông tin giao hàng</p>
+                <p className="mt-1 text-sm leading-relaxed text-gray-600">
+                  Giao trong TP.HCM. Địa chỉ ngoài khu vực sẽ được shop nhắn tin xác nhận phí vận chuyển trước khi giao.
+                </p>
+              </div>
+            </div>
+
             {/* Voucher Section */}
-            <div className="mb-6 overflow-hidden border border-border bg-white">
+            <div id="product-vouchers" className="mb-6 scroll-mt-24 overflow-hidden rounded-lg border border-border bg-white">
               {/* Header */}
               <div className="flex items-center gap-2 border-b border-border bg-muted/35 px-4 py-3">
                 <Tag className="h-4 w-4 flex-shrink-0 text-foreground" />
@@ -923,7 +947,7 @@ export function ProductDetailClient({
                   const best = getBestVoucher(finalPrice);
                   if (!best) return null;
                   return (
-                    <span className="ml-auto hidden max-w-[48%] truncate bg-orange-100 px-2 py-0.5 text-[11px] font-semibold text-orange-700 sm:block">
+                    <span className="ml-auto hidden max-w-[48%] truncate rounded bg-orange-100 px-2 py-0.5 text-xs font-semibold text-orange-700 sm:block">
                       Tiết kiệm thêm với {best.code}!
                     </span>
                   );
@@ -931,19 +955,20 @@ export function ProductDetailClient({
               </div>
 
               {/* Manual input */}
-              <div className="px-4 py-3 flex flex-col sm:flex-row gap-2">
+              <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-2 px-4 py-3">
                 <input
                   type="text"
                   value={voucherInput}
                   onChange={e => setVoucherInput(e.target.value.toUpperCase())}
                   onKeyDown={e => e.key === "Enter" && handleApplyVoucher()}
-                  placeholder="Nhập mã voucher..."
-                  className="min-h-12 flex-1 border border-border px-3 py-2 text-base outline-none transition-colors focus:border-foreground focus:ring-1 focus:ring-foreground/20 sm:text-sm"
+                  placeholder="Nhập mã giảm giá"
+                  aria-label="Mã giảm giá"
+                  className="min-h-12 min-w-0 rounded-lg border border-border px-3 py-2 text-base outline-none transition-colors focus:border-foreground focus:ring-1 focus:ring-foreground/20 sm:text-sm"
                 />
                 <button
                   onClick={() => handleApplyVoucher()}
                   disabled={voucherLoading || !voucherInput.trim()}
-                  className="min-h-12 bg-foreground px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-foreground/85 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="min-h-12 rounded-lg bg-foreground px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-foreground/85 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {voucherLoading ? "..." : "Áp dụng"}
                 </button>
@@ -951,24 +976,36 @@ export function ProductDetailClient({
 
               {/* Applied voucher confirmation */}
               {appliedVoucher && (
-                <div className="mx-4 mb-3 flex items-center gap-2 border border-emerald-200 bg-emerald-50 px-3 py-2">
+                <div className="mx-4 mb-3 flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2">
                   <CheckIcon className="w-4 h-4 text-green-600 flex-shrink-0" />
-                  <span className="text-xs font-semibold text-green-700 flex-1">
+                  <span className="flex-1 text-sm font-semibold text-green-700">
                     Đã áp dụng <strong>{appliedVoucher.code}</strong>
                     {appliedVoucher.type === "FREE_SHIPPING"
                       ? " (Miễn phí vận chuyển)"
                       : ` (Giảm ${voucherDiscountAmount.toLocaleString("vi-VN")}₫)`}
                   </span>
-                  <button onClick={() => { setAppliedVoucher(null); setVoucherInput(""); }} className="flex min-h-11 shrink-0 items-center px-2 text-xs font-medium text-gray-500 hover:text-gray-700">
+                  <button onClick={() => { setAppliedVoucher(null); setVoucherInput(""); }} className="flex min-h-11 shrink-0 items-center px-2 text-sm font-medium text-gray-600 hover:text-gray-800">
                     Bỏ chọn
                   </button>
                 </div>
               )}
 
-              {/* Available vouchers — radio-selectable list */}
               {publicVouchers.length > 0 && (
-                <div className="px-4 pb-4 space-y-2 max-h-[160px] overflow-y-auto scrollbar-thin">
-                  <p className="text-[11px] text-gray-400 mb-1">Chọn 1 voucher cho đơn hàng này:</p>
+                <button
+                  type="button"
+                  onClick={() => setShowPublicVouchers((current) => !current)}
+                  aria-expanded={showPublicVouchers}
+                  className="mx-4 mb-3 flex min-h-11 w-[calc(100%-2rem)] items-center justify-between rounded-lg px-1 text-left text-sm font-semibold text-foreground hover:bg-muted/50"
+                >
+                  <span>{publicVouchers.length} ưu đãi công khai đang có</span>
+                  <ChevronDown className={`h-4 w-4 transition-transform ${showPublicVouchers ? "rotate-180" : ""}`} aria-hidden="true" />
+                </button>
+              )}
+
+              {/* Available public vouchers. Private generated codes stay input-only. */}
+              {publicVouchers.length > 0 && showPublicVouchers && (
+                <div className="space-y-2 px-4 pb-4">
+                  <p className="mb-1 text-sm text-gray-500">Chọn một ưu đãi phù hợp cho sản phẩm này.</p>
                   {publicVouchers.map((v) => {
                     const best = getBestVoucher(finalPrice);
                     const isBest = best?.id === v.id;
@@ -980,7 +1017,7 @@ export function ProductDetailClient({
                     return (
                       <label
                         key={v.id}
-                        className={`grid min-h-20 cursor-pointer grid-cols-[auto_minmax(0,1fr)] items-center gap-3 border p-3 transition-all sm:grid-cols-[auto_minmax(0,1fr)_auto] ${
+                        className={`grid min-h-20 cursor-pointer grid-cols-[auto_minmax(0,1fr)] items-center gap-3 rounded-lg border p-3 transition-all sm:grid-cols-[auto_minmax(0,1fr)_auto] ${
                           isApplied
                             ? "border-foreground bg-muted/35 shadow-sm"
                             : isBest
@@ -1023,16 +1060,16 @@ export function ProductDetailClient({
                                 ? `Giảm ${v.value}%`
                                 : `Giảm ${(Number(v.value) / 1000).toFixed(0)}K`}
                             </span>
-                            <span className="text-[10px] font-mono text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded">{v.code}</span>
+                            <span className="rounded bg-gray-100 px-1.5 py-0.5 font-mono text-xs text-gray-500">{v.code}</span>
                             {isBest && !isApplied && (
-                              <span className="text-[9px] bg-orange-400 text-white font-bold px-1.5 py-0.5 rounded-full">Tốt nhất</span>
+                              <span className="rounded bg-orange-500 px-1.5 py-0.5 text-xs font-bold text-white">Tốt nhất</span>
                             )}
                           </div>
                           <div className="flex items-center gap-3 mt-0.5">
                             {v.minOrderAmount && (
-                              <span className="text-[10px] text-gray-400">Đơn từ {(Number(v.minOrderAmount) / 1000).toFixed(0)}k₫</span>
+                              <span className="text-xs text-gray-500">Đơn từ {(Number(v.minOrderAmount) / 1000).toFixed(0)}k₫</span>
                             )}
-                            <span className="text-[10px] text-gray-400">HSD: {expDate}</span>
+                            <span className="text-xs text-gray-500">HSD: {expDate}</span>
                           </div>
                         </div>
 
@@ -1042,11 +1079,11 @@ export function ProductDetailClient({
                               {isFreeShip ? "Miễn phí" : `-${discountAmt.toLocaleString("vi-VN")}₫`}
                             </span>
                           ) : (
-                            <span className="text-[10px] text-red-400">Chưa đủ ĐK</span>
+                            <span className="text-xs text-red-500">Chưa đủ điều kiện</span>
                           )}
                           <button
                             onClick={(e) => { e.preventDefault(); e.stopPropagation(); copyCode(v.code); }}
-                            className="flex min-h-11 items-center gap-1 px-2 text-xs text-gray-500 hover:text-foreground sm:-mr-2 sm:min-h-0 sm:px-2 sm:text-[10px]"
+                            className="flex min-h-11 items-center gap-1 px-2 text-xs text-gray-600 hover:text-foreground sm:-mr-2 sm:px-2"
                           >
                             {copiedCode === v.code ? <CheckIcon className="w-3 h-3 text-green-500" /> : <Copy className="w-3 h-3" />}
                             Sao chép
@@ -1062,7 +1099,7 @@ export function ProductDetailClient({
             {/* Quantity Selector & CTAs */}
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 mb-5">
               {/* Qty stepper */}
-              <div className="flex h-12 flex-shrink-0 items-center justify-between border border-border bg-white px-2 sm:justify-start">
+              <div className="flex h-12 flex-shrink-0 items-center justify-between rounded-lg border border-border bg-white px-2 sm:justify-start">
                 <button type="button" onClick={() => setQuantity(Math.max(1, quantity - 1))} className="flex h-11 w-11 items-center justify-center text-gray-500 transition-colors hover:bg-muted hover:text-foreground" aria-label="Giảm số lượng"><Minus className="w-4 h-4" /></button>
                 <span className="w-10 text-center text-base font-bold text-foreground">{quantity}</span>
                 <button type="button" onClick={() => setQuantity(quantity + 1)} className="flex h-11 w-11 items-center justify-center text-gray-500 transition-colors hover:bg-muted hover:text-foreground" aria-label="Tăng số lượng"><Plus className="w-4 h-4" /></button>
@@ -1070,7 +1107,7 @@ export function ProductDetailClient({
               <Button 
                 size="lg" 
                 variant="outline" 
-                className="h-12 w-full border-foreground text-sm font-bold text-foreground hover:bg-muted sm:flex-1"
+                className="h-12 w-full rounded-lg border-foreground text-sm font-bold text-foreground hover:bg-muted sm:flex-1"
                 onClick={handleAddToCart} 
                 disabled={product.inventory <= 0}
               >
@@ -1078,7 +1115,7 @@ export function ProductDetailClient({
               </Button>
               <Button 
                 size="lg" 
-                className="h-12 w-full bg-foreground text-sm font-bold text-white shadow-sm transition-colors hover:bg-foreground/85 sm:flex-1"
+                className="h-12 w-full rounded-lg bg-foreground text-sm font-bold text-white shadow-sm transition-colors hover:bg-foreground/85 sm:flex-1"
                 onClick={handleBuyNow} 
                 disabled={product.inventory <= 0}
               >
@@ -1095,45 +1132,33 @@ export function ProductDetailClient({
               />
             </div>
 
-            {/* Shipping line */}
-            <div className="flex items-center gap-2.5 text-xs text-gray-500 mb-5 pb-3">
-              <svg className="h-5 w-5 flex-shrink-0 text-foreground" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8l-.867 12.142A2 2 0 006.128 22h11.744a2 2 0 001.994-1.858L19 8M10 12v6m4-6v6" />
-              </svg>
-              <span>Giao trong TP.HCM; địa chỉ ngoài khu vực sẽ được shop báo phí qua tin nhắn.</span>
-            </div>
-
             {/* Share product row */}
-            <div className="flex flex-wrap items-center gap-3 pt-4 border-t border-gray-100">
-              <span className="text-xs font-semibold text-gray-500">Chia sẻ:</span>
-              <div className="flex items-center gap-1.5">
-                <button className="flex h-11 w-11 items-center justify-center rounded-md transition-colors hover:bg-gray-50" title="Chia sẻ Facebook" aria-label="Chia sẻ Facebook">
-                  <FacebookIcon />
-                </button>
-                <button className="flex h-11 w-11 items-center justify-center rounded-md transition-colors hover:bg-gray-50" title="Chia sẻ Instagram" aria-label="Chia sẻ Instagram">
-                  <InstagramIcon />
-                </button>
-                <button className="flex h-11 w-11 items-center justify-center rounded-md transition-colors hover:bg-gray-50" title="Chia sẻ TikTok" aria-label="Chia sẻ TikTok">
-                  <TikTokIcon />
-                </button>
-              </div>
-              <div className="flex-1" />
-              <div 
-                onClick={handleCopyLink}
-                className="inline-flex cursor-pointer items-center gap-2 border border-border bg-muted/35 px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-muted"
+            <div className="flex items-center gap-2 border-t border-gray-100 pt-4">
+              <button
+                type="button"
+                onClick={handleShare}
+                className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-border bg-white px-4 text-sm font-semibold text-foreground transition-colors hover:bg-muted"
               >
-                <span className="font-mono truncate max-w-[150px] sm:max-w-none">/san-pham/{product.slug}</span>
-                {copiedLink ? <CheckIcon className="w-3.5 h-3.5 text-green-600 flex-shrink-0" /> : <Copy className="w-3.5 h-3.5 flex-shrink-0" />}
-              </div>
+                <Share2 className="h-4 w-4" aria-hidden="true" />
+                Chia sẻ sản phẩm
+              </button>
+              <button
+                type="button"
+                onClick={handleCopyLink}
+                className="inline-flex min-h-11 min-w-11 items-center justify-center gap-2 rounded-lg px-3 text-sm font-medium text-gray-600 transition-colors hover:bg-muted hover:text-foreground"
+              >
+                {copiedLink ? <CheckIcon className="h-4 w-4 text-green-600" /> : <Copy className="h-4 w-4" />}
+                <span className="hidden min-[390px]:inline">{copiedLink ? "Đã sao chép" : "Sao chép link"}</span>
+              </button>
             </div>
           </div>
         </div>
 
         {/* ─── Tabs & Review Column Layout ──────────────────────────────────── */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mt-12">
+        <div className="mt-10 grid grid-cols-1 gap-8 lg:mt-12 lg:grid-cols-12">
           {/* Cột trái: Tabs Content (8/12) */}
           <div className="lg:col-span-8">
-            <div className="flex border-b border-border mb-0">
+            <div className="mb-0 flex snap-x overflow-x-auto border-b border-border" role="tablist" aria-label="Thông tin sản phẩm">
               {(["details", "care", "reviews"] as TabType[]).map((tab) => {
                 if (tab === "care" && !hasCareGuide) return null;
                 const labels: Record<TabType, string> = { details: "Thông tin sản phẩm", care: "Hướng dẫn chăm sóc", reviews: `Đánh giá${reviews.length > 0 ? ` (${reviews.length})` : ""}` };
@@ -1143,7 +1168,16 @@ export function ProductDetailClient({
                   reviews: <Star className="w-4 h-4" />,
                 };
                 return (
-                  <button key={tab} onClick={() => setActiveTab(tab)} className={`flex items-center gap-2 px-6 py-3 text-sm font-semibold transition-all border-b-2 -mb-px ${activeTab === tab ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground"}`}>
+                  <button
+                    key={tab}
+                    id={`product-tab-${tab}`}
+                    type="button"
+                    role="tab"
+                    aria-selected={activeTab === tab}
+                    aria-controls={`product-tabpanel-${tab}`}
+                    onClick={() => setActiveTab(tab)}
+                    className={`-mb-px flex min-h-12 shrink-0 snap-start items-center gap-2 border-b-2 px-4 py-3 text-sm font-semibold transition-colors sm:px-6 ${activeTab === tab ? "border-foreground text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"}`}
+                  >
                     {icons[tab]}{labels[tab]}
                   </button>
                 );
@@ -1152,7 +1186,7 @@ export function ProductDetailClient({
 
             {/* Details tab */}
             {activeTab === "details" && (
-              <div className="bg-white rounded-b-2xl rounded-tr-2xl border border-t-0 border-border p-6 sm:p-8">
+              <div id="product-tabpanel-details" role="tabpanel" aria-labelledby="product-tab-details" className="rounded-b-lg border border-t-0 border-border bg-white p-5 sm:p-8">
                 <p className="text-muted-foreground mb-5 leading-relaxed">
                   {product.name} là sản phẩm terrarium được chế tác thủ công, mang vẻ đẹp thiên nhiên thu nhỏ vào không gian sống của bạn.
                 </p>
@@ -1213,41 +1247,41 @@ export function ProductDetailClient({
 
             {/* Care Guide tab */}
             {activeTab === "care" && hasCareGuide && product.careGuide && (
-              <div className="bg-white rounded-b-2xl rounded-tr-2xl border border-t-0 border-border p-6 sm:p-8">
+              <div id="product-tabpanel-care" role="tabpanel" aria-labelledby="product-tab-care" className="rounded-b-lg border border-t-0 border-border bg-white p-5 sm:p-8">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
                   {product.careGuide.watering && (
-                    <div className="flex gap-4 border border-blue-100/50 bg-blue-50/50 p-4">
+                    <div className="flex gap-4 rounded-lg border border-blue-100/50 bg-blue-50/50 p-4">
                       <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0"><Droplets className="w-5 h-5 text-blue-600" /></div>
                       <div><p className="font-semibold text-blue-900 mb-1">Tưới nước</p><p className="text-sm text-blue-700 leading-relaxed">{product.careGuide.watering}</p></div>
                     </div>
                   )}
                   {product.careGuide.sunlight && (
-                    <div className="flex gap-4 border border-yellow-100/50 bg-yellow-50/50 p-4">
+                    <div className="flex gap-4 rounded-lg border border-yellow-100/50 bg-yellow-50/50 p-4">
                       <div className="w-10 h-10 rounded-full bg-yellow-100 flex items-center justify-center flex-shrink-0"><Sun className="w-5 h-5 text-yellow-600" /></div>
                       <div><p className="font-semibold text-yellow-900 mb-1">Ánh sáng</p><p className="text-sm text-yellow-700 leading-relaxed">{product.careGuide.sunlight}</p></div>
                     </div>
                   )}
                   {product.careGuide.temperature && (
-                    <div className="flex gap-4 border border-orange-100/50 bg-orange-50/50 p-4">
+                    <div className="flex gap-4 rounded-lg border border-orange-100/50 bg-orange-50/50 p-4">
                       <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center flex-shrink-0"><Thermometer className="w-5 h-5 text-orange-600" /></div>
                       <div><p className="font-semibold text-orange-900 mb-1">Nhiệt độ</p><p className="text-sm text-orange-700 leading-relaxed">{product.careGuide.temperature}</p></div>
                     </div>
                   )}
                   {product.careGuide.humidity && (
-                    <div className="flex gap-4 border border-green-100/50 bg-green-50/50 p-4">
+                    <div className="flex gap-4 rounded-lg border border-green-100/50 bg-green-50/50 p-4">
                       <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0"><Wind className="w-5 h-5 text-green-600" /></div>
                       <div><p className="font-semibold text-green-900 mb-1">Độ ẩm</p><p className="text-sm text-green-700 leading-relaxed">{product.careGuide.humidity}</p></div>
                     </div>
                   )}
                 </div>
                 {product.careGuide.commonIssues && (
-                  <div className="mb-6 border border-red-100/50 bg-red-50/50 p-4">
+                  <div className="mb-6 rounded-lg border border-red-100/50 bg-red-50/50 p-4">
                     <div className="flex items-center gap-2 mb-2"><AlertTriangle className="w-5 h-5 text-red-500" /><p className="font-semibold text-red-900">Vấn đề thường gặp & cách xử lý</p></div>
                     <p className="text-sm text-red-700 whitespace-pre-line leading-relaxed">{product.careGuide.commonIssues}</p>
                   </div>
                 )}
                 {product.careGuide.videoUrl && (
-                  <div className="border border-purple-100/50 bg-purple-50/50 p-4">
+                  <div className="rounded-lg border border-purple-100/50 bg-purple-50/50 p-4">
                     <div className="flex items-center gap-2 mb-3"><Play className="w-5 h-5 text-purple-600" /><p className="font-semibold text-purple-900">Video hướng dẫn chăm sóc</p></div>
                     <a href={product.careGuide.videoUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-purple-600 hover:text-purple-800 font-medium text-sm underline"><Play className="w-4 h-4" />Xem video hướng dẫn</a>
                   </div>
@@ -1257,31 +1291,31 @@ export function ProductDetailClient({
 
             {/* Reviews tab */}
             {activeTab === "reviews" && (
-              <div className="bg-white rounded-b-2xl rounded-tr-2xl border border-t-0 border-border p-6 sm:p-8">
+              <div id="product-tabpanel-reviews" role="tabpanel" aria-labelledby="product-tab-reviews" className="rounded-b-lg border border-t-0 border-border bg-white p-5 sm:p-8">
                 {alreadyReviewed ? (
                   <div className="mb-6 border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800">Bạn đã gửi đánh giá. Đang chờ admin duyệt.</div>
                 ) : canReview ? (
-                  <form onSubmit={handleSubmitReview} className="mb-8 border border-border bg-muted/35 p-6">
+                  <form onSubmit={handleSubmitReview} className="mb-8 rounded-lg border border-border bg-muted/35 p-5 sm:p-6">
                     <h3 className="font-semibold text-lg mb-4">Đánh giá sản phẩm của bạn</h3>
                     <div className="mb-4">
                       <label className="block text-sm font-medium mb-2">Xếp hạng *</label>
                       <div className="flex gap-1">
                         {[1, 2, 3, 4, 5].map((star) => (
-                          <button key={star} type="button" onClick={() => setReviewForm((p) => ({ ...p, rating: star }))} className="p-1">
+                          <button key={star} type="button" onClick={() => setReviewForm((p) => ({ ...p, rating: star }))} className="flex h-11 w-11 items-center justify-center rounded-md" aria-label={`${star} sao`} aria-pressed={reviewForm.rating === star}>
                             <Star className={`w-7 h-7 transition-colors ${star <= reviewForm.rating ? "text-yellow-400 fill-yellow-400" : "text-gray-300 hover:text-yellow-300"}`} />
                           </button>
                         ))}
                       </div>
                     </div>
                     <div className="mb-3">
-                      <label className="block text-sm font-medium mb-1">Tiêu đề (tùy chọn)</label>
-                      <input type="text" value={reviewForm.title} onChange={(e) => setReviewForm((p) => ({ ...p, title: e.target.value }))} className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#6d8c5a] focus:outline-none" placeholder="Tóm tắt đánh giá..." />
+                      <label htmlFor="review-title" className="block text-sm font-medium mb-1">Tiêu đề (tùy chọn)</label>
+                      <input id="review-title" type="text" value={reviewForm.title} onChange={(e) => setReviewForm((p) => ({ ...p, title: e.target.value }))} className="min-h-12 w-full rounded-lg border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#6d8c5a]" placeholder="Tóm tắt đánh giá..." />
                     </div>
                     <div className="mb-4">
-                      <label className="block text-sm font-medium mb-1">Nội dung *</label>
-                      <textarea value={reviewForm.content} onChange={(e) => setReviewForm((p) => ({ ...p, content: e.target.value }))} rows={4} required className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#6d8c5a] focus:outline-none" placeholder="Chia sẻ trải nghiệm của bạn..." />
+                      <label htmlFor="review-content" className="block text-sm font-medium mb-1">Nội dung *</label>
+                      <textarea id="review-content" value={reviewForm.content} onChange={(e) => setReviewForm((p) => ({ ...p, content: e.target.value }))} rows={4} required className="w-full rounded-lg border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#6d8c5a]" placeholder="Chia sẻ trải nghiệm của bạn..." />
                     </div>
-                    <button type="submit" disabled={submittingReview} className="bg-foreground px-6 py-2.5 font-semibold text-white transition-colors hover:bg-foreground/85 disabled:bg-gray-300">
+                    <button type="submit" disabled={submittingReview} className="min-h-12 rounded-lg bg-foreground px-6 py-2.5 font-semibold text-white transition-colors hover:bg-foreground/85 disabled:bg-gray-300">
                       {submittingReview ? "Đang gửi..." : "Gửi Đánh Giá"}
                     </button>
                   </form>
@@ -1298,7 +1332,7 @@ export function ProductDetailClient({
                   <div className="space-y-4">
                     <h3 className="font-semibold text-lg">{reviews.length} đánh giá</h3>
                     {reviews.map((review: any) => (
-                      <div key={review.id} className="border p-5">
+                      <div key={review.id} className="rounded-lg border p-5">
                         <div className="flex justify-between items-start mb-2">
                           <div>
                             <p className="font-medium">{review.customer?.name || "Khách hàng"}</p>
@@ -1321,7 +1355,7 @@ export function ProductDetailClient({
 
           {/* Cột phải: Đánh giá khách hàng (4/12) */}
           <div className="lg:col-span-4">
-            <div className="border border-border bg-white p-6">
+            <div className="rounded-lg border border-border bg-white p-6">
               <h3 className="font-bold text-lg text-[#1a2e12] mb-4">Đánh giá khách hàng</h3>
               
               <div className="flex flex-col sm:flex-row lg:flex-col items-center gap-4 mb-6">
@@ -1361,9 +1395,9 @@ export function ProductDetailClient({
 
         {/* Related Products — using unified ProductCard */}
         {relatedProducts.length > 0 && (
-          <div className="mt-16">
-            <h2 className="text-3xl font-bold text-center mb-8">Sản phẩm liên quan</h2>
-            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
+          <div className="mt-14 sm:mt-16">
+            <h2 className="mb-6 text-2xl font-bold sm:mb-8 sm:text-center sm:text-3xl">Sản phẩm liên quan</h2>
+            <div className="-mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-3 sm:mx-0 sm:grid sm:grid-cols-2 sm:overflow-visible sm:px-0 lg:grid-cols-4 sm:gap-6">
               {relatedProducts.map((rel: any) => {
                 const relRatingSummary = getProductRatingSummary(rel);
                 return (
@@ -1379,6 +1413,8 @@ export function ProductDetailClient({
                   category={rel.category}
                   rating={relRatingSummary.rating}
                   reviewCount={relRatingSummary.reviewCount}
+                  className="w-[78vw] max-w-[300px] shrink-0 snap-start sm:w-auto sm:max-w-none"
+                  imageSizes="(max-width: 639px) 78vw, (max-width: 1023px) 50vw, 25vw"
                   onAddToCart={(pkg, qty) => {
                     if (!session) {
                       showToast.warning("Vui lòng đăng nhập để thêm sản phẩm");
@@ -1402,7 +1438,7 @@ export function ProductDetailClient({
                       quantity: qty,
                       variants: { "Phân loại": pkgLabel },
                     });
-                    showToast.success(`Đã thêm "${rel.name}" vào giỏ hàng 🛒`);
+                    showToast.success(`Đã thêm "${rel.name}" vào giỏ hàng`);
                   }}
                   wished={isWished(rel.id)}
                   onToggleWishlist={() => toggleWishlist(rel.id, rel.name)}
@@ -1414,29 +1450,59 @@ export function ProductDetailClient({
         )}
       </div>
 
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-[#d8e4cf] bg-white/95 px-4 py-2.5 pb-[calc(env(safe-area-inset-bottom)+0.65rem)] shadow-[0_-12px_30px_rgba(26,46,18,0.10)] backdrop-blur lg:hidden">
-        <div className="mx-auto flex max-w-7xl items-center gap-3">
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-xs font-semibold text-[#526248]">{product.name}</p>
-            <p className="whitespace-nowrap text-[clamp(1.05rem,5vw,1.25rem)] font-extrabold leading-tight text-foreground">
-              {priceAfterVoucher.toLocaleString("vi-VN")}₫
-            </p>
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-white/97 px-3 pt-2 pb-[calc(env(safe-area-inset-bottom)+0.55rem)] shadow-[0_-10px_28px_rgba(15,23,12,0.12)] backdrop-blur lg:hidden">
+        <div className="mx-auto max-w-7xl space-y-2">
+          <div className="flex min-h-8 items-center justify-between gap-2">
+            <div className="flex min-w-0 items-baseline gap-2">
+              <span className="sr-only">Giá sản phẩm</span>
+              <p className={`whitespace-nowrap text-xl font-extrabold leading-none ${hasPriceVoucher ? "text-emerald-700" : "text-foreground"}`}>
+                {priceAfterVoucher.toLocaleString("vi-VN")}₫
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={focusVoucherSection}
+              className={`flex min-h-8 min-w-0 max-w-[52%] items-center gap-1 rounded-md border px-2 text-xs font-semibold transition-colors ${
+                appliedVoucher
+                  ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                  : "border-border bg-muted/45 text-foreground hover:bg-muted"
+              }`}
+              aria-label={`${mobileVoucherLabel}. Bấm để xem ưu đãi và voucher`}
+            >
+              {appliedVoucher ? <CheckCircle2 className="h-3.5 w-3.5 shrink-0" /> : <Tag className="h-3.5 w-3.5 shrink-0" />}
+              <span className="truncate">{mobileVoucherLabel}</span>
+              <ChevronRight className="hidden h-3.5 w-3.5 shrink-0 min-[360px]:block" />
+            </button>
           </div>
-          <ProductAdminChat
-            productType="CATALOG"
-            productId={product.id}
-            productName={product.name}
-            productImage={product.images?.[0]}
-            compact
-          />
-          <Button
-            className="h-12 min-w-[122px] shrink-0 bg-foreground px-3 text-sm font-bold text-white hover:bg-foreground/85 min-[380px]:min-w-[140px] min-[380px]:px-4"
-            onClick={handleAddToCart}
-            disabled={product.inventory <= 0}
-          >
-            <ShoppingBag className="mr-1.5 h-4 w-4" />
-            Thêm giỏ
-          </Button>
+
+          <div className="grid grid-cols-[44px_minmax(0,1fr)_minmax(0,1.08fr)] items-center gap-2">
+            <ProductAdminChat
+              productType="CATALOG"
+              productId={product.id}
+              productName={product.name}
+              productImage={product.images?.[0]}
+              buttonClassName="h-11 w-11 rounded-lg"
+              compact
+            />
+            <Button
+              variant="outline"
+              className="h-11 min-w-0 rounded-lg border-foreground px-2 text-[13px] font-bold text-foreground hover:bg-muted min-[360px]:text-sm"
+              onClick={handleAddToCart}
+              disabled={product.inventory <= 0}
+            >
+              <ShoppingBag className="mr-1 hidden h-4 w-4 shrink-0 min-[340px]:block" aria-hidden="true" />
+              <span>Thêm giỏ</span>
+            </Button>
+            <Button
+              className="h-11 min-w-0 rounded-lg bg-foreground px-2 text-[13px] font-bold text-white hover:bg-foreground/85 min-[360px]:text-sm"
+              onClick={handleBuyNow}
+              disabled={product.inventory <= 0}
+            >
+              <Zap className="mr-1 hidden h-4 w-4 shrink-0 min-[340px]:block" aria-hidden="true" />
+              <span>Mua ngay</span>
+            </Button>
+          </div>
         </div>
       </div>
     </div>

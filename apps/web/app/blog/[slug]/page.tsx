@@ -59,7 +59,7 @@ export default async function BlogPostPage({ params }: Props) {
                 {post.category.name}
               </Badge>
             )}
-            <h1 className="mb-4 font-serif text-4xl font-semibold leading-tight text-gray-950 sm:text-5xl">
+            <h1 className="mb-4 font-serif text-3xl font-semibold leading-tight text-gray-950 sm:text-5xl">
               {post.title}
             </h1>
             {post.publishedAt && (

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { completeVisionFromOpenAI } from "@/lib/ai/openai";
+import { aiDisabledResponse, isAiServerEnabled } from "@/lib/ai/feature";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -94,6 +95,8 @@ Quy tac bat buoc:
 
 export async function POST(request: Request) {
   try {
+    if (!isAiServerEnabled()) return aiDisabledResponse();
+
     const ip = getClientIp(request);
     if (!checkRateLimit(ip)) {
       return NextResponse.json(

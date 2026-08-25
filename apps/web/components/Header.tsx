@@ -423,7 +423,7 @@ export default function Header() {
 
             {/* Navigation Links */}
             <nav className="flex-1 space-y-1 overflow-y-auto px-4 py-4">
-              <p className="mb-2 px-3 text-[10px] font-semibold uppercase text-muted-foreground">Điều hướng</p>
+              <p className="mb-2 px-3 text-xs font-semibold uppercase text-muted-foreground">Điều hướng</p>
               {NAV_LINKS.map((link) => {
                 const isActive = pathname === link.href || (link.href !== "/" && pathname?.startsWith(link.href));
                 return (

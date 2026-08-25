@@ -123,7 +123,7 @@ export function PoliciesClient({ policies }: { policies: Policy[] }) {
             <p className="mb-3 text-xs font-semibold uppercase text-muted-foreground">
               Thông tin mua hàng
             </p>
-            <h1 className="max-w-2xl font-serif text-4xl font-semibold leading-tight text-foreground sm:text-5xl">
+            <h1 className="max-w-2xl font-serif text-3xl font-semibold leading-tight text-foreground sm:text-5xl">
               Chính sách rõ ràng cho từng đơn hàng
             </h1>
           </div>

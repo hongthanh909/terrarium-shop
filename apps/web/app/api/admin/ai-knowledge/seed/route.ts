@@ -4,9 +4,12 @@ import { verifyAdminRequest, unauthorizedResponse } from "@/lib/admin-auth";
 import { logAdminAction } from "@/lib/audit";
 import { DEFAULT_AI_KNOWLEDGE } from "@/lib/ai-knowledge-defaults";
 import { ADDITIONAL_AI_KNOWLEDGE } from "@/lib/ai-knowledge-additional";
+import { aiDisabledResponse, isAiServerEnabled } from "@/lib/ai/feature";
 
 export async function POST(request: NextRequest) {
   try {
+    if (!isAiServerEnabled()) return aiDisabledResponse(404);
+
     const admin = await verifyAdminRequest(request);
     if (!admin) return unauthorizedResponse();
 

@@ -306,7 +306,7 @@ export default function BlogInteraction({ postId, slug }: BlogInteractionProps) 
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
                       <span className="font-semibold text-sm text-gray-800">{comment.customer?.name}</span>
-                      <span className="text-[10px] text-gray-400">
+                      <span className="text-xs text-gray-500">
                         {new Date(comment.createdAt).toLocaleDateString("vi-VN", {
                           hour: "2-digit",
                           minute: "2-digit",
@@ -327,7 +327,7 @@ export default function BlogInteraction({ postId, slug }: BlogInteractionProps) 
                               setReplyContent("");
                             }
                           }}
-                          className="text-[11px] text-[#425733] font-semibold hover:underline"
+                          className="text-xs font-semibold text-[#425733] hover:underline"
                         >
                           Phản hồi
                         </button>
@@ -350,7 +350,7 @@ export default function BlogInteraction({ postId, slug }: BlogInteractionProps) 
                                 <ShieldCheck className="w-2.5 h-2.5" /> Quản trị viên
                               </span>
                             )}
-                            <span className="text-[9px] text-gray-400">
+                            <span className="text-xs text-gray-500">
                               {new Date(reply.createdAt).toLocaleDateString("vi-VN", {
                                 hour: "2-digit",
                                 minute: "2-digit",

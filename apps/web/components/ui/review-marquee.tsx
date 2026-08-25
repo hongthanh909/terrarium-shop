@@ -99,7 +99,7 @@ function ReviewCard({ rev }: { rev: typeof reviews[0] }) {
             <h4 className="font-bold text-gray-800 text-xs md:text-sm truncate group-hover:text-black transition-colors duration-300">
               {rev.name}
             </h4>
-            <span className="text-[10px] text-gray-400 font-semibold block mt-0.5 group-hover:text-gray-500 transition-colors duration-300">
+            <span className="mt-0.5 block text-xs font-semibold text-gray-500 transition-colors duration-300 group-hover:text-gray-600">
               {rev.location} · Đã mua
             </span>
           </div>
@@ -174,7 +174,7 @@ export function ReviewMarquee({ className }: { className?: string }) {
                   <span className="text-xl font-extrabold text-foreground md:text-2xl">
                     <NumberTicker value={2500} suffix="+" />
                   </span>
-                  <span className="mt-1 text-[11px] text-gray-500 font-bold tracking-wide">Khách hàng hài lòng</span>
+                  <span className="mt-1 text-xs font-bold tracking-wide text-gray-500">Khách hàng hài lòng</span>
                   
                   {/* SVG Arrow pointing Right */}
                   <svg className="pointer-events-none absolute -right-16 top-1/2 hidden h-8 w-14 -translate-y-1/2 text-foreground/20 xl:block" viewBox="0 0 60 20" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -191,7 +191,7 @@ export function ReviewMarquee({ className }: { className?: string }) {
                   <span className="text-xl font-extrabold text-foreground md:text-2xl">
                     <NumberTicker value={500} suffix="+" />
                   </span>
-                  <span className="mt-1 text-[11px] text-gray-500 font-bold tracking-wide">Sản phẩm handmade</span>
+                  <span className="mt-1 text-xs font-bold tracking-wide text-gray-500">Sản phẩm handmade</span>
 
                   {/* SVG Arrow pointing Right-up */}
                   <svg className="pointer-events-none absolute -right-16 top-1/2 hidden h-8 w-14 -translate-y-1/2 text-foreground/20 xl:block" viewBox="0 0 60 20" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -203,7 +203,7 @@ export function ReviewMarquee({ className }: { className?: string }) {
 
               {/* Smartphone Mockup in the Center (col-span-6) */}
               <div className="col-span-12 md:col-span-6 flex justify-center relative order-1 md:order-2 select-none">
-                <div className="relative w-[380px] h-auto drop-shadow-[0_25px_50px_rgba(26,46,18,0.22)]">
+                <div className="relative h-auto w-full max-w-[380px] drop-shadow-[0_25px_50px_rgba(26,46,18,0.22)]">
                   <Image
                     src="/fb.svg"
                     alt="Facebook profile mockup"
@@ -240,7 +240,7 @@ export function ReviewMarquee({ className }: { className?: string }) {
                   {/* Patch 2: Covers "Đang mở cửa" green status text when open status is off */}
                   {!isOpenStatus && (
                     <div className="absolute top-[43.8%] left-[17%] w-[25%] h-[3%] bg-white flex items-center z-20 pointer-events-none">
-                      <span className="text-[10px] font-bold text-red-600 flex items-center gap-1 bg-white pr-2">
+                      <span className="flex items-center gap-1 bg-white pr-2 text-xs font-bold text-red-600">
                         <span className="w-1.5 h-1.5 rounded-full bg-red-600 animate-pulse" />
                         Đang đóng cửa
                       </span>
@@ -279,7 +279,7 @@ export function ReviewMarquee({ className }: { className?: string }) {
                   <span className="text-xl font-extrabold text-foreground md:text-2xl">
                     <NumberTicker value={98} suffix="%" />
                   </span>
-                  <span className="mt-1 text-[11px] text-gray-500 font-bold tracking-wide">Đánh giá 5 sao</span>
+                  <span className="mt-1 text-xs font-bold tracking-wide text-gray-500">Đánh giá 5 sao</span>
 
                   {/* SVG Arrow pointing Left */}
                   <svg className="pointer-events-none absolute -left-16 top-1/2 hidden h-8 w-14 -translate-y-1/2 text-foreground/20 xl:block" viewBox="0 0 60 20" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -296,7 +296,7 @@ export function ReviewMarquee({ className }: { className?: string }) {
                   <span className="text-xl font-extrabold text-foreground md:text-2xl">
                     <NumberTicker value={3} suffix=" năm" />
                   </span>
-                  <span className="mt-1 text-[11px] text-gray-500 font-bold tracking-wide">Kinh nghiệm</span>
+                  <span className="mt-1 text-xs font-bold tracking-wide text-gray-500">Kinh nghiệm</span>
 
                   {/* SVG Arrow pointing Left-up */}
                   <svg className="pointer-events-none absolute -left-16 top-1/2 hidden h-8 w-14 -translate-y-1/2 text-foreground/20 xl:block" viewBox="0 0 60 20" fill="none" xmlns="http://www.w3.org/2000/svg">

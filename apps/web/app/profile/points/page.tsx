@@ -80,12 +80,11 @@ export default function PointsHistoryPage() {
           <ArrowLeft className="w-4 h-4 mr-1" /> Quay lại tài khoản
         </Link>
 
-        <div className="bg-gradient-to-br from-[#425733] to-[#2d3d22] rounded-2xl p-8 text-white shadow-xl mb-8 relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -mr-32 -mt-32 blur-2xl" />
+        <div className="relative mb-8 overflow-hidden rounded-lg bg-gradient-to-br from-[#425733] to-[#2d3d22] p-5 text-white shadow-lg sm:p-8">
           <div className="relative z-10 flex items-center justify-between">
             <div>
               <p className="text-white/80 font-medium mb-1">Điểm tích lũy hiện tại</p>
-              <h1 className="text-5xl font-bold">{data?.currentPoints.toLocaleString("vi-VN") || 0}</h1>
+              <h1 className="text-4xl font-bold sm:text-5xl">{data?.currentPoints.toLocaleString("vi-VN") || 0}</h1>
             </div>
             <div className="w-20 h-20 bg-white/10 rounded-full flex items-center justify-center backdrop-blur-sm border border-white/20">
               <Star className="w-10 h-10 fill-yellow-400 text-yellow-400" />
@@ -93,7 +92,7 @@ export default function PointsHistoryPage() {
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+        <div className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm">
           <div className="p-6 border-b border-gray-100 flex items-center gap-2">
             <Clock className="w-5 h-5 text-[#425733]" />
             <h2 className="text-lg font-semibold text-gray-800">Lịch sử giao dịch điểm</h2>

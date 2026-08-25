@@ -1,8 +1,10 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { notFound } from "next/navigation";
 import { showToast } from "@/components/ui/custom-toast";
 import { Brain, Plus, Pencil, Trash2, Save, X, Search, ToggleLeft, ToggleRight, Sparkles } from "lucide-react";
+import { AI_CHAT_ENABLED } from "@/lib/features";
 
 interface AiEntry {
   id: string;
@@ -34,6 +36,11 @@ const CATEGORY_COLORS: Record<string, string> = {
 };
 
 export default function AiKnowledgePage() {
+  if (!AI_CHAT_ENABLED) notFound();
+  return <AiKnowledgeManager />;
+}
+
+function AiKnowledgeManager() {
   const [entries, setEntries] = useState<AiEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");

@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { AI_CHAT_ENABLED } from "@/lib/features";
 
 const ChatWidget = dynamic(() => import("@/components/ChatWidget"), {
   ssr: false,
@@ -8,6 +9,6 @@ const ChatWidget = dynamic(() => import("@/components/ChatWidget"), {
 });
 
 export function ChatWidgetClient() {
-  if (process.env.NEXT_PUBLIC_AI_CHAT_ENABLED === "false") return null;
+  if (!AI_CHAT_ENABLED) return null;
   return <ChatWidget />;
 }

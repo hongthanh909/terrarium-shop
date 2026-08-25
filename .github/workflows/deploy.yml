@@ -121,87 +121,21 @@ jobs:
             console.log("Google OAuth env updated.");
             NODE
 
-            # ── Cập nhật AI env trong .env ───────────────────────────────────
-            echo "🤖 Updating AI env..."
-            # Xóa dòng Gemini cũ nếu còn
-            sed -i '/^GEMINI_API_KEY=/d' .env 2>/dev/null || true
-            sed -i '/^GEMINI_MODEL=/d' .env 2>/dev/null || true
-            # Đặt OpenAI config (primary provider)
-            OPENAI_API_KEY_VALUE='${{ secrets.OPENAI_API_KEY }}'
-            if [ -n "$OPENAI_API_KEY_VALUE" ]; then
-              if grep -q "^OPENAI_API_KEY=" .env 2>/dev/null; then
-                sed -i "s|^OPENAI_API_KEY=.*|OPENAI_API_KEY=$OPENAI_API_KEY_VALUE|" .env
+            # ── Giữ AI tắt ở cả client và server ─────────────────────────────
+            echo "🤖 Disabling AI features..."
+            for key in NEXT_PUBLIC_AI_CHAT_ENABLED AI_CHAT_ENABLED; do
+              if grep -q "^${key}=" .env 2>/dev/null; then
+                sed -i "s|^${key}=.*|${key}=false|" .env
               else
-                echo "OPENAI_API_KEY=$OPENAI_API_KEY_VALUE" >> .env
+                echo "${key}=false" >> .env
               fi
-            fi
-            if grep -q "^OPENAI_MODEL=" .env 2>/dev/null; then
-              sed -i "s|^OPENAI_MODEL=.*|OPENAI_MODEL=gpt-5-mini|" .env
-            else
-              echo "OPENAI_MODEL=gpt-5-mini" >> .env
-            fi
-            if grep -q "^OPENAI_CARE_MODEL=" .env 2>/dev/null; then
-              sed -i "s|^OPENAI_CARE_MODEL=.*|OPENAI_CARE_MODEL=gpt-4o-mini|" .env
-            else
-              echo "OPENAI_CARE_MODEL=gpt-4o-mini" >> .env
-            fi
-            if grep -q "^OPENAI_FALLBACK_MODEL=" .env 2>/dev/null; then
-              sed -i "s|^OPENAI_FALLBACK_MODEL=.*|OPENAI_FALLBACK_MODEL=gpt-4o-mini|" .env
-            else
-              echo "OPENAI_FALLBACK_MODEL=gpt-4o-mini" >> .env
-            fi
-            if grep -q "^AI_PROVIDER=" .env 2>/dev/null; then
-              sed -i "s|^AI_PROVIDER=.*|AI_PROVIDER=openai|" .env
-            else
-              echo "AI_PROVIDER=openai" >> .env
-            fi
-            if grep -q "^AI_CHAT_ENABLED=" .env 2>/dev/null; then
-              sed -i "s|^AI_CHAT_ENABLED=.*|AI_CHAT_ENABLED=true|" .env
-            else
-              echo "AI_CHAT_ENABLED=true" >> .env
-            fi
+            done
             if grep -q "^APP_VERSION=" .env 2>/dev/null; then
               sed -i "s|^APP_VERSION=.*|APP_VERSION=$DEPLOY_COMMIT|" .env
             else
               echo "APP_VERSION=$DEPLOY_COMMIT" >> .env
             fi
-            # Giữ Ollama config làm fallback tạm thời
-            if grep -q "^OLLAMA_URL=" .env 2>/dev/null; then
-              sed -i "s|^OLLAMA_URL=.*|OLLAMA_URL=http://localhost:11434|" .env
-            else
-              echo "OLLAMA_URL=http://localhost:11434" >> .env
-            fi
-            if grep -q "^OLLAMA_MODEL=" .env 2>/dev/null; then
-              sed -i "s|^OLLAMA_MODEL=.*|OLLAMA_MODEL=llama3.2:3b|" .env
-            else
-              echo "OLLAMA_MODEL=llama3.2:3b" >> .env
-            fi
-            echo "✅ .env updated (OpenAI primary, Ollama fallback)"
-
-            # ── Setup Ollama llama3.2:3b (~2GB) ──────────────────────────────
-            echo "🧠 Setting up Ollama llama3.2:3b..."
-            # Bật Ollama service nếu chưa bật
-            sudo systemctl enable ollama 2>/dev/null || true
-            sudo systemctl start ollama 2>/dev/null || true
-            # Đợi Ollama sẵn sàng
-            for i in 1 2 3 4 5; do
-              if curl -sf http://localhost:11434/api/tags > /dev/null 2>&1; then
-                echo "✅ Ollama is running"
-                break
-              fi
-              echo "⏳ Waiting for Ollama... ($i/5)"
-              sleep 5
-            done
-            # Xóa model cũ llama3:8b (~4.7GB) nếu còn
-            ollama rm llama3:8b 2>/dev/null && echo "🗑️  Removed llama3:8b (4.7GB freed)" || echo "ℹ️  llama3:8b not found (OK)"
-            # Kéo model mới nếu chưa có
-            if ollama list 2>/dev/null | grep -q "llama3.2:3b"; then
-              echo "✅ llama3.2:3b already pulled"
-            else
-              echo "⬇️  Pulling llama3.2:3b (~2GB)..."
-              ollama pull llama3.2:3b
-              echo "✅ llama3.2:3b ready"
-            fi
+            echo "✅ AI feature flags set to false"
 
             # ── Clean stale build cache ───────────────────────────────────────
             echo "🧹 Cleaning old build cache..."
@@ -225,7 +159,7 @@ jobs:
 
             echo "Running local smoke tests..."
             sleep 8
-            rm -f /tmp/health.json /tmp/consult-policy.json
+            rm -f /tmp/health.json /tmp/consult-disabled.json
             for i in 1 2 3 4 5 6 7 8; do
               if curl -sf -m 10 http://127.0.0.1:3000/api/health?deep=1 -o /tmp/health.json; then
                 cat /tmp/health.json
@@ -237,34 +171,14 @@ jobs:
             done
             test -f /tmp/health.json
             grep -q "$DEPLOY_COMMIT" /tmp/health.json
-            curl -sf -m 20 http://127.0.0.1:3000/api/consult \
+            grep -q '"aiEnabled":false' /tmp/health.json
+            CONSULT_STATUS=$(curl -sS -m 20 -o /tmp/consult-disabled.json -w '%{http_code}' \
+              http://127.0.0.1:3000/api/consult \
               -H 'Content-Type: application/json' \
-              --data '{"message":"chính sách bảo hành như thế nào","history":[]}' \
-              | tee /tmp/consult-policy.json
-            grep -q '"source"' /tmp/consult-policy.json
-            curl -sf -m 20 http://127.0.0.1:3000/api/consult \
-              -H 'Content-Type: application/json' \
-              --data '{"message":"san pham be mini con hang","history":[]}' \
-              | tee /tmp/consult-product.json
-            grep -q '"source":"db"' /tmp/consult-product.json
-            curl -sf -m 20 http://127.0.0.1:3000/api/consult \
-              -H 'Content-Type: application/json' \
-              --data '{"message":"reu vang xu ly sao","history":[]}' \
-              | tee /tmp/consult-care.json
-            if ! grep -q '"source":"ai"' /tmp/consult-care.json; then
-              echo "❌ Care consult did not use GPT source. Recent PM2 logs:"
-              pm2 logs terrarium-shop --lines 120 --nostream || true
-              exit 1
-            fi
-            curl -sf -m 20 http://127.0.0.1:3000/api/consult \
-              -H 'Content-Type: application/json' \
-              --data '{"message":"reu co de cham hon khong","history":[]}' \
-              | tee /tmp/consult-care-easy.json
-            if ! grep -q '"source":"ai"' /tmp/consult-care-easy.json; then
-              echo "❌ Easy care consult did not use GPT source. Recent PM2 logs:"
-              pm2 logs terrarium-shop --lines 120 --nostream || true
-              exit 1
-            fi
+              --data '{"message":"kiem tra tinh nang AI","history":[]}')
+            cat /tmp/consult-disabled.json
+            test "$CONSULT_STATUS" = "503"
+            grep -q '"source":"disabled"' /tmp/consult-disabled.json
 
             # ── Lưu PM2 process list ──────────────────────────────────────────
             pm2 save
@@ -281,7 +195,7 @@ jobs:
         run: |
           echo "🎉 Deploy thành công!"
           echo "🌐 Site: https://tiemreudecor.com"
-          echo "🤖 AI: OpenAI gpt-5-mini (Ollama fallback)"
+          echo "🤖 AI: disabled"
           echo "📊 Commit: ${{ github.sha }}"
           echo "👤 By: ${{ github.actor }}"
 

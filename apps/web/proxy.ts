@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
 import { ADMIN_LOGIN_PATH, ADMIN_SECRET_PATH } from "@/lib/admin-path";
-import { SHOP_FORUM_ENABLED } from "@/lib/features";
+import { AI_CHAT_ENABLED, SHOP_FORUM_ENABLED } from "@/lib/features";
 
 // ─── 🔐 SECRET ADMIN PATH — không dùng /admin nữa ────────────────────────────
 //   Thay đổi giá trị này nếu muốn đổi URL admin.
@@ -28,6 +28,9 @@ const SHOP_FORUM_PATHS = [
   "/api/admin/marketplace-products",
   "/api/admin/marketplace-categories",
 ];
+
+const AI_PUBLIC_API_PATHS = ["/api/consult", "/api/ai"];
+const AI_ADMIN_PATHS = [`${ADMIN_SECRET_PATH}/ai-knowledge`, "/api/admin/ai-knowledge"];
 
 function matchesPathPrefix(pathname: string, prefix: string): boolean {
   return pathname === prefix || pathname.startsWith(`${prefix}/`);
@@ -87,6 +90,35 @@ function hasAdminSession(token: any): boolean {
 export async function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
   const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+
+  if (!AI_CHAT_ENABLED) {
+    if (matchesPathPrefix(pathname, "/consult")) {
+      return applySecurityHeaders(NextResponse.redirect(new URL("/", request.url)));
+    }
+
+    if (matchesPathPrefix(pathname, `${ADMIN_SECRET_PATH}/ai-knowledge`)) {
+      return applySecurityHeaders(NextResponse.redirect(new URL(ADMIN_SECRET_PATH, request.url)));
+    }
+
+    if (AI_PUBLIC_API_PATHS.some((prefix) => matchesPathPrefix(pathname, prefix))) {
+      const response = NextResponse.json(
+        {
+          error: "Tính năng AI đang tạm tắt.",
+          response: "Tính năng tư vấn AI đang tạm tắt. Vui lòng nhắn trực tiếp cho admin để được hỗ trợ.",
+          source: "disabled",
+        },
+        { status: 503 },
+      );
+      response.headers.set("Cache-Control", "no-store");
+      return applySecurityHeaders(response);
+    }
+
+    if (AI_ADMIN_PATHS.some((prefix) => matchesPathPrefix(pathname, prefix))) {
+      const response = NextResponse.json({ error: "Not Found" }, { status: 404 });
+      response.headers.set("Cache-Control", "no-store");
+      return applySecurityHeaders(response);
+    }
+  }
 
   if (!SHOP_FORUM_ENABLED && SHOP_FORUM_PATHS.some((prefix) => matchesPathPrefix(pathname, prefix))) {
     const isApi = pathname.startsWith("/api/");

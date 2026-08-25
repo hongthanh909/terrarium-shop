@@ -254,7 +254,7 @@ export default function CheckoutPage() {
     return (
       <div className="min-h-[70dvh] bg-background px-4 py-16 sm:px-6">
         <div className="max-w-2xl mx-auto text-center">
-          <h1 className="mb-4 font-serif text-4xl font-semibold">Giỏ hàng trống</h1>
+          <h1 className="mb-4 font-serif text-3xl font-semibold sm:text-4xl">Giỏ hàng trống</h1>
           <p className="text-muted-foreground mb-8">Hãy thêm sản phẩm vào giỏ hàng trước!</p>
           <Button asChild>
             <Link href="/products">Xem Sản Phẩm</Link>
@@ -276,7 +276,7 @@ export default function CheckoutPage() {
 
         <div className="mb-8 border-b border-border pb-6">
           <p className="mb-2 text-xs font-semibold uppercase text-muted-foreground">Hoàn tất đơn hàng</p>
-          <h1 className="font-serif text-4xl font-semibold sm:text-5xl">Thanh toán</h1>
+          <h1 className="font-serif text-3xl font-semibold sm:text-5xl">Thanh toán</h1>
           <ol className="mt-6 grid max-w-2xl grid-cols-3 gap-3 text-xs font-semibold text-muted-foreground" aria-label="Tiến trình thanh toán">
             <li className="border-t-2 border-foreground pt-2 text-foreground">1. Thông tin</li>
             <li className="border-t-2 border-border pt-2">2. Xác nhận</li>

@@ -24,9 +24,9 @@ export default async function Footer() {
   return (
     <footer className="border-t border-border bg-white pb-[max(2rem,env(safe-area-inset-bottom))] pt-12 sm:pt-16">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
-        <div className="mb-10 grid grid-cols-1 gap-9 sm:grid-cols-2 md:mb-12 md:grid-cols-4 md:gap-12">
+        <div className="mb-10 grid grid-cols-2 gap-x-6 gap-y-9 sm:grid-cols-2 md:mb-12 md:grid-cols-4 md:gap-12">
           {/* Brand */}
-          <div className="space-y-4">
+          <div className="col-span-2 space-y-4 sm:col-span-1">
             <Link href="/" className="flex flex-col group">
               <span 
                 className="text-xl leading-tight text-foreground transition-colors group-hover:text-foreground/75"
@@ -37,7 +37,7 @@ export default async function Footer() {
               <div className="flex items-center gap-1.5 mt-0.5">
                 <div className="h-px flex-1 bg-border" />
                 <span 
-                  className="whitespace-nowrap text-[9px] text-muted-foreground"
+                  className="whitespace-nowrap text-xs text-muted-foreground"
                   style={{ fontFamily: "'Dancing Script', cursive", fontWeight: 400 }}
                 >
                   Terrarium & Moss Art
@@ -93,14 +93,14 @@ export default async function Footer() {
           </div>
 
           {/* Contact */}
-          <div>
+          <div className="col-span-2 sm:col-span-1">
             <h3 className="mb-4 font-bold text-foreground">Liên hệ</h3>
             <ul className="space-y-1 text-sm text-muted-foreground sm:space-y-2">
               {emails.length > 0 ? (
                 emails.map((item: any, idx: number) => (
                   <li key={idx} className="flex items-center gap-2">
                     <Mail className="h-4 w-4 text-foreground" />
-                    <a href={`mailto:${item.value}`} className="transition-colors hover:text-foreground">
+                    <a href={`mailto:${item.value}`} className="inline-flex min-h-11 items-center transition-colors hover:text-foreground">
                       {item.value}
                     </a>
                   </li>
@@ -108,7 +108,7 @@ export default async function Footer() {
               ) : (
                 <li className="flex items-center gap-2">
                   <Mail className="h-4 w-4 text-foreground" />
-                  <a href="mailto:tiemreudecor@gmail.com" className="transition-colors hover:text-foreground">
+                  <a href="mailto:tiemreudecor@gmail.com" className="inline-flex min-h-11 items-center transition-colors hover:text-foreground">
                     tiemreudecor@gmail.com
                   </a>
                 </li>
@@ -117,7 +117,7 @@ export default async function Footer() {
                 fanpages.map((item: any, idx: number) => (
                   <li key={idx} className="flex items-center gap-2">
                     <Facebook className="h-4 w-4 text-foreground" />
-                    <a href={item.value} target="_blank" rel="noopener noreferrer" className="transition-colors hover:text-foreground">
+                    <a href={item.value} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center transition-colors hover:text-foreground">
                       Fanpage: {item.label}
                     </a>
                   </li>
@@ -125,7 +125,7 @@ export default async function Footer() {
               ) : (
                 <li className="flex items-center gap-2">
                   <Facebook className="h-4 w-4 text-foreground" />
-                  <a href="https://www.facebook.com/tiemreudecor" target="_blank" rel="noopener noreferrer" className="transition-colors hover:text-foreground">
+                  <a href="https://www.facebook.com/tiemreudecor" target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center transition-colors hover:text-foreground">
                     Fanpage: tiemreudecor
                   </a>
                 </li>

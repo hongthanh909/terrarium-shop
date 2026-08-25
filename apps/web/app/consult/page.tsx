@@ -3,8 +3,10 @@
 import { useEffect, useRef, useState } from "react";
 import { Bot, Send, Sparkles, User } from "lucide-react";
 import { useReducedMotion } from "framer-motion";
+import { notFound } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { AI_CHAT_ENABLED } from "@/lib/features";
 
 interface Message {
   role: "user" | "assistant";
@@ -19,6 +21,11 @@ const suggestedQuestions = [
 ];
 
 export default function ConsultPage() {
+  if (!AI_CHAT_ENABLED) notFound();
+  return <ConsultExperience />;
+}
+
+function ConsultExperience() {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
@@ -79,7 +86,7 @@ export default function ConsultPage() {
             <Sparkles className="h-4 w-4" aria-hidden="true" />
             Trợ lý Tiệm Rêu
           </p>
-          <h1 className="max-w-3xl font-serif text-4xl font-semibold leading-tight text-foreground sm:text-5xl">
+          <h1 className="max-w-3xl font-serif text-3xl font-semibold leading-tight text-foreground sm:text-5xl">
             Hỏi nhanh về terrarium
           </h1>
           <p className="mt-4 max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base">
@@ -88,7 +95,7 @@ export default function ConsultPage() {
         </header>
 
         <div className="grid gap-7 lg:grid-cols-[minmax(0,1fr)_260px] lg:gap-9">
-          <section className="flex min-h-[560px] flex-col overflow-hidden rounded-lg border border-border bg-white sm:min-h-[620px]" aria-label="Cuộc trò chuyện tư vấn">
+          <section className="flex min-h-[calc(100dvh-12rem)] flex-col overflow-hidden rounded-lg border border-border bg-white sm:min-h-[620px]" aria-label="Cuộc trò chuyện tư vấn">
             <div className="flex items-center gap-3 border-b border-border bg-[#f7f8f6] px-4 py-3 sm:px-5">
               <span className="flex h-10 w-10 items-center justify-center rounded-md bg-foreground text-white">
                 <Bot className="h-5 w-5" aria-hidden="true" />

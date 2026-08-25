@@ -136,16 +136,16 @@ export function ProductsClient({
 
   return (
     <PageTransition>
-      <div className="min-h-[100dvh] bg-white px-4 pb-20 pt-8 sm:px-6 sm:pb-24 sm:pt-12">
+      <div className="min-h-[100dvh] bg-white px-4 pb-20 pt-6 sm:px-6 sm:pb-24 sm:pt-12">
         <div className="max-w-7xl mx-auto">
 
           {/* Header */}
-          <SlideInHeading className="mb-10 border-b border-border pb-8 sm:mb-12 sm:pb-10">
-            <div className="grid gap-6 md:grid-cols-[1fr_auto] md:items-end">
+          <SlideInHeading className="mb-6 border-b border-border pb-6 sm:mb-12 sm:pb-10">
+            <div className="grid gap-4 sm:gap-6 md:grid-cols-[1fr_auto] md:items-end">
               <div>
-                <p className="mb-3 text-xs font-semibold uppercase text-muted-foreground">Bộ sưu tập Tiệm Rêu</p>
-                <h1 className="max-w-xl font-serif text-4xl font-semibold text-foreground sm:text-5xl">Terrarium cho từng khoảng sống</h1>
-                <p className="mt-4 max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base">
+                <p className="mb-2 text-xs font-semibold uppercase text-muted-foreground sm:mb-3">Bộ sưu tập Tiệm Rêu</p>
+                <h1 className="max-w-xl font-serif text-3xl font-semibold leading-tight text-foreground sm:text-5xl">Terrarium cho từng khoảng sống</h1>
+                <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground sm:mt-4 sm:text-base">
                   Khám phá {totalProducts} thiết kế thủ công, từ những bể nhỏ để bàn đến hệ sinh thái làm theo yêu cầu.
                 </p>
               </div>
@@ -168,12 +168,12 @@ export function ProductsClient({
 
           {/* Category Filter */}
           <motion.div
-            className="sticky top-[65px] z-20 -mx-4 mb-12 border-b border-border bg-white/95 px-4 py-4 backdrop-blur-md sm:top-[101px] sm:mx-0 sm:rounded-lg sm:border sm:px-5"
+            className="sticky top-[65px] z-20 -mx-4 mb-8 border-b border-border bg-white/95 px-4 py-3 backdrop-blur-md sm:top-[101px] sm:mx-0 sm:mb-12 sm:rounded-lg sm:border sm:px-5 sm:py-4"
             initial={prefersReducedMotion ? false : { opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.15, duration: 0.4 }}
           >
-            <div className="mb-3 flex items-center gap-3">
+            <div className="mb-3 hidden items-center gap-3 sm:flex">
               <Filter className="h-4 w-4 flex-shrink-0 text-foreground" />
               <span className="text-xs font-semibold uppercase text-muted-foreground">
                 Danh mục
@@ -227,7 +227,7 @@ export function ProductsClient({
               </Button>
             </motion.div>
           ) : isGroupedView ? (
-            <div className="space-y-14 sm:space-y-20">
+            <div className="space-y-10 sm:space-y-20">
               {groupedProducts.map((group, groupIndex) => (
                 <motion.section
                   key={group.category.id}
@@ -236,9 +236,9 @@ export function ProductsClient({
                   transition={{ delay: 0.12 + groupIndex * 0.05, duration: 0.4 }}
                   className="scroll-mt-24"
                 >
-                  <div className="mb-6 flex flex-col gap-3 border-t border-border pt-6 sm:mb-8 sm:flex-row sm:items-end sm:justify-between">
+                  <div className="mb-5 flex flex-col gap-3 border-t border-border pt-5 sm:mb-8 sm:flex-row sm:items-end sm:justify-between sm:pt-6">
                     <div>
-                      <h2 className="font-serif text-3xl font-semibold text-foreground">
+                      <h2 className="font-serif text-2xl font-semibold text-foreground sm:text-3xl">
                         {group.category.name}
                       </h2>
                       <p className="text-sm text-gray-500 mt-1">
@@ -254,7 +254,7 @@ export function ProductsClient({
                   </div>
 
                   <div className="grid grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-3">
-                    {group.products.map((product) => {
+                    {group.products.map((product, productIndex) => {
                       const ratingSummary = getProductRatingSummary(product);
                       return (
                       <ProductCard
@@ -267,6 +267,7 @@ export function ProductsClient({
                         saleEndDate={product.saleEndDate ?? null}
                         inventory={product.inventory}
                         images={product.images}
+                        imagePriority={groupIndex === 0 && productIndex < 2}
                         category={product.category}
                         rating={ratingSummary.rating}
                         reviewCount={ratingSummary.reviewCount}
@@ -282,7 +283,7 @@ export function ProductsClient({
             </div>
           ) : (
             <div className="grid grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-3">
-              {initialProducts.map((product) => {
+              {initialProducts.map((product, productIndex) => {
                 const ratingSummary = getProductRatingSummary(product);
                 return (
                 <ProductCard
@@ -295,6 +296,7 @@ export function ProductsClient({
                   saleEndDate={product.saleEndDate ?? null}
                   inventory={product.inventory}
                   images={product.images}
+                  imagePriority={productIndex < 2}
                   category={product.category}
                   rating={ratingSummary.rating}
                   reviewCount={ratingSummary.reviewCount}

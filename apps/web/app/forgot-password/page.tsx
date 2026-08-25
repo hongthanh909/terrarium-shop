@@ -130,7 +130,7 @@ export default function ForgotPasswordPage() {
               <div className="flex items-center gap-1.5 mt-0.5">
                 <div className="h-px w-6 bg-border" />
                 <span
-                  className="whitespace-nowrap text-[9px] text-muted-foreground"
+                  className="whitespace-nowrap text-xs text-muted-foreground"
                   style={{ fontFamily: "'Dancing Script', cursive", fontWeight: 400 }}
                 >
                   Terrarium &amp; Moss Art

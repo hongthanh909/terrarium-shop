@@ -223,7 +223,7 @@ export function FacebookGroupVoucherPopup({ initialPromo }: { initialPromo?: Fac
               <TicketPercent className="h-5 w-5" aria-hidden="true" />
             </span>
             <div className="min-w-0">
-              <p className="text-[11px] font-semibold text-gray-500 sm:text-xs">Voucher thành viên</p>
+              <p className="text-xs font-semibold text-gray-500">Voucher thành viên</p>
               <p className="mt-0.5 text-base font-bold text-gray-950 sm:text-lg">Giảm trực tiếp</p>
             </div>
           </div>

@@ -890,7 +890,8 @@ export default function ChatWidget() {
   const hidesFloatingChat = ["/consult", "/login", "/register", "/forgot-password", "/reset-password"].some(
     (path) => pathname === path || pathname.startsWith(`${path}/`),
   );
-  if (hidesFloatingChat) return null;
+  const isProductDetail = /^\/products\/[\w-]+$/.test(pathname);
+  if (hidesFloatingChat || isProductDetail) return null;
 
   return (
     <>
@@ -1835,7 +1836,7 @@ export default function ChatWidget() {
                 initial={{ opacity: 0, x: 8 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.3, type: "spring", stiffness: 400, damping: 28 }}
-                className="text-[11.5px] font-medium px-3.5 py-1.5 rounded-full cursor-pointer whitespace-nowrap"
+                className="hidden cursor-pointer whitespace-nowrap rounded-full px-3.5 py-1.5 text-xs font-medium sm:block"
                 style={{
                   background: "#ffffff",
                   color: "#171717",
@@ -1847,7 +1848,7 @@ export default function ChatWidget() {
 
               {/* Bubble */}
               <div
-                className="cw-bubble-idle relative w-14 h-14 flex items-center justify-center cursor-pointer rounded-full"
+                className="cw-bubble-idle relative flex h-[52px] w-[52px] cursor-pointer items-center justify-center rounded-full sm:h-14 sm:w-14"
                 style={{
                   background: "#171717",
                   transition: "transform 0.2s ease",

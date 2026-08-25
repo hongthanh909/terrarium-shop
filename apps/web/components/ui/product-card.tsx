@@ -5,7 +5,7 @@ import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { useReducedMotion } from "framer-motion";
 import Link from "next/link";
-import { Heart, Star, Package, Minus, Plus } from "lucide-react";
+import { Heart, Star, Package, Minus, Plus, ShoppingBag, SlidersHorizontal } from "lucide-react";
 import { SaleCountdown } from "@/components/ui/sale-countdown";
 import { ImageWrapper } from "@/components/ui/ImageWrapper";
 import { GlassCard } from "@/components/ui/glass-card";
@@ -27,6 +27,8 @@ export interface ProductCardProps {
   isNew?: boolean;
   isBestseller?: boolean;
   className?: string;
+  imageSizes?: string;
+  imagePriority?: boolean;
   onAddToCart?: (selectedPackage: string, quantity: number) => void;
   onToggleWishlist?: () => void;
   wished?: boolean;
@@ -46,6 +48,8 @@ export function ProductCard({
   isNew,
   isBestseller,
   className,
+  imageSizes = "(max-width: 639px) 50vw, (max-width: 1023px) 50vw, 25vw",
+  imagePriority = false,
   onAddToCart,
   onToggleWishlist,
   wished = false,
@@ -99,7 +103,10 @@ export function ProductCard({
             src={activeImage}
             alt={name}
             fill
-            sizes="(max-width: 639px) 50vw, (max-width: 1023px) 50vw, 25vw"
+            sizes={imageSizes}
+            priority={imagePriority}
+            loading={imagePriority ? "eager" : "lazy"}
+            fetchPriority={imagePriority ? "high" : "auto"}
             className="object-cover transition-transform duration-500 group-hover:scale-110"
             onError={() => {
               setImageIndex((current) => Math.min(current + 1, usableImages.length));
@@ -148,13 +155,13 @@ export function ProductCard({
       {/* Info section */}
       <div className="flex flex-col flex-1">
         {/* Category */}
-        <span className="mb-1 block truncate text-[11px] font-semibold uppercase text-muted-foreground sm:text-xs">
+        <span className="mb-1 block truncate text-xs font-semibold uppercase text-muted-foreground">
           {category?.name || "SẢN PHẨM"}
         </span>
 
         {/* Name & Price Row */}
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-1 sm:gap-2 mb-1.5">
-          <Link href={`/products/${slug}`} className="flex-1 min-w-0">
+          <Link href={`/products/${slug}`} className="flex min-h-11 min-w-0 flex-1 items-start">
             <h3 className="line-clamp-2 text-sm font-bold leading-snug text-foreground transition-colors group-hover:text-foreground/70 sm:text-base">
               {name}
             </h3>
@@ -164,7 +171,7 @@ export function ProductCard({
               {displayPrice.toLocaleString("vi-VN")}₫
             </span>
             {isOnSale && (
-              <span className="text-[11px] sm:text-xs text-red-500 font-medium line-through">
+              <span className="text-xs font-medium text-red-500 line-through">
                 {(basePrice + pkgPriceAdjustment).toLocaleString("vi-VN")}₫
               </span>
             )}
@@ -191,7 +198,7 @@ export function ProductCard({
 
         {/* Variant Selector */}
         {isBểProduct && (
-          <div className="mb-3 sm:mb-4">
+          <div className="mb-3 hidden sm:mb-4 sm:block">
             <p className="mb-1.5 text-xs font-bold uppercase text-muted-foreground">Chọn phiên bản</p>
             <div className="grid grid-cols-3 gap-1">
               {(["basic", "standard", "advanced"] as const).map((key) => {
@@ -220,8 +227,37 @@ export function ProductCard({
           </div>
         )}
 
+        {isBểProduct ? (
+          <Link
+            href={`/products/${slug}`}
+            className="mt-auto flex min-h-11 items-center justify-center gap-2 rounded-md border border-foreground bg-white px-2 py-2 text-center text-xs font-bold text-foreground transition-colors hover:bg-muted sm:hidden"
+          >
+            <SlidersHorizontal className="h-4 w-4" />
+            Chọn phiên bản
+          </Link>
+        ) : (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              if (isOutOfStock) return;
+              onAddToCart?.("basic", 1);
+            }}
+            disabled={isOutOfStock}
+            className={cn(
+              "mt-auto flex min-h-11 items-center justify-center gap-2 rounded-md px-2 py-2 text-xs font-bold text-white transition-colors sm:hidden",
+              isOutOfStock
+                ? "cursor-not-allowed bg-gray-300 text-gray-600"
+                : "bg-foreground hover:bg-foreground/85 active:scale-[0.97]"
+            )}
+          >
+            <ShoppingBag className="h-4 w-4" />
+            {isOutOfStock ? "Hết hàng" : "Thêm giỏ"}
+          </button>
+        )}
+
         {/* Quantity & Add to Cart Row */}
-        <div className="flex items-center justify-between gap-2 mt-auto">
+        <div className="mt-auto hidden items-center justify-between gap-2 sm:flex">
           {/* Quantity Selector */}
           <div className="hidden flex-shrink-0 items-center overflow-hidden rounded-md border border-border bg-muted p-0.5 sm:flex">
             <button

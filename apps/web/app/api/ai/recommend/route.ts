@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { buildProductPrompt } from "@/lib/aiPrompt";
 import { checkRateLimit } from "@/lib/rateLimiter";
+import { aiDisabledResponse, isAiServerEnabled } from "@/lib/ai/feature";
 
 /**
  * POST /api/ai/recommend
@@ -10,6 +11,8 @@ import { checkRateLimit } from "@/lib/rateLimiter";
  * Returns AI-generated recommendation markdown.
  */
 export async function POST(request: Request) {
+  if (!isAiServerEnabled()) return aiDisabledResponse();
+
   const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
   const rate = checkRateLimit(ip, 10, 60 * 1000); // 10 req/min per IP
   if (!rate.allowed) {

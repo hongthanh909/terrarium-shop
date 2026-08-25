@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { CheckCircle2, Clock, AlertTriangle, Copy, Check } from "lucide-react";
+import { CheckCircle2, Clock, AlertTriangle, Copy, Check, Landmark } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabaseClient } from "@/lib/supabaseClient";
 
@@ -138,7 +138,7 @@ export default function CheckoutPendingPage() {
 
   if (paymentStatus === "PAID") {
     return (
-      <main className="min-h-[100dvh] bg-[#f4f8f0] flex items-center justify-center p-6">
+      <main className="flex min-h-[100dvh] items-center justify-center bg-white p-6">
         <div className="text-center space-y-4">
           <div className="w-20 h-20 bg-[#e3ebdd] rounded-full flex items-center justify-center mx-auto animate-pulse">
             <CheckCircle2 className="w-12 h-12 text-[#425733]" />
@@ -152,7 +152,7 @@ export default function CheckoutPendingPage() {
 
   if (paymentStatus === "EXPIRED") {
     return (
-      <main className="min-h-[100dvh] bg-[#f4f8f0] flex items-center justify-center p-6">
+      <main className="flex min-h-[100dvh] items-center justify-center bg-white p-6">
         <div className="text-center space-y-4">
           <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto">
             <AlertTriangle className="w-12 h-12 text-red-500" />
@@ -165,7 +165,7 @@ export default function CheckoutPendingPage() {
   }
 
   return (
-    <main className="min-h-[100dvh] bg-[#f4f8f0] py-10 px-4">
+    <main className="min-h-[100dvh] bg-white px-4 py-8 sm:py-10">
       <div className="max-w-lg mx-auto space-y-5">
 
         {/* Header */}
@@ -179,9 +179,9 @@ export default function CheckoutPendingPage() {
         </div>
 
         {/* Countdown Timer */}
-        <div className={`rounded-2xl p-4 text-center space-y-2 ${isUrgent ? "bg-red-50 border border-red-200" : "bg-white border border-[#daebd0]"}`}>
+        <div className={`space-y-2 rounded-lg p-4 text-center ${isUrgent ? "bg-red-50 border border-red-200" : "bg-white border border-[#daebd0]"}`}>
           <p className="text-xs text-gray-500 uppercase tracking-wide font-medium">Thời gian còn lại</p>
-          <div className={`text-5xl font-mono font-bold tabular-nums ${isUrgent ? "text-red-600" : "text-[#425733]"}`}>
+          <div className={`font-mono text-4xl font-bold tabular-nums sm:text-5xl ${isUrgent ? "text-red-600" : "text-[#425733]"}`}>
             {String(minutes).padStart(2, "0")}:{String(seconds).padStart(2, "0")}
           </div>
           {/* Progress bar */}
@@ -195,22 +195,22 @@ export default function CheckoutPendingPage() {
         </div>
 
         {/* QR Code */}
-        <div className="bg-white rounded-2xl p-6 border border-[#daebd0] shadow-sm">
+        <div className="rounded-lg border border-[#daebd0] bg-white p-4 shadow-sm sm:p-6">
           <div className="flex flex-col items-center mb-4">
-            <div className="relative p-4 bg-white rounded-2xl border border-gray-200 shadow-md flex items-center justify-center">
+            <div className="relative flex w-full items-center justify-center rounded-lg border border-gray-200 bg-white p-3 shadow-md sm:p-4">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={qrUrl}
                 alt="QR chuyển khoản"
-                className="w-72 h-auto object-contain rounded-lg block"
+                className="block h-auto w-full max-w-72 rounded-lg object-contain"
                 onError={(e) => {
                   const img = e.target as HTMLImageElement;
                   img.style.display = "none";
                   (img.nextElementSibling as HTMLElement).style.display = "flex";
                 }}
               />
-              <div className="w-72 h-[340px] items-center justify-center flex-col gap-2 text-center hidden bg-gray-50 rounded-lg">
-                <span className="text-4xl">🏦</span>
+              <div className="hidden aspect-square w-full max-w-72 flex-col items-center justify-center gap-2 rounded-lg bg-gray-50 text-center">
+                <Landmark className="h-10 w-10 text-foreground" />
                 <p className="text-sm text-gray-500">Nhập thủ công theo thông tin bên dưới</p>
               </div>
             </div>

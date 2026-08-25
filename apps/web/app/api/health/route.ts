@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { isAiServerEnabled } from "@/lib/ai/feature";
 
 async function timed<T>(promise: Promise<T>, ms: number): Promise<T | "timeout"> {
   let timeoutId: ReturnType<typeof setTimeout> | undefined;
@@ -18,14 +19,11 @@ async function timed<T>(promise: Promise<T>, ms: number): Promise<T | "timeout">
 export async function GET(request: Request) {
   const url = new URL(request.url);
   const deep = url.searchParams.get("deep") === "1";
+  const aiEnabled = isAiServerEnabled();
   const payload: Record<string, unknown> = {
     ok: true,
     appVersion: process.env.APP_VERSION || "unknown",
-    aiProvider: process.env.AI_PROVIDER || (process.env.OPENAI_API_KEY ? "openai" : "ollama"),
-    openaiConfigured: Boolean(process.env.OPENAI_API_KEY),
-    openaiModel: process.env.OPENAI_MODEL || "gpt-5-mini",
-    openaiCareModel: process.env.OPENAI_CARE_MODEL || process.env.OPENAI_MODEL || "gpt-5-mini",
-    openaiVisionModel: process.env.OPENAI_VISION_MODEL || process.env.OPENAI_MODEL || process.env.OPENAI_CARE_MODEL || "gpt-5-mini",
+    aiEnabled,
     pid: process.pid,
     uptime: Math.round(process.uptime()),
     nodeEnv: process.env.NODE_ENV || "unknown",
@@ -34,7 +32,9 @@ export async function GET(request: Request) {
   if (deep) {
     payload.db = {
       products: await timed(prisma.product.count(), 5_000),
-      knowledge: await timed(prisma.aiKnowledge.count({ where: { isActive: true } }), 5_000),
+      ...(aiEnabled
+        ? { knowledge: await timed(prisma.aiKnowledge.count({ where: { isActive: true } }), 5_000) }
+        : {}),
     };
   }
 

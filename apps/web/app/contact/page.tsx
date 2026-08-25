@@ -85,7 +85,7 @@ export default function ContactPage() {
       <div className="mx-auto max-w-6xl">
         <header className="mb-10 border-b border-border pb-9 sm:mb-12 sm:pb-11">
           <p className="mb-3 text-xs font-semibold uppercase text-muted-foreground">Kết nối với Tiệm Rêu</p>
-          <h1 className="max-w-3xl font-serif text-4xl font-semibold leading-tight text-foreground sm:text-5xl">
+          <h1 className="max-w-3xl font-serif text-3xl font-semibold leading-tight text-foreground sm:text-5xl">
             Chúng tôi sẵn sàng lắng nghe
           </h1>
           <p className="mt-4 max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base">
