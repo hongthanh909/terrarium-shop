@@ -53,24 +53,24 @@ interface FilterBarProps {
 
 export function FilterBar({ search, onSearchChange, placeholder = "Tìm kiếm...", filters, actions }: FilterBarProps) {
   return (
-    <div className="flex flex-wrap items-center gap-3 mb-4">
-      <div className="relative flex-1 min-w-[200px] max-w-sm">
+    <div className="mb-4 flex flex-wrap items-center gap-3">
+      <div className="relative w-full sm:max-w-sm sm:flex-1">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
         <input
           type="text"
           value={search}
           onChange={(e) => onSearchChange(e.target.value)}
           placeholder={placeholder}
-          className="w-full rounded-md border border-gray-200 bg-white py-2 pl-9 pr-8 text-sm transition-all focus:border-gray-950 focus:outline-none focus:ring-1 focus:ring-gray-950/20"
+          className="min-h-12 w-full rounded-md border border-gray-200 bg-white py-2 pl-9 pr-12 text-base transition-all focus:border-gray-950 focus:outline-none focus:ring-1 focus:ring-gray-950/20 sm:text-sm"
         />
         {search && (
-          <button onClick={() => onSearchChange("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+          <button onClick={() => onSearchChange("")} className="absolute right-0 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center text-gray-400 hover:text-gray-600" aria-label="Xóa nội dung tìm kiếm">
             <X className="w-3.5 h-3.5" />
           </button>
         )}
       </div>
       {filters}
-      {actions && <div className="ml-auto flex items-center gap-2">{actions}</div>}
+      {actions && <div className="flex w-full items-center gap-2 sm:ml-auto sm:w-auto">{actions}</div>}
     </div>
   );
 }
@@ -90,7 +90,7 @@ export function SelectFilter({ value, onChange, options, placeholder = "Tất c�
       value={value}
       onChange={(e) => onChange(e.target.value)}
       className={cn(
-        "cursor-pointer appearance-none rounded-md border border-gray-200 bg-white py-2 pl-3 pr-8 text-sm transition-all focus:border-gray-950 focus:outline-none focus:ring-1 focus:ring-gray-950/20",
+        "min-h-11 cursor-pointer appearance-none rounded-md border border-gray-200 bg-white py-2 pl-3 pr-8 text-base transition-all focus:border-gray-950 focus:outline-none focus:ring-1 focus:ring-gray-950/20 sm:text-sm",
         "bg-[url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E\")] bg-no-repeat bg-[right_0.75rem_center]",
         className
       )}
@@ -142,7 +142,7 @@ export function DataTable<T>({
   return (
     <div className="overflow-hidden rounded-md border border-gray-200 bg-white shadow-sm">
       <div className="overflow-x-auto">
-        <table className="w-full text-sm">
+        <table className="min-w-max text-sm">
           <thead>
             <tr className="bg-gray-50 border-b border-gray-100">
               {columns.map((col) => (
@@ -227,15 +227,15 @@ export function Pagination({ page, totalPages, total, pageSize, onPageChange }: 
   const end = Math.min(page * pageSize, total);
 
   return (
-    <div className="flex items-center justify-between mt-4 px-1">
+    <div className="mt-4 flex flex-col gap-3 px-1 sm:flex-row sm:items-center sm:justify-between">
       <p className="text-sm text-gray-400">
         Hiển thị <span className="font-medium text-gray-600">{start}–{end}</span> / <span className="font-medium text-gray-600">{total}</span>
       </p>
-      <div className="flex items-center gap-1">
+      <div className="flex items-center justify-between gap-1 sm:justify-start">
         <button
           onClick={() => onPageChange(page - 1)}
           disabled={page === 1}
-          className="rounded-md border border-gray-200 px-3 py-1.5 text-sm transition-colors hover:border-gray-400 hover:text-gray-950 disabled:cursor-not-allowed disabled:opacity-40"
+          className="min-h-11 rounded-md border border-gray-200 px-3 py-1.5 text-sm transition-colors hover:border-gray-400 hover:text-gray-950 disabled:cursor-not-allowed disabled:opacity-40"
         >
           ← Trước
         </button>
@@ -251,7 +251,8 @@ export function Pagination({ page, totalPages, total, pageSize, onPageChange }: 
               key={p}
               onClick={() => onPageChange(p)}
               className={cn(
-                "w-8 h-8 rounded-lg text-sm font-medium transition-colors",
+                "h-11 w-11 rounded-md text-sm font-medium transition-colors",
+                totalPages > 3 && p !== page && "hidden min-[420px]:inline-flex min-[420px]:items-center min-[420px]:justify-center",
                 p === page
                   ? "bg-gray-950 text-white shadow-sm"
                   : "border border-gray-200 text-gray-600 hover:border-gray-400 hover:text-gray-950"
@@ -264,7 +265,7 @@ export function Pagination({ page, totalPages, total, pageSize, onPageChange }: 
         <button
           onClick={() => onPageChange(page + 1)}
           disabled={page === totalPages}
-          className="rounded-md border border-gray-200 px-3 py-1.5 text-sm transition-colors hover:border-gray-400 hover:text-gray-950 disabled:cursor-not-allowed disabled:opacity-40"
+          className="min-h-11 rounded-md border border-gray-200 px-3 py-1.5 text-sm transition-colors hover:border-gray-400 hover:text-gray-950 disabled:cursor-not-allowed disabled:opacity-40"
         >
           Tiếp →
         </button>
