@@ -233,13 +233,13 @@ export default function ProfilePage() {
     <div className="min-h-[100dvh] bg-white py-10">
       <div className="max-w-4xl mx-auto px-4">
         {/* Back */}
-        <Link href="/" className="mb-6 inline-flex items-center text-sm text-gray-500 hover:text-foreground">
+        <Link href="/" className="mb-6 inline-flex min-h-11 items-center text-sm text-gray-500 hover:text-foreground">
           <ArrowLeft className="w-4 h-4 mr-1" /> Trang chủ
         </Link>
 
         {/* ─── Hero Card ─────────────────────────────────────────────────────────── */}
         <div className="relative mb-6 overflow-hidden border border-foreground bg-foreground p-6 text-white shadow-sm">
-          <div className="flex items-center gap-5">
+          <div className="flex items-center gap-4 sm:gap-5">
             {/* Avatar */}
             <div className="w-20 h-20 rounded-full overflow-hidden bg-white/20 backdrop-blur flex items-center justify-center text-3xl font-bold border-2 border-white/40 flex-shrink-0 relative">
               {profile.image ? (
@@ -253,7 +253,7 @@ export default function ProfilePage() {
                 <h1 className="text-2xl font-bold truncate">{profile.name}</h1>
                 <span className="text-xl">{tier.icon}</span>
               </div>
-              <p className="text-white/80 text-sm">{profile.email}</p>
+              <p className="truncate text-sm text-white/80">{profile.email}</p>
               <div className="flex items-center gap-3 mt-2">
                 <span className="bg-white/20 backdrop-blur px-3 py-1 rounded-full text-sm font-semibold">
                   {tier.label}
@@ -284,7 +284,7 @@ export default function ProfilePage() {
           <div className="mt-4 pt-4 border-t border-white/10 flex justify-end">
             <Link 
               href="/profile/points" 
-              className="text-sm text-white/90 hover:text-white flex items-center gap-1 font-medium transition-colors bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-full"
+              className="flex min-h-11 items-center gap-1 bg-white/10 px-3 py-1.5 text-sm font-medium text-white/90 transition-colors hover:bg-white/20 hover:text-white"
             >
               Xem lịch sử điểm <ChevronRight className="w-4 h-4" />
             </Link>
@@ -301,7 +301,7 @@ export default function ProfilePage() {
             <button
               key={id}
               onClick={() => setActiveTab(id)}
-              className={`flex flex-1 items-center justify-center gap-2 border-b-2 py-2.5 text-sm font-semibold transition-all ${
+              className={`flex min-h-12 flex-1 items-center justify-center gap-1.5 border-b-2 px-1 py-2.5 text-sm font-semibold transition-all sm:gap-2 ${
                 activeTab === id
                   ? "border-foreground text-foreground"
                   : "border-transparent text-gray-500 hover:text-gray-700"
@@ -315,11 +315,11 @@ export default function ProfilePage() {
 
         {/* ─── Tab: Thông tin cá nhân ──────────────────────────────────────────── */}
         {activeTab === "info" && (
-          <div className="border border-gray-200 bg-white p-6 shadow-sm">
+          <div className="border border-gray-200 bg-white p-4 shadow-sm sm:p-6">
             <h2 className="mb-5 font-serif text-2xl font-semibold text-gray-900">Thông tin cá nhân</h2>
 
             {/* Avatar Upload */}
-            <div className="mb-6 flex items-center gap-4 border border-border bg-muted/35 p-4">
+            <div className="mb-6 flex flex-col items-start gap-4 border border-border bg-muted/35 p-4 min-[380px]:flex-row min-[380px]:items-center">
               <div className="relative flex h-16 w-16 flex-shrink-0 items-center justify-center overflow-hidden rounded-full border border-border bg-white shadow-sm">
                 {profile.image ? (
                   <ImageWrapper src={profile.image} alt="Avatar" fill sizes="64px" noRound className="object-cover" />
@@ -345,7 +345,7 @@ export default function ProfilePage() {
                   />
                   <label
                     htmlFor="avatar-upload"
-                    className="inline-flex cursor-pointer items-center justify-center border border-border bg-white px-3 py-1.5 text-xs font-bold text-foreground transition-colors hover:border-foreground/40 hover:bg-muted disabled:opacity-60"
+                    className="inline-flex min-h-11 cursor-pointer items-center justify-center border border-border bg-white px-3 py-1.5 text-xs font-bold text-foreground transition-colors hover:border-foreground/40 hover:bg-muted disabled:opacity-60"
                   >
                     {uploading ? "Đang tải..." : "Chọn ảnh mới"}
                   </label>
@@ -353,7 +353,7 @@ export default function ProfilePage() {
                     <button
                       type="button"
                       onClick={handleDeleteAvatar}
-                      className="inline-flex items-center justify-center text-xs font-bold px-3 py-1.5 rounded-lg border-2 border-red-200 text-red-600 bg-white hover:bg-red-50 transition-colors"
+                      className="inline-flex min-h-11 items-center justify-center border border-red-200 bg-white px-3 py-1.5 text-xs font-bold text-red-600 transition-colors hover:bg-red-50"
                     >
                       Xóa ảnh
                     </button>
@@ -371,9 +371,11 @@ export default function ProfilePage() {
                 </label>
                 <input
                   type="text"
+                  autoComplete="name"
+                  maxLength={120}
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full border border-gray-200 px-4 py-2.5 outline-none transition-all focus:border-foreground focus:ring-2 focus:ring-foreground/10"
+                  className="min-h-12 w-full border border-gray-200 px-4 py-2.5 text-base outline-none transition-all focus:border-foreground focus:ring-2 focus:ring-foreground/10"
                   placeholder="Nhập họ và tên"
                   required
                 />
@@ -386,9 +388,10 @@ export default function ProfilePage() {
                 </label>
                 <input
                   type="email"
+                  autoComplete="email"
                   value={profile.email}
                   readOnly
-                  className="w-full cursor-not-allowed border border-gray-200 bg-gray-50 px-4 py-2.5 text-gray-500"
+                  className="min-h-12 w-full cursor-not-allowed border border-gray-200 bg-gray-50 px-4 py-2.5 text-base text-gray-500"
                 />
                 <p className="text-xs text-gray-400 mt-1">Email không thể thay đổi</p>
               </div>
@@ -400,18 +403,21 @@ export default function ProfilePage() {
                 </label>
                 <input
                   type="tel"
+                  inputMode="tel"
+                  autoComplete="tel"
+                  maxLength={20}
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  className="w-full border border-gray-200 px-4 py-2.5 outline-none transition-all focus:border-foreground focus:ring-2 focus:ring-foreground/10"
+                  className="min-h-12 w-full border border-gray-200 px-4 py-2.5 text-base outline-none transition-all focus:border-foreground focus:ring-2 focus:ring-foreground/10"
                   placeholder="VD: 0901234567"
                 />
               </div>
 
-              <div className="flex items-center justify-between pt-2">
+              <div className="flex flex-col-reverse gap-3 pt-2 min-[380px]:flex-row min-[380px]:items-center min-[380px]:justify-between">
                 <button
                   type="button"
                   onClick={() => { useCartStore.getState().clearCart(); signOut({ callbackUrl: "/" }); }}
-                  className="flex items-center gap-2 text-red-500 hover:text-red-700 text-sm font-medium"
+                  className="flex min-h-11 items-center justify-center gap-2 text-sm font-medium text-red-600 hover:text-red-700 min-[380px]:justify-start"
                 >
                   <LogOut className="w-4 h-4" />
                   Đăng xuất
@@ -419,7 +425,7 @@ export default function ProfilePage() {
                 <button
                   type="submit"
                   disabled={saving}
-                  className="flex items-center gap-2 bg-foreground px-6 py-2.5 font-semibold text-white transition-colors hover:bg-foreground/85 disabled:opacity-60"
+                  className="flex min-h-12 items-center justify-center gap-2 bg-foreground px-6 py-2.5 font-semibold text-white transition-colors hover:bg-foreground/85 disabled:opacity-60"
                 >
                   <Save className="w-4 h-4" />
                   {saving ? "Đang lưu..." : "Lưu thay đổi"}
@@ -431,7 +437,7 @@ export default function ProfilePage() {
 
         {/* ─── Tab: Đơn hàng gần đây ───────────────────────────────────────────── */}
         {activeTab === "orders" && (
-          <div className="border border-gray-200 bg-white p-6 shadow-sm">
+          <div className="border border-gray-200 bg-white p-4 shadow-sm sm:p-6">
             <div className="flex items-center justify-between mb-5">
               <h2 className="text-lg font-semibold text-gray-800">Đơn hàng gần đây</h2>
               <Link
@@ -461,7 +467,7 @@ export default function ProfilePage() {
                     <Link
                       key={order.id}
                       href={`/orders/${order.id}`}
-                      className="group flex items-center justify-between border border-gray-100 p-4 transition-all hover:border-foreground/40 hover:shadow-sm"
+                      className="group flex flex-col gap-3 border border-gray-100 p-4 transition-all hover:border-foreground/40 hover:shadow-sm sm:flex-row sm:items-center sm:justify-between"
                     >
                       <div>
                         <p className="font-semibold text-gray-800 transition-colors group-hover:text-foreground">
@@ -473,11 +479,11 @@ export default function ProfilePage() {
                           })}
                         </p>
                       </div>
-                      <div className="flex items-center gap-3">
+                      <div className="flex w-full flex-wrap items-center gap-3 sm:w-auto sm:justify-end">
                         <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${s.color}`}>
                           {s.label}
                         </span>
-                        <span className="font-bold text-foreground">
+                        <span className="ml-auto font-bold text-foreground sm:ml-0">
                           {Number(order.total).toLocaleString("vi-VN")}₫
                         </span>
                         <ChevronRight className="h-4 w-4 text-gray-300 transition-colors group-hover:text-foreground" />
@@ -492,7 +498,7 @@ export default function ProfilePage() {
 
         {/* ─── Tab: Đổi mật khẩu ───────────────────────────────────────────────── */}
         {activeTab === "password" && (
-          <div className="border border-gray-200 bg-white p-6 shadow-sm">
+          <div className="border border-gray-200 bg-white p-4 shadow-sm sm:p-6">
             <h2 className="mb-5 font-serif text-2xl font-semibold text-gray-900">Đổi mật khẩu</h2>
             <form onSubmit={handleChangePassword} className="space-y-4 max-w-md">
               {/* Current password */}
@@ -501,16 +507,18 @@ export default function ProfilePage() {
                 <div className="relative">
                   <input
                     type={showCurrentPw ? "text" : "password"}
+                    autoComplete="current-password"
                     value={currentPassword}
                     onChange={(e) => setCurrentPassword(e.target.value)}
                     required
-                    className="w-full border border-gray-200 px-4 py-2.5 pr-10 outline-none transition-all focus:border-foreground focus:ring-2 focus:ring-foreground/10"
+                    className="min-h-12 w-full border border-gray-200 px-4 py-2.5 pr-12 text-base outline-none transition-all focus:border-foreground focus:ring-2 focus:ring-foreground/10"
                     placeholder="••••••••"
                   />
                   <button
                     type="button"
                     onClick={() => setShowCurrentPw(!showCurrentPw)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    className="absolute right-0 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center text-gray-400 hover:text-gray-600"
+                    aria-label={showCurrentPw ? "Ẩn mật khẩu hiện tại" : "Hiện mật khẩu hiện tại"}
                   >
                     {showCurrentPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
@@ -523,17 +531,19 @@ export default function ProfilePage() {
                 <div className="relative">
                   <input
                     type={showNewPw ? "text" : "password"}
+                    autoComplete="new-password"
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
                     required
                     minLength={6}
-                    className="w-full border border-gray-200 px-4 py-2.5 pr-10 outline-none transition-all focus:border-foreground focus:ring-2 focus:ring-foreground/10"
+                    className="min-h-12 w-full border border-gray-200 px-4 py-2.5 pr-12 text-base outline-none transition-all focus:border-foreground focus:ring-2 focus:ring-foreground/10"
                     placeholder="Ít nhất 6 ký tự"
                   />
                   <button
                     type="button"
                     onClick={() => setShowNewPw(!showNewPw)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    className="absolute right-0 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center text-gray-400 hover:text-gray-600"
+                    aria-label={showNewPw ? "Ẩn mật khẩu mới" : "Hiện mật khẩu mới"}
                   >
                     {showNewPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
@@ -545,10 +555,11 @@ export default function ProfilePage() {
                 <label className="block text-sm font-medium text-gray-700 mb-1">Xác nhận mật khẩu mới</label>
                 <input
                   type="password"
+                  autoComplete="new-password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   required
-                  className={`w-full border px-4 py-2.5 outline-none transition-all focus:border-foreground focus:ring-2 focus:ring-foreground/10 ${
+                  className={`min-h-12 w-full border px-4 py-2.5 text-base outline-none transition-all focus:border-foreground focus:ring-2 focus:ring-foreground/10 ${
                     confirmPassword && confirmPassword !== newPassword
                       ? "border-red-300 bg-red-50"
                       : "border-gray-200"
@@ -563,7 +574,7 @@ export default function ProfilePage() {
               <button
                 type="submit"
                 disabled={saving || (!!confirmPassword && confirmPassword !== newPassword)}
-                className="flex items-center gap-2 bg-foreground px-6 py-2.5 font-semibold text-white transition-colors hover:bg-foreground/85 disabled:opacity-60"
+                className="flex min-h-12 w-full items-center justify-center gap-2 bg-foreground px-6 py-2.5 font-semibold text-white transition-colors hover:bg-foreground/85 disabled:opacity-60 sm:w-auto"
               >
                 <Lock className="w-4 h-4" />
                 {saving ? "Đang đổi..." : "Đổi mật khẩu"}
@@ -573,7 +584,7 @@ export default function ProfilePage() {
         )}
 
         {/* ─── Stats Footer ────────────────────────────────────────────────────── */}
-        <div className="grid grid-cols-3 gap-4 mt-6">
+        <div className="mt-6 grid grid-cols-1 gap-3 min-[380px]:grid-cols-3 sm:gap-4">
           {[
             { label: "Tổng đơn hàng", value: profile.orders.length + "+", icon: "📦" },
             { label: "Điểm tích lũy",  value: profile.loyaltyPoints.toLocaleString("vi-VN"), icon: "⭐" },

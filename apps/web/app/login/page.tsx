@@ -179,11 +179,11 @@ function AuthPage() {
   };
 
   return (
-    <div className="flex min-h-[calc(100dvh-7rem)] items-center justify-center bg-white py-10">
+    <div className="flex min-h-[calc(100dvh-7rem)] items-center justify-center bg-white py-8 sm:py-10">
       <div className="w-full max-w-md px-4">
         <Link
           href="/"
-          className="mb-8 inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
+          className="mb-6 inline-flex min-h-11 items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground sm:mb-8"
         >
           <ArrowLeft className="w-4 h-4" />
           Quay lại trang chủ
@@ -195,7 +195,7 @@ function AuthPage() {
           transition={{ duration: 0.5, ease: "easeOut" }}
           className="relative overflow-hidden border border-border bg-white shadow-[0_18px_50px_rgba(0,0,0,0.08)]"
         >
-          <div className="px-8 pt-8 pb-6 border-b border-gray-100 text-center">
+          <div className="border-b border-gray-100 px-5 pb-6 pt-7 text-center sm:px-8 sm:pt-8">
             <Link href="/" className="inline-flex flex-col items-center group mb-4">
               <span
                 className="text-2xl leading-tight text-foreground transition-colors group-hover:text-foreground/70"
@@ -236,7 +236,7 @@ function AuthPage() {
             </AnimatePresence>
           </div>
 
-          <div className="px-8 py-6">
+          <div className="px-5 py-6 sm:px-8">
             {!isVerifyingRegistration && (
               <div className="mb-5 space-y-3">
                 <SocialLoginButton
@@ -304,7 +304,7 @@ function AuthPage() {
                       type="button"
                       onClick={handleRegister}
                       disabled={loading}
-                      className="w-full text-xs font-medium text-foreground hover:text-foreground/70 disabled:opacity-60"
+                      className="min-h-11 w-full text-xs font-medium text-foreground hover:text-foreground/70 disabled:opacity-60"
                     >
                       Gửi lại mã xác minh
                     </button>
@@ -319,12 +319,12 @@ function AuthPage() {
                   >
                     {!isLogin && (
                       <>
-                        <LightField icon={<User className="w-4 h-4" />} label="Họ và tên" id="name" name="name" placeholder="Nguyễn Văn A" value={formData.name} onChange={handleInputChange} required={!isLogin} />
-                        <LightField icon={<Phone className="w-4 h-4" />} label="Số điện thoại (tuỳ chọn)" id="phone" name="phone" type="tel" placeholder="0912 345 678" value={formData.phone} onChange={handleInputChange} />
+                        <LightField icon={<User className="w-4 h-4" />} label="Họ và tên" id="name" name="name" autoComplete="name" maxLength={120} placeholder="Nguyễn Văn A" value={formData.name} onChange={handleInputChange} required={!isLogin} />
+                        <LightField icon={<Phone className="w-4 h-4" />} label="Số điện thoại (tuỳ chọn)" id="phone" name="phone" type="tel" inputMode="tel" autoComplete="tel" maxLength={20} placeholder="0912 345 678" value={formData.phone} onChange={handleInputChange} />
                       </>
                     )}
 
-                    <LightField icon={<Mail className="w-4 h-4" />} label="Email" id="email" name="email" type="email" placeholder="email@example.com" value={formData.email} onChange={handleInputChange} required />
+                    <LightField icon={<Mail className="w-4 h-4" />} label="Email" id="email" name="email" type="email" inputMode="email" autoComplete="email" maxLength={160} placeholder="email@example.com" value={formData.email} onChange={handleInputChange} required />
 
                     <div>
                       <div className="flex justify-between items-center mb-1.5">
@@ -346,13 +346,14 @@ function AuthPage() {
                           onChange={handleInputChange}
                           required
                           minLength={isLogin ? 1 : 6}
-                          className="w-full border border-gray-200 bg-gray-50 py-2.5 pl-10 pr-10 text-sm text-gray-800 transition-all placeholder:text-gray-400 focus:border-foreground focus:outline-none focus:ring-2 focus:ring-foreground/10"
+                          autoComplete={isLogin ? "current-password" : "new-password"}
+                          className="min-h-12 w-full border border-gray-200 bg-gray-50 py-2.5 pl-10 pr-12 text-base text-gray-800 transition-all placeholder:text-gray-400 focus:border-foreground focus:outline-none focus:ring-2 focus:ring-foreground/10"
                         />
                         <button
                           type="button"
                           onClick={() => setShowPassword(!showPassword)}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-300 hover:text-gray-500 transition-colors"
-                          tabIndex={-1}
+                          className="absolute right-0 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center text-gray-400 transition-colors hover:text-gray-600"
+                          aria-label={showPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
                         >
                           {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                         </button>
@@ -385,7 +386,7 @@ function AuthPage() {
               <button
                 type="button"
                 onClick={isVerifyingRegistration ? () => { setVerificationEmail(null); setVerificationCode(""); setError(null); } : switchMode}
-                className="font-semibold text-foreground transition-colors hover:text-foreground/70"
+                className="inline-flex min-h-11 items-center font-semibold text-foreground transition-colors hover:text-foreground/70"
               >
                 {isLogin ? "Đăng ký ngay" : isVerifyingRegistration ? "Sửa thông tin" : "Đăng nhập"}
               </button>
@@ -409,7 +410,7 @@ function SocialLoginButton({ provider, label, loading, disabled, onClick }: {
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className="relative flex min-h-11 w-full items-center justify-center border border-gray-200 bg-white px-4 text-sm font-semibold text-gray-700 shadow-sm transition-all hover:border-gray-400 hover:bg-gray-50 active:translate-y-px disabled:cursor-not-allowed disabled:opacity-60"
+      className="relative flex min-h-12 w-full items-center justify-center border border-gray-200 bg-white px-4 text-sm font-semibold text-gray-700 shadow-sm transition-all hover:border-gray-400 hover:bg-gray-50 active:translate-y-px disabled:cursor-not-allowed disabled:opacity-60"
     >
       <span className="absolute left-4 flex h-5 w-5 items-center justify-center">
         {loading ? (
@@ -443,7 +444,7 @@ function LightField({ icon, label, id, ...inputProps }: {
         <input
           id={id}
           {...inputProps}
-          className="w-full border border-gray-200 bg-gray-50 py-2.5 pl-10 pr-4 text-sm text-gray-800 transition-all placeholder:text-gray-400 focus:border-foreground focus:outline-none focus:ring-2 focus:ring-foreground/10"
+          className="min-h-12 w-full border border-gray-200 bg-gray-50 py-2.5 pl-10 pr-4 text-base text-gray-800 transition-all placeholder:text-gray-400 focus:border-foreground focus:outline-none focus:ring-2 focus:ring-foreground/10"
         />
       </div>
     </div>

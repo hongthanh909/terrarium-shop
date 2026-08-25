@@ -166,7 +166,7 @@ export default function MyOrdersPage() {
         <div className="mb-6">
           <Link
             href="/"
-            className="mb-4 inline-flex items-center text-muted-foreground hover:text-foreground"
+            className="mb-4 inline-flex min-h-11 items-center text-muted-foreground hover:text-foreground"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Trang chủ
@@ -225,11 +225,12 @@ export default function MyOrdersPage() {
                 placeholder="Tìm kiếm theo mã đơn, tên, email, SĐT..."
                 value={searchTerm}
                 onChange={e => setSearchTerm(e.target.value)}
-                className="min-h-11 flex-1 border px-4 py-2 transition focus:outline-none focus:ring-2 focus:ring-foreground/15"
+                className="min-h-12 min-w-0 flex-1 border px-4 py-2 text-base transition focus:outline-none focus:ring-2 focus:ring-foreground/15"
               />
               <button
                 onClick={() => setSearchTerm("")}
-                className="ml-2 text-gray-500 hover:text-gray-700"
+                className="ml-2 flex h-11 w-11 shrink-0 items-center justify-center text-gray-500 hover:bg-muted hover:text-gray-700"
+                aria-label="Xóa nội dung tìm kiếm"
               >
                 ✕
               </button>
@@ -241,19 +242,16 @@ export default function MyOrdersPage() {
               return (
                 <div key={order.id} className="border border-border bg-white shadow-sm transition-shadow hover:shadow-md">
                   {/* Order Header — clickable */}
-                  <div
-                    className="p-6 cursor-pointer"
-                    onClick={() => setSelectedOrder(isExpanded ? null : order)}
-                  >
-                    <div className="flex justify-between items-start mb-3">
+                  <div className="p-4 sm:p-6">
+                    <div className="mb-3 flex flex-col gap-2 min-[380px]:flex-row min-[380px]:items-start min-[380px]:justify-between">
                       <div>
                         <div className="font-mono text-sm text-gray-500 mb-0.5">#{order.orderNumber}</div>
                         <div className="text-xs text-gray-400">
                           {new Date(order.createdAt).toLocaleDateString("vi-VN", { year: "numeric", month: "long", day: "numeric" })}
                         </div>
                       </div>
-                      <div className="text-right">
-                        <div className="text-xl font-bold text-gray-800">{order.total.toLocaleString("vi-VN")}₫</div>
+                      <div className="min-[380px]:text-right">
+                        <div className="text-lg font-bold text-gray-800 sm:text-xl">{order.total.toLocaleString("vi-VN")}₫</div>
                         <div className="text-xs text-gray-400">{order.items.length} sản phẩm</div>
                       </div>
                     </div>
@@ -278,7 +276,7 @@ export default function MyOrdersPage() {
                         <button
                           onClick={(e) => handleCancelOrder(order.id, e)}
                           disabled={cancellingId === order.id}
-                          className="px-3 py-1.5 text-xs font-bold text-red-600 hover:text-white bg-red-50 hover:bg-red-600 border border-red-200 rounded-lg transition-all duration-200 disabled:opacity-50"
+                          className="min-h-11 border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-bold text-red-600 transition-colors hover:bg-red-600 hover:text-white disabled:opacity-50"
                         >
                           {cancellingId === order.id ? "Đang hủy..." : "Hủy đơn hàng"}
                         </button>
@@ -323,7 +321,7 @@ export default function MyOrdersPage() {
                     {/* Product items list - always visible */}
                     <div className="space-y-2 mt-4">
                       {order.items.map((item: any) => (
-                        <div key={item.id} className="flex gap-3 border border-gray-100 bg-gray-50 p-3">
+                        <div key={item.id} className="grid grid-cols-[3.5rem_minmax(0,1fr)] gap-3 border border-gray-100 bg-gray-50 p-3 min-[420px]:grid-cols-[3.5rem_minmax(0,1fr)_auto]">
                           <div className="w-14 h-14 bg-white border border-gray-100 rounded-lg overflow-hidden flex-shrink-0">
                             {item.productImage ? (
                               <ImageWrapper src={item.productImage} alt={item.productName} width={56} height={56} className="w-full h-full object-cover" />
@@ -335,19 +333,24 @@ export default function MyOrdersPage() {
                             <div className="font-semibold text-sm text-gray-800 line-clamp-1">{item.productName}</div>
                             <div className="text-xs text-gray-500 mt-1">SL: {item.quantity} × {item.price.toLocaleString("vi-VN")}₫</div>
                           </div>
-                          <div className="font-bold text-sm text-gray-800 flex items-center">{(item.price * item.quantity).toLocaleString("vi-VN")}₫</div>
+                          <div className="col-start-2 text-sm font-bold text-gray-800 min-[420px]:col-start-auto min-[420px]:flex min-[420px]:items-center">{(item.price * item.quantity).toLocaleString("vi-VN")}₫</div>
                         </div>
                       ))}
                     </div>
 
-                    <div className="mt-4 text-center text-xs font-semibold text-foreground hover:underline">
+                    <button
+                      type="button"
+                      onClick={() => setSelectedOrder(isExpanded ? null : order)}
+                      className="mt-4 flex min-h-11 w-full items-center justify-center text-center text-xs font-semibold text-foreground hover:bg-muted hover:underline"
+                      aria-expanded={isExpanded}
+                    >
                       {isExpanded ? "▲ Thu gọn giá tổng quan" : "▼ Xem chi phí tạm tính & chi tiết vận chuyển"}
-                    </div>
+                    </button>
                   </div>
 
                     {/* Expandable order details */}
                   {isExpanded && (
-                    <div className="border-t bg-gray-50 px-6 py-5">
+                    <div className="border-t bg-gray-50 px-4 py-5 sm:px-6">
                       {/* Order total breakdown */}
                       <div className="bg-white rounded-lg p-4 space-y-2 text-sm">
                         <div className="flex justify-between text-gray-600">

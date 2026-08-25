@@ -197,7 +197,7 @@ export function CustomerMessagesClient() {
       <div className="mx-auto max-w-[1400px]">
         <header className="mb-5 flex items-end justify-between gap-4 border-b border-border pb-5">
           <div>
-            <Link href="/profile" className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground">
+            <Link href="/profile" className="inline-flex min-h-11 items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground">
               <ArrowLeft className="h-3.5 w-3.5" /> Tài khoản
             </Link>
             <h1 className="mt-2 font-serif text-4xl font-semibold text-foreground sm:text-5xl">Tin nhắn với admin</h1>
@@ -224,7 +224,7 @@ export function CustomerMessagesClient() {
                   <MessageCircle className="mx-auto h-8 w-8 text-gray-400" />
                   <p className="mt-3 text-sm font-bold text-foreground">Bạn chưa có cuộc trò chuyện</p>
                   <p className="mt-1 text-xs leading-5 text-muted-foreground">Mở một sản phẩm và chọn “Chat với admin” để bắt đầu.</p>
-                  <Link href="/products" className="mt-5 inline-flex min-h-10 items-center gap-2 bg-foreground px-4 py-2 text-sm font-semibold text-white hover:bg-foreground/85">
+                  <Link href="/products" className="mt-5 inline-flex min-h-11 items-center gap-2 bg-foreground px-4 py-2 text-sm font-semibold text-white hover:bg-foreground/85">
                     <ShoppingBag className="h-4 w-4" /> Xem sản phẩm
                   </Link>
                 </div>
@@ -262,10 +262,10 @@ export function CustomerMessagesClient() {
             ) : (
               <>
                 <header className="flex min-h-16 items-center gap-3 border-b border-border px-3 py-2.5 sm:px-4">
-                  <button type="button" onClick={() => setSelectedId(null)} className="grid h-9 w-9 shrink-0 place-items-center text-muted-foreground hover:bg-muted lg:hidden" aria-label="Quay lại danh sách"><ArrowLeft className="h-4.5 w-4.5" /></button>
+                  <button type="button" onClick={() => setSelectedId(null)} className="grid h-11 w-11 shrink-0 place-items-center text-muted-foreground hover:bg-muted lg:hidden" aria-label="Quay lại danh sách"><ArrowLeft className="h-4.5 w-4.5" /></button>
                   <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-[#e5ece0]">{selected.product?.image ? <img src={selected.product.image} alt="" className="h-full w-full object-cover" /> : <div className="grid h-full place-items-center"><MessageCircle className="h-4 w-4 text-[#617058]" /></div>}</div>
                   <div className="min-w-0 flex-1"><p className="truncate text-sm font-bold text-[#26361f]">{selected.order ? `Đơn hàng #${selected.order.orderNumber}` : selected.product?.name || "Sản phẩm không còn tồn tại"}</p><p className="truncate text-xs text-[#73806d]">{selected.order ? "Trao đổi phí vận chuyển với admin" : "Tư vấn trực tiếp với admin"}</p></div>
-                  {selected.product && <Link href={selected.product.href} className="grid h-9 w-9 shrink-0 place-items-center rounded-lg border border-[#d8e2d2] text-[#526248] hover:bg-[#edf3e9]" aria-label="Mở sản phẩm" title="Mở sản phẩm"><ExternalLink className="h-4 w-4" /></Link>}
+                  {selected.product && <Link href={selected.product.href} className="grid h-11 w-11 shrink-0 place-items-center rounded-md border border-border text-foreground hover:bg-muted" aria-label="Mở sản phẩm" title="Mở sản phẩm"><ExternalLink className="h-4 w-4" /></Link>}
                 </header>
 
                 <div ref={messagesViewportRef} style={{ overflowAnchor: "none" }} className="min-h-0 flex-1 overflow-y-auto bg-gray-50/40 px-3 py-4 sm:px-5" aria-live="polite">
@@ -282,13 +282,13 @@ export function CustomerMessagesClient() {
                 </div>
 
                 <footer className="border-t border-[#e4eadf] bg-white p-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)]">
-                  {imagePreview && <div className="relative mb-2 h-20 w-20 overflow-hidden rounded-lg border border-[#cedbc7]"><img src={imagePreview} alt="Ảnh chuẩn bị gửi" className="h-full w-full object-cover" /><button type="button" onClick={clearImage} className="absolute right-1 top-1 grid h-6 w-6 place-items-center rounded-full bg-black/70 text-white" aria-label="Bỏ ảnh"><X className="h-3.5 w-3.5" /></button></div>}
+                  {imagePreview && <div className="relative mb-2 h-24 w-24 overflow-hidden rounded-md border border-border"><img src={imagePreview} alt="Ảnh chuẩn bị gửi" className="h-full w-full object-cover" /><button type="button" onClick={clearImage} className="absolute right-1 top-1 grid h-11 w-11 place-items-center rounded-full bg-black/75 text-white" aria-label="Bỏ ảnh"><X className="h-4 w-4" /></button></div>}
                   {error && <p className="mb-2 text-xs font-medium text-red-700">{error}</p>}
                   <div className="flex items-end gap-2">
                     <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp,image/gif" className="hidden" onChange={(event) => chooseImage(event.target.files?.[0])} />
-                    <button type="button" onClick={() => fileInputRef.current?.click()} disabled={sending || loadingMessages} className="grid h-11 w-11 shrink-0 place-items-center rounded-lg border border-[#d7e0d1] text-[#4d6342] hover:bg-[#f0f5ed] disabled:opacity-50" aria-label="Gửi ảnh" title="Gửi ảnh"><ImagePlus className="h-5 w-5" /></button>
-                    <textarea value={content} onChange={(event) => setContent(event.target.value.slice(0, 2000))} onKeyDown={(event) => { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); void sendMessage(); } }} rows={1} placeholder={selected.status === "CLOSED" ? "Gửi tin để mở lại hội thoại..." : "Nhập câu hỏi cho admin..."} className="min-h-11 max-h-28 flex-1 resize-none rounded-lg border border-[#d7e0d1] bg-[#fbfcfa] px-3 py-2.5 text-sm outline-none placeholder:text-[#7d8977] focus:border-[#799768] focus:ring-2 focus:ring-[#e2ecdc]" />
-                    <button type="button" onClick={() => void sendMessage()} disabled={sending || (!content.trim() && !selectedImage)} className="grid h-11 w-11 shrink-0 place-items-center bg-foreground text-white hover:bg-foreground/85 disabled:bg-gray-300" aria-label="Gửi tin nhắn" title="Gửi tin nhắn">{sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}</button>
+                    <button type="button" onClick={() => fileInputRef.current?.click()} disabled={sending || loadingMessages} className="grid h-12 w-12 shrink-0 place-items-center rounded-md border border-border text-foreground hover:bg-muted disabled:opacity-50" aria-label="Gửi ảnh" title="Gửi ảnh"><ImagePlus className="h-5 w-5" /></button>
+                    <textarea value={content} onChange={(event) => setContent(event.target.value.slice(0, 2000))} onKeyDown={(event) => { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); void sendMessage(); } }} rows={1} placeholder={selected.status === "CLOSED" ? "Gửi tin để mở lại hội thoại..." : "Nhập câu hỏi cho admin..."} className="min-h-12 max-h-28 flex-1 resize-none rounded-md border border-border bg-white px-3 py-2.5 text-base outline-none placeholder:text-muted-foreground focus:border-foreground focus:ring-2 focus:ring-foreground/10" />
+                    <button type="button" onClick={() => void sendMessage()} disabled={sending || (!content.trim() && !selectedImage)} className="grid h-12 w-12 shrink-0 place-items-center bg-foreground text-white hover:bg-foreground/85 disabled:bg-gray-300" aria-label="Gửi tin nhắn" title="Gửi tin nhắn">{sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}</button>
                   </div>
                 </footer>
               </>

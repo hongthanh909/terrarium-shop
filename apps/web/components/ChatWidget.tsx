@@ -887,7 +887,10 @@ export default function ChatWidget() {
   // ═══════════════════════════════════════════════
   // RENDER
   // ═══════════════════════════════════════════════
-  if (pathname === "/consult") return null;
+  const hidesFloatingChat = ["/consult", "/login", "/register", "/forgot-password", "/reset-password"].some(
+    (path) => pathname === path || pathname.startsWith(`${path}/`),
+  );
+  if (hidesFloatingChat) return null;
 
   return (
     <>

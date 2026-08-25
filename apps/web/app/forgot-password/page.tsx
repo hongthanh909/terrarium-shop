@@ -103,50 +103,39 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <main className="min-h-[100dvh] relative flex items-center justify-center overflow-hidden bg-gradient-to-br from-[#dce5d5] via-[#e8efe2] to-[#f0f4ee]">
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div
-          className="absolute top-1/3 -left-24 w-[420px] h-[420px] rounded-full blur-[100px] opacity-40"
-          style={{ background: "radial-gradient(circle, #b5cda3 0%, transparent 70%)" }}
-        />
-        <div
-          className="absolute bottom-1/4 -right-24 w-[360px] h-[360px] rounded-full blur-[100px] opacity-30"
-          style={{ background: "radial-gradient(circle, #8ba57a 0%, transparent 70%)" }}
-        />
-      </div>
-
-      <div className="relative z-10 w-full max-w-md px-4">
+    <main className="flex min-h-[calc(100dvh-7rem)] items-center justify-center bg-white py-8 sm:py-10">
+      <div className="w-full max-w-md px-4">
         <Link
           href="/login"
-          className="inline-flex items-center gap-2 text-[#425733]/60 hover:text-[#425733] mb-8 transition-colors text-sm"
+          className="mb-6 inline-flex min-h-11 items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground sm:mb-8"
         >
           <ArrowLeft className="w-4 h-4" />
           Quay lại đăng nhập
         </Link>
 
         <motion.div
-          initial={{ opacity: 0, y: 24, scale: 0.97 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: "easeOut" }}
-          className="relative rounded-3xl overflow-hidden bg-white/80 backdrop-blur-xl border border-white/60 shadow-[0_20px_60px_rgba(66,87,51,0.12)]"
+          className="relative overflow-hidden border border-border bg-white shadow-[0_18px_50px_rgba(0,0,0,0.08)]"
         >
-          <div className="px-8 pt-8 pb-6 border-b border-gray-100 text-center">
+          <div className="border-b border-gray-100 px-5 pb-6 pt-7 text-center sm:px-8 sm:pt-8">
             <Link href="/" className="inline-flex flex-col items-center group mb-4">
               <span
-                className="text-2xl text-[#425733] group-hover:text-[#364a29] transition-colors leading-tight"
+                className="text-2xl leading-tight text-foreground transition-colors group-hover:text-foreground/70"
                 style={{ fontFamily: "'Dancing Script', cursive", fontWeight: 600 }}
               >
                 tiệm Rêu Décor
               </span>
               <div className="flex items-center gap-1.5 mt-0.5">
-                <div className="w-6 h-px bg-[#8ba57a]" />
+                <div className="h-px w-6 bg-border" />
                 <span
-                  className="text-[9px] tracking-wider text-[#5f7d50] whitespace-nowrap"
+                  className="whitespace-nowrap text-[9px] text-muted-foreground"
                   style={{ fontFamily: "'Dancing Script', cursive", fontWeight: 400 }}
                 >
                   Terrarium &amp; Moss Art
                 </span>
-                <div className="w-6 h-px bg-[#8ba57a]" />
+                <div className="h-px w-6 bg-border" />
               </div>
             </Link>
 
@@ -158,7 +147,7 @@ export default function ForgotPasswordPage() {
                 exit={{ opacity: 0, y: -6 }}
                 transition={{ duration: 0.2 }}
               >
-                <h1 className="text-xl font-bold text-gray-800 mb-1">
+                <h1 className="mb-1 font-serif text-2xl font-semibold text-gray-900">
                   {isVerifying ? "Xác minh email" : "Quên mật khẩu?"}
                 </h1>
                 <p className="text-gray-400 text-sm">
@@ -170,10 +159,10 @@ export default function ForgotPasswordPage() {
             </AnimatePresence>
           </div>
 
-          <div className="px-8 py-6">
+          <div className="px-5 py-6 sm:px-8">
             <form className="space-y-4" onSubmit={handleSubmit}>
               {errorMessage && (
-                <div className="flex items-start gap-2 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
+                <div className="flex items-start gap-2 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600" role="alert">
                   <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
                   <span>{errorMessage}</span>
                 </div>
@@ -206,7 +195,7 @@ export default function ForgotPasswordPage() {
                             setVerificationCode(e.target.value.replace(/\D/g, "").slice(0, 6));
                             setErrorMessage(null);
                           }}
-                          className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-gray-50 border border-gray-200 text-gray-800 placeholder:text-gray-300 text-sm focus:outline-none focus:border-[#425733] focus:ring-2 focus:ring-[#425733]/10 focus:shadow-[0_0_0_3px_rgba(66,87,51,0.08)] transition-all"
+                          className="min-h-12 w-full rounded-none border border-gray-200 bg-gray-50 py-2.5 pl-10 pr-4 text-base text-gray-800 transition-colors placeholder:text-gray-400 focus:border-foreground focus:outline-none focus:ring-2 focus:ring-foreground/10"
                           placeholder="123456"
                         />
                       </div>
@@ -216,7 +205,7 @@ export default function ForgotPasswordPage() {
                       type="button"
                       onClick={() => requestCode(verificationEmail)}
                       disabled={loading}
-                      className="w-full text-xs text-[#425733] hover:text-[#364a29] font-medium disabled:opacity-60"
+                      className="min-h-11 w-full text-xs font-medium text-foreground hover:text-foreground/70 disabled:opacity-60"
                     >
                       Gửi lại mã xác minh
                     </button>
@@ -237,13 +226,14 @@ export default function ForgotPasswordPage() {
                       <input
                         id="forgot-email"
                         type="email"
+                        inputMode="email"
                         required
                         value={email}
                         onChange={(e) => {
                           setEmail(e.target.value);
                           setErrorMessage(null);
                         }}
-                        className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-gray-50 border border-gray-200 text-gray-800 placeholder:text-gray-300 text-sm focus:outline-none focus:border-[#425733] focus:ring-2 focus:ring-[#425733]/10 focus:shadow-[0_0_0_3px_rgba(66,87,51,0.08)] transition-all"
+                        className="min-h-12 w-full rounded-none border border-gray-200 bg-gray-50 py-2.5 pl-10 pr-4 text-base text-gray-800 transition-colors placeholder:text-gray-400 focus:border-foreground focus:outline-none focus:ring-2 focus:ring-foreground/10"
                         placeholder="email@example.com"
                         autoComplete="email"
                       />
@@ -277,7 +267,7 @@ export default function ForgotPasswordPage() {
                     router.push("/login");
                   }
                 }}
-                className="text-[#425733] font-semibold hover:text-[#364a29] transition-colors"
+                className="inline-flex min-h-11 items-center font-semibold text-foreground transition-colors hover:text-foreground/70"
               >
                 {isVerifying ? "Sửa thông tin" : "Đăng nhập"}
               </button>
