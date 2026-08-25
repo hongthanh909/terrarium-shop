@@ -628,7 +628,7 @@ export function ProductDetailClient({
 
       {/* ── Back ──────────────────────────────────────────────────────────── */}
       <div className="mx-auto max-w-7xl px-4 py-5 sm:px-6">
-        <Link href="/products" className="inline-flex items-center text-muted-foreground hover:text-primary transition-colors text-sm">
+        <Link href="/products" className="inline-flex min-h-11 items-center text-sm text-muted-foreground transition-colors hover:text-primary">
           <ArrowLeft className="w-4 h-4 mr-2" /> Quay lại sản phẩm
         </Link>
       </div>
@@ -787,7 +787,7 @@ export function ProductDetailClient({
               <button 
                 onClick={handleVote} 
                 disabled={isVoting} 
-                className="p-2 rounded-full border border-gray-100 hover:border-red-200 hover:bg-red-50/50 transition-all disabled:opacity-50"
+                className="flex h-11 w-11 items-center justify-center rounded-full border border-gray-100 transition-colors hover:border-red-200 hover:bg-red-50/50 disabled:opacity-50"
                 aria-label="Yêu thích"
               >
                 <Heart className={`w-5 h-5 transition-colors ${product.userVoted ? "fill-red-500 text-red-500" : "text-gray-400"}`} />
@@ -860,7 +860,7 @@ export function ProductDetailClient({
             {isBểProduct && (
               <div className="mb-5">
                 <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2.5">Chọn phiên bản</p>
-                <div className="grid grid-cols-3 gap-1 sm:gap-2">
+                <div className="grid grid-cols-1 gap-2 min-[380px]:grid-cols-3">
                   {PACKAGES.map((pkg) => {
                     const isSelected = selectedPackage === pkg.key;
                     return (
@@ -923,7 +923,7 @@ export function ProductDetailClient({
                   const best = getBestVoucher(finalPrice);
                   if (!best) return null;
                   return (
-                    <span className="ml-auto text-[11px] bg-orange-100 text-orange-700 font-semibold px-2 py-0.5 rounded-full animate-pulse">
+                    <span className="ml-auto hidden max-w-[48%] truncate bg-orange-100 px-2 py-0.5 text-[11px] font-semibold text-orange-700 sm:block">
                       Tiết kiệm thêm với {best.code}!
                     </span>
                   );
@@ -938,12 +938,12 @@ export function ProductDetailClient({
                   onChange={e => setVoucherInput(e.target.value.toUpperCase())}
                   onKeyDown={e => e.key === "Enter" && handleApplyVoucher()}
                   placeholder="Nhập mã voucher..."
-                  className="min-h-11 flex-1 border border-border px-3 py-2 text-sm outline-none transition-colors focus:border-foreground focus:ring-1 focus:ring-foreground/20"
+                  className="min-h-12 flex-1 border border-border px-3 py-2 text-base outline-none transition-colors focus:border-foreground focus:ring-1 focus:ring-foreground/20 sm:text-sm"
                 />
                 <button
                   onClick={() => handleApplyVoucher()}
                   disabled={voucherLoading || !voucherInput.trim()}
-                  className="min-h-11 bg-foreground px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-foreground/85 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="min-h-12 bg-foreground px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-foreground/85 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {voucherLoading ? "..." : "Áp dụng"}
                 </button>
@@ -959,7 +959,7 @@ export function ProductDetailClient({
                       ? " (Miễn phí vận chuyển)"
                       : ` (Giảm ${voucherDiscountAmount.toLocaleString("vi-VN")}₫)`}
                   </span>
-                  <button onClick={() => { setAppliedVoucher(null); setVoucherInput(""); }} className="text-gray-400 hover:text-gray-600 text-xs font-medium">
+                  <button onClick={() => { setAppliedVoucher(null); setVoucherInput(""); }} className="flex min-h-11 shrink-0 items-center px-2 text-xs font-medium text-gray-500 hover:text-gray-700">
                     Bỏ chọn
                   </button>
                 </div>
@@ -980,7 +980,7 @@ export function ProductDetailClient({
                     return (
                       <label
                         key={v.id}
-                        className={`flex cursor-pointer items-center gap-3 border p-3 transition-all ${
+                        className={`grid min-h-20 cursor-pointer grid-cols-[auto_minmax(0,1fr)] items-center gap-3 border p-3 transition-all sm:grid-cols-[auto_minmax(0,1fr)_auto] ${
                           isApplied
                             ? "border-foreground bg-muted/35 shadow-sm"
                             : isBest
@@ -1036,7 +1036,7 @@ export function ProductDetailClient({
                           </div>
                         </div>
 
-                        <div className="flex flex-col items-end flex-shrink-0">
+                        <div className="col-start-2 flex min-w-0 items-center justify-between gap-3 sm:col-start-auto sm:flex-col sm:items-end">
                           {meetsMin ? (
                             <span className={`text-sm font-bold ${isApplied ? "text-emerald-700" : "text-foreground"}`}>
                               {isFreeShip ? "Miễn phí" : `-${discountAmt.toLocaleString("vi-VN")}₫`}
@@ -1046,7 +1046,7 @@ export function ProductDetailClient({
                           )}
                           <button
                             onClick={(e) => { e.preventDefault(); e.stopPropagation(); copyCode(v.code); }}
-                            className="mt-0.5 flex items-center gap-0.5 text-[10px] text-gray-400 hover:text-foreground"
+                            className="flex min-h-11 items-center gap-1 px-2 text-xs text-gray-500 hover:text-foreground sm:-mr-2 sm:min-h-0 sm:px-2 sm:text-[10px]"
                           >
                             {copiedCode === v.code ? <CheckIcon className="w-3 h-3 text-green-500" /> : <Copy className="w-3 h-3" />}
                             Sao chép
@@ -1063,9 +1063,9 @@ export function ProductDetailClient({
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 mb-5">
               {/* Qty stepper */}
               <div className="flex h-12 flex-shrink-0 items-center justify-between border border-border bg-white px-2 sm:justify-start">
-                <button type="button" onClick={() => setQuantity(Math.max(1, quantity - 1))} className="flex h-9 w-9 items-center justify-center text-gray-500 transition-colors hover:bg-muted hover:text-foreground"><Minus className="w-4 h-4" /></button>
+                <button type="button" onClick={() => setQuantity(Math.max(1, quantity - 1))} className="flex h-11 w-11 items-center justify-center text-gray-500 transition-colors hover:bg-muted hover:text-foreground" aria-label="Giảm số lượng"><Minus className="w-4 h-4" /></button>
                 <span className="w-10 text-center text-base font-bold text-foreground">{quantity}</span>
-                <button type="button" onClick={() => setQuantity(quantity + 1)} className="flex h-9 w-9 items-center justify-center text-gray-500 transition-colors hover:bg-muted hover:text-foreground"><Plus className="w-4 h-4" /></button>
+                <button type="button" onClick={() => setQuantity(quantity + 1)} className="flex h-11 w-11 items-center justify-center text-gray-500 transition-colors hover:bg-muted hover:text-foreground" aria-label="Tăng số lượng"><Plus className="w-4 h-4" /></button>
               </div>
               <Button 
                 size="lg" 
@@ -1107,13 +1107,13 @@ export function ProductDetailClient({
             <div className="flex flex-wrap items-center gap-3 pt-4 border-t border-gray-100">
               <span className="text-xs font-semibold text-gray-500">Chia sẻ:</span>
               <div className="flex items-center gap-1.5">
-                <button className="p-1.5 rounded-lg hover:bg-gray-50 transition-colors" title="Chia sẻ Facebook">
+                <button className="flex h-11 w-11 items-center justify-center rounded-md transition-colors hover:bg-gray-50" title="Chia sẻ Facebook" aria-label="Chia sẻ Facebook">
                   <FacebookIcon />
                 </button>
-                <button className="p-1.5 rounded-lg hover:bg-gray-50 transition-colors" title="Chia sẻ Instagram">
+                <button className="flex h-11 w-11 items-center justify-center rounded-md transition-colors hover:bg-gray-50" title="Chia sẻ Instagram" aria-label="Chia sẻ Instagram">
                   <InstagramIcon />
                 </button>
-                <button className="p-1.5 rounded-lg hover:bg-gray-50 transition-colors" title="Chia sẻ TikTok">
+                <button className="flex h-11 w-11 items-center justify-center rounded-md transition-colors hover:bg-gray-50" title="Chia sẻ TikTok" aria-label="Chia sẻ TikTok">
                   <TikTokIcon />
                 </button>
               </div>

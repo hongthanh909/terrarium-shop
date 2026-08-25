@@ -67,6 +67,16 @@ export default function CheckoutPage() {
   const subtotal = getSelectedTotal();
   const shippingQuoteRequired = requiresShippingQuote(formData.province);
   const total = subtotal + shippingFee - discount;
+  const voucherNeedsValidation = formData.voucherCode.trim().length > 0 && !voucherApplied && !voucherError;
+  const submitLabel = loading
+    ? "Đang xử lý..."
+    : voucherChecking
+    ? "Đang kiểm tra voucher..."
+    : voucherNeedsValidation
+    ? "Kiểm tra voucher trước"
+    : shippingQuoteRequired
+    ? "Gửi yêu cầu - Trao đổi phí sau"
+    : `Đặt hàng - ${total.toLocaleString("vi-VN")}₫`;
 
   useEffect(() => {
     if (formData.voucherCode || voucherApplied || voucherChecking) return;
@@ -258,7 +268,7 @@ export default function CheckoutPage() {
     <div className="min-h-[100dvh] bg-background px-4 pb-28 pt-6 sm:px-6 sm:py-10 lg:pb-12">
       <div className="max-w-6xl mx-auto">
         <div className="mb-6">
-          <Link href="/products" className="inline-flex items-center text-muted-foreground hover:text-primary">
+          <Link href="/products" className="inline-flex min-h-11 items-center text-muted-foreground hover:text-primary">
             <ArrowLeft className="w-4 h-4 mr-2" />
             Quay lại Sản Phẩm
           </Link>
@@ -282,18 +292,18 @@ export default function CheckoutPage() {
                 <CardTitle className="font-serif text-2xl font-semibold">Thông tin khách hàng</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 [&_input]:min-h-11 [&_label]:mb-1.5 [&_label]:block">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 [&_input]:min-h-12 [&_input]:text-base [&_label]:mb-1.5 [&_label]:block">
                   <div>
                     <Label htmlFor="name">Họ tên *</Label>
-                    <Input id="name" name="name" value={formData.name} onChange={handleInputChange} required placeholder="Nguyễn Văn A" />
+                    <Input id="name" name="name" autoComplete="name" maxLength={120} value={formData.name} onChange={handleInputChange} required placeholder="Nguyễn Văn A" />
                   </div>
                   <div>
                     <Label htmlFor="email">Email *</Label>
-                    <Input id="email" name="email" type="email" value={formData.email} onChange={handleInputChange} required placeholder="email@example.com" />
+                    <Input id="email" name="email" type="email" inputMode="email" autoComplete="email" maxLength={160} value={formData.email} onChange={handleInputChange} required placeholder="email@example.com" />
                   </div>
                   <div>
                     <Label htmlFor="phone">Số điện thoại *</Label>
-                    <Input id="phone" name="phone" type="tel" value={formData.phone} onChange={handleInputChange} required placeholder="090 123 4567" />
+                    <Input id="phone" name="phone" type="tel" inputMode="tel" autoComplete="tel" maxLength={20} value={formData.phone} onChange={handleInputChange} required placeholder="090 123 4567" />
                   </div>
                 </div>
               </CardContent>
@@ -307,14 +317,14 @@ export default function CheckoutPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 [&_input]:min-h-11 [&_label]:mb-1.5 [&_label]:block">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 [&_input]:min-h-12 [&_input]:text-base [&_label]:mb-1.5 [&_label]:block">
                   <div className="md:col-span-2">
                     <Label htmlFor="address">Địa chỉ *</Label>
-                    <Input id="address" name="address" value={formData.address} onChange={handleInputChange} required placeholder="Số nhà, tên đường" />
+                    <Input id="address" name="address" autoComplete="address-line1" maxLength={220} value={formData.address} onChange={handleInputChange} required placeholder="Số nhà, tên đường" />
                   </div>
                   <div>
                     <Label htmlFor="province">Tỉnh/Thành *</Label>
-                    <Input id="province" name="province" value={formData.province} onChange={handleInputChange} required placeholder="TP. Hồ Chí Minh" />
+                    <Input id="province" name="province" autoComplete="address-level1" maxLength={100} value={formData.province} onChange={handleInputChange} required placeholder="TP. Hồ Chí Minh" />
                     {shippingQuoteRequired && (
                       <p className="mt-2 text-xs font-medium leading-5 text-[#8a5a18]">
                         Địa chỉ ngoài TP.HCM. Phí vận chuyển sẽ được shop trao đổi lại qua tin nhắn.
@@ -323,11 +333,11 @@ export default function CheckoutPage() {
                   </div>
                   <div>
                     <Label htmlFor="district">Quận/Huyện *</Label>
-                    <Input id="district" name="district" value={formData.district} onChange={handleInputChange} required placeholder="Quận 1" />
+                    <Input id="district" name="district" autoComplete="address-level2" maxLength={100} value={formData.district} onChange={handleInputChange} required placeholder="Quận 1" />
                   </div>
                   <div>
                     <Label htmlFor="ward">Phường/Xã *</Label>
-                    <Input id="ward" name="ward" value={formData.ward} onChange={handleInputChange} required placeholder="Phường 5" />
+                    <Input id="ward" name="ward" autoComplete="address-level3" maxLength={100} value={formData.ward} onChange={handleInputChange} required placeholder="Phường 5" />
                   </div>
                 </div>
               </CardContent>
@@ -352,7 +362,7 @@ export default function CheckoutPage() {
                   </div>
                 ) : (
                   <>
-                    <label className="flex cursor-pointer items-center justify-between gap-3 border p-4 hover:bg-muted/50">
+                    <label className="flex min-h-20 cursor-pointer items-center justify-between gap-3 border p-4 hover:bg-muted/50">
                       <div className="flex items-center gap-3">
                         <input type="radio" name="shippingMethod" value="GHN_STANDARD" checked={formData.shippingMethod === "GHN_STANDARD"} onChange={handleInputChange} className="h-4 w-4" />
                         <div>
@@ -362,7 +372,7 @@ export default function CheckoutPage() {
                       </div>
                       <p className="font-semibold">30.000₫</p>
                     </label>
-                    <label className="flex cursor-pointer items-center justify-between gap-3 border p-4 hover:bg-muted/50">
+                    <label className="flex min-h-20 cursor-pointer items-center justify-between gap-3 border p-4 hover:bg-muted/50">
                       <div className="flex items-center gap-3">
                         <input type="radio" name="shippingMethod" value="GHN_EXPRESS" checked={formData.shippingMethod === "GHN_EXPRESS"} onChange={handleInputChange} className="h-4 w-4" />
                         <div>
@@ -385,7 +395,7 @@ export default function CheckoutPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                <label className="flex cursor-pointer items-start border p-4 hover:bg-muted/50">
+                <label className="flex min-h-20 cursor-pointer items-start border p-4 hover:bg-muted/50">
                   <input type="radio" name="paymentMethod" value="COD" checked={formData.paymentMethod === "COD"} onChange={handleInputChange} className="mt-1 mr-3 h-4 w-4" />
                   <div>
                     <p className="font-semibold">Thanh Toán Khi Nhận Hàng (COD)</p>
@@ -402,7 +412,7 @@ export default function CheckoutPage() {
               </CardHeader>
               <CardContent>
                 <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
-                  <Input name="voucherCode" value={formData.voucherCode} onChange={handleInputChange} placeholder="Nhập mã giảm giá" disabled={voucherApplied || voucherChecking} />
+                  <Input name="voucherCode" autoComplete="off" className="min-h-12 text-base uppercase" value={formData.voucherCode} onChange={handleInputChange} placeholder="Nhập mã giảm giá" disabled={voucherApplied || voucherChecking} />
                   <Button
                     type="button"
                     onClick={handleApplyVoucher}
@@ -442,19 +452,10 @@ export default function CheckoutPage() {
               disabled={
                 loading ||
                 voucherChecking ||
-                (formData.voucherCode.trim().length > 0 && !voucherApplied && !voucherError)
+                voucherNeedsValidation
               }
             >
-              {loading
-                ? "Đang xử lý..."
-                : voucherChecking
-                ? "Đang kiểm tra voucher..."
-                : (formData.voucherCode.trim().length > 0 && !voucherApplied && !voucherError)
-                ? "Vui lòng kiểm tra voucher trước"
-                : shippingQuoteRequired
-                ? "Gửi yêu cầu - Trao đổi phí sau"
-                : `Đặt Hàng - ${total.toLocaleString("vi-VN")}₫`
-              }
+              {submitLabel}
             </Button>
           </div>
 
@@ -522,10 +523,10 @@ export default function CheckoutPage() {
               disabled={
                 loading ||
                 voucherChecking ||
-                (formData.voucherCode.trim().length > 0 && !voucherApplied && !voucherError)
+                voucherNeedsValidation
               }
             >
-              {loading ? "Đang xử lý..." : shippingQuoteRequired ? "Gửi yêu cầu" : "Đặt hàng"}
+              <span className="max-w-[170px] truncate">{submitLabel}</span>
             </Button>
           </div>
         </div>
