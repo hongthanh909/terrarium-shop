@@ -75,7 +75,7 @@ async function BrandGallerySection() {
         .sort((a: any, b: any) => (a.order ?? 0) - (b.order ?? 0));
       if (active.length > 0) {
         return (
-          <section className="py-14 px-6 bg-white">
+          <section className="bg-white px-4 py-10 sm:px-6 sm:py-14">
             <div className="max-w-7xl mx-auto">
 
               <BrandGallery images={active as any} />
@@ -92,7 +92,7 @@ async function BrandGallerySection() {
 
 function BrandGallerySkeleton() {
   return (
-    <section className="py-14 px-6 bg-white">
+    <section className="bg-white px-4 py-10 sm:px-6 sm:py-14">
       <div className="max-w-7xl mx-auto">
         <div className="flex gap-4">
           {["h-56", "h-40", "h-64", "h-48"].map((h, i) => (
@@ -119,33 +119,32 @@ async function FeaturedProductsSection() {
   }
 
   return (
-    <section className="border-t border-border bg-white px-5 py-20 sm:px-6 sm:py-24">
+    <section className="border-t border-border bg-white px-4 py-10 sm:px-6 sm:py-16">
       <div className="max-w-7xl mx-auto">
         <ScrollReveal direction="up">
-          <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4">
+          <div className="mb-5 flex items-end justify-between gap-4 sm:mb-7">
             <div>
-              <p className="mb-3 text-xs font-semibold uppercase text-muted-foreground">Được lựa chọn cho bạn</p>
-              <h2 className="font-serif text-3xl font-semibold text-foreground md:text-4xl">Sản phẩm nổi bật</h2>
+              <p className="mb-1.5 text-xs font-semibold text-primary">Được lựa chọn cho bạn</p>
+              <h2 className="text-xl font-bold text-foreground sm:text-3xl">Sản phẩm nổi bật</h2>
             </div>
-            <Button variant="outline" asChild className="self-start border-border bg-white text-foreground hover:bg-muted md:self-auto">
+            <Button variant="soft" size="sm" asChild className="shrink-0">
               <Link href="/products" className="group">
-                Xem Tất Cả
+                Xem tất cả
                 <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </Link>
             </Button>
           </div>
-          <div className="mb-12 h-px w-full bg-border" />
         </ScrollReveal>
         {products.length === 0 ? (
           <ScrollReveal direction="up" initiallyVisible>
-            <div className="rounded-lg bg-muted py-24 text-center">
+            <div className="rounded-card bg-muted py-16 text-center sm:py-24">
               <Sprout className="mx-auto mb-4 h-16 w-16 text-muted-foreground" />
               <p className="text-[hsl(220,14%,45%)] font-semibold text-lg mb-1">Chưa có sản phẩm nổi bật</p>
               <p className="text-sm text-[hsl(220,14%,55%)]">Hãy quay lại sau nhé.</p>
             </div>
           </ScrollReveal>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
+          <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4 lg:gap-5">
             {products.map((product: any, index: number) => {
               const ratingSummary = getProductRatingSummary(product);
               return (
@@ -195,22 +194,22 @@ async function LatestBlogSection() {
   ];
 
   return (
-    <section className="border-t border-border bg-[#f7f8f6] px-5 py-20 sm:px-6 sm:py-24">
+    <section className="border-t border-border bg-muted/45 px-4 py-10 sm:px-6 sm:py-16">
       <div className="max-w-7xl mx-auto">
         <ScrollReveal direction="up">
-          <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4">
+          <div className="mb-5 flex items-end justify-between gap-4 sm:mb-7">
             <div>
 
-              <h2 className="font-serif text-3xl font-semibold text-foreground md:text-4xl">Góc chia sẻ</h2>
+              <p className="mb-1.5 text-xs font-semibold text-primary">Chăm sóc khoảng xanh</p>
+              <h2 className="text-xl font-bold text-foreground sm:text-3xl">Góc chia sẻ</h2>
             </div>
-            <Button variant="outline" asChild className="self-start border-border bg-white text-foreground hover:bg-muted md:self-auto">
+            <Button variant="soft" size="sm" asChild className="shrink-0">
               <Link href="/blog" className="group">
-                Xem Tất Cả Bài Viết
+                Xem tất cả
                 <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </Link>
             </Button>
           </div>
-          <div className="mb-12 h-px w-full bg-border" />
         </ScrollReveal>
         {latestPosts.length === 0 ? (
           <ScrollReveal direction="up">
@@ -221,21 +220,21 @@ async function LatestBlogSection() {
             </div>
           </ScrollReveal>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+          <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6">
             {latestPosts.map((post: any, index: number) => (
               <ScrollReveal key={post.id} direction="up" delay={index * 0.1} className="h-full">
                 <Link href={`/blog/${post.slug}`} className="block h-full">
-                  <Card className="group flex h-full flex-col overflow-hidden rounded-lg border border-border bg-white transition-[border-color,box-shadow] duration-200 hover:border-foreground/25 hover:shadow-soft-lg">
+                  <Card className="group flex h-full flex-col overflow-hidden rounded-card border border-border bg-white transition-[border-color,box-shadow] duration-200 hover:border-primary-border hover:shadow-floating">
                     <CardContent className="p-0 flex flex-col h-full">
                       <div className="relative aspect-video overflow-hidden bg-muted">
                         <ImageWrapper src={post.thumbnail || post.images?.[0] || fallbackImages[index % 3]} alt={post.title} fill noRound className="object-cover group-hover:scale-105 transition-transform duration-500" sizes="(max-width: 768px) 100vw, 33vw" />
                         <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors duration-300" />
                       </div>
-                      <div className="p-6 flex-1 flex flex-col">
+                      <div className="flex flex-1 flex-col p-4 sm:p-5">
                         {post.category && (
                           <Badge variant="secondary" className="mb-3 w-fit bg-muted text-xs text-foreground">{post.category.name}</Badge>
                         )}
-                        <h3 className="mb-3 min-h-[3.5rem] line-clamp-2 text-xl font-bold text-foreground transition-colors group-hover:text-foreground/70">{post.title}</h3>
+                        <h3 className="mb-2 line-clamp-2 text-base font-bold leading-6 text-foreground transition-colors group-hover:text-primary sm:text-lg">{post.title}</h3>
                         <p className="text-sm text-[hsl(220,14%,45%)] line-clamp-3 mb-4 flex-1">{(post.content || post.intro || post.body || '').replace(/<[^>]*>/g, '').slice(0, 150)}...</p>
                         <div className="flex items-center gap-2 text-xs font-semibold uppercase text-muted-foreground">
                           <Calendar className="w-3.5 h-3.5" />
@@ -314,7 +313,7 @@ export default async function Home() {
         id="about"
         className="relative overflow-hidden bg-white"
       >
-        <div className="relative min-h-[clamp(620px,calc(100dvh-96px),780px)] w-full sm:min-h-[calc(100dvh-96px)]">
+        <div className="relative min-h-[520px] w-full sm:min-h-[calc(100dvh-96px)] sm:max-h-[780px]">
           <Image
             src="/home-hero-full-banner.png"
             alt="Banner terrarium Tiệm Rêu Décor với sản phẩm rêu decor và lời giới thiệu"
@@ -323,23 +322,23 @@ export default async function Home() {
             sizes="100vw"
             className="select-none object-cover object-[61%_center] sm:object-center"
           />
-          <div className="absolute left-5 right-5 top-[12%] z-10 sm:left-[5.8%] sm:right-auto sm:top-[19%] sm:w-[39%] lg:w-[36%]">
-            <h1 className="max-w-[10.5ch] font-serif text-[clamp(2.1rem,10vw,3rem)] font-semibold leading-[1.08] text-foreground drop-shadow-[0_1px_0_rgba(255,255,255,0.5)] sm:max-w-[11ch] sm:text-5xl lg:text-6xl">
+          <div className="absolute left-4 right-4 top-[10%] z-10 sm:left-[5.8%] sm:right-auto sm:top-[19%] sm:w-[39%] lg:w-[36%]">
+            <h1 className="max-w-[11ch] text-[2rem] font-bold leading-[1.1] text-foreground drop-shadow-[0_1px_0_rgba(255,255,255,0.65)] sm:text-5xl lg:text-6xl">
               Một chút rêu - một chút xanh
             </h1>
             <p className="mt-3 max-w-[24rem] text-sm font-medium leading-relaxed text-foreground/80 sm:mt-4 sm:max-w-xl sm:text-lg lg:text-xl">
               Một góc xanh nhỏ, một khoảng bình yên riêng
             </p>
-            <div className="mt-5 flex max-w-full flex-wrap items-center gap-3 sm:mt-8">
+            <div className="mt-5 flex max-w-full items-center gap-2.5 sm:mt-8 sm:gap-3">
               <Link
                 href="/products"
-                className="group relative flex h-11 min-w-[118px] items-center justify-center overflow-hidden rounded-md border border-foreground bg-foreground px-5 text-sm font-semibold text-white shadow-sm transition-[background-color,transform] duration-150 hover:bg-foreground/85 active:scale-[0.98] sm:h-12 sm:min-w-[148px] sm:px-8"
+                className="group relative flex h-12 min-w-[112px] items-center justify-center overflow-hidden rounded-control bg-primary px-5 text-sm font-semibold text-white shadow-primary-floating transition-[background-color,transform] duration-150 hover:bg-primary-hover active:scale-[0.98] sm:min-w-[148px] sm:px-8"
               >
                 <span className="relative">Mua ngay</span>
               </Link>
               <Link
                 href="/explore"
-                className="group flex h-11 min-w-0 max-w-full flex-1 basis-[178px] items-center justify-center rounded-md border border-border bg-white/92 px-4 text-[13px] font-semibold text-foreground shadow-sm backdrop-blur-sm transition-[background-color,border-color,transform] duration-150 hover:border-foreground/25 hover:bg-muted active:scale-[0.98] sm:h-12 sm:min-w-[216px] sm:flex-none sm:px-7 sm:text-sm"
+                className="group flex h-12 min-w-0 flex-1 items-center justify-center rounded-control border border-primary-border bg-white/92 px-3 text-[13px] font-semibold text-primary shadow-sm backdrop-blur-sm transition-[background-color,border-color,transform] duration-150 hover:bg-primary-soft active:scale-[0.98] sm:min-w-[216px] sm:flex-none sm:px-7 sm:text-sm"
               >
                 Khám phá bộ sưu tập
                 <ArrowRight className="ml-2 h-4 w-4 stroke-[1.8] transition-transform duration-300 group-hover:translate-x-1" />
@@ -358,9 +357,9 @@ export default async function Home() {
                   <Link
                     href="/policies"
                     key={item.title}
-                    className={`group flex min-h-[58px] flex-col items-center justify-center gap-1 px-1 py-2 text-center transition-colors duration-200 hover:bg-muted/70 sm:min-h-[66px] sm:flex-row sm:gap-3 sm:px-5 sm:text-left ${index > 0 ? "border-l border-border" : ""}`}
+                    className={`group flex min-h-[64px] flex-col items-center justify-center gap-1 px-1 py-2 text-center transition-colors duration-200 hover:bg-primary-soft sm:min-h-[66px] sm:flex-row sm:gap-3 sm:px-5 sm:text-left ${index > 0 ? "border-l border-border" : ""}`}
                   >
-                    <Icon className="h-4 w-4 shrink-0 stroke-[1.55] text-foreground/75 sm:h-6 sm:w-6" />
+                    <Icon className="h-4 w-4 shrink-0 stroke-[1.7] text-primary sm:h-6 sm:w-6" />
                     <span className="min-w-0">
                       <span className="block text-xs font-semibold leading-tight tracking-[0] sm:text-[15px]">{item.title}</span>
                       <span className="mt-0.5 hidden text-xs leading-snug text-muted-foreground sm:block">{item.subtitle}</span>

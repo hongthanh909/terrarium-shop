@@ -136,16 +136,16 @@ export function ProductsClient({
 
   return (
     <PageTransition>
-      <div className="min-h-[100dvh] bg-white px-4 pb-20 pt-6 sm:px-6 sm:pb-24 sm:pt-12">
+      <div className="min-h-[100dvh] bg-white px-4 pb-28 pt-5 sm:px-6 sm:pb-24 sm:pt-10">
         <div className="max-w-7xl mx-auto">
 
           {/* Header */}
-          <SlideInHeading className="mb-6 border-b border-border pb-6 sm:mb-12 sm:pb-10">
+          <SlideInHeading className="mb-5 sm:mb-10">
             <div className="grid gap-4 sm:gap-6 md:grid-cols-[1fr_auto] md:items-end">
               <div>
-                <p className="mb-2 text-xs font-semibold uppercase text-muted-foreground sm:mb-3">Bộ sưu tập Tiệm Rêu</p>
-                <h1 className="max-w-xl font-serif text-3xl font-semibold leading-tight text-foreground sm:text-5xl">Terrarium cho từng khoảng sống</h1>
-                <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground sm:mt-4 sm:text-base">
+                <p className="mb-1.5 text-xs font-semibold text-primary sm:mb-2">Bộ sưu tập Tiệm Rêu</p>
+                <h1 className="max-w-xl text-2xl font-bold leading-tight text-foreground sm:text-4xl">Terrarium cho từng khoảng sống</h1>
+                <p className="mt-2 max-w-2xl text-sm leading-5 text-muted-foreground sm:mt-3 sm:text-base sm:leading-6">
                   Khám phá {totalProducts} thiết kế thủ công, từ những bể nhỏ để bàn đến hệ sinh thái làm theo yêu cầu.
                 </p>
               </div>
@@ -157,9 +157,9 @@ export function ProductsClient({
                   placeholder="Tìm kiếm sản phẩm..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="h-12 flex-1 rounded-md border-border bg-white text-base md:w-72 md:text-sm"
+                  className="h-12 flex-1 rounded-input border-border bg-white text-base md:w-72 md:text-sm"
                 />
-                <Button type="submit" size="sm" className="h-12 w-12 rounded-md bg-foreground hover:bg-foreground/85" aria-label="Tìm kiếm sản phẩm">
+                <Button type="submit" size="icon" className="h-12 w-12 rounded-control" aria-label="Tìm kiếm sản phẩm">
                   <Search className="w-4 h-4" />
                 </Button>
               </form>
@@ -168,7 +168,7 @@ export function ProductsClient({
 
           {/* Category Filter */}
           <motion.div
-            className="sticky top-[65px] z-20 -mx-4 mb-8 border-b border-border bg-white/95 px-4 py-3 backdrop-blur-md sm:top-[101px] sm:mx-0 sm:mb-12 sm:rounded-lg sm:border sm:px-5 sm:py-4"
+            className="sticky top-[57px] z-20 -mx-4 mb-7 border-y border-border bg-white/95 px-4 py-2.5 backdrop-blur-md sm:top-[89px] sm:mx-0 sm:mb-10 sm:rounded-input sm:border sm:px-4 sm:py-3"
             initial={prefersReducedMotion ? false : { opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.15, duration: 0.4 }}
@@ -181,13 +181,13 @@ export function ProductsClient({
               <div className="h-px flex-1 bg-border" />
             </div>
 
-            <div className="flex flex-nowrap sm:flex-wrap gap-2.5 overflow-x-auto pb-2 scrollbar-none -mx-4 px-4 sm:mx-0 sm:px-0">
+            <div className="-mx-4 flex flex-nowrap gap-2 overflow-x-auto px-4 scrollbar-none sm:mx-0 sm:flex-wrap sm:px-0">
               <button
                 onClick={() => handleCategoryChange(null)}
-                className={`min-h-11 whitespace-nowrap rounded-md border px-4 py-2 text-sm font-semibold transition-colors duration-200 ${
+                className={`min-h-11 whitespace-nowrap rounded-control border px-4 py-2 text-sm font-semibold transition-colors duration-150 ${
                   selectedCategory === null
-                    ? "border-foreground bg-foreground text-white"
-                    : "border-border bg-white text-muted-foreground hover:border-foreground/30 hover:bg-muted hover:text-foreground"
+                    ? "border-primary bg-primary text-white"
+                    : "border-border bg-white text-muted-foreground hover:border-primary-border hover:bg-primary-soft hover:text-primary"
                 }`}
               >
                 Tất Cả
@@ -196,10 +196,10 @@ export function ProductsClient({
                 <button
                   key={cat.id}
                   onClick={() => handleCategoryChange(cat.id)}
-                  className={`min-h-11 whitespace-nowrap rounded-md border px-4 py-2 text-sm font-semibold transition-colors duration-200 ${
+                  className={`min-h-11 whitespace-nowrap rounded-control border px-4 py-2 text-sm font-semibold transition-colors duration-150 ${
                     selectedCategory === cat.id
-                      ? "border-foreground bg-foreground text-white"
-                      : "border-border bg-white text-muted-foreground hover:border-foreground/30 hover:bg-muted hover:text-foreground"
+                      ? "border-primary bg-primary text-white"
+                      : "border-border bg-white text-muted-foreground hover:border-primary-border hover:bg-primary-soft hover:text-primary"
                   }`}
                 >
                   {cat.name}
@@ -227,7 +227,7 @@ export function ProductsClient({
               </Button>
             </motion.div>
           ) : isGroupedView ? (
-            <div className="space-y-10 sm:space-y-20">
+            <div className="space-y-10 sm:space-y-16">
               {groupedProducts.map((group, groupIndex) => (
                 <motion.section
                   key={group.category.id}
@@ -236,24 +236,24 @@ export function ProductsClient({
                   transition={{ delay: 0.12 + groupIndex * 0.05, duration: 0.4 }}
                   className="scroll-mt-24"
                 >
-                  <div className="mb-5 flex flex-col gap-3 border-t border-border pt-5 sm:mb-8 sm:flex-row sm:items-end sm:justify-between sm:pt-6">
+                  <div className="mb-4 flex items-end justify-between gap-3 border-t border-border pt-5 sm:mb-6 sm:pt-6">
                     <div>
-                      <h2 className="font-serif text-2xl font-semibold text-foreground sm:text-3xl">
+                      <h2 className="text-xl font-bold text-foreground sm:text-2xl">
                         {group.category.name}
                       </h2>
-                      <p className="text-sm text-gray-500 mt-1">
+                      <p className="mt-1 text-xs text-muted-foreground sm:text-sm">
                         {group.products.length} sản phẩm trong danh mục này
                       </p>
                     </div>
                     <button
                       onClick={() => handleCategoryChange(group.category.id)}
-                      className="min-h-11 self-start rounded-md border border-border bg-white px-4 py-2 text-sm font-semibold text-foreground transition-colors hover:bg-muted sm:self-auto"
+                      className="min-h-11 shrink-0 rounded-control border border-primary-border bg-primary-soft px-3 py-2 text-xs font-semibold text-primary transition-colors hover:bg-primary/10 sm:px-4 sm:text-sm"
                     >
-                      Xem riêng danh mục
+                      Xem tất cả
                     </button>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-3">
+                  <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4 lg:gap-5">
                     {group.products.map((product, productIndex) => {
                       const ratingSummary = getProductRatingSummary(product);
                       return (
@@ -282,7 +282,7 @@ export function ProductsClient({
               ))}
             </div>
           ) : (
-            <div className="grid grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-3">
+            <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4 lg:gap-5">
               {initialProducts.map((product, productIndex) => {
                 const ratingSummary = getProductRatingSummary(product);
                 return (
