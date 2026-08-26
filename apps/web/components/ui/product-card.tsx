@@ -136,7 +136,7 @@ export function ProductCard({
       <div className="flex flex-1 flex-col p-2.5 sm:p-3.5">
         <div className="mb-1.5 flex min-w-0 items-center justify-between gap-2 text-[11px] leading-4 text-muted-foreground">
           <span className="truncate font-medium">{category?.name || "Sản phẩm"}</span>
-          <span className={cn("shrink-0", isOutOfStock ? "text-destructive" : "text-primary")}>
+          <span className={cn("shrink-0", isOutOfStock ? "text-destructive" : "text-emerald-700")}>
             {isOutOfStock ? "Hết hàng" : "Còn hàng"}
           </span>
         </div>

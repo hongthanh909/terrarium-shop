@@ -783,7 +783,7 @@ export function ProductDetailClient({
                   {product.category.name}
                 </span>
                 {product.inventory > 0 ? (
-                  <span className="flex items-center gap-1.5 rounded-full border border-primary-border bg-primary-soft px-2.5 py-1 text-xs font-medium text-primary">
+                  <span className="flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700">
                     <span className="h-2 w-2 rounded-full bg-presence" />Còn hàng
                   </span>
                 ) : (

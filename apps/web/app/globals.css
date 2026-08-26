@@ -21,11 +21,11 @@
     --card-foreground: 0 0% 15%;
     --popover: 0 0% 100%;
     --popover-foreground: 0 0% 15%;
-    --primary: 163 94% 24%;
+    --primary: 0 0% 9%;
     --primary-foreground: 0 0% 100%;
-    --primary-hover: 163 88% 20%;
-    --primary-soft: 152 81% 96%;
-    --primary-border: 156 72% 67%;
+    --primary-hover: 0 0% 18%;
+    --primary-soft: 0 0% 96%;
+    --primary-border: 0 0% 82%;
     --secondary: 0 0% 96%;
     --secondary-foreground: 0 0% 15%;
     --muted: 0 0% 96%;
@@ -38,7 +38,7 @@
     --border-strong: 0 0% 78%;
     --input: 0 0% 86%;
     --disabled: 0 0% 66%;
-    --ring: 163 94% 24%;
+    --ring: 0 0% 9%;
     --favorite: 0 84% 60%;
     --favorite-hover: 0 72% 51%;
     --rating: 36 71% 42%;
@@ -49,30 +49,30 @@
   }
 
   .dark {
-    --background: 153 35% 10%;
-    --foreground: 42 39% 94%;
-    --card: 155 29% 13%;
-    --card-foreground: 42 39% 94%;
-    --popover: 155 29% 13%;
-    --popover-foreground: 42 39% 94%;
-    --primary: 156 72% 67%;
-    --primary-foreground: 158 70% 11%;
-    --primary-hover: 156 64% 58%;
-    --primary-soft: 150 22% 18%;
-    --primary-border: 157 24% 25%;
-    --secondary: 150 22% 18%;
-    --secondary-foreground: 42 39% 94%;
-    --muted: 150 22% 18%;
-    --muted-foreground: 135 9% 75%;
-    --accent: 150 22% 18%;
-    --accent-foreground: 42 39% 94%;
+    --background: 0 0% 7%;
+    --foreground: 0 0% 96%;
+    --card: 0 0% 10%;
+    --card-foreground: 0 0% 96%;
+    --popover: 0 0% 10%;
+    --popover-foreground: 0 0% 96%;
+    --primary: 0 0% 96%;
+    --primary-foreground: 0 0% 9%;
+    --primary-hover: 0 0% 86%;
+    --primary-soft: 0 0% 16%;
+    --primary-border: 0 0% 28%;
+    --secondary: 0 0% 16%;
+    --secondary-foreground: 0 0% 96%;
+    --muted: 0 0% 16%;
+    --muted-foreground: 0 0% 72%;
+    --accent: 0 0% 16%;
+    --accent-foreground: 0 0% 96%;
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 98%;
-    --border: 157 24% 25%;
-    --border-strong: 135 9% 45%;
-    --input: 157 24% 25%;
-    --disabled: 135 9% 55%;
-    --ring: 38 49% 66%;
+    --border: 0 0% 24%;
+    --border-strong: 0 0% 38%;
+    --input: 0 0% 24%;
+    --disabled: 0 0% 48%;
+    --ring: 0 0% 96%;
   }
 }
 
@@ -103,6 +103,16 @@
 
   body {
     background-color: #ffffff;
+  }
+
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus,
+  input:-webkit-autofill:active {
+    -webkit-text-fill-color: hsl(var(--foreground));
+    caret-color: hsl(var(--foreground));
+    box-shadow: 0 0 0 1000px hsl(var(--background)) inset;
+    transition: background-color 9999s ease-out 0s;
   }
 }
 
