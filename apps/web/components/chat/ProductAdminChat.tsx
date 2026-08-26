@@ -185,8 +185,8 @@ export function ProductAdminChat({
         size={compact ? "icon" : "lg"}
         className={cn(
           compact
-            ? "h-12 w-12 shrink-0 border-[#8ca47c] bg-[#f5f9f2] text-[#365229]"
-            : "w-full border-2 border-[#6d8c5a] bg-[#f7faf5] text-[#365229] hover:bg-primary-soft",
+            ? "h-12 w-12 shrink-0 border-border-strong bg-white text-foreground hover:bg-muted"
+            : "w-full border-border-strong bg-white text-foreground hover:bg-muted",
           buttonClassName,
         )}
         onClick={openChat}

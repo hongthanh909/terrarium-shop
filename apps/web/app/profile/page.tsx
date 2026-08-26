@@ -6,7 +6,7 @@ import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
-  User, Mail, Phone, Star, Award, ShoppingBag,
+  User, Mail, Phone, Star, ShoppingBag, CalendarDays,
   Lock, LogOut, ChevronRight, Save, Eye, EyeOff, ArrowLeft
 } from "lucide-react";
 import { showToast } from "@/components/ui/custom-toast";
@@ -29,17 +29,9 @@ interface ProfileData {
   image?: string | null;
   role: string;
   loyaltyPoints: number;
-  loyaltyTier: string;
   createdAt: string;
   orders: Order[];
 }
-
-const TIER_CONFIG = {
-  BRONZE:   { label: "Đồng",   color: "from-amber-600 to-amber-400",  bg: "bg-amber-50",  text: "text-amber-700",  border: "border-amber-200", icon: "🥉", next: 500 },
-  SILVER:   { label: "Bạc",    color: "from-slate-400 to-slate-300",   bg: "bg-slate-50",  text: "text-slate-700",  border: "border-slate-200", icon: "🥈", next: 1500 },
-  GOLD:     { label: "Vàng",   color: "from-yellow-500 to-yellow-300", bg: "bg-yellow-50", text: "text-yellow-700", border: "border-yellow-200", icon: "🥇", next: 3000 },
-  PLATINUM: { label: "Bạch kim", color: "from-violet-500 to-purple-400", bg: "bg-violet-50", text: "text-violet-700", border: "border-violet-200", icon: "💎", next: null },
-};
 
 const STATUS_LABELS: Record<string, { label: string; color: string }> = {
   PENDING:    { label: "Chờ xử lý",  color: "bg-yellow-100 text-yellow-800" },
@@ -223,12 +215,6 @@ export default function ProfilePage() {
 
   if (!profile) return null;
 
-  const tier = TIER_CONFIG[profile.loyaltyTier as keyof typeof TIER_CONFIG] || TIER_CONFIG.BRONZE;
-  const nextTierPoints = tier.next;
-  const progressPercent = nextTierPoints
-    ? Math.min((profile.loyaltyPoints / nextTierPoints) * 100, 100)
-    : 100;
-
   return (
     <div className="min-h-[100dvh] bg-white pb-28 pt-4 sm:py-10">
       <div className="max-w-4xl mx-auto px-4">
@@ -251,35 +237,14 @@ export default function ProfilePage() {
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-1">
                 <h1 className="truncate text-xl font-bold sm:text-2xl">{profile.name}</h1>
-                <Award className="h-5 w-5 shrink-0" aria-label={`Hạng ${tier.label}`} />
               </div>
               <p className="truncate text-sm text-white/80">{profile.email}</p>
-              <div className="flex items-center gap-3 mt-2">
-                <span className="bg-white/20 backdrop-blur px-3 py-1 rounded-full text-sm font-semibold">
-                  {tier.label}
-                </span>
-                <span className="text-white/80 text-sm">
-                  {profile.loyaltyPoints.toLocaleString("vi-VN")} điểm
-                </span>
+              <div className="mt-2 flex items-center gap-2 text-sm text-white/80">
+                <Star className="h-4 w-4" aria-hidden="true" />
+                <span>{profile.loyaltyPoints.toLocaleString("vi-VN")} điểm tích lũy</span>
               </div>
             </div>
           </div>
-
-          {/* Progress bar */}
-          {nextTierPoints && (
-            <div className="mt-4">
-              <div className="flex justify-between text-xs text-white/70 mb-1">
-                <span>{profile.loyaltyPoints} điểm</span>
-                <span>Cần {nextTierPoints} điểm để lên hạng</span>
-              </div>
-              <div className="w-full h-2 bg-white/20 rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-white rounded-full transition-all duration-700"
-                  style={{ width: `${progressPercent}%` }}
-                />
-              </div>
-            </div>
-          )}
           
           <div className="mt-4 pt-4 border-t border-white/10 flex justify-end">
             <Link 
@@ -588,7 +553,7 @@ export default function ProfilePage() {
           {[
             { label: "Tổng đơn hàng", value: profile.orders.length + "+", icon: ShoppingBag },
             { label: "Điểm tích lũy",  value: profile.loyaltyPoints.toLocaleString("vi-VN"), icon: Star },
-            { label: "Hạng thành viên", value: tier.label, icon: Award },
+            { label: "Thành viên từ", value: new Date(profile.createdAt).toLocaleDateString("vi-VN", { month: "2-digit", year: "numeric" }), icon: CalendarDays },
           ].map(({ label, value, icon: Icon }) => (
              <div key={label} className="rounded-tile border border-border bg-white p-4 text-center shadow-sm">
                <Icon className="mx-auto mb-2 h-5 w-5 text-primary" />

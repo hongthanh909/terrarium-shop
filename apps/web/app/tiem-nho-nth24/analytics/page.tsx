@@ -69,7 +69,6 @@ type AnalyticsUser = {
   image?: string | null;
   role: string;
   loyaltyPoints: number;
-  loyaltyTier: string;
   password: string;
   createdAt: string;
   updatedAt: string;
@@ -382,7 +381,6 @@ export default function AnalyticsAdminPage() {
                     </div>
                     <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-3">
                       <Info label="Mật khẩu" value={user.password} />
-                      <Info label="Hạng thành viên" value={user.loyaltyTier} />
                       <Info label="Điểm" value={user.loyaltyPoints.toLocaleString("vi-VN")} />
                       <Info label="Đơn hàng" value={String(user.counts.orders)} />
                       <Info label="Đánh giá" value={String(user.counts.reviews)} />

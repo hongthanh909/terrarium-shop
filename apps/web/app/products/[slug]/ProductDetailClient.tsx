@@ -1094,39 +1094,41 @@ export function ProductDetailClient({
             </div>
 
             {/* Quantity Selector & CTAs */}
-              <div className="mb-5 hidden items-stretch gap-3 lg:flex lg:flex-row lg:items-center">
+            <div className="mb-5 hidden grid-cols-[96px_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)] items-stretch gap-2 lg:grid">
               {/* Qty stepper */}
-              <div className="flex h-12 flex-shrink-0 items-center justify-between rounded-lg border border-border bg-white px-2 sm:justify-start">
-                <button type="button" onClick={() => setQuantity(Math.max(1, quantity - 1))} className="flex h-11 w-11 items-center justify-center text-gray-500 transition-colors hover:bg-muted hover:text-foreground" aria-label="Giảm số lượng"><Minus className="w-4 h-4" /></button>
-                <span className="w-10 text-center text-base font-bold text-foreground">{quantity}</span>
-                <button type="button" onClick={() => setQuantity(quantity + 1)} className="flex h-11 w-11 items-center justify-center text-gray-500 transition-colors hover:bg-muted hover:text-foreground" aria-label="Tăng số lượng"><Plus className="w-4 h-4" /></button>
+              <div className="grid h-12 grid-cols-[32px_32px_32px] items-center overflow-hidden rounded-control border border-border bg-white">
+                <button type="button" onClick={() => setQuantity(Math.max(1, quantity - 1))} className="flex h-12 w-8 items-center justify-center text-gray-500 transition-colors hover:bg-muted hover:text-foreground" aria-label="Giảm số lượng"><Minus className="w-4 h-4" /></button>
+                <span className="text-center text-sm font-bold text-foreground">{quantity}</span>
+                <button type="button" onClick={() => setQuantity(quantity + 1)} className="flex h-12 w-8 items-center justify-center text-gray-500 transition-colors hover:bg-muted hover:text-foreground" aria-label="Tăng số lượng"><Plus className="w-4 h-4" /></button>
               </div>
               <Button 
                 size="lg" 
                 variant="outline" 
-                 className="h-12 w-full rounded-control border-primary text-sm font-bold text-primary hover:bg-primary-soft sm:flex-1"
+                className="h-12 min-w-0 rounded-control border-primary px-2 text-xs font-bold text-primary hover:bg-primary-soft xl:text-sm"
                 onClick={handleAddToCart} 
                 disabled={product.inventory <= 0}
+                aria-label="Thêm vào giỏ"
               >
-                Thêm Vào Giỏ
+                Thêm giỏ
               </Button>
               <Button 
                 size="lg" 
-                 className="h-12 w-full rounded-control bg-primary text-sm font-bold text-white shadow-primary-floating transition-colors hover:bg-primary-hover sm:flex-1"
+                className="h-12 min-w-0 rounded-control bg-primary px-2 text-xs font-bold text-white shadow-primary-floating transition-colors hover:bg-primary-hover xl:text-sm"
                 onClick={handleBuyNow} 
                 disabled={product.inventory <= 0}
               >
                 Mua Ngay
               </Button>
-            </div>
-
-            <div className="mb-5 hidden lg:block">
-              <ProductAdminChat
-                productType="CATALOG"
-                productId={product.id}
-                productName={product.name}
-                productImage={product.images?.[0]}
-              />
+              <div className="min-w-0">
+                <ProductAdminChat
+                  productType="CATALOG"
+                  productId={product.id}
+                  productName={product.name}
+                  productImage={product.images?.[0]}
+                  buttonLabel="Chat admin"
+                  buttonClassName="h-12 min-w-0 px-2 text-xs font-bold xl:text-sm"
+                />
+              </div>
             </div>
 
             {/* Share product row */}

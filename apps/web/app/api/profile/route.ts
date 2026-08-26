@@ -35,7 +35,6 @@ export async function GET(request: NextRequest) {
         role: true,
         image: true,
         loyaltyPoints: true,
-        loyaltyTier: true,
         createdAt: true,
         orders: {
           select: {

@@ -17,7 +17,6 @@ interface PointHistory {
 interface PointsData {
   history: PointHistory[];
   currentPoints: number;
-  loyaltyTier: string;
   pagination: {
     page: number;
     limit: number;

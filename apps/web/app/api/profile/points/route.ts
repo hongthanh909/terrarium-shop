@@ -32,13 +32,12 @@ export async function GET(request: NextRequest) {
     // Tính tổng điểm hiện tại (nếu database đã có)
     const customer = await prisma.customer.findUnique({
       where: { id: customerId },
-      select: { loyaltyPoints: true, loyaltyTier: true },
+      select: { loyaltyPoints: true },
     });
 
     return NextResponse.json({
       history: pointsHistory,
       currentPoints: customer?.loyaltyPoints || 0,
-      loyaltyTier: customer?.loyaltyTier || "BRONZE",
       pagination: {
         page,
         limit,
