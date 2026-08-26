@@ -26,7 +26,7 @@ export default async function AdminShopsPage() {
           <h1 className="text-2xl font-bold text-gray-900">Quản lý shop</h1>
           <p className="mt-1 text-sm text-gray-500">Admin duyệt shop, kiểm tra policy, rating và giá sản phẩm thủ công.</p>
         </div>
-        <Link href="/tiem-nho-nth24/marketplace-products" className="rounded-full bg-[#2f4a23] px-4 py-2 text-sm font-semibold text-white">
+        <Link href="/tiem-nho-nth24/marketplace-products" className="rounded-full bg-primary px-4 py-2 text-sm font-semibold text-white">
           Duyệt sản phẩm marketplace
         </Link>
       </div>
@@ -69,7 +69,7 @@ export default async function AdminShopsPage() {
               {shops.map((shop) => (
                 <tr key={shop.id}>
                   <td className="px-3 py-3">
-                    <Link href={`/tiem-nho-nth24/shops/${shop.id}`} className="font-semibold text-gray-900 hover:text-[#2f4a23]">
+                    <Link href={`/tiem-nho-nth24/shops/${shop.id}`} className="font-semibold text-gray-900 hover:text-primary">
                       {shop.name}
                     </Link>
                     <p className="text-xs text-gray-500">{shop.owner.email}</p>

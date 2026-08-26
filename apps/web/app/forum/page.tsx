@@ -124,7 +124,7 @@ export default async function ForumPage({ searchParams }: { searchParams?: Promi
                 ))}
               </select>
             </label>
-            <button className="h-12 rounded-2xl bg-[#f8c400] px-7 text-sm font-bold text-[#203018] shadow-sm hover:bg-[#ffd21f]">
+            <button className="h-12 rounded-control bg-primary px-7 text-sm font-bold text-white shadow-sm transition-colors hover:bg-primary-hover">
               Tìm kiếm
             </button>
           </div>
@@ -140,7 +140,7 @@ export default async function ForumPage({ searchParams }: { searchParams?: Promi
           </div>
 
           <div className="mt-5 flex gap-3 overflow-x-auto rounded-2xl bg-[#f8faf6] p-3">
-            <Link href="/forum" className={`flex min-w-[86px] flex-col items-center gap-2 rounded-2xl px-3 py-2 text-center text-xs font-semibold ${!category ? "bg-white text-[#2f4a23] shadow-sm" : "text-[#526248]"}`}>
+            <Link href="/forum" className={`flex min-w-[86px] flex-col items-center gap-2 rounded-2xl px-3 py-2 text-center text-xs font-semibold ${!category ? "bg-white text-primary shadow-sm" : "text-[#526248]"}`}>
               <ShoppingBag className="h-7 w-7" />
               Tất cả
             </Link>
@@ -161,7 +161,7 @@ export default async function ForumPage({ searchParams }: { searchParams?: Promi
                   key={item.id}
                   href={href}
                   className={`flex min-w-[86px] shrink-0 flex-col items-center gap-2 rounded-2xl px-3 py-2 text-center text-xs font-semibold ${
-                    active ? "bg-white text-[#2f4a23] shadow-sm" : "text-[#526248] hover:bg-white"
+                    active ? "bg-white text-primary shadow-sm" : "text-[#526248] hover:bg-white"
                   }`}
                 >
                   <Icon className="h-7 w-7" />
@@ -185,7 +185,7 @@ export default async function ForumPage({ searchParams }: { searchParams?: Promi
               </div>
               <div className="p-4">
                 <div className="flex items-center justify-between gap-2">
-                  <span className="rounded-full bg-[#eef5e8] px-2.5 py-1 text-xs font-semibold text-[#3d5f2d]">Shop cá nhân</span>
+                  <span className="rounded-full bg-primary-soft px-2.5 py-1 text-xs font-semibold text-primary">Shop cá nhân</span>
                   <span className="text-xs font-semibold text-[#78906b]">{product.shop.ratingPercent}%</span>
                 </div>
                 {product.categories.length > 0 && (
@@ -194,7 +194,7 @@ export default async function ForumPage({ searchParams }: { searchParams?: Promi
                   </p>
                 )}
                 <h2 className="mt-3 line-clamp-2 min-h-10 font-semibold leading-5 text-[#203018]">{product.title}</h2>
-                <p className="mt-2 text-base font-bold text-[#2f4a23]">{money(product.price)}</p>
+                <p className="mt-2 text-base font-bold text-primary">{money(product.price)}</p>
                 <p className="mt-1 truncate text-xs text-[#6f7f66]">{product.shop.name} · {product.shop.province || "Online"}</p>
               </div>
             </Link>

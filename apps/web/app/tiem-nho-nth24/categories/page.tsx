@@ -87,10 +87,10 @@ function CategoryRow({
       onDrop={onDrop}
       className={`bg-white rounded-2xl border transition-all duration-200 overflow-hidden ${
         selectedIds.includes(category.id)
-          ? "border-[#425733] shadow-md"
+          ? "border-primary shadow-md"
           : "border-gray-200 shadow-sm"
       } ${isDragging ? "opacity-60 scale-[0.995]" : ""} ${
-        isDragOver ? "border-[#425733] ring-2 ring-[#425733]/15" : ""
+        isDragOver ? "border-primary ring-2 ring-primary/15" : ""
       }`}
     >
       {/* Header row */}
@@ -99,13 +99,13 @@ function CategoryRow({
           type="checkbox"
           checked={selectedIds.includes(category.id)}
           onChange={() => onSelect(category.id)}
-          className="w-4 h-4 rounded border-gray-300 text-[#425733] focus:ring-[#425733] flex-shrink-0"
+          className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary flex-shrink-0"
         />
 
         <button
           type="button"
           {...dragHandleProps}
-          className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-300 hover:text-[#425733] hover:bg-[#e3ebdd] transition-colors cursor-grab active:cursor-grabbing disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-gray-300"
+          className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-300 hover:text-primary hover:bg-primary-soft transition-colors cursor-grab active:cursor-grabbing disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-gray-300"
           title="Kéo để đổi vị trí danh mục"
         >
           <GripVertical className="w-4 h-4" />
@@ -117,10 +117,10 @@ function CategoryRow({
           disabled={count === 0}
           className="flex items-center gap-3 flex-1 text-left disabled:cursor-default"
         >
-          <div className="w-7 h-7 rounded-lg bg-[#f5f7f4] flex items-center justify-center flex-shrink-0">
+          <div className="w-7 h-7 rounded-lg bg-primary-soft flex items-center justify-center flex-shrink-0">
             {count > 0 ? (
               expanded ? (
-                <ChevronDown className="w-4 h-4 text-[#425733]" />
+                <ChevronDown className="w-4 h-4 text-primary" />
               ) : (
                 <ChevronRight className="w-4 h-4 text-gray-400" />
               )
@@ -131,9 +131,9 @@ function CategoryRow({
           <div className="flex-1 min-w-0">
             <p className="font-semibold text-gray-800">{category.name}</p>
             <p className="text-xs text-gray-400 mt-0.5">
-              <span className="text-[#425733]/60 font-mono">{category.slug}</span>
+              <span className="text-primary/60 font-mono">{category.slug}</span>
               {" · "}
-              <span className={count > 0 ? "text-[#425733] font-semibold" : "text-gray-400"}>
+              <span className={count > 0 ? "text-primary font-semibold" : "text-gray-400"}>
                 {count} sản phẩm
               </span>
               {category.status === "ACTIVE" ? (
@@ -149,7 +149,7 @@ function CategoryRow({
         <div className="flex items-center gap-1 flex-shrink-0">
           <Link
             href={`/tiem-nho-nth24/categories/${category.id}/edit`}
-            className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-[#425733] hover:bg-[#e3ebdd] transition-colors"
+            className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-primary hover:bg-primary-soft transition-colors"
             title="Chỉnh sửa"
           >
             <Edit className="w-4 h-4" />
@@ -183,7 +183,7 @@ function CategoryRow({
         <div className="border-t border-gray-100 bg-[#f9fbf8]">
           {isLoading ? (
             <div className="flex items-center justify-center gap-2 py-6 text-gray-400 text-sm">
-              <div className="w-4 h-4 border-2 border-[#425733] border-t-transparent rounded-full animate-spin" />
+              <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
               Đang tải sản phẩm...
             </div>
           ) : products && products.length > 0 ? (
@@ -195,10 +195,10 @@ function CategoryRow({
                 {products.map((p) => (
                   <div
                     key={p.id}
-                    className="bg-white rounded-xl border border-gray-200 overflow-hidden group hover:border-[#425733]/40 hover:shadow-md transition-all"
+                    className="bg-white rounded-xl border border-gray-200 overflow-hidden group hover:border-primary/40 hover:shadow-md transition-all"
                   >
                     {/* Thumbnail */}
-                    <div className="relative aspect-square bg-[#f5f7f4]">
+                    <div className="relative aspect-square bg-primary-soft">
                       {p.images?.[0] ? (
                         <ImageWrapper
                           src={p.images[0]}
@@ -218,12 +218,12 @@ function CategoryRow({
                     {/* Info + actions */}
                     <div className="p-2.5">
                       <p className="text-xs font-semibold text-gray-700 line-clamp-2 leading-tight mb-1">{p.name}</p>
-                      <p className="text-xs text-[#425733] font-bold">
+                      <p className="text-xs text-primary font-bold">
                         {Number(p.basePrice).toLocaleString("vi-VN")}₫
                       </p>
                       <Link
                         href={`/tiem-nho-nth24/products/${p.id}/edit`}
-                        className="mt-2 w-full flex items-center justify-center gap-1 text-[10px] font-semibold text-[#425733] py-1 rounded-lg bg-[#e3ebdd] hover:bg-[#c8d5be] transition-colors"
+                        className="mt-2 w-full flex items-center justify-center gap-1 text-[10px] font-semibold text-primary py-1 rounded-lg bg-primary-soft hover:bg-[#c8d5be] transition-colors"
                       >
                         <Edit className="w-3 h-3" /> Sửa
                       </Link>
@@ -234,7 +234,7 @@ function CategoryRow({
               <div className="mt-3 text-right">
                 <Link
                   href={`/tiem-nho-nth24/products?categoryId=${category.id}`}
-                  className="text-xs text-[#425733] hover:underline font-medium"
+                  className="text-xs text-primary hover:underline font-medium"
                 >
                   Xem tất cả trong Products →
                 </Link>
@@ -455,7 +455,7 @@ export default function AdminCategoriesPage() {
         </div>
         <button
           onClick={() => setShowCreateModal(true)}
-          className="flex min-h-11 items-center gap-2 rounded-md border border-[#425733] bg-[#425733] px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#364a29] active:scale-[0.98]"
+          className="flex min-h-11 items-center gap-2 rounded-md border border-primary bg-primary px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-primary-hover active:scale-[0.98]"
         >
           <Plus className="w-4 h-4" /> Thêm Danh Mục Mới
         </button>
@@ -470,7 +470,7 @@ export default function AdminCategoriesPage() {
             placeholder="Tìm kiếm danh mục..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:border-[#425733]/50 focus:ring-1 focus:ring-[#425733]/30"
+            className="w-full pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/30"
           />
         </div>
         {selectedIds.length > 0 && (
@@ -495,7 +495,7 @@ export default function AdminCategoriesPage() {
               type="checkbox"
               checked={selectedIds.length === filteredCategories.length && filteredCategories.length > 0}
               onChange={handleSelectAll}
-              className="w-4 h-4 rounded border-gray-300 text-[#425733] focus:ring-[#425733]"
+              className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
             />
             <span className="text-sm text-gray-500">Chọn tất cả ({filteredCategories.length})</span>
           </label>
@@ -512,7 +512,7 @@ export default function AdminCategoriesPage() {
       {/* List */}
       {loading ? (
         <div className="flex items-center justify-center gap-2 py-16 text-gray-400">
-          <div className="w-6 h-6 border-2 border-[#425733] border-t-transparent rounded-full animate-spin" />
+          <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
           Đang tải...
         </div>
       ) : filteredCategories.length === 0 ? (
@@ -569,7 +569,7 @@ export default function AdminCategoriesPage() {
                           <span className="ml-2 text-xs text-gray-400">{child._count?.products ?? 0} sp</span>
                         </div>
                         <div className="flex items-center gap-1">
-                          <Link href={`/tiem-nho-nth24/categories/${child.id}/edit`} className="w-7 h-7 rounded-lg flex items-center justify-center text-gray-400 hover:text-[#425733] hover:bg-[#e3ebdd] transition-colors">
+                          <Link href={`/tiem-nho-nth24/categories/${child.id}/edit`} className="h-11 w-11 rounded-lg flex items-center justify-center text-gray-400 hover:text-primary hover:bg-primary-soft transition-colors">
                             <Edit className="w-3.5 h-3.5" />
                           </Link>
                           <button onClick={() => handleDelete(child.id)} disabled={deletingId !== null} className="w-7 h-7 rounded-lg flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
@@ -614,7 +614,7 @@ export default function AdminCategoriesPage() {
                   onChange={(e) => handleNameChange(e.target.value)}
                   required
                   placeholder="VD: Bể Cây Nhỏ"
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#425733]/50 focus:ring-1 focus:ring-[#425733]/30"
+                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/30"
                 />
               </div>
               <div>
@@ -625,7 +625,7 @@ export default function AdminCategoriesPage() {
                   onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
                   required
                   placeholder="be-cay-nho"
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#425733]/50 focus:ring-1 focus:ring-[#425733]/30 font-mono text-xs"
+                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/30 font-mono text-xs"
                 />
               </div>
               <div>
@@ -633,7 +633,7 @@ export default function AdminCategoriesPage() {
                 <select
                   value={formData.parentId}
                   onChange={(e) => setFormData({ ...formData, parentId: e.target.value })}
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#425733]/50"
+                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-primary/50"
                 >
                   <option value="">Không (Danh mục gốc)</option>
                   {parentCategories.map((c) => (
@@ -647,14 +647,14 @@ export default function AdminCategoriesPage() {
                   value={formData.metaDescription}
                   onChange={(e) => setFormData({ ...formData, metaDescription: e.target.value })}
                   rows={2}
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#425733]/50 resize-none"
+                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-primary/50 resize-none"
                 />
               </div>
               <div className="flex justify-end gap-3 pt-2">
                 <button type="button" onClick={() => setShowCreateModal(false)} className="px-5 py-2.5 border border-gray-200 rounded-full text-sm text-gray-600 hover:bg-gray-50 disabled:opacity-50" disabled={submitting}>
                   Hủy
                 </button>
-                <button type="submit" disabled={submitting} className="flex min-h-11 items-center gap-2 rounded-md border border-[#425733] bg-[#425733] px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#364a29] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60">
+                <button type="submit" disabled={submitting} className="flex min-h-11 items-center gap-2 rounded-md border border-primary bg-primary px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-primary-hover active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60">
                   {submitting
                     ? <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> Đang tạo...</>
                     : "Tạo Danh Mục"}

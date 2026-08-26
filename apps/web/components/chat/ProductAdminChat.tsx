@@ -186,7 +186,7 @@ export function ProductAdminChat({
         className={cn(
           compact
             ? "h-12 w-12 shrink-0 border-[#8ca47c] bg-[#f5f9f2] text-[#365229]"
-            : "w-full border-2 border-[#6d8c5a] bg-[#f7faf5] text-[#365229] hover:bg-[#edf5e8]",
+            : "w-full border-2 border-[#6d8c5a] bg-[#f7faf5] text-[#365229] hover:bg-primary-soft",
           buttonClassName,
         )}
         onClick={openChat}
@@ -208,7 +208,7 @@ export function ProductAdminChat({
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={productImage} alt="" className="h-full w-full object-cover" />
               ) : (
-                <MessageCircle className="h-5 w-5 text-[#425733]" />
+                <MessageCircle className="h-5 w-5 text-primary" />
               )}
             </div>
             <div className="min-w-0 flex-1">
@@ -221,7 +221,7 @@ export function ProductAdminChat({
             {conversationId && (
               <Link
                 href={`/messages?conversation=${conversationId}`}
-                className="flex min-h-9 shrink-0 items-center gap-1.5 rounded-lg px-2 text-xs font-semibold text-[#526248] hover:bg-[#e9f1e4] hover:text-[#2f4725]"
+                className="flex min-h-11 shrink-0 items-center gap-1.5 rounded-control px-3 text-xs font-semibold text-muted-foreground hover:bg-primary-soft hover:text-primary"
                 title="Xem tất cả tin nhắn"
               >
                 <MessagesSquare className="h-4 w-4" />
@@ -240,7 +240,7 @@ export function ProductAdminChat({
               <div className="grid h-full place-items-center px-6 text-center text-sm text-red-700">{error}</div>
             ) : messages.length === 0 ? (
               <div className="mx-auto flex h-full max-w-sm flex-col items-center justify-center text-center">
-                <div className="grid h-12 w-12 place-items-center rounded-full bg-[#e8f1e2] text-[#425733]"><MessageCircle className="h-5 w-5" /></div>
+                <div className="grid h-12 w-12 place-items-center rounded-full bg-primary-soft text-primary"><MessageCircle className="h-5 w-5" /></div>
                 <p className="mt-4 font-bold text-[#203018]">Bạn cần biết thêm điều gì?</p>
                 <p className="mt-1 text-sm leading-6 text-[#64735d]">Admin sẽ tư vấn về sản phẩm, cách chăm sóc hoặc hỗ trợ bạn chọn phiên bản phù hợp.</p>
               </div>
@@ -253,7 +253,7 @@ export function ProductAdminChat({
                       <div className={cn("max-w-[82%]", mine ? "items-end" : "items-start")}>
                         <div className={cn(
                           "overflow-hidden rounded-xl border text-sm leading-6",
-                          mine ? "border-[#425733] bg-[#425733] text-white" : "border-[#dfe8d9] bg-white text-[#263420]",
+                          mine ? "border-primary bg-primary text-white" : "border-[#dfe8d9] bg-white text-[#263420]",
                         )}>
                           {message.imageUrl && (
                             <a href={message.imageUrl} target="_blank" rel="noreferrer" className="block bg-black/5">
@@ -277,13 +277,13 @@ export function ProductAdminChat({
               <div className="relative mb-2 h-20 w-20 overflow-hidden rounded-lg border border-[#cbd9c3] bg-[#f5f7f3]">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={imagePreview} alt="Ảnh chuẩn bị gửi" className="h-full w-full object-cover" />
-                <button type="button" onClick={clearImage} className="absolute right-1 top-1 grid h-6 w-6 place-items-center rounded-full bg-black/70 text-white" aria-label="Bỏ ảnh"><X className="h-3.5 w-3.5" /></button>
+                <button type="button" onClick={clearImage} className="absolute right-1 top-1 grid h-11 w-11 place-items-center rounded-full bg-black/70 text-white transition-colors hover:bg-black/85" aria-label="Bỏ ảnh"><X className="h-4 w-4" /></button>
               </div>
             )}
             {error && messages.length > 0 && <p className="mb-2 text-xs font-medium text-red-700">{error}</p>}
             <div className="flex items-end gap-2">
               <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp,image/gif" className="hidden" onChange={(event) => chooseImage(event.target.files?.[0])} />
-              <button type="button" onClick={() => fileInputRef.current?.click()} disabled={sending || loading} className="grid h-11 w-11 shrink-0 place-items-center rounded-lg border border-[#d4dfcd] text-[#4b6240] transition-colors hover:bg-[#f1f6ee] disabled:opacity-50" aria-label="Gửi ảnh" title="Gửi ảnh">
+              <button type="button" onClick={() => fileInputRef.current?.click()} disabled={sending || loading} className="grid h-11 w-11 shrink-0 place-items-center rounded-control border border-border text-foreground transition-colors hover:bg-primary-soft hover:text-primary disabled:opacity-50" aria-label="Gửi ảnh" title="Gửi ảnh">
                 <ImagePlus className="h-5 w-5" />
               </button>
               <textarea
@@ -300,7 +300,7 @@ export function ProductAdminChat({
                 className="min-h-11 max-h-28 flex-1 resize-none rounded-lg border border-[#d4dfcd] bg-[#fbfcfa] px-3 py-2.5 text-sm text-[#263420] outline-none placeholder:text-[#8a9684] focus:border-[#6d8c5a] focus:ring-2 focus:ring-[#dfead8]"
                 disabled={loading || !conversationId}
               />
-              <button type="button" onClick={() => void sendMessage()} disabled={sending || loading || !conversationId || (!content.trim() && !selectedImage)} className="grid h-11 w-11 shrink-0 place-items-center rounded-lg bg-[#425733] text-white transition-colors hover:bg-[#33452a] disabled:bg-[#b8c3b2]" aria-label="Gửi tin nhắn" title="Gửi tin nhắn">
+              <button type="button" onClick={() => void sendMessage()} disabled={sending || loading || !conversationId || (!content.trim() && !selectedImage)} className="grid h-11 w-11 shrink-0 place-items-center rounded-control bg-primary text-white transition-colors hover:bg-primary-hover disabled:bg-disabled" aria-label="Gửi tin nhắn" title="Gửi tin nhắn">
                 {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
               </button>
             </div>

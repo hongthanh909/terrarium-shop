@@ -99,7 +99,7 @@ const STATUS_LABELS: Record<string, string> = {
 };
 
 const STATUS_COLORS: Record<string, string> = {
-  ACTIVE: "bg-[#e3ebdd] text-[#364a29]",
+  ACTIVE: "bg-primary-soft text-primary",
   INACTIVE: "bg-gray-100 text-gray-800",
   EXPIRED: "bg-red-100 text-red-800",
   SOLD_OUT: "bg-yellow-100 text-yellow-800",
@@ -399,7 +399,7 @@ export default function AdminVouchersPage() {
           <h2 className="text-3xl font-semibold text-gray-950">Phiếu giảm giá</h2>
           <button
             onClick={() => handleOpenModal()}
-            className="flex items-center gap-2 rounded-md bg-gray-950 px-6 py-3 font-semibold text-white shadow-sm transition-colors hover:bg-gray-700"
+            className="flex items-center gap-2 rounded-md bg-primary px-6 py-3 font-semibold text-white shadow-sm transition-colors hover:bg-primary-hover"
           >
             <Plus className="w-5 h-5" />
             Phiếu Giảm Giá Mới
@@ -453,7 +453,7 @@ export default function AdminVouchersPage() {
                     <button
                       onClick={() => handleOpenCodes(c)}
                       disabled={deletingId !== null}
-                      className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-[#425733] hover:bg-[#e3ebdd] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                      className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-primary hover:bg-primary-soft transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                       title="Quản lý mã riêng"
                     >
                       <KeyRound className="w-4 h-4" />
@@ -461,7 +461,7 @@ export default function AdminVouchersPage() {
                     <button
                       onClick={() => handleOpenModal(c)}
                       disabled={deletingId !== null}
-                      className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-[#425733] hover:bg-[#e3ebdd] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                      className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-primary hover:bg-[#e3ebdd] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                       title="Chỉnh sửa"
                     >
                       <Edit className="w-4 h-4" />
@@ -509,7 +509,7 @@ export default function AdminVouchersPage() {
                   </span>
                 </div>
               </div>
-              <button onClick={handleCloseModal} className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors">
+              <button onClick={handleCloseModal} className="h-11 w-11 rounded-lg flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -523,7 +523,7 @@ export default function AdminVouchersPage() {
                   value={formData.code}
                   onChange={(e) => setFormData({ ...formData, code: e.target.value.toUpperCase() })}
                   required
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl font-mono text-sm focus:outline-none focus:border-[#425733]/50 focus:ring-1 focus:ring-[#425733]/30"
+                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl font-mono text-sm focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/30"
                   placeholder="SAVE10"
                 />
               </div>
@@ -543,7 +543,7 @@ export default function AdminVouchersPage() {
                         value: newType === "FREE_SHIPPING" ? "30000" : formData.value === "30000" || formData.value === "50000" ? "" : formData.value,
                       });
                     }}
-                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#425733]/50"
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-primary/50"
                   >
                     <option value="PERCENTAGE">Phần Trăm (%)</option>
                     <option value="FIXED">Số Tiền Cố Định (₫)</option>
@@ -563,7 +563,7 @@ export default function AdminVouchersPage() {
                             name="shippingType"
                             checked={formData.value === "30000"}
                             onChange={() => setFormData({ ...formData, value: "30000" })}
-                            className="w-4 h-4 accent-[#425733]"
+                            className="w-4 h-4 accent-primary"
                           />
                           <div className="flex-1">
                             <p className="text-sm font-semibold text-gray-800">Giao Hàng Tiêu Chuẩn</p>
@@ -578,7 +578,7 @@ export default function AdminVouchersPage() {
                             name="shippingType"
                             checked={formData.value === "50000"}
                             onChange={() => setFormData({ ...formData, value: "50000" })}
-                            className="w-4 h-4 accent-[#425733]"
+                            className="h-4 w-4 accent-primary"
                           />
                           <div className="flex-1">
                             <p className="text-sm font-semibold text-gray-800">Giao Hàng Nhanh</p>
@@ -597,7 +597,7 @@ export default function AdminVouchersPage() {
                         required
                         min="0"
                         step="0.01"
-                        className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#425733]/50 focus:ring-1 focus:ring-[#425733]/30"
+                        className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/30"
                         placeholder={formData.type === "PERCENTAGE" ? "10" : "50000"}
                       />
                     </>
@@ -609,7 +609,7 @@ export default function AdminVouchersPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                    Ngày Bắt Đầu * <span className="text-[10px] text-[#425733] font-normal">(Giờ VN)</span>
+                    Ngày Bắt Đầu * <span className="text-[10px] text-primary font-normal">(Giờ VN)</span>
                   </label>
                   <input
                     type="datetime-local"
@@ -618,12 +618,12 @@ export default function AdminVouchersPage() {
                     value={formData.startsAt}
                     onChange={(e) => setFormData({ ...formData, startsAt: e.target.value })}
                     required
-                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#425733]/50"
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-primary/50"
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                    Ngày Kết Thúc * <span className="text-[10px] text-[#425733] font-normal">(Giờ VN)</span>
+                    Ngày Kết Thúc * <span className="text-[10px] text-primary font-normal">(Giờ VN)</span>
                   </label>
                   <input
                     type="datetime-local"
@@ -632,7 +632,7 @@ export default function AdminVouchersPage() {
                     value={formData.expiresAt}
                     onChange={(e) => setFormData({ ...formData, expiresAt: e.target.value })}
                     required
-                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#425733]/50"
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-primary/50"
                   />
                 </div>
               </div>
@@ -646,7 +646,7 @@ export default function AdminVouchersPage() {
                     value={formData.minOrderAmount}
                     onChange={(e) => setFormData({ ...formData, minOrderAmount: e.target.value })}
                     min="0"
-                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#425733]/50"
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-primary/50"
                     placeholder="500000"
                   />
                 </div>
@@ -658,7 +658,7 @@ export default function AdminVouchersPage() {
                       value={formData.maxDiscountAmount}
                       onChange={(e) => setFormData({ ...formData, maxDiscountAmount: e.target.value })}
                       min="0"
-                      className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#425733]/50"
+                      className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-primary/50"
                       placeholder="100000"
                     />
                   </div>
@@ -674,7 +674,7 @@ export default function AdminVouchersPage() {
                     value={formData.usageLimit}
                     onChange={(e) => setFormData({ ...formData, usageLimit: e.target.value })}
                     min="1"
-                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#425733]/50"
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-primary/50"
                     placeholder="Không giới hạn"
                   />
                 </div>
@@ -683,7 +683,7 @@ export default function AdminVouchersPage() {
                   <select
                     value={formData.status}
                     onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#425733]/50"
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-primary/50"
                   >
                     <option value="ACTIVE">Hoạt Động</option>
                     <option value="INACTIVE">Không Hoạt Động</option>
@@ -702,7 +702,7 @@ export default function AdminVouchersPage() {
                     setSelectedProductIds([]);
                     setProductSearch("");
                   }}
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#425733]/50"
+                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-primary/50"
                 >
                   <option value="ALL">Tất Cả Sản Phẩm</option>
                   <option value="CATEGORIES">Danh Mục Cụ Thể</option>
@@ -729,7 +729,7 @@ export default function AdminVouchersPage() {
                           }}
                           className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all border ${
                             isSelected
-                              ? "border-gray-950 bg-gray-950 text-white"
+                              ? "border-gray-950 bg-primary text-white"
                               : "border-gray-200 bg-white text-gray-600 hover:border-gray-400"
                           }`}
                         >
@@ -754,7 +754,7 @@ export default function AdminVouchersPage() {
                     value={productSearch}
                     onChange={e => setProductSearch(e.target.value)}
                     placeholder="Tìm sản phẩm..."
-                    className="w-full px-4 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#425733]/50 mb-2"
+                    className="w-full px-4 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-primary/50 mb-2"
                   />
                   <div className="max-h-[200px] overflow-y-auto space-y-1.5 border border-gray-100 rounded-xl p-2">
                     {allProducts
@@ -776,7 +776,7 @@ export default function AdminVouchersPage() {
                                   isSelected ? prev.filter(id => id !== p.id) : [...prev, p.id]
                                 );
                               }}
-                              className="w-4 h-4 rounded border-gray-300 text-[#425733] accent-[#425733] flex-shrink-0"
+                              className="w-4 h-4 rounded border-gray-300 text-primary accent-primary flex-shrink-0"
                             />
                             {/* Thumbnail */}
                             <div className="w-10 h-10 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
@@ -807,7 +807,7 @@ export default function AdminVouchersPage() {
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   rows={3}
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#425733]/50 resize-none"
+                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-primary/50 resize-none"
                   placeholder="Mô tả tùy chọn..."
                 />
               </div>
@@ -825,7 +825,7 @@ export default function AdminVouchersPage() {
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="flex items-center gap-2 rounded-md bg-gray-950 px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-gray-700 disabled:cursor-not-allowed disabled:opacity-60"
+                  className="flex items-center gap-2 rounded-md bg-primary px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {submitting
                     ? <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> Đang lưu...</>
@@ -865,7 +865,7 @@ export default function AdminVouchersPage() {
                     max="500"
                     value={codeForm.quantity}
                     onChange={(e) => setCodeForm({ ...codeForm, quantity: e.target.value })}
-                    className="mt-1.5 w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm font-normal focus:border-[#425733]/50 focus:outline-none"
+                    className="mt-1.5 w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm font-normal focus:border-primary/50 focus:outline-none"
                   />
                 </label>
                 <label className="text-sm font-semibold text-gray-700">
@@ -876,7 +876,7 @@ export default function AdminVouchersPage() {
                     value={codeForm.prefix}
                     onChange={(e) => setCodeForm({ ...codeForm, prefix: e.target.value.toUpperCase() })}
                     placeholder="VIP"
-                    className="mt-1.5 w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm font-normal uppercase focus:border-[#425733]/50 focus:outline-none"
+                    className="mt-1.5 w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm font-normal uppercase focus:border-primary/50 focus:outline-none"
                   />
                 </label>
                 <label className="text-sm font-semibold text-gray-700">
@@ -887,7 +887,7 @@ export default function AdminVouchersPage() {
                     max="24"
                     value={codeForm.length}
                     onChange={(e) => setCodeForm({ ...codeForm, length: e.target.value })}
-                    className="mt-1.5 w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm font-normal focus:border-[#425733]/50 focus:outline-none"
+                    className="mt-1.5 w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm font-normal focus:border-primary/50 focus:outline-none"
                   />
                 </label>
                 <label className="text-sm font-semibold text-gray-700">
@@ -898,7 +898,7 @@ export default function AdminVouchersPage() {
                     max="1000"
                     value={codeForm.usageLimit}
                     onChange={(e) => setCodeForm({ ...codeForm, usageLimit: e.target.value })}
-                    className="mt-1.5 w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm font-normal focus:border-[#425733]/50 focus:outline-none"
+                    className="mt-1.5 w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm font-normal focus:border-primary/50 focus:outline-none"
                   />
                 </label>
               </div>
@@ -908,7 +908,7 @@ export default function AdminVouchersPage() {
                   type="button"
                   onClick={handleGenerateCodes}
                   disabled={codesSubmitting}
-                  className="flex min-h-10 items-center gap-2 rounded-md bg-gray-950 px-4 text-sm font-semibold text-white transition-colors hover:bg-gray-700 disabled:cursor-not-allowed disabled:opacity-60"
+                  className="flex min-h-10 items-center gap-2 rounded-md bg-primary px-4 text-sm font-semibold text-white transition-colors hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {codesSubmitting ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
                   Tạo mã ngẫu nhiên
@@ -965,7 +965,7 @@ export default function AdminVouchersPage() {
                                 <button
                                   type="button"
                                   onClick={() => void handleCopyCode(code.code)}
-                                  className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition-colors hover:bg-[#e3ebdd] hover:text-[#425733]"
+                                  className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition-colors hover:bg-primary-soft hover:text-primary"
                                   title="Sao chép mã"
                                 >
                                   <Copy className="h-4 w-4" />

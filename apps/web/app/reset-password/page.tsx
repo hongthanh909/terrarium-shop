@@ -22,7 +22,7 @@ function PasswordStrength({ password }: { password: string }) {
     if (score <= 1) return { level: 1, label: "Yếu", color: "bg-red-400" };
     if (score <= 2) return { level: 2, label: "Trung bình", color: "bg-amber-400" };
     if (score <= 3) return { level: 3, label: "Khá", color: "bg-[#8fba6f]" };
-    return { level: 4, label: "Mạnh", color: "bg-[#425733]" };
+    return { level: 4, label: "Mạnh", color: "bg-primary" };
   }, [password]);
 
   if (!password) return null;
@@ -42,7 +42,7 @@ function PasswordStrength({ password }: { password: string }) {
       <p className={`text-xs font-medium ${
         strength.level <= 1 ? "text-red-500" :
         strength.level <= 2 ? "text-amber-500" :
-        "text-[#425733]"
+        "text-primary"
       }`}>
         {strength.label}
       </p>
@@ -134,9 +134,9 @@ function ResetPasswordForm() {
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
           transition={{ delay: 0.15, type: "spring", stiffness: 300, damping: 20 }}
-          className="w-16 h-16 bg-[#e3ebdd] rounded-full flex items-center justify-center mx-auto"
+          className="w-16 h-16 bg-primary-soft rounded-full flex items-center justify-center mx-auto"
         >
-          <CheckCircle2 className="w-8 h-8 text-[#425733]" />
+          <CheckCircle2 className="w-8 h-8 text-primary" />
         </motion.div>
 
         <div>
@@ -207,7 +207,7 @@ function ResetPasswordForm() {
             className={`min-h-12 w-full rounded-none border bg-gray-50 py-2.5 pl-10 pr-12 text-base text-gray-800 transition-colors placeholder:text-gray-400 focus:outline-none ${
               passwordMismatch
                 ? "border-red-300 focus:border-red-400 focus:ring-2 focus:ring-red-100"
-                : "border-gray-200 focus:border-[#425733] focus:ring-2 focus:ring-[#425733]/10 focus:shadow-[0_0_0_3px_rgba(66,87,51,0.08)]"
+                : "border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/10 focus:shadow-[0_0_0_3px_rgba(66,87,51,0.08)]"
             }`}
             placeholder="Nhập lại mật khẩu mới"
           />
@@ -295,7 +295,7 @@ export default function ResetPasswordPage() {
             <Suspense
               fallback={
                 <div className="flex items-center justify-center py-8">
-                  <div className="w-8 h-8 border-3 border-[#425733] border-t-transparent rounded-full animate-spin" />
+                  <div className="w-8 h-8 border-3 border-primary border-t-transparent rounded-full animate-spin" />
                 </div>
               }
             >

@@ -24,7 +24,7 @@ export default async function SellerProductsPage() {
           <h1 className="text-2xl font-bold text-[#203018]">Sản phẩm shop</h1>
           <p className="mt-1 text-sm text-[#526248]">Sản phẩm cần admin duyệt trước khi hiển thị công khai.</p>
         </div>
-        <Link href="/seller/products/new" className="rounded-full bg-[#2f4a23] px-5 py-2.5 text-sm font-semibold text-white">
+        <Link href="/seller/products/new" className="inline-flex min-h-11 items-center rounded-control bg-primary px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-primary-hover">
           Đăng sản phẩm
         </Link>
       </div>
@@ -43,7 +43,7 @@ export default async function SellerProductsPage() {
                   )}
                 </div>
                 <div className="flex flex-wrap items-center justify-end gap-2">
-                  <Link href={`/marketplace/products/${product.slug}`} className="rounded-full border border-[#c6d8ba] px-3 py-2 text-sm font-semibold text-[#3d5f2d]">
+                  <Link href={`/marketplace/products/${product.slug}`} className="inline-flex min-h-11 items-center rounded-control border border-primary-border bg-white px-3 py-2 text-sm font-semibold text-primary transition-colors hover:bg-primary-soft">
                     Xem công khai
                   </Link>
                   <ProductRowActions id={product.id} />

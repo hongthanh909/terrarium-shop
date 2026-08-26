@@ -188,7 +188,7 @@ export default function ContactPage() {
               <Button
                 type="submit"
                 disabled={submitting}
-                className="min-h-12 w-full rounded-md bg-foreground text-sm font-semibold text-white hover:bg-foreground/85"
+                className="min-h-12 w-full rounded-control text-sm font-semibold"
               >
                 {submitting ? "Đang gửi..." : "Gửi tin nhắn"}
               </Button>

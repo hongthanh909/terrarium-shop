@@ -151,7 +151,7 @@ export default function MarketplaceCategoryManager({ initialCategories }: { init
               className="min-h-11 rounded-xl border border-gray-200 px-3 outline-none focus:border-[#7fa95e]"
             />
           </label>
-          <button disabled={creating} className="mt-6 inline-flex min-h-11 items-center justify-center rounded-xl bg-[#2f4a23] px-4 text-sm font-semibold text-white disabled:opacity-60">
+          <button disabled={creating} className="mt-6 inline-flex min-h-11 items-center justify-center rounded-xl bg-primary px-4 text-sm font-semibold text-white disabled:opacity-60">
             {creating ? "Đang thêm..." : "Thêm"}
           </button>
         </div>
@@ -189,7 +189,7 @@ export default function MarketplaceCategoryManager({ initialCategories }: { init
                   />
                 </div>
                 <label className="flex min-h-11 items-center gap-2 rounded-xl border border-gray-200 px-3 text-sm">
-                  <Icon className="h-4 w-4 text-[#2f4a23]" />
+                  <Icon className="h-4 w-4 text-primary" />
                   <select
                     aria-label="Icon danh mục"
                     value={category.icon}
@@ -230,7 +230,7 @@ export default function MarketplaceCategoryManager({ initialCategories }: { init
                         sortOrder: Number(category.sortOrder || 0),
                         isActive: category.isActive,
                       })}
-                      className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-gray-200 text-[#2f4a23]"
+                      className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-gray-200 text-primary"
                       title="Lưu"
                     >
                       <Save className="h-4 w-4" />

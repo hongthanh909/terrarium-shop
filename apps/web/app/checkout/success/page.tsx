@@ -57,7 +57,7 @@ export default function CheckoutSuccessPage() {
     return (
       <main className="flex min-h-[100dvh] items-center justify-center bg-white px-4">
         <div className="w-full max-w-md text-center">
-          <div className="w-12 h-12 border-4 border-[#425733] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-4 border-primary border-t-transparent" />
           <p className="text-gray-500 text-sm">Đang tải thông tin đơn hàng...</p>
         </div>
       </main>
@@ -68,12 +68,12 @@ export default function CheckoutSuccessPage() {
     <main className="flex min-h-[100dvh] items-center justify-center bg-white px-4 py-8 sm:py-12">
       <div className="w-full max-w-lg">
         <div className="overflow-hidden rounded-lg border border-border bg-white shadow-lg">
-          <div className="h-1.5 bg-gradient-to-r from-[#425733] via-[#6aad4a] to-[#425733]" />
+          <div className="h-1.5 bg-gradient-to-r from-primary via-primary/60 to-primary" />
           <div className="px-4 py-8 text-center sm:px-8 sm:py-10">
             {/* Success icon */}
             <div className="relative inline-block mb-6">
               <div className="w-20 h-20 rounded-full bg-[#e8f5e1] flex items-center justify-center mx-auto">
-                <Check className="w-10 h-10 text-[#425733] stroke-[2.5]" />
+                <Check className="h-10 w-10 text-primary stroke-[2.5]" />
               </div>
             </div>
 
@@ -87,7 +87,7 @@ export default function CheckoutSuccessPage() {
                 className="rounded-full"
               />
               <span
-                className="text-lg text-[#425733] font-semibold"
+                className="text-lg font-semibold text-primary"
                 style={{ fontFamily: "'Dancing Script', cursive" }}
               >
                 tiệm Rêu Décor
@@ -99,14 +99,14 @@ export default function CheckoutSuccessPage() {
             </h1>
             <p className="text-gray-500 text-sm mb-6 leading-relaxed">
               Cảm ơn bạn đã tin tưởng và mua hàng tại{" "}
-              <span className="font-semibold text-[#425733]">Tiệm Rêu Décor</span>.<br />
+              <span className="font-semibold text-primary">Tiệm Rêu Décor</span>.<br />
               {shippingQuoteRequired
                 ? "Shop sẽ nhắn tin lại để trao đổi phí vận chuyển trước khi chốt đơn."
                 : "Đơn hàng của bạn đã được tiếp nhận và sẽ sớm được xử lý."}
             </p>
 
             {/* Mã đơn hàng */}
-            <div className="mb-6 w-full rounded-lg border border-[#c8d5be] bg-[#f0f7ea] px-4 py-4 sm:px-6">
+            <div className="mb-6 w-full rounded-lg border border-primary-border bg-primary-soft px-4 py-4 sm:px-6">
               <p className="text-xs text-[#5a7a48] mb-1 font-medium">Mã đơn hàng</p>
               <p className="font-mono text-xl font-bold text-[#2d4a1e] tracking-wider">{orderNumber}</p>
             </div>
@@ -123,7 +123,7 @@ export default function CheckoutSuccessPage() {
                       <p className="text-xs font-bold text-[#2d4a1e] truncate">{item.productName}</p>
                       <p className="text-xs text-gray-500">SL: {item.quantity} × {item.price.toLocaleString("vi-VN")}đ</p>
                     </div>
-                    <p className="text-sm font-bold text-[#425733] shrink-0">{(item.price * item.quantity).toLocaleString("vi-VN")}đ</p>
+                    <p className="shrink-0 text-sm font-bold text-primary">{(item.price * item.quantity).toLocaleString("vi-VN")}đ</p>
                   </div>
                 ))}
               </div>
@@ -141,14 +141,14 @@ export default function CheckoutSuccessPage() {
                   <span className="text-gray-700">{shippingQuoteRequired ? "Trao đổi riêng" : `${shippingFee.toLocaleString("vi-VN")}đ`}</span>
                 </div>
                 {discount > 0 && (
-                  <div className="flex justify-between text-[#425733] font-medium">
+                  <div className="flex justify-between font-medium text-primary">
                     <span>Giảm giá</span>
                     <span>-{discount.toLocaleString("vi-VN")}đ</span>
                   </div>
                 )}
                 <div className="border-t pt-2 flex justify-between font-bold text-base">
                   <span>{shippingQuoteRequired ? "Tạm tính" : "Tổng cộng"}</span>
-                  <span className="text-[#425733]">{safeTotal.toLocaleString("vi-VN")}đ</span>
+                  <span className="text-primary">{safeTotal.toLocaleString("vi-VN")}đ</span>
                 </div>
               </div>
             </div>
@@ -158,7 +158,7 @@ export default function CheckoutSuccessPage() {
               <p className="text-xs font-bold text-[#2d4a1e] mb-3">Tình trạng đơn hàng</p>
               <div className="space-y-3">
                 <div className="flex items-start gap-3">
-                  <div className="w-6 h-6 rounded-full bg-[#425733] flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <div className="mt-0.5 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-primary">
                     <Check className="w-3.5 h-3.5 text-white" strokeWidth={3} />
                   </div>
                   <div>
@@ -211,18 +211,18 @@ export default function CheckoutSuccessPage() {
             {/* Buttons */}
             <div className="space-y-3">
               {conversationId && (
-                <Button className="h-12 w-full rounded-md bg-[#edf5e8] text-base font-semibold text-[#425733] hover:bg-[#e0eed8]" asChild>
+                <Button variant="soft" className="h-12 w-full text-base font-semibold" asChild>
                   <Link href={`/messages?conversation=${encodeURIComponent(conversationId)}`}>
                     Trao đổi phí vận chuyển với shop
                   </Link>
                 </Button>
               )}
-              <Button className="h-12 w-full rounded-md bg-[#425733] text-base font-semibold hover:bg-[#364a29]" asChild>
+              <Button className="h-12 w-full text-base font-semibold" asChild>
                 <Link href="/orders" className="flex items-center justify-center gap-2">
                   Xem Đơn Hàng Của Tôi
                 </Link>
               </Button>
-              <Button variant="outline" className="h-12 w-full rounded-md border-[#c8d5be] text-base text-[#425733] hover:bg-[#f0f7ea]" asChild>
+              <Button variant="outline" className="h-12 w-full text-base text-primary hover:bg-primary-soft" asChild>
                 <Link href="/products" className="flex items-center justify-center gap-2">
                   Tiếp Tục Mua Sắm
                   <ArrowRight className="w-4 h-4" />
@@ -231,7 +231,7 @@ export default function CheckoutSuccessPage() {
             </div>
           </div>
 
-          <div className="bg-[#f0f7ea] border-t border-[#daebd0] px-8 py-4 text-center">
+          <div className="bg-primary-soft border-t border-[#daebd0] px-8 py-4 text-center">
             <p className="text-xs text-[#5a7a48]">
               Xác nhận đơn hàng sẽ được gửi qua email &nbsp;•&nbsp;
               Hỗ trợ: tiemreudecor@gmail.com

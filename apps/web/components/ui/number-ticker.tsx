@@ -70,7 +70,7 @@ function StatCard({ value, suffix, label, icon, delay = 0 }: StatCardProps) {
       transition={{ duration: 0.6, delay }}
       className="flex flex-col items-center justify-center text-center px-6 py-8 md:py-10 bg-white rounded-2xl shadow-[0_8px_30px_rgba(41,58,32,0.08)] border border-[#daebd0] hover:shadow-[0_15px_40px_rgba(41,58,32,0.15)] hover:-translate-y-1 transition-all duration-300 h-full"
     >
-      <div className="mb-4 text-[#425733] flex items-center justify-center">
+      <div className="mb-4 text-primary flex items-center justify-center">
         {icon}
       </div>
       <span className="text-3xl md:text-4xl font-extrabold text-[#293a20] tracking-tight leading-none">
@@ -90,28 +90,28 @@ export function StatsSection() {
             value={2500}
             suffix="+"
             label="Khách hàng hài lòng"
-            icon={<ShoppingBag className="w-8 h-8 text-[#425733] stroke-[1.2]" />}
+            icon={<ShoppingBag className="w-8 h-8 text-primary stroke-[1.2]" />}
             delay={0}
           />
           <StatCard
             value={500}
             suffix="+"
             label="Sản phẩm handmade"
-            icon={<Sprout className="w-8 h-8 text-[#425733] stroke-[1.2]" />}
+            icon={<Sprout className="w-8 h-8 text-primary stroke-[1.2]" />}
             delay={0.1}
           />
           <StatCard
             value={98}
             suffix="%"
             label="Đánh giá 5 sao"
-            icon={<Star className="w-8 h-8 text-[#425733] stroke-[1.2]" />}
+            icon={<Star className="w-8 h-8 text-primary stroke-[1.2]" />}
             delay={0.2}
           />
           <StatCard
             value={3}
             suffix=" năm"
             label="Kinh nghiệm"
-            icon={<Trophy className="w-8 h-8 text-[#425733] stroke-[1.2]" />}
+            icon={<Trophy className="w-8 h-8 text-primary stroke-[1.2]" />}
             delay={0.3}
           />
         </div>

@@ -20,7 +20,7 @@ export default function ProductReviewActions({ id }: { id: string }) {
 
   return (
     <div className="flex flex-wrap gap-2">
-      <button disabled={loading} onClick={() => run("approve")} className="rounded-full bg-[#2f4a23] px-3 py-1.5 text-xs font-semibold text-white disabled:opacity-60">
+      <button disabled={loading} onClick={() => run("approve")} className="rounded-full bg-primary px-3 py-1.5 text-xs font-semibold text-white disabled:opacity-60">
         Duyet
       </button>
       <button disabled={loading} onClick={() => run("reject")} className="rounded-full border border-red-200 px-3 py-1.5 text-xs font-semibold text-red-700 disabled:opacity-60">

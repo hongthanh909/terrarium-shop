@@ -26,7 +26,7 @@ export default function ProductRowActions({ id }: { id: string }) {
     <div className="flex flex-wrap justify-end gap-2">
       <Link
         href={`/seller/products/${id}/edit`}
-        className="inline-flex min-h-10 items-center gap-2 rounded-full border border-[#c6d8ba] px-3 text-sm font-semibold text-[#3d5f2d]"
+        className="inline-flex min-h-10 items-center gap-2 rounded-full border border-primary-border px-3 text-sm font-semibold text-primary"
       >
         <Pencil className="h-4 w-4" /> Sửa
       </Link>

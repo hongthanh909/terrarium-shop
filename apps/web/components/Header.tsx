@@ -494,7 +494,7 @@ export default function Header() {
               ) : (
                 <Link
                   href="/login"
-                  className="flex w-full items-center justify-center gap-2 rounded-md bg-foreground px-3 py-3.5 text-base font-semibold text-white transition-colors hover:bg-foreground/85"
+                  className="flex min-h-12 w-full items-center justify-center gap-2 rounded-control bg-primary px-3 py-3 text-base font-semibold text-white transition-colors hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-primary/50"
                 >
                   <User className="w-4 h-4" /> Đăng nhập
                 </Link>
@@ -530,7 +530,7 @@ export default function Header() {
                     <Link
                       href="/login"
                       onClick={() => setCartOpen(false)}
-                      className="flex items-center gap-2 rounded-md bg-foreground px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-foreground/85"
+                      className="flex min-h-11 items-center gap-2 rounded-control bg-primary px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-primary/50"
                     >
                       <Lock className="w-4 h-4" /> Đăng nhập
                     </Link>
@@ -541,7 +541,7 @@ export default function Header() {
                     <Link
                       href="/products"
                       onClick={() => setCartOpen(false)}
-                      className="rounded-md bg-foreground px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-foreground/85"
+                      className="flex min-h-11 items-center rounded-control bg-primary px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-primary/50"
                     >
                       Khám phá sản phẩm
                     </Link>
@@ -608,7 +608,7 @@ export default function Header() {
                 <Link
                   href="/checkout"
                   onClick={() => setCartOpen(false)}
-                  className="rounded-md bg-foreground py-3.5 text-center text-sm font-semibold text-white transition-colors hover:bg-foreground/85"
+                  className="flex min-h-12 items-center justify-center rounded-control bg-primary py-3 text-center text-sm font-semibold text-white transition-colors hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-primary/50"
                 >
                   Thanh toán →
                 </Link>

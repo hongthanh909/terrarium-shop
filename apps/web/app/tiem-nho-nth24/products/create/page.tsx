@@ -453,7 +453,7 @@ export default function CreateProductPage() {
     <>
     <div>
       <div className="mb-6">
-        <Link href="/tiem-nho-nth24/products" className="inline-flex items-center text-[#425733] hover:text-[#364a29] mb-4 gap-1 text-sm">
+        <Link href="/tiem-nho-nth24/products" className="mb-4 inline-flex items-center gap-1 text-sm text-primary transition-colors hover:text-primary-hover">
           <ArrowLeft className="w-4 h-4" /> Quay lại danh sách
         </Link>
         <h2 className="text-2xl font-bold text-gray-800">Thêm Sản Phẩm Mới</h2>
@@ -473,15 +473,15 @@ export default function CreateProductPage() {
             <FormField label="Số lượt đánh giá hiển thị" type="number" value={formData.displayReviewCount} onChange={(e) => setFormData({ ...formData, displayReviewCount: Math.max(0, parseInt(e.target.value) || 0) })} min="0" />
             {formData.salePrice && (
               <div className="md:col-span-2">
-                <label className="block text-sm font-semibold text-gray-700 mb-1.5">Thời Hạn Flash Sale <span className="text-[10px] text-[#425733] font-normal">(Giờ VN)</span></label>
-                <input type="datetime-local" value={formData.saleEndDate} onChange={(e) => setFormData({ ...formData, saleEndDate: e.target.value })} className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#425733]/50" />
+                <label className="block text-sm font-semibold text-gray-700 mb-1.5">Thời Hạn Flash Sale <span className="text-[10px] text-primary font-normal">(Giờ VN)</span></label>
+                <input type="datetime-local" value={formData.saleEndDate} onChange={(e) => setFormData({ ...formData, saleEndDate: e.target.value })} className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-primary/50" />
                 <p className="text-xs text-gray-400 mt-1">Để trống nếu flash sale không có thời hạn</p>
               </div>
             )}
             <FormSelect label="Danh mục" value={formData.categoryId} onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })} options={[{ label: "-- Chọn danh mục --", value: "" }, ...categories.map((c) => ({ label: c.name, value: c.id }))]} />
             <FormSelect label="Trạng thái" value={formData.status} onChange={(e) => setFormData({ ...formData, status: e.target.value })} options={[{ label: "Nháp", value: "DRAFT" }, { label: "Đang bán", value: "ACTIVE" }, { label: "Lưu trữ", value: "ARCHIVED" }]} />
             <div className="flex items-center gap-2 md:col-span-2 py-2">
-              <input type="checkbox" id="isFeatured" checked={formData.isFeatured} onChange={(e) => setFormData({ ...formData, isFeatured: e.target.checked })} className="w-4 h-4 rounded border-gray-300 text-[#425733] focus:ring-[#425733]" />
+              <input type="checkbox" id="isFeatured" checked={formData.isFeatured} onChange={(e) => setFormData({ ...formData, isFeatured: e.target.checked })} className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary" />
               <label htmlFor="isFeatured" className="text-sm font-semibold text-gray-700 cursor-pointer">Sản phẩm nổi bật (Featured) 🔥</label>
             </div>
           </div>
@@ -499,7 +499,7 @@ export default function CreateProductPage() {
               <span className="text-xs text-gray-400">(bắt buộc · hiển thị ở listing)</span>
             </div>
             <div className="flex items-start gap-4">
-              <div onClick={() => mainImageInputRef.current?.click()} className={`relative w-40 h-40 rounded-xl border-2 overflow-hidden cursor-pointer transition-all ${mainImage ? "border-[#425733] shadow-md" : "border-dashed border-gray-300 hover:border-[#425733] bg-gray-50"}`}>
+              <div onClick={() => mainImageInputRef.current?.click()} className={`relative w-40 h-40 rounded-xl border-2 overflow-hidden cursor-pointer transition-all ${mainImage ? "border-primary shadow-md" : "border-dashed border-gray-300 hover:border-primary bg-gray-50"}`}>
                 {mainImage ? (
                   <>
                     <ImageWrapper src={mainImage} alt="Ảnh chính" fill noRound className="object-cover" />
@@ -513,19 +513,19 @@ export default function CreateProductPage() {
                   </>
                 ) : (
                   <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-gray-400">
-                    {uploadingMain ? <Loader2 className="w-6 h-6 animate-spin text-[#425733]" /> : <><ImageIcon className="w-8 h-8" /><span className="text-xs text-center px-2">Nhấn để tải ảnh chính</span></>}
+                    {uploadingMain ? <Loader2 className="w-6 h-6 animate-spin text-primary" /> : <><ImageIcon className="w-8 h-8" /><span className="text-xs text-center px-2">Nhấn để tải ảnh chính</span></>}
                   </div>
                 )}
               </div>
               <div className="flex-1">
                 <p className="text-xs text-gray-500 mb-2">Ảnh chính hiển thị trong danh sách sản phẩm và trang chi tiết. Khuyến nghị: tỷ lệ 1:1, tối thiểu 600×600px. Hệ thống sẽ tải ảnh trực tiếp, không cần cắt thủ công.</p>
                 <div className="flex flex-wrap gap-2">
-                  <button type="button" onClick={() => mainImageInputRef.current?.click()} disabled={uploadingMain} className="flex min-h-11 items-center gap-2 rounded-md border border-[#425733] bg-[#425733] px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#364a29] active:scale-[0.98] disabled:opacity-50">
+                  <button type="button" onClick={() => mainImageInputRef.current?.click()} disabled={uploadingMain} className="flex min-h-11 items-center gap-2 rounded-md border border-primary bg-primary px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-primary-hover active:scale-[0.98] disabled:opacity-50">
                     <Upload className="w-4 h-4" />
                     {uploadingMain ? "Đang tải..." : mainImage ? "Thay ảnh chính" : "Tải ảnh chính"}
                   </button>
                   {mainImage && (
-                    <button type="button" onClick={() => setMainCropSrc(mainImage)} disabled={uploadingMain} className="flex items-center gap-2 border border-[#425733]/30 text-[#425733] px-4 py-2 rounded-full text-sm font-semibold hover:bg-[#f5f7f4] disabled:opacity-50 transition-colors">
+                    <button type="button" onClick={() => setMainCropSrc(mainImage)} disabled={uploadingMain} className="flex items-center gap-2 border border-primary/30 text-primary px-4 py-2 rounded-full text-sm font-semibold hover:bg-primary-soft disabled:opacity-50 transition-colors">
                       <Crop className="w-4 h-4" />
                       Crop ảnh chính
                     </button>
@@ -555,7 +555,7 @@ export default function CreateProductPage() {
                   <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center gap-2">
                     {/* Re-crop button */}
                     <label className="opacity-0 group-hover:opacity-100 cursor-pointer w-7 h-7 rounded-full bg-white/90 flex items-center justify-center shadow hover:bg-white transition-all" title="Crop lại ảnh này">
-                      <Crop className="w-3.5 h-3.5 text-[#425733]" />
+                      <Crop className="w-3.5 h-3.5 text-primary" />
                       <input type="file" accept="image/*" className="hidden" onChange={(e) => handleReCropSelect(e, idx)} />
                     </label>
                     {/* Delete button */}
@@ -567,13 +567,13 @@ export default function CreateProductPage() {
               ))}
 
               {subImages.length < 10 && (
-                <button type="button" onClick={() => subImageInputRef.current?.click()} disabled={uploadingSub} className="aspect-square rounded-xl border-2 border-dashed border-gray-300 hover:border-[#425733] bg-gray-50 hover:bg-[#f5f7f4] transition-all flex flex-col items-center justify-center gap-1 text-gray-400 hover:text-[#425733]">
-                  {uploadingSub ? <Loader2 className="w-5 h-5 animate-spin text-[#425733]" /> : <><Plus className="w-5 h-5" /><span className="text-[10px]">Thêm</span></>}
+                <button type="button" onClick={() => subImageInputRef.current?.click()} disabled={uploadingSub} className="aspect-square rounded-xl border-2 border-dashed border-gray-300 hover:border-primary bg-gray-50 hover:bg-primary-soft transition-all flex flex-col items-center justify-center gap-1 text-gray-400 hover:text-primary">
+                  {uploadingSub ? <Loader2 className="w-5 h-5 animate-spin text-primary" /> : <><Plus className="w-5 h-5" /><span className="text-[10px]">Thêm</span></>}
                 </button>
               )}
             </div>
 
-            <button type="button" onClick={() => subImageInputRef.current?.click()} disabled={uploadingSub || subImages.length >= 10} className="flex items-center gap-2 text-sm text-[#425733] hover:text-[#364a29] font-medium disabled:opacity-40 transition-colors">
+            <button type="button" onClick={() => subImageInputRef.current?.click()} disabled={uploadingSub || subImages.length >= 10} className="flex min-h-11 items-center gap-2 rounded-control px-3 text-sm font-medium text-primary transition-colors hover:bg-primary-soft hover:text-primary-hover disabled:opacity-40">
               <Upload className="w-4 h-4" />
               {uploadingSub ? "Đang tải ảnh phụ..." : "Tải nhiều ảnh phụ cùng lúc"}
             </button>
@@ -582,14 +582,14 @@ export default function CreateProductPage() {
           {/* Video sản phẩm */}
           <div className="border-t border-gray-100 pt-5">
             <div className="flex items-center gap-2 mb-3">
-              <Video className="w-4 h-4 text-[#425733]" />
+              <Video className="w-4 h-4 text-primary" />
               <span className="text-sm font-medium text-gray-700">Video sản phẩm</span>
               <span className="text-xs text-gray-400">(tùy chọn · tối đa {MAX_VIDEO_MB}MB · MP4/WebM/MOV)</span>
             </div>
 
             {/* Video preview */}
             {productVideo && (
-              <div className="relative mb-3 rounded-xl overflow-hidden border border-[#425733]/30 bg-black aspect-video max-w-sm">
+              <div className="relative mb-3 rounded-xl overflow-hidden border border-primary/30 bg-black aspect-video max-w-sm">
                 <video src={productVideo} controls className="w-full h-full object-contain" />
                 <button type="button" onClick={() => { setProductVideo(""); setCareGuide((p) => ({ ...p, videoUrl: "" })); }}
                   className="absolute top-2 right-2 w-7 h-7 bg-red-500 text-white rounded-full flex items-center justify-center shadow hover:bg-red-600 transition-colors" title="Xóa video">
@@ -600,14 +600,14 @@ export default function CreateProductPage() {
 
             <div className="flex items-center gap-3 flex-wrap">
               <button type="button" onClick={() => videoInputRef.current?.click()} disabled={uploadingVideo}
-                className="flex items-center gap-2 px-4 py-2 border-2 border-[#425733] text-[#425733] rounded-full text-sm font-semibold hover:bg-[#f0f4ee] disabled:opacity-50 transition-colors">
+                className="flex items-center gap-2 px-4 py-2 border-2 border-primary text-primary rounded-full text-sm font-semibold hover:bg-primary-soft disabled:opacity-50 transition-colors">
                 {uploadingVideo ? <><Loader2 className="w-4 h-4 animate-spin" /> Đang tải video...</> : <><Upload className="w-4 h-4" /> {productVideo ? "Thay video" : "Upload video"}</>}
               </button>
               {!productVideo && <span className="text-xs text-gray-400">hoặc</span>}
               {!productVideo && (
                 <div className="flex-1 min-w-[200px]">
                   <input type="url" value={careGuide.videoUrl} onChange={(e) => setCareGuide({ ...careGuide, videoUrl: e.target.value })}
-                    placeholder="Dán URL YouTube / TikTok..." className="w-full px-4 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#425733]/50" />
+                    placeholder="Dán URL YouTube / TikTok..." className="w-full px-4 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-primary/50" />
                 </div>
               )}
             </div>
@@ -623,7 +623,7 @@ export default function CreateProductPage() {
         {/* ── Thông số chi tiết ───────────────────────────── */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
           <div className="flex items-center gap-2 mb-5">
-            <div className="w-7 h-7 rounded-lg bg-[#e3ebdd] flex items-center justify-center"><span className="text-sm">📐</span></div>
+            <div className="w-7 h-7 rounded-lg bg-primary-soft flex items-center justify-center"><span className="text-sm">📐</span></div>
             <h3 className="text-base font-semibold text-gray-800">Thông Số Chi Tiết</h3>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -648,7 +648,7 @@ export default function CreateProductPage() {
         {/* ── Hướng dẫn chăm sóc ───────────────────────────── */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
           <div className="flex items-center gap-2 mb-5">
-            <div className="w-7 h-7 rounded-lg bg-[#e3ebdd] flex items-center justify-center"><span className="text-sm">🪴</span></div>
+            <div className="w-7 h-7 rounded-lg bg-primary-soft flex items-center justify-center"><span className="text-sm">🪴</span></div>
             <h3 className="text-base font-semibold text-gray-800">Hướng Dẫn Chăm Sóc</h3>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -657,30 +657,30 @@ export default function CreateProductPage() {
 
             {/* Temperature range */}
             <div className="flex flex-col gap-1 w-full bg-gray-50/50 p-4 rounded-xl border border-gray-100">
-              <label className="block text-sm font-semibold text-gray-700">Nhiệt độ thích hợp: <span className="text-[#425733] font-bold text-base">{tempMin}°C - {tempMax}°C</span></label>
+              <label className="block text-sm font-semibold text-gray-700">Nhiệt độ thích hợp: <span className="text-primary font-bold text-base">{tempMin}°C - {tempMax}°C</span></label>
               <div className="flex gap-4 mt-2">
                 <div className="flex-1">
                   <div className="flex justify-between text-[11px] text-gray-500 mb-1"><span>Tối thiểu</span><span className="font-semibold">{tempMin}°C</span></div>
-                  <input type="range" min="0" max="50" value={tempMin} onChange={(e) => { const v = Math.min(parseInt(e.target.value)||0, tempMax); setTempMin(v); setCareGuide(p => ({ ...p, temperature: `${v}-${tempMax}°C` })); }} className="w-full accent-[#425733] cursor-pointer h-1.5 bg-gray-200 rounded-lg appearance-none" />
+                  <input type="range" min="0" max="50" value={tempMin} onChange={(e) => { const v = Math.min(parseInt(e.target.value)||0, tempMax); setTempMin(v); setCareGuide(p => ({ ...p, temperature: `${v}-${tempMax}°C` })); }} className="w-full accent-primary cursor-pointer h-1.5 bg-gray-200 rounded-lg appearance-none" />
                 </div>
                 <div className="flex-1">
                   <div className="flex justify-between text-[11px] text-gray-500 mb-1"><span>Tối đa</span><span className="font-semibold">{tempMax}°C</span></div>
-                  <input type="range" min="0" max="50" value={tempMax} onChange={(e) => { const v = Math.max(parseInt(e.target.value)||0, tempMin); setTempMax(v); setCareGuide(p => ({ ...p, temperature: `${tempMin}-${v}°C` })); }} className="w-full accent-[#425733] cursor-pointer h-1.5 bg-gray-200 rounded-lg appearance-none" />
+                  <input type="range" min="0" max="50" value={tempMax} onChange={(e) => { const v = Math.max(parseInt(e.target.value)||0, tempMin); setTempMax(v); setCareGuide(p => ({ ...p, temperature: `${tempMin}-${v}°C` })); }} className="w-full accent-primary cursor-pointer h-1.5 bg-gray-200 rounded-lg appearance-none" />
                 </div>
               </div>
             </div>
 
             {/* Humidity range */}
             <div className="flex flex-col gap-1 w-full bg-gray-50/50 p-4 rounded-xl border border-gray-100">
-              <label className="block text-sm font-semibold text-gray-700">Độ ẩm thích hợp: <span className="text-[#425733] font-bold text-base">{humidityMin}% - {humidityMax}%</span></label>
+              <label className="block text-sm font-semibold text-gray-700">Độ ẩm thích hợp: <span className="text-primary font-bold text-base">{humidityMin}% - {humidityMax}%</span></label>
               <div className="flex gap-4 mt-2">
                 <div className="flex-1">
                   <div className="flex justify-between text-[11px] text-gray-500 mb-1"><span>Tối thiểu</span><span className="font-semibold">{humidityMin}%</span></div>
-                  <input type="range" min="0" max="100" value={humidityMin} onChange={(e) => { const v = Math.min(parseInt(e.target.value)||0, humidityMax); setHumidityMin(v); setCareGuide(p => ({ ...p, humidity: `${v}-${humidityMax}%` })); }} className="w-full accent-[#425733] cursor-pointer h-1.5 bg-gray-200 rounded-lg appearance-none" />
+                  <input type="range" min="0" max="100" value={humidityMin} onChange={(e) => { const v = Math.min(parseInt(e.target.value)||0, humidityMax); setHumidityMin(v); setCareGuide(p => ({ ...p, humidity: `${v}-${humidityMax}%` })); }} className="w-full accent-primary cursor-pointer h-1.5 bg-gray-200 rounded-lg appearance-none" />
                 </div>
                 <div className="flex-1">
                   <div className="flex justify-between text-[11px] text-gray-500 mb-1"><span>Tối đa</span><span className="font-semibold">{humidityMax}%</span></div>
-                  <input type="range" min="0" max="100" value={humidityMax} onChange={(e) => { const v = Math.max(parseInt(e.target.value)||0, humidityMin); setHumidityMax(v); setCareGuide(p => ({ ...p, humidity: `${humidityMin}-${v}%` })); }} className="w-full accent-[#425733] cursor-pointer h-1.5 bg-gray-200 rounded-lg appearance-none" />
+                  <input type="range" min="0" max="100" value={humidityMax} onChange={(e) => { const v = Math.max(parseInt(e.target.value)||0, humidityMin); setHumidityMax(v); setCareGuide(p => ({ ...p, humidity: `${humidityMin}-${v}%` })); }} className="w-full accent-primary cursor-pointer h-1.5 bg-gray-200 rounded-lg appearance-none" />
                 </div>
               </div>
             </div>
@@ -694,7 +694,7 @@ export default function CreateProductPage() {
         {/* ── Submit ─────────────────────────────────────────── */}
         <div className="flex justify-end gap-3">
           <Link href="/tiem-nho-nth24/products" className="px-6 py-2.5 border border-gray-200 rounded-full text-gray-600 text-sm font-medium hover:bg-gray-50 transition-colors">Hủy</Link>
-          <button type="submit" disabled={loading} className="flex min-h-11 items-center gap-2 rounded-md border border-[#425733] bg-[#425733] px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#364a29] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50">
+          <button type="submit" disabled={loading} className="flex min-h-11 items-center gap-2 rounded-md border border-primary bg-primary px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-primary-hover active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50">
             <Save className="w-4 h-4" />
             {loading ? "Đang tạo..." : "Tạo sản phẩm"}
           </button>

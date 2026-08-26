@@ -59,7 +59,7 @@ export default function AdminPoliciesPage() {
           <h1 className="text-2xl font-bold text-gray-800">Quản lý Chính sách</h1>
           <p className="text-gray-500 text-sm mt-1">Thêm, sửa, xóa các chính sách hiển thị trên website</p>
         </div>
-        <Button asChild className="bg-[#425733] hover:bg-[#364a29]">
+        <Button asChild className="bg-primary hover:bg-primary-hover">
           <Link href="/tiem-nho-nth24/policies/create">
             <Plus className="w-4 h-4 mr-2" /> Thêm Chính sách
           </Link>
@@ -75,7 +75,7 @@ export default function AdminPoliciesPage() {
               placeholder="Tìm kiếm chính sách..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#425733]/20"
+              className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20"
             />
           </div>
         </div>
@@ -128,7 +128,7 @@ export default function AdminPoliciesPage() {
                     </td>
                     <td className="px-4 py-4 text-right">
                       <div className="flex items-center justify-end gap-2">
-                        <Button variant="outline" size="icon" asChild className="h-8 w-8 text-[#425733] border-[#c2d6b0] hover:bg-[#f0f4ee]">
+                        <Button variant="outline" size="icon" asChild className="h-8 w-8 text-primary border-primary-border hover:bg-primary-soft">
                           <Link href={`/tiem-nho-nth24/policies/${policy.id}/edit`}>
                             <Edit className="w-3.5 h-3.5" />
                           </Link>

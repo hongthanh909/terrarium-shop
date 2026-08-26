@@ -1312,7 +1312,7 @@ export function ProductDetailClient({
                       <label htmlFor="review-content" className="block text-sm font-medium mb-1">Nội dung *</label>
                       <textarea id="review-content" value={reviewForm.content} onChange={(e) => setReviewForm((p) => ({ ...p, content: e.target.value }))} rows={4} required className="w-full rounded-lg border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#6d8c5a]" placeholder="Chia sẻ trải nghiệm của bạn..." />
                     </div>
-                    <button type="submit" disabled={submittingReview} className="min-h-12 rounded-lg bg-foreground px-6 py-2.5 font-semibold text-white transition-colors hover:bg-foreground/85 disabled:bg-gray-300">
+                    <button type="submit" disabled={submittingReview} className="min-h-12 rounded-control bg-primary px-6 py-2.5 font-semibold text-white transition-colors hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-primary/50 disabled:bg-disabled">
                       {submittingReview ? "Đang gửi..." : "Gửi Đánh Giá"}
                     </button>
                   </form>

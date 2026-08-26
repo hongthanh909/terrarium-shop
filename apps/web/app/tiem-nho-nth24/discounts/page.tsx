@@ -36,7 +36,7 @@ const STATUS_LABELS: Record<string, string> = {
 };
 
 const STATUS_COLORS: Record<string, string> = {
-  ACTIVE: "bg-[#e3ebdd] text-[#364a29]",
+  ACTIVE: "bg-primary-soft text-primary",
   INACTIVE: "bg-gray-100 text-gray-800",
   EXPIRED: "bg-red-100 text-red-800",
   SOLD_OUT: "bg-yellow-100 text-yellow-800",
@@ -154,7 +154,7 @@ export default function AdminDiscountsPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-16 gap-2 text-gray-400">
-        <div className="w-5 h-5 border-2 border-[#425733] border-t-transparent rounded-full animate-spin" />
+        <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
         Đang tải...
       </div>
     );
@@ -163,7 +163,7 @@ export default function AdminDiscountsPage() {
   return (
     <div>
       <div className="mb-6">
-        <Link href="/tiem-nho-nth24" className="inline-flex items-center text-[#425733] hover:underline mb-4 text-sm">
+        <Link href="/tiem-nho-nth24" className="inline-flex items-center text-primary hover:underline mb-4 text-sm">
           <ArrowLeft className="w-4 h-4 mr-1" />
           Quay Lại Admin
         </Link>
@@ -171,7 +171,7 @@ export default function AdminDiscountsPage() {
           <h2 className="text-3xl font-bold text-gray-800">Chiến Dịch Giảm Giá</h2>
           <button
             onClick={() => handleOpenModal()}
-            className="flex min-h-12 items-center gap-2 rounded-md border border-[#425733] bg-[#425733] px-6 py-3 font-semibold text-white shadow-sm transition-colors hover:bg-[#364a29] active:scale-[0.98]"
+            className="flex min-h-12 items-center gap-2 rounded-md border border-primary bg-primary px-6 py-3 font-semibold text-white shadow-sm transition-colors hover:bg-primary-hover active:scale-[0.98]"
           >
             <Plus className="w-5 h-5" />
             Chiến Dịch Mới
@@ -224,7 +224,7 @@ export default function AdminDiscountsPage() {
                     <button
                       onClick={() => handleOpenModal(c)}
                       disabled={deletingId !== null}
-                      className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-[#425733] hover:bg-[#e3ebdd] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                      className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-primary hover:bg-primary-soft transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                     >
                       <Edit className="w-4 h-4" />
                     </button>
@@ -261,7 +261,7 @@ export default function AdminDiscountsPage() {
               <h3 className="text-xl font-bold text-gray-800">
                 {editingCampaign ? "Chỉnh Sửa Chiến Dịch" : "Chiến Dịch Mới"}
               </h3>
-              <button onClick={handleCloseModal} className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:bg-gray-100 transition-colors">
+              <button onClick={handleCloseModal} className="h-11 w-11 rounded-lg flex items-center justify-center text-gray-400 hover:bg-gray-100 transition-colors">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -274,7 +274,7 @@ export default function AdminDiscountsPage() {
                   value={formData.code}
                   onChange={(e) => setFormData({ ...formData, code: e.target.value.toUpperCase() })}
                   required
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl font-mono text-sm focus:outline-none focus:border-[#425733]/50 focus:ring-1 focus:ring-[#425733]/30"
+                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl font-mono text-sm focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/30"
                   placeholder="SAVE10"
                 />
               </div>
@@ -285,7 +285,7 @@ export default function AdminDiscountsPage() {
                   <select
                     value={formData.type}
                     onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#425733]/50"
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-primary/50"
                   >
                     <option value="PERCENTAGE">Phần Trăm (%)</option>
                     <option value="FIXED">Số Tiền Cố Định (₫)</option>
@@ -299,7 +299,7 @@ export default function AdminDiscountsPage() {
                     value={formData.value}
                     onChange={(e) => setFormData({ ...formData, value: e.target.value })}
                     required min="0" step="0.01"
-                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#425733]/50"
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-primary/50"
                     placeholder={formData.type === "PERCENTAGE" ? "10" : "50000"}
                   />
                 </div>
@@ -310,14 +310,14 @@ export default function AdminDiscountsPage() {
                   <label className="block text-sm font-semibold text-gray-700 mb-1.5">Ngày Bắt Đầu *</label>
                   <input type="datetime-local" lang="en-GB" step="60" value={formData.startsAt}
                     onChange={(e) => setFormData({ ...formData, startsAt: e.target.value })}
-                    required className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#425733]/50"
+                    required className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-primary/50"
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-1.5">Ngày Kết Thúc *</label>
                   <input type="datetime-local" lang="en-GB" step="60" value={formData.expiresAt}
                     onChange={(e) => setFormData({ ...formData, expiresAt: e.target.value })}
-                    required className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#425733]/50"
+                    required className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-primary/50"
                   />
                 </div>
               </div>
@@ -327,14 +327,14 @@ export default function AdminDiscountsPage() {
                   <label className="block text-sm font-semibold text-gray-700 mb-1.5">Đơn Hàng Tối Thiểu (₫)</label>
                   <input type="number" value={formData.minOrderAmount}
                     onChange={(e) => setFormData({ ...formData, minOrderAmount: e.target.value })}
-                    min="0" className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#425733]/50" placeholder="500000"
+                    min="0" className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-primary/50" placeholder="500000"
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-1.5">Giảm Tối Đa (₫)</label>
                   <input type="number" value={formData.maxDiscountAmount}
                     onChange={(e) => setFormData({ ...formData, maxDiscountAmount: e.target.value })}
-                    min="0" className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#425733]/50" placeholder="100000"
+                    min="0" className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-primary/50" placeholder="100000"
                   />
                 </div>
               </div>
@@ -344,14 +344,14 @@ export default function AdminDiscountsPage() {
                   <label className="block text-sm font-semibold text-gray-700 mb-1.5">Giới Hạn Sử Dụng</label>
                   <input type="number" value={formData.usageLimit}
                     onChange={(e) => setFormData({ ...formData, usageLimit: e.target.value })}
-                    min="1" className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#425733]/50" placeholder="Không giới hạn"
+                    min="1" className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-primary/50" placeholder="Không giới hạn"
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-1.5">Trạng Thái</label>
                   <select value={formData.status}
                     onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#425733]/50"
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-primary/50"
                   >
                     <option value="ACTIVE">Hoạt Động</option>
                     <option value="INACTIVE">Không Hoạt Động</option>
@@ -363,7 +363,7 @@ export default function AdminDiscountsPage() {
                 <label className="block text-sm font-semibold text-gray-700 mb-1.5">Áp Dụng Cho</label>
                 <select value={formData.applicableTo}
                   onChange={(e) => setFormData({ ...formData, applicableTo: e.target.value })}
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#425733]/50"
+                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-primary/50"
                 >
                   <option value="ALL">Tất Cả Sản Phẩm</option>
                   <option value="CATEGORIES">Danh Mục Cụ Thể</option>
@@ -376,7 +376,7 @@ export default function AdminDiscountsPage() {
                 <label className="block text-sm font-semibold text-gray-700 mb-1.5">Mô Tả</label>
                 <textarea value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  rows={3} className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#425733]/50 resize-none"
+                  rows={3} className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-primary/50 resize-none"
                   placeholder="Mô tả tùy chọn..."
                 />
               </div>
@@ -389,7 +389,7 @@ export default function AdminDiscountsPage() {
                 </button>
                 <button type="submit"
                   disabled={submitting}
-                  className="flex min-h-11 items-center gap-2 rounded-md border border-[#425733] bg-[#425733] px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#364a29] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60">
+                  className="flex min-h-11 items-center gap-2 rounded-md border border-primary bg-primary px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-primary-hover active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60">
                   {submitting
                     ? <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> Đang lưu...</>
                     : <><Save className="w-4 h-4" /> Lưu Chiến Dịch</>}

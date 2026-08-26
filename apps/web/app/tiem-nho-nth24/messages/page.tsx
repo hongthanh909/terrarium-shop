@@ -211,14 +211,14 @@ export default function AdminMessagesPage() {
               <h2 className="text-base font-bold text-[#23341c]">Hộp thư tư vấn</h2>
               <p className="mt-0.5 text-xs text-[#718069]">Chat sản phẩm với khách hàng</p>
             </div>
-            <div className="grid h-11 w-11 place-items-center rounded-md bg-[#e9f1e4] text-[#425733]"><Inbox className="h-4.5 w-4.5" /></div>
+            <div className="grid h-11 w-11 place-items-center rounded-md bg-[#e9f1e4] text-primary"><Inbox className="h-4.5 w-4.5" /></div>
           </div>
           <div className="relative mt-4">
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#7d8977]" />
             <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Tìm khách hoặc sản phẩm" className="h-12 w-full rounded-md border border-[#d9e2d3] bg-white pl-9 pr-3 text-base outline-none focus:border-[#789568] focus:ring-2 focus:ring-[#e1ecda] sm:text-sm" />
           </div>
           <label className="mt-2 flex min-h-11 cursor-pointer items-center gap-2 text-xs font-semibold text-[#53644b]">
-            <input type="checkbox" checked={unreadOnly} onChange={(event) => setUnreadOnly(event.target.checked)} className="h-4 w-4 accent-[#425733]" />
+            <input type="checkbox" checked={unreadOnly} onChange={(event) => setUnreadOnly(event.target.checked)} className="h-4 w-4 accent-primary" />
             Chỉ hiện tin chưa đọc
           </label>
         </div>
@@ -232,7 +232,7 @@ export default function AdminMessagesPage() {
             const last = conversation.messages[0];
             return (
               <button key={conversation.id} type="button" onClick={() => setSelectedId(conversation.id)} className={cn("flex min-h-20 w-full gap-3 border-b border-border px-4 py-3.5 text-left transition-colors hover:bg-primary-soft", selectedId === conversation.id && "bg-primary-soft")}>
-                <div className="grid h-11 w-11 shrink-0 place-items-center overflow-hidden rounded-lg bg-[#e3eadf] text-sm font-bold text-[#425733]">
+                <div className="grid h-11 w-11 shrink-0 place-items-center overflow-hidden rounded-lg bg-[#e3eadf] text-sm font-bold text-primary">
                   {conversation.product?.image ? <img src={conversation.product.image} alt="" className="h-full w-full object-cover" /> : (conversation.customer.name || conversation.customer.email).slice(0, 1).toUpperCase()}
                 </div>
                 <div className="min-w-0 flex-1">
@@ -248,14 +248,14 @@ export default function AdminMessagesPage() {
 
       <section className={cn("min-h-[620px] min-w-0 flex-col lg:min-h-0", selectedId ? "flex" : "hidden lg:flex")}>
         {!selected ? (
-          <div className="grid flex-1 place-items-center bg-[#fbfcfa] px-8 text-center"><div><div className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-[#e8f0e3] text-[#425733]"><MessageSquare className="h-6 w-6" /></div><h2 className="mt-4 font-bold text-[#26361f]">Chọn một cuộc trò chuyện</h2><p className="mt-1 text-sm text-[#73806d]">Tin nhắn và thông tin sản phẩm sẽ hiện tại đây.</p></div></div>
+          <div className="grid flex-1 place-items-center bg-[#fbfcfa] px-8 text-center"><div><div className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-[#e8f0e3] text-primary"><MessageSquare className="h-6 w-6" /></div><h2 className="mt-4 font-bold text-[#26361f]">Chọn một cuộc trò chuyện</h2><p className="mt-1 text-sm text-[#73806d]">Tin nhắn và thông tin sản phẩm sẽ hiện tại đây.</p></div></div>
         ) : (
           <>
             <header className="flex min-h-16 items-center gap-3 border-b border-[#e4eadf] px-3 py-2.5 sm:px-4">
-              <button type="button" onClick={() => setSelectedId(null)} className="grid h-11 w-11 shrink-0 place-items-center rounded-md text-[#526248] hover:bg-[#edf3e9] lg:hidden" aria-label="Quay lại danh sách"><ArrowLeft className="h-4.5 w-4.5" /></button>
+              <button type="button" onClick={() => setSelectedId(null)} className="grid h-11 w-11 shrink-0 place-items-center rounded-control text-muted-foreground hover:bg-primary-soft hover:text-primary lg:hidden" aria-label="Quay lại danh sách"><ArrowLeft className="h-4.5 w-4.5" /></button>
               <div className="min-w-0 flex-1"><p className="truncate text-sm font-bold text-[#26361f]">{selected.customer.name || selected.customer.email}</p><p className="truncate text-xs text-[#73806d]">{selected.order ? `Đơn hàng #${selected.order.orderNumber} · ` : ""}{selected.customer.email}{selected.customer.phone ? ` · ${selected.customer.phone}` : ""}</p></div>
-              {selected.product && <Link href={selected.product.href} target="_blank" className="grid h-11 w-11 shrink-0 place-items-center rounded-md border border-[#d8e2d2] text-[#526248] hover:bg-[#edf3e9]" aria-label="Mở sản phẩm" title="Mở sản phẩm"><ExternalLink className="h-4 w-4" /></Link>}
-              <button type="button" onClick={toggleStatus} className={cn("grid h-11 w-11 shrink-0 place-items-center rounded-md border", selected.status === "OPEN" ? "border-[#ead1d1] text-red-600 hover:bg-red-50" : "border-[#cfe0c7] text-[#487038] hover:bg-[#eef6ea]")} aria-label={selected.status === "OPEN" ? "Đóng hội thoại" : "Mở lại hội thoại"} title={selected.status === "OPEN" ? "Đóng hội thoại" : "Mở lại hội thoại"}>{selected.status === "OPEN" ? <XCircle className="h-4 w-4" /> : <CheckCircle2 className="h-4 w-4" />}</button>
+              {selected.product && <Link href={selected.product.href} target="_blank" rel="noopener noreferrer" className="grid h-11 w-11 shrink-0 place-items-center rounded-control border border-border text-muted-foreground hover:bg-primary-soft hover:text-primary" aria-label="Mở sản phẩm" title="Mở sản phẩm"><ExternalLink className="h-4 w-4" /></Link>}
+              <button type="button" onClick={toggleStatus} className={cn("grid h-11 w-11 shrink-0 place-items-center rounded-md border", selected.status === "OPEN" ? "border-[#ead1d1] text-red-600 hover:bg-red-50" : "border-primary-border text-primary hover:bg-primary-soft")} aria-label={selected.status === "OPEN" ? "Đóng hội thoại" : "Mở lại hội thoại"} title={selected.status === "OPEN" ? "Đóng hội thoại" : "Mở lại hội thoại"}>{selected.status === "OPEN" ? <XCircle className="h-4 w-4" /> : <CheckCircle2 className="h-4 w-4" />}</button>
             </header>
 
             <div className="flex items-center gap-3 border-b border-[#edf1ea] bg-[#f8faf6] px-4 py-2.5">
@@ -275,7 +275,7 @@ export default function AdminMessagesPage() {
               {error && <p className="mb-2 text-xs font-medium text-red-700">{error}</p>}
               <div className="flex items-end gap-2">
                 <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp,image/gif" className="hidden" onChange={(event) => chooseImage(event.target.files?.[0])} />
-                <button type="button" onClick={() => fileInputRef.current?.click()} disabled={sending} className="grid h-12 w-12 shrink-0 place-items-center rounded-md border border-[#d7e0d1] text-[#4d6342] hover:bg-[#f0f5ed] disabled:opacity-50" aria-label="Gửi ảnh" title="Gửi ảnh"><ImagePlus className="h-5 w-5" /></button>
+                <button type="button" onClick={() => fileInputRef.current?.click()} disabled={sending} className="grid h-12 w-12 shrink-0 place-items-center rounded-control border border-border text-foreground hover:bg-primary-soft hover:text-primary disabled:opacity-50" aria-label="Gửi ảnh" title="Gửi ảnh"><ImagePlus className="h-5 w-5" /></button>
                 <textarea value={content} onChange={(event) => setContent(event.target.value.slice(0, 2000))} onKeyDown={(event) => { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); void sendMessage(); } }} rows={1} placeholder={selected.status === "CLOSED" ? "Trả lời để mở lại hội thoại..." : "Nhập nội dung trả lời..."} className="min-h-12 max-h-28 flex-1 resize-none rounded-md border border-[#d7e0d1] bg-white px-3 py-2.5 text-base outline-none focus:border-[#799768] focus:ring-2 focus:ring-[#e2ecdc]" />
                 <button type="button" onClick={() => void sendMessage()} disabled={sending || (!content.trim() && !selectedImage)} className="grid h-12 w-12 shrink-0 place-items-center rounded-control bg-primary text-white hover:bg-primary-hover disabled:bg-disabled" aria-label="Gửi tin nhắn" title="Gửi tin nhắn">{sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}</button>
               </div>

@@ -60,10 +60,10 @@ export default async function MarketplaceProductDetailPage({ params }: { params:
                 <div className="flex h-full items-center justify-center text-sm font-semibold text-[#77806f]">Chua co anh</div>
               )}
             </div>
-            <button aria-label="Chia se" className="absolute right-16 top-4 grid h-10 w-10 place-items-center rounded-full bg-white/90 text-[#111611] shadow-sm">
+            <button aria-label="Chia se" className="absolute right-16 top-4 grid h-11 w-11 place-items-center rounded-full bg-white/90 text-[#111611] shadow-sm">
               <Share2 className="h-5 w-5" />
             </button>
-            <button aria-label="Them tuy chon" className="absolute right-4 top-4 grid h-10 w-10 place-items-center rounded-full bg-white/90 text-[#111611] shadow-sm">
+            <button aria-label="Them tuy chon" className="absolute right-4 top-4 grid h-11 w-11 place-items-center rounded-full bg-white/90 text-[#111611] shadow-sm">
               <MoreVertical className="h-5 w-5" />
             </button>
             {product.images.length > 0 && (
@@ -91,7 +91,7 @@ export default async function MarketplaceProductDetailPage({ params }: { params:
               <h1 className="text-2xl font-bold leading-snug text-[#111611] sm:text-3xl">{product.title}</h1>
               {product.condition && <p className="mt-3 text-sm text-[#4d5549]">{product.condition}</p>}
             </div>
-            <button className="inline-flex shrink-0 items-center gap-2 rounded-full border border-[#d8ddd3] px-4 py-2 text-sm font-bold text-[#111611]">
+            <button className="inline-flex min-h-11 shrink-0 items-center gap-2 rounded-control border border-border bg-white px-4 py-2 text-sm font-bold text-foreground transition-colors hover:bg-muted">
               <Heart className="h-5 w-5" />
               Luu
             </button>
@@ -159,7 +159,7 @@ export default async function MarketplaceProductDetailPage({ params }: { params:
               </p>
               <p className="text-sm text-[#4d5549]">{product.shop.ratingCount || product.shop._count.ratings} danh gia</p>
             </div>
-            <Link href={`/marketplace/shops/${product.shop.slug}`} className="inline-flex items-center justify-center gap-2 rounded-full bg-[#f3f4f2] px-5 py-2.5 text-sm font-bold text-[#111611]">
+            <Link href={`/marketplace/shops/${product.shop.slug}`} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-control border border-border bg-secondary px-5 py-2.5 text-sm font-bold text-foreground transition-colors hover:bg-muted">
               <Store className="h-4 w-4" />
               Xem trang
             </Link>
@@ -173,7 +173,7 @@ export default async function MarketplaceProductDetailPage({ params }: { params:
         <div className="lg:col-start-2">
           <section className="rounded-lg bg-white p-5 shadow-sm sm:p-6">
             <div className="flex items-center gap-2">
-              <MessageCircle className="h-5 w-5 text-[#3d5f2d]" />
+              <MessageCircle className="h-5 w-5 text-primary" />
               <h2 className="text-lg font-bold text-[#111611]">Mo ta san pham</h2>
             </div>
             <p className="mt-4 whitespace-pre-line text-sm leading-7 text-[#4d5549]">{product.description}</p>

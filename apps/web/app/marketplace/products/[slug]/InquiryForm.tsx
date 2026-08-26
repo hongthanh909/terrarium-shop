@@ -52,7 +52,7 @@ export default function InquiryForm({ productId, shopPhone }: { productId: strin
         >
           {shopPhone ? `Hien so ${shopPhone.slice(0, 6)}****` : "Shop chua co SDT"}
         </a>
-        <button type="button" className="rounded-xl bg-[#ffd21c] px-4 py-3 text-sm font-bold text-[#111611]">
+        <button type="button" className="min-h-11 rounded-control bg-primary px-4 py-3 text-sm font-bold text-white transition-colors hover:bg-primary-hover">
           Chat
         </button>
       </div>
@@ -64,7 +64,7 @@ export default function InquiryForm({ productId, shopPhone }: { productId: strin
             placeholder="Dang nhap de gui tin nhan"
             className="min-h-12 rounded-xl border border-transparent bg-transparent px-1 text-sm outline-none placeholder:text-[#8a8f86] focus:border-[#cfd8c8] focus:bg-white focus:px-3"
           />
-          <button disabled={loading} className="rounded-full bg-[#ffd21c] px-6 py-2.5 text-sm font-bold text-[#111611] disabled:opacity-60">
+          <button disabled={loading} className="min-h-11 rounded-control bg-primary px-6 py-2.5 text-sm font-bold text-white transition-colors hover:bg-primary-hover disabled:opacity-60">
             {loading ? "Dang gui" : "Gui"}
           </button>
         </div>
@@ -84,7 +84,7 @@ export default function InquiryForm({ productId, shopPhone }: { productId: strin
             />
             <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-sm font-semibold text-[#6f756a]">d</span>
           </div>
-          <button disabled={loading} className="rounded-full bg-[#f3f4f2] px-6 py-2.5 text-sm font-bold text-[#111611] disabled:opacity-60">
+          <button disabled={loading} className="min-h-11 rounded-control border border-border bg-secondary px-6 py-2.5 text-sm font-bold text-foreground transition-colors hover:bg-muted disabled:opacity-60">
             Tra gia
           </button>
         </div>
@@ -95,7 +95,7 @@ export default function InquiryForm({ productId, shopPhone }: { productId: strin
         <input name="phone" placeholder="So dien thoai" className="rounded-xl border border-[#d6e2ce] px-3 py-2 text-sm" />
         <input name="email" type="email" placeholder="Email" className="rounded-xl border border-[#d6e2ce] px-3 py-2 text-sm" />
       </div>
-      {message && <p className="text-sm font-medium text-[#3d5f2d]">{message}</p>}
+      {message && <p className="text-sm font-medium text-primary">{message}</p>}
     </form>
   );
 }

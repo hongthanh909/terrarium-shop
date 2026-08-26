@@ -9,7 +9,7 @@ const STEP_CONFIG = [
   { key: "CONFIRMED",  label: "Đã xác nhận",   desc: "Shop đã xác nhận đơn hàng của bạn",     icon: CheckCircle,  color: "text-blue-500",   bg: "bg-blue-50",   border: "border-blue-200" },
   { key: "PROCESSING", label: "Đang đóng gói", desc: "Sản phẩm đang được chuẩn bị cẩn thận",  icon: Package,      color: "text-purple-500", bg: "bg-purple-50", border: "border-purple-200" },
   { key: "SHIPPING",   label: "Đang giao",     desc: "Đơn hàng đang trên đường đến bạn 🚚",   icon: Truck,        color: "text-indigo-500", bg: "bg-indigo-50", border: "border-indigo-200" },
-  { key: "DELIVERED",  label: "Đã giao",       desc: "Đơn hàng đã giao thành công!",           icon: Star,         color: "text-[#425733]",  bg: "bg-[#e3ebdd]", border: "border-[#c2d6b0]" },
+  { key: "DELIVERED",  label: "Đã giao",       desc: "Đơn hàng đã giao thành công!",           icon: Star,         color: "text-primary",  bg: "bg-primary-soft", border: "border-primary-border" },
 ];
 
 const STATUS_ORDER = ["PENDING", "CONFIRMED", "PROCESSING", "SHIPPING", "DELIVERED"];
@@ -52,7 +52,7 @@ export function OrderTimeline({ currentStatus, className }: OrderTimelineProps) 
                 transition={{ type: "spring", stiffness: 300 }}
                 className={cn(
                   "relative w-10 h-10 rounded-full flex items-center justify-center border-2 flex-shrink-0 transition-all duration-300",
-                  isDone    && "bg-[#425733] border-[#425733]",
+                  isDone    && "bg-primary border-primary",
                   isCurrent && cn(step.bg, step.border, "border-2"),
                   isPending  && "bg-gray-100 border-gray-200"
                 )}
@@ -75,7 +75,7 @@ export function OrderTimeline({ currentStatus, className }: OrderTimelineProps) 
               {i < STEP_CONFIG.length - 1 && (
                 <div className="w-0.5 h-8 mt-1 mb-1 relative overflow-hidden rounded-full bg-gray-100">
                   <motion.div
-                    className="absolute inset-x-0 top-0 bg-[#425733] rounded-full"
+                    className="absolute inset-x-0 top-0 bg-primary rounded-full"
                     initial={{ height: "0%" }}
                     animate={{ height: isDone ? "100%" : "0%" }}
                     transition={{ duration: 0.4, delay: i * 0.1 }}
@@ -92,7 +92,7 @@ export function OrderTimeline({ currentStatus, className }: OrderTimelineProps) 
                 transition={{ delay: i * 0.08 }}
                 className={cn(
                   "font-semibold text-sm leading-tight",
-                  isDone    && "text-[#425733]",
+                  isDone    && "text-primary",
                   isCurrent && "text-gray-900",
                   isPending  && "text-gray-300"
                 )}

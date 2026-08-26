@@ -116,7 +116,7 @@ export function AdminChatNotifier({ onUnreadChange }: { onUnreadChange: (count: 
       onClick={toggleAlerts}
       className={cn(
         "grid h-10 w-10 shrink-0 place-items-center rounded-full border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8fba6f]/60",
-        enabled ? "border-[#b8cdaa] bg-[#edf5e8] text-[#365229]" : "border-[#e0e6dc] bg-white text-gray-500 hover:text-[#425733]",
+        enabled ? "border-[#b8cdaa] bg-primary-soft text-[#365229]" : "border-[#e0e6dc] bg-white text-gray-500 hover:text-primary",
       )}
       aria-label={enabled ? "Tắt âm thanh thông báo chat" : "Bật âm thanh và thông báo chat"}
       title={enabled ? "Thông báo chat đang bật" : "Bật thông báo chat"}

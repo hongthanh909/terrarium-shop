@@ -469,7 +469,7 @@ export default function EditProductPage() {
   if (fetching) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] gap-3">
-        <Loader2 className="w-8 h-8 animate-spin text-[#425733]" />
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
         <p className="text-sm text-gray-500">Đang tải thông tin sản phẩm...</p>
       </div>
     );
@@ -479,7 +479,7 @@ export default function EditProductPage() {
     <>
     <div>
       <div className="mb-6">
-        <Link href="/tiem-nho-nth24/products" className="inline-flex items-center text-[#425733] hover:text-[#364a29] mb-4 gap-1 text-sm">
+        <Link href="/tiem-nho-nth24/products" className="mb-4 inline-flex items-center gap-1 text-sm text-primary transition-colors hover:text-primary-hover">
           <ArrowLeft className="w-4 h-4" /> Quay lại danh sách
         </Link>
         <h2 className="text-2xl font-bold text-gray-800">Chỉnh Sửa Sản Phẩm</h2>
@@ -552,13 +552,13 @@ export default function EditProductPage() {
             {formData.salePrice && (
               <div className="md:col-span-2">
                 <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                  Thời Hạn Flash Sale <span className="text-[10px] text-[#425733] font-normal">(Giờ VN)</span>
+                  Thời Hạn Flash Sale <span className="text-[10px] text-primary font-normal">(Giờ VN)</span>
                 </label>
                 <input
                   type="datetime-local"
                   value={formData.saleEndDate}
                   onChange={(e) => setFormData({ ...formData, saleEndDate: e.target.value })}
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#425733]/50"
+                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-primary/50"
                 />
                 <p className="text-xs text-gray-400 mt-1">Để trống nếu flash sale không có thời hạn</p>
               </div>
@@ -585,7 +585,7 @@ export default function EditProductPage() {
                 id="isFeatured"
                 checked={formData.isFeatured}
                 onChange={(e) => setFormData({ ...formData, isFeatured: e.target.checked })}
-                className="w-4 h-4 rounded border-gray-300 text-[#425733] focus:ring-[#425733]"
+                className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
               />
               <label htmlFor="isFeatured" className="text-sm font-semibold text-gray-700 cursor-pointer">
                 Sản phẩm nổi bật (Featured) 🔥
@@ -611,8 +611,8 @@ export default function EditProductPage() {
                 onClick={() => mainImageInputRef.current?.click()}
                 className={`relative w-40 h-40 rounded-xl border-2 overflow-hidden cursor-pointer transition-all ${
                   mainImage
-                    ? "border-[#425733] shadow-md"
-                    : "border-dashed border-gray-300 hover:border-[#425733] bg-gray-50"
+                    ? "border-primary shadow-md"
+                    : "border-dashed border-gray-300 hover:border-primary bg-gray-50"
                 }`}
               >
                 {mainImage ? (
@@ -629,7 +629,7 @@ export default function EditProductPage() {
                 ) : (
                   <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-gray-400">
                     {uploadingMain ? (
-                      <Loader2 className="w-6 h-6 animate-spin text-[#425733]" />
+                      <Loader2 className="w-6 h-6 animate-spin text-primary" />
                     ) : (
                       <>
                         <ImageIcon className="w-8 h-8" />
@@ -646,7 +646,7 @@ export default function EditProductPage() {
                     type="button"
                     onClick={() => mainImageInputRef.current?.click()}
                     disabled={uploadingMain}
-                    className="flex min-h-11 items-center gap-2 rounded-md border border-[#425733] bg-[#425733] px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#364a29] active:scale-[0.98] disabled:opacity-50"
+                    className="flex min-h-11 items-center gap-2 rounded-md border border-primary bg-primary px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-primary-hover active:scale-[0.98] disabled:opacity-50"
                   >
                     <Upload className="w-4 h-4" />
                     {uploadingMain ? "Đang tải..." : mainImage ? "Thay ảnh chính" : "Tải ảnh chính"}
@@ -656,7 +656,7 @@ export default function EditProductPage() {
                       type="button"
                       onClick={() => setMainCropSrc(mainImage)}
                       disabled={uploadingMain}
-                      className="flex items-center gap-2 border border-[#425733]/30 text-[#425733] px-4 py-2 rounded-full text-sm font-semibold hover:bg-[#f5f7f4] disabled:opacity-50 transition-colors"
+                      className="flex items-center gap-2 border border-primary/30 text-primary px-4 py-2 rounded-full text-sm font-semibold hover:bg-primary-soft disabled:opacity-50 transition-colors"
                     >
                       <Crop className="w-4 h-4" />
                       Crop ảnh chính
@@ -687,7 +687,7 @@ export default function EditProductPage() {
                   <ImageWrapper src={img} alt={`Ảnh phụ ${idx + 1}`} fill noRound className="object-cover" />
                   <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center gap-2">
                     <label className="opacity-0 group-hover:opacity-100 cursor-pointer w-7 h-7 rounded-full bg-white/90 flex items-center justify-center shadow hover:bg-white transition-all" title="Crop lại ảnh này">
-                      <Crop className="w-3.5 h-3.5 text-[#425733]" />
+                      <Crop className="w-3.5 h-3.5 text-primary" />
                       <input type="file" accept="image/*" className="hidden" onChange={(e) => handleReCropSelect(e, idx)} />
                     </label>
                     <button type="button" onClick={() => setSubImages((prev) => prev.filter((_, i) => i !== idx))} className="opacity-0 group-hover:opacity-100 w-7 h-7 bg-red-500 text-white rounded-full flex items-center justify-center shadow transition-all" title="Xóa ảnh này">
@@ -698,13 +698,13 @@ export default function EditProductPage() {
               ))}
 
               {subImages.length < 10 && (
-                <button type="button" onClick={() => subImageInputRef.current?.click()} disabled={uploadingSub} className="aspect-square rounded-xl border-2 border-dashed border-gray-300 hover:border-[#425733] bg-gray-50 hover:bg-[#f5f7f4] transition-all flex flex-col items-center justify-center gap-1 text-gray-400 hover:text-[#425733]">
-                  {uploadingSub ? <Loader2 className="w-5 h-5 animate-spin text-[#425733]" /> : <><Plus className="w-5 h-5" /><span className="text-[10px]">Thêm</span></>}
+                <button type="button" onClick={() => subImageInputRef.current?.click()} disabled={uploadingSub} className="aspect-square rounded-xl border-2 border-dashed border-gray-300 hover:border-primary bg-gray-50 hover:bg-primary-soft transition-all flex flex-col items-center justify-center gap-1 text-gray-400 hover:text-primary">
+                  {uploadingSub ? <Loader2 className="w-5 h-5 animate-spin text-primary" /> : <><Plus className="w-5 h-5" /><span className="text-[10px]">Thêm</span></>}
                 </button>
               )}
             </div>
 
-            <button type="button" onClick={() => subImageInputRef.current?.click()} disabled={uploadingSub || subImages.length >= 10} className="flex items-center gap-2 text-sm text-[#425733] hover:text-[#364a29] font-medium disabled:opacity-40 transition-colors">
+            <button type="button" onClick={() => subImageInputRef.current?.click()} disabled={uploadingSub || subImages.length >= 10} className="flex min-h-11 items-center gap-2 rounded-control px-3 text-sm font-medium text-primary transition-colors hover:bg-primary-soft hover:text-primary-hover disabled:opacity-40">
               <Upload className="w-4 h-4" />
               {uploadingSub ? "Đang tải ảnh phụ..." : "Tải nhiều ảnh phụ cùng lúc"}
             </button>
@@ -713,12 +713,12 @@ export default function EditProductPage() {
           {/* Video sản phẩm */}
           <div className="border-t border-gray-100 pt-5">
             <div className="flex items-center gap-2 mb-3">
-              <Video className="w-4 h-4 text-[#425733]" />
+              <Video className="w-4 h-4 text-primary" />
               <span className="text-sm font-medium text-gray-700">Video sản phẩm</span>
               <span className="text-xs text-gray-400">(tùy chọn · tối đa {MAX_VIDEO_MB}MB · MP4/WebM/MOV)</span>
             </div>
             {productVideo && (
-              <div className="relative mb-3 rounded-xl overflow-hidden border border-[#425733]/30 bg-black aspect-video max-w-sm">
+              <div className="relative mb-3 rounded-xl overflow-hidden border border-primary/30 bg-black aspect-video max-w-sm">
                 <video src={productVideo} controls className="w-full h-full object-contain" />
                 <button type="button" onClick={() => { setProductVideo(""); setCareGuide((p) => ({ ...p, videoUrl: careGuide.videoUrl === productVideo ? "" : careGuide.videoUrl })); }} className="absolute top-2 right-2 w-7 h-7 bg-red-500 text-white rounded-full flex items-center justify-center shadow hover:bg-red-600 transition-colors" title="Xóa video">
                   <X className="w-3.5 h-3.5" />
@@ -726,7 +726,7 @@ export default function EditProductPage() {
               </div>
             )}
             <div className="flex items-center gap-3 flex-wrap">
-              <button type="button" onClick={() => videoInputRef.current?.click()} disabled={uploadingVideo} className="flex items-center gap-2 px-4 py-2 border-2 border-[#425733] text-[#425733] rounded-full text-sm font-semibold hover:bg-[#f0f4ee] disabled:opacity-50 transition-colors">
+              <button type="button" onClick={() => videoInputRef.current?.click()} disabled={uploadingVideo} className="flex items-center gap-2 px-4 py-2 border-2 border-primary text-primary rounded-full text-sm font-semibold hover:bg-primary-soft disabled:opacity-50 transition-colors">
                 {uploadingVideo ? <><Loader2 className="w-4 h-4 animate-spin" /> Đang tải video...</> : <><Upload className="w-4 h-4" /> {productVideo ? "Thay video" : "Upload video"}</>}
               </button>
               {!productVideo && <span className="text-xs text-gray-400">hoặc dán URL YouTube</span>}
@@ -743,7 +743,7 @@ export default function EditProductPage() {
         {/* ── Thông số chi tiết ───────────────────────────── */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
           <div className="flex items-center gap-2 mb-5">
-            <div className="w-7 h-7 rounded-lg bg-[#e3ebdd] flex items-center justify-center">
+            <div className="w-7 h-7 rounded-lg bg-primary-soft flex items-center justify-center">
               <span className="text-sm">📐</span>
             </div>
             <h3 className="text-base font-semibold text-gray-800">Thông Số Chi Tiết</h3>
@@ -854,7 +854,7 @@ export default function EditProductPage() {
             {/* Range slider for Temperature */}
             <div className="flex flex-col gap-1 w-full bg-gray-50/50 p-4 rounded-xl border border-gray-100">
               <label className="block text-sm font-semibold text-gray-700">
-                Nhiệt độ thích hợp: <span className="text-[#425733] font-bold text-base">{tempMin}°C - {tempMax}°C</span>
+                Nhiệt độ thích hợp: <span className="text-primary font-bold text-base">{tempMin}°C - {tempMax}°C</span>
               </label>
               <div className="flex gap-4 mt-2">
                 <div className="flex-1">
@@ -872,7 +872,7 @@ export default function EditProductPage() {
                       setTempMin(minVal);
                       setCareGuide(prev => ({ ...prev, temperature: `${minVal}-${tempMax}°C` }));
                     }}
-                    className="w-full accent-[#425733] cursor-pointer h-1.5 bg-gray-200 rounded-lg appearance-none" 
+                    className="w-full accent-primary cursor-pointer h-1.5 bg-gray-200 rounded-lg appearance-none"
                   />
                 </div>
                 <div className="flex-1">
@@ -890,7 +890,7 @@ export default function EditProductPage() {
                       setTempMax(maxVal);
                       setCareGuide(prev => ({ ...prev, temperature: `${tempMin}-${maxVal}°C` }));
                     }}
-                    className="w-full accent-[#425733] cursor-pointer h-1.5 bg-gray-200 rounded-lg appearance-none" 
+                    className="h-1.5 w-full cursor-pointer appearance-none rounded-lg bg-gray-200 accent-primary"
                   />
                 </div>
               </div>
@@ -899,7 +899,7 @@ export default function EditProductPage() {
             {/* Range slider for Humidity */}
             <div className="flex flex-col gap-1 w-full bg-gray-50/50 p-4 rounded-xl border border-gray-100">
               <label className="block text-sm font-semibold text-gray-700">
-                Độ ẩm thích hợp: <span className="text-[#425733] font-bold text-base">{humidityMin}% - {humidityMax}%</span>
+                Độ ẩm thích hợp: <span className="text-primary font-bold text-base">{humidityMin}% - {humidityMax}%</span>
               </label>
               <div className="flex gap-4 mt-2">
                 <div className="flex-1">
@@ -917,7 +917,7 @@ export default function EditProductPage() {
                       setHumidityMin(minVal);
                       setCareGuide(prev => ({ ...prev, humidity: `${minVal}-${humidityMax}%` }));
                     }}
-                    className="w-full accent-[#425733] cursor-pointer h-1.5 bg-gray-200 rounded-lg appearance-none" 
+                    className="h-1.5 w-full cursor-pointer appearance-none rounded-lg bg-gray-200 accent-primary"
                   />
                 </div>
                 <div className="flex-1">
@@ -935,7 +935,7 @@ export default function EditProductPage() {
                       setHumidityMax(maxVal);
                       setCareGuide(prev => ({ ...prev, humidity: `${humidityMin}-${maxVal}%` }));
                     }}
-                    className="w-full accent-[#425733] cursor-pointer h-1.5 bg-gray-200 rounded-lg appearance-none" 
+                    className="h-1.5 w-full cursor-pointer appearance-none rounded-lg bg-gray-200 accent-primary"
                   />
                 </div>
               </div>
@@ -973,7 +973,7 @@ export default function EditProductPage() {
           <button
             type="submit"
             disabled={loading}
-            className="flex min-h-11 items-center gap-2 rounded-md border border-[#425733] bg-[#425733] px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#364a29] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex min-h-11 items-center gap-2 rounded-md border border-primary bg-primary px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-primary-hover active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
           >
             <Save className="w-4 h-4" />
             {loading ? "Đang lưu..." : "Lưu thay đổi"}

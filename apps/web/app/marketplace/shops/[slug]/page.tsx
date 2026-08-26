@@ -21,7 +21,7 @@ export default async function MarketplaceShopDetailPage({ params }: { params: Pr
           <p className="text-sm font-semibold text-[#6f8d5e]">Shop ca nhan</p>
           <h1 className="mt-2 text-4xl font-bold text-[#203018]">{shop.name}</h1>
           <p className="mt-3 max-w-3xl text-sm leading-6 text-[#526248]">{shop.description || "Shop chua cap nhat mo ta."}</p>
-          <p className="mt-4 text-xs font-semibold text-[#3d5f2d]">Rating {shop.ratingPercent}% · {shop.province || "Online"}</p>
+          <p className="mt-4 text-xs font-semibold text-primary">Rating {shop.ratingPercent}% · {shop.province || "Online"}</p>
         </div>
         <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {shop.products.map((product) => (
@@ -34,7 +34,7 @@ export default async function MarketplaceShopDetailPage({ params }: { params: Pr
               </div>
               <div className="p-4">
                 <p className="line-clamp-2 font-semibold text-[#203018]">{product.title}</p>
-                <p className="mt-2 text-sm font-bold text-[#2f4a23]">{money(product.price)}</p>
+                <p className="mt-2 text-sm font-bold text-primary">{money(product.price)}</p>
               </div>
             </Link>
           ))}

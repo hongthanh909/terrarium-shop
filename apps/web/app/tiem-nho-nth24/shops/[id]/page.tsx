@@ -37,7 +37,7 @@ export default async function AdminShopDetailPage({ params }: { params: Promise<
                 <p className="text-sm text-gray-500">{product.status} · risk {product.moderationRisk}</p>
                 {product.moderationReasons.length > 0 && <p className="text-xs text-amber-700">{product.moderationReasons.join("; ")}</p>}
               </div>
-              <p className="font-semibold text-[#2f4a23]">{money(product.price)}</p>
+              <p className="font-semibold text-primary">{money(product.price)}</p>
             </div>
           ))}
           {shop.products.length === 0 && <p className="py-4 text-sm text-gray-500">Shop chưa có sản phẩm.</p>}

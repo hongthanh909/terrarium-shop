@@ -135,7 +135,7 @@ export default function AdminReviewsPage() {
       <div className="mb-6">
         <Link
           href="/tiem-nho-nth24"
-          className="inline-flex items-center text-[#425733] hover:text-[#425733] mb-4"
+          className="inline-flex items-center text-primary hover:text-primary mb-4"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
           Quay Lại Admin
@@ -151,7 +151,7 @@ export default function AdminReviewsPage() {
             onClick={() => setFilter(status)}
             className={`px-4 py-2 rounded-lg font-medium ${
               filter === status
-                ? "bg-[#425733] text-white"
+                ? "bg-primary text-white"
                 : "bg-white text-gray-700 hover:bg-gray-100"
             }`}
           >
@@ -178,7 +178,7 @@ export default function AdminReviewsPage() {
                     {renderStars(review.rating)}
                     <span className={`px-2 py-1 rounded text-xs font-medium ${
                       review.status === "APPROVED" || review.approved
-                        ? "bg-[#e3ebdd] text-[#364a29]"
+                        ? "bg-primary-soft text-primary"
                         : review.status === "REJECTED"
                         ? "bg-red-100 text-red-700"
                         : "bg-yellow-100 text-yellow-800"
@@ -217,7 +217,7 @@ export default function AdminReviewsPage() {
                 <div className="flex justify-between items-center pt-4 border-t">
                   <Link
                     href={`/products/${review.product?.slug}`}
-                    className="text-[#425733] hover:text-[#425733] text-sm flex items-center gap-1"
+                    className="text-primary hover:text-primary text-sm flex items-center gap-1"
                   >
                     <Eye className="w-4 h-4" />
                     Xem Sản Phẩm
@@ -235,7 +235,7 @@ export default function AdminReviewsPage() {
                       <button
                         onClick={() => handleApprove(review.id)}
                         disabled={processingId !== null}
-                        className="flex min-h-10 items-center gap-1 rounded-md border border-[#425733] bg-[#425733] px-3 py-1 font-semibold text-white shadow-sm transition-colors hover:bg-[#364a29] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
+                        className="flex min-h-10 items-center gap-1 rounded-md border border-primary bg-primary px-3 py-1 font-semibold text-white shadow-sm transition-colors hover:bg-primary-hover active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
                       >
                         <Check className="w-4 h-4" />
                         Duyệt

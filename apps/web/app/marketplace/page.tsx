@@ -24,7 +24,7 @@ export default async function MarketplacePage() {
               San pham do cac shop ca nhan dang ban. Nguoi mua va shop tu thoa thuan thanh toan, giao hang va bao hanh.
             </p>
           </div>
-          <Link href="/marketplace/shops" className="rounded-full border border-[#c6d8ba] px-5 py-2.5 text-sm font-semibold text-[#3d5f2d]">
+          <Link href="/marketplace/shops" className="rounded-full border border-primary-border px-5 py-2.5 text-sm font-semibold text-primary">
             Xem shop
           </Link>
         </div>
@@ -39,9 +39,9 @@ export default async function MarketplacePage() {
                 ) : null}
               </div>
               <div className="p-4">
-                <span className="rounded-full bg-[#eef5e8] px-2.5 py-1 text-xs font-semibold text-[#3d5f2d]">Shop ca nhan</span>
+                <span className="rounded-full bg-primary-soft px-2.5 py-1 text-xs font-semibold text-primary">Shop ca nhan</span>
                 <h2 className="mt-3 line-clamp-2 font-semibold text-[#203018]">{product.title}</h2>
-                <p className="mt-2 text-sm font-bold text-[#2f4a23]">{money(product.price)}</p>
+                <p className="mt-2 text-sm font-bold text-primary">{money(product.price)}</p>
                 <p className="mt-1 text-xs text-[#6f7f66]">{product.shop.name} · {product.shop.province || "Online"}</p>
               </div>
             </Link>

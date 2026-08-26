@@ -43,7 +43,7 @@ export function RevenueChart({ data, periodLabel }: RevenueChartProps) {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-100 pb-4">
         <div>
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-[#eef5e8] flex items-center justify-center text-[#2f4a23]">
+            <div className="w-8 h-8 rounded-lg bg-primary-soft flex items-center justify-center text-primary">
               <TrendingUp className="w-4 h-4" />
             </div>
             <h3 className="font-bold text-gray-800 text-lg">Biểu Đồ Doanh Thu & Đơn Hàng</h3>
@@ -119,7 +119,7 @@ export function RevenueChart({ data, periodLabel }: RevenueChartProps) {
                 <div className="w-full relative flex flex-col items-center justify-end h-full">
                   {/* Peak Marker Badge */}
                   {isPeak && !activeItem && (
-                    <span className="absolute -top-6 text-[10px] font-bold text-[#4a6d38] bg-[#eef5e8] px-1.5 py-0.5 rounded-md shadow-xs whitespace-nowrap">
+                    <span className="absolute -top-6 text-[10px] font-bold text-[#4a6d38] bg-primary-soft px-1.5 py-0.5 rounded-md shadow-xs whitespace-nowrap">
                       Cao nhất
                     </span>
                   )}
@@ -130,7 +130,7 @@ export function RevenueChart({ data, periodLabel }: RevenueChartProps) {
                     transition={{ duration: 0.5, delay: index * 0.02 }}
                     className={`w-full rounded-t-lg transition-all duration-200 relative ${
                       isHovered
-                        ? "bg-gradient-to-t from-[#2f4a23] to-[#4a6d38] shadow-[0_0_16px_rgba(74,109,56,0.35)] scale-x-105"
+                        ? "scale-x-105 bg-gradient-to-t from-primary to-primary/70 shadow-[0_0_16px_hsl(var(--primary)/0.25)]"
                         : isPeak
                         ? "bg-gradient-to-t from-[#365727] to-[#8fba6f]"
                         : "bg-[#e4ede0] hover:bg-[#c2d8b8]"
@@ -138,7 +138,7 @@ export function RevenueChart({ data, periodLabel }: RevenueChartProps) {
                   >
                     {/* Orders indicator dot on top of bar */}
                     {item.orders > 0 && (
-                      <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 rounded-full bg-[#2f4a23] border border-white shadow-xs" />
+                      <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 rounded-full bg-primary border border-white shadow-xs" />
                     )}
                   </motion.div>
                 </div>
@@ -146,7 +146,7 @@ export function RevenueChart({ data, periodLabel }: RevenueChartProps) {
                 {/* X Axis Label */}
                 <span
                   className={`text-[11px] mt-2 font-medium transition-colors truncate max-w-full ${
-                    isHovered ? "text-[#2f4a23] font-bold" : "text-gray-400"
+                    isHovered ? "text-primary font-bold" : "text-gray-400"
                   }`}
                 >
                   {item.label}
@@ -165,7 +165,7 @@ export function RevenueChart({ data, periodLabel }: RevenueChartProps) {
             <span>Doanh thu đạt chuẩn</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-full bg-[#2f4a23]" />
+            <span className="w-2 h-2 rounded-full bg-primary" />
             <span>Có đơn hàng</span>
           </div>
         </div>

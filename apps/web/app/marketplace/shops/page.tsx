@@ -17,7 +17,7 @@ export default async function MarketplaceShopsPage() {
             <Link key={shop.id} href={`/marketplace/shops/${shop.slug}`} className="rounded-2xl border border-[#dfe8d7] bg-white p-5 shadow-sm hover:shadow-md">
               <p className="font-semibold text-[#203018]">{shop.name}</p>
               <p className="mt-2 line-clamp-2 text-sm text-[#526248]">{shop.description || "Shop terrarium ca nhan"}</p>
-              <p className="mt-4 text-xs font-semibold text-[#3d5f2d]">{shop._count.products} san pham · rating {shop.ratingPercent}%</p>
+              <p className="mt-4 text-xs font-semibold text-primary">{shop._count.products} san pham · rating {shop.ratingPercent}%</p>
             </Link>
           ))}
         </div>

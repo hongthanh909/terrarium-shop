@@ -574,7 +574,7 @@ export default function ProfilePage() {
               <button
                 type="submit"
                 disabled={saving || (!!confirmPassword && confirmPassword !== newPassword)}
-                className="flex min-h-12 w-full items-center justify-center gap-2 bg-foreground px-6 py-2.5 font-semibold text-white transition-colors hover:bg-foreground/85 disabled:opacity-60 sm:w-auto"
+                className="flex min-h-12 w-full items-center justify-center gap-2 rounded-control bg-primary px-6 py-2.5 font-semibold text-white transition-colors hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-primary/50 disabled:opacity-60 sm:w-auto"
               >
                 <Lock className="w-4 h-4" />
                 {saving ? "Đang đổi..." : "Đổi mật khẩu"}

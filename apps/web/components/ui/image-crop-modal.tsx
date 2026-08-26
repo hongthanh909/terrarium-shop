@@ -150,7 +150,7 @@ export function ImageCropModal({
               type="range" min="0.5" max="3" step="0.05"
               value={scale}
               onChange={(e) => setScale(Number(e.target.value))}
-              className="flex-1 accent-[#425733]"
+              className="flex-1 accent-primary"
             />
             <button
               onClick={() => setScale((s) => Math.min(3, s + 0.1))}
@@ -183,7 +183,7 @@ export function ImageCropModal({
             <Button
               onClick={handleConfirm}
               disabled={!completedCrop}
-              className="bg-[#425733] hover:bg-[#364a29] text-white gap-2"
+              className="bg-primary hover:bg-primary-hover text-white gap-2"
             >
               <Check className="w-4 h-4" />
               Xác nhận cắt ảnh

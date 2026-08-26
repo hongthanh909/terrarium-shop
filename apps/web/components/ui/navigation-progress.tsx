@@ -50,7 +50,7 @@ export function NavigationProgress() {
           width: "100%",
           transform: "scaleX(0)",
           transformOrigin: "left center",
-          background: "linear-gradient(90deg, #425733, #8fba6f)",
+          background: "linear-gradient(90deg, hsl(var(--primary)), hsl(var(--primary-border)))",
           zIndex: 9999,
           opacity: 0,
           borderRadius: "0 2px 2px 0",

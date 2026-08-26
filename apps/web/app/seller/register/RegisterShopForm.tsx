@@ -80,10 +80,10 @@ export default function RegisterShopForm() {
         <input name="commitmentAccepted" type="checkbox" required className="mt-1" />
         <span>Tôi cam kết chỉ đăng sản phẩm liên quan terrarium/phụ kiện và tự chịu trách nhiệm giao dịch với người mua.</span>
       </label>
-      <button disabled={loading} className="w-fit rounded-full bg-[#2f4a23] px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-60">
+      <button disabled={loading} className="min-h-11 w-fit rounded-control bg-primary px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-primary-hover disabled:opacity-60">
         {loading ? "Đang gửi..." : "Gửi đơn đăng ký"}
       </button>
-      {message && <p className="text-sm font-medium text-[#3d5f2d]">{message}</p>}
+      {message && <p className="text-sm font-medium text-primary">{message}</p>}
     </form>
   );
 }

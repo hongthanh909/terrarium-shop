@@ -97,7 +97,7 @@ function ConsultExperience() {
         <div className="grid gap-7 lg:grid-cols-[minmax(0,1fr)_260px] lg:gap-9">
           <section className="flex min-h-[calc(100dvh-12rem)] flex-col overflow-hidden rounded-lg border border-border bg-white sm:min-h-[620px]" aria-label="Cuộc trò chuyện tư vấn">
             <div className="flex items-center gap-3 border-b border-border bg-[#f7f8f6] px-4 py-3 sm:px-5">
-              <span className="flex h-10 w-10 items-center justify-center rounded-md bg-foreground text-white">
+              <span className="flex h-10 w-10 items-center justify-center rounded-control bg-primary text-white">
                 <Bot className="h-5 w-5" aria-hidden="true" />
               </span>
               <div>
@@ -114,17 +114,17 @@ function ConsultExperience() {
             >
               {messages.map((message, index) => (
                 <div key={`${message.role}-${index}`} className={`flex items-start gap-3 ${message.role === "user" ? "flex-row-reverse" : ""}`}>
-                  <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-md ${message.role === "user" ? "border border-border bg-white text-foreground" : "bg-foreground text-white"}`}>
+                  <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-control ${message.role === "user" ? "border border-border bg-white text-foreground" : "bg-primary text-white"}`}>
                     {message.role === "user" ? <User className="h-4 w-4" aria-hidden="true" /> : <Bot className="h-4 w-4" aria-hidden="true" />}
                   </span>
-                  <div className={`max-w-[82%] rounded-md px-4 py-3 text-sm leading-6 ${message.role === "user" ? "bg-foreground text-white" : "bg-muted text-foreground"}`}>
+                  <div className={`max-w-[82%] rounded-control px-4 py-3 text-sm leading-6 ${message.role === "user" ? "bg-primary text-white" : "bg-muted text-foreground"}`}>
                     {message.content}
                   </div>
                 </div>
               ))}
               {loading && (
                 <div className="flex items-start gap-3" role="status">
-                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-foreground text-white">
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-control bg-primary text-white">
                     <Bot className="h-4 w-4" aria-hidden="true" />
                   </span>
                   <div className="rounded-md bg-muted px-4 py-3 text-sm text-muted-foreground">Đang chuẩn bị câu trả lời...</div>
@@ -149,7 +149,7 @@ function ConsultExperience() {
                 <Button
                   type="submit"
                   disabled={loading || !input.trim()}
-                  className="h-12 w-12 shrink-0 rounded-md bg-foreground p-0 text-white hover:bg-foreground/85"
+                  className="h-12 w-12 shrink-0 rounded-control p-0"
                   aria-label="Gửi câu hỏi"
                 >
                   <Send className="h-4 w-4" aria-hidden="true" />

@@ -140,10 +140,10 @@ export default function CheckoutPendingPage() {
     return (
       <main className="flex min-h-[100dvh] items-center justify-center bg-white p-6">
         <div className="text-center space-y-4">
-          <div className="w-20 h-20 bg-[#e3ebdd] rounded-full flex items-center justify-center mx-auto animate-pulse">
-            <CheckCircle2 className="w-12 h-12 text-[#425733]" />
+          <div className="w-20 h-20 bg-primary-soft rounded-full flex items-center justify-center mx-auto animate-pulse">
+            <CheckCircle2 className="h-12 w-12 text-primary" />
           </div>
-          <p className="text-xl font-bold text-[#425733]">Đã xác nhận thanh toán!</p>
+          <p className="text-xl font-bold text-primary">Đã xác nhận thanh toán!</p>
           <p className="text-sm text-gray-500">Đang chuyển sang trang xác nhận...</p>
         </div>
       </main>
@@ -170,18 +170,18 @@ export default function CheckoutPendingPage() {
 
         {/* Header */}
         <div className="text-center space-y-1">
-          <div className="inline-flex items-center gap-2 bg-[#425733] text-white text-sm px-4 py-1.5 rounded-full font-medium">
+          <div className="inline-flex items-center gap-2 rounded-full bg-primary px-4 py-1.5 text-sm font-medium text-white">
             <Clock className="w-4 h-4" />
             Chờ thanh toán
           </div>
           <h1 className="text-2xl font-bold text-[#2d4a1e] mt-2">Quét QR để thanh toán</h1>
-          <p className="text-sm text-gray-500">Mã đơn: <span className="font-mono font-semibold text-[#425733]">{orderNumber}</span></p>
+          <p className="text-sm text-gray-500">Mã đơn: <span className="font-mono font-semibold text-primary">{orderNumber}</span></p>
         </div>
 
         {/* Countdown Timer */}
         <div className={`space-y-2 rounded-lg p-4 text-center ${isUrgent ? "bg-red-50 border border-red-200" : "bg-white border border-[#daebd0]"}`}>
           <p className="text-xs text-gray-500 uppercase tracking-wide font-medium">Thời gian còn lại</p>
-          <div className={`font-mono text-4xl font-bold tabular-nums sm:text-5xl ${isUrgent ? "text-red-600" : "text-[#425733]"}`}>
+          <div className={`font-mono text-4xl font-bold tabular-nums sm:text-5xl ${isUrgent ? "text-red-600" : "text-primary"}`}>
             {String(minutes).padStart(2, "0")}:{String(seconds).padStart(2, "0")}
           </div>
           {/* Progress bar */}
@@ -224,7 +224,7 @@ export default function CheckoutPendingPage() {
           </div>
 
           {/* Amount */}
-          <div className="bg-[#f0f7ea] rounded-xl p-3 text-center mb-4">
+          <div className="bg-primary-soft rounded-xl p-3 text-center mb-4">
             <p className="text-xs text-[#5a7a48] mb-0.5">Số tiền chuyển khoản</p>
             <p className="text-2xl font-bold text-[#2d4a1e]">{(serverTotal ?? 0).toLocaleString("vi-VN")}đ</p>
           </div>
@@ -267,7 +267,7 @@ export default function CheckoutPendingPage() {
         {/* Manual check button */}
         <Button
           variant="outline"
-          className="w-full border-[#425733] text-[#425733] hover:bg-[#f0f7ea]"
+          className="w-full text-primary hover:bg-primary-soft"
           onClick={checkStatus}
         >
           Kiểm tra lại trạng thái

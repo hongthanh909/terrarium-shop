@@ -31,11 +31,11 @@ export default function ProductsSearch() {
               placeholder="Tìm kiếm sản phẩm..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-4 pr-10 py-2 rounded-full border-[#c8d5be] focus:border-[#425733] focus:ring-[#e3ebdd]"
+              className="w-full pl-4 pr-10 py-2 rounded-full border-primary-border focus:border-primary focus:ring-[#e3ebdd]"
             />
             <button
               type="submit"
-              className="absolute right-2 top-1/2 -translate-y-1/2 p-1 hover:bg-[#e3ebdd] rounded-full transition-colors"
+              className="absolute right-2 top-1/2 -translate-y-1/2 p-1 hover:bg-primary-soft rounded-full transition-colors"
             >
               <Search className="w-4 h-4 text-[hsl(220,14%,45%)]" />
             </button>
@@ -64,13 +64,13 @@ export default function ProductsSearch() {
               placeholder="Tìm kiếm sản phẩm..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="flex-1 px-4 py-2 rounded-full border-[#c8d5be]"
+              className="flex-1 px-4 py-2 rounded-full border-primary-border"
               autoFocus
             />
             <button
               type="button"
               onClick={() => setShowSearch(false)}
-              className="p-2 hover:bg-[#e3ebdd] rounded-full"
+              className="p-2 hover:bg-primary-soft rounded-full"
             >
               <X className="w-5 h-5 text-[hsl(220,14%,45%)]" />
             </button>

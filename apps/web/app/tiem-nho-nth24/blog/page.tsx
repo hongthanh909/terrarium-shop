@@ -95,7 +95,7 @@ export default function AdminBlogPage() {
         </div>
         <Link
           href="/tiem-nho-nth24/blog/create"
-          className="flex min-h-12 items-center gap-2 rounded-md border border-[#425733] bg-[#425733] px-6 py-3 font-semibold text-white shadow-sm transition-colors hover:bg-[#364a29] active:scale-[0.98]"
+          className="flex min-h-12 items-center gap-2 rounded-md border border-primary bg-primary px-6 py-3 font-semibold text-white shadow-sm transition-colors hover:bg-primary-hover active:scale-[0.98]"
         >
           <Plus className="w-5 h-5" />
           Bài Viết Mới
@@ -108,7 +108,7 @@ export default function AdminBlogPage() {
         ) : posts.length === 0 ? (
           <div className="text-center py-16 text-gray-400">
             <p className="mb-3">Chưa có bài viết nào.</p>
-            <Link href="/tiem-nho-nth24/blog/create" className="text-[#425733] underline">
+            <Link href="/tiem-nho-nth24/blog/create" className="text-primary underline">
               Tạo bài viết đầu tiên →
             </Link>
           </div>
@@ -139,7 +139,7 @@ export default function AdminBlogPage() {
                       disabled={togglingId !== null || deletingId !== null}
                       className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
                         post.published
-                          ? "bg-[#e3ebdd] text-[#364a29] hover:bg-[#d5e3cc]"
+                          ? "bg-primary-soft text-primary hover:bg-primary/10"
                           : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                       }`}
                       title={post.published ? "Nhấn để chuyển sang bản nháp" : "Nhấn để xuất bản"}
@@ -170,7 +170,7 @@ export default function AdminBlogPage() {
                       )}
                       <Link
                         href={`/tiem-nho-nth24/blog/${post.id}/edit`}
-                        className="text-[#425733] hover:text-[#364a29] p-1"
+                        className="p-1 text-primary hover:text-primary-hover"
                         title="Chỉnh sửa"
                       >
                         <Edit className="w-4 h-4" />

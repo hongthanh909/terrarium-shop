@@ -177,7 +177,7 @@ export default function AdminDashboard() {
         <div>
           <div className="flex items-center gap-2">
             <h2 className="text-2xl font-extrabold text-gray-800 tracking-tight">Bảng Điều Khiển</h2>
-            <span className="inline-flex items-center gap-1 text-[11px] font-bold bg-[#eef5e8] text-[#2f4a23] px-2.5 py-0.5 rounded-full border border-[#c5dcb8]/60">
+            <span className="inline-flex items-center gap-1 text-[11px] font-bold bg-primary-soft text-primary px-2.5 py-0.5 rounded-full border border-[#c5dcb8]/60">
               <Sparkles className="w-3 h-3" /> Live Stats
             </span>
           </div>
@@ -196,7 +196,7 @@ export default function AdminDashboard() {
                   key={opt.id}
                   onClick={() => setPeriod(opt.id)}
                   className={`relative px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-colors duration-150 whitespace-nowrap focus-visible:outline-none ${
-                    active ? "text-[#2f4a23]" : "text-gray-500 hover:text-gray-800"
+                    active ? "text-primary" : "text-gray-500 hover:text-gray-800"
                   }`}
                 >
                   {active && (
@@ -234,7 +234,7 @@ export default function AdminDashboard() {
               />
               <button
                 onClick={() => refetch()}
-                className="rounded-md bg-gray-950 px-3 py-1 text-xs font-medium text-white transition-colors hover:bg-gray-700"
+                className="rounded-md bg-primary px-3 py-1 text-xs font-medium text-white transition-colors hover:bg-primary-hover"
               >
                 Lọc
               </button>
@@ -245,7 +245,7 @@ export default function AdminDashboard() {
 
       {loading ? (
         <div className="flex flex-col items-center justify-center rounded-md border border-gray-200 bg-white py-24">
-          <div className="w-10 h-10 border-4 border-[#2f4a23] border-t-transparent rounded-full animate-spin mb-3" />
+          <div className="mb-3 h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent" />
           <p className="text-xs text-gray-400 font-medium">Đang tải thống kê doanh thu...</p>
         </div>
       ) : error ? (
@@ -262,7 +262,7 @@ export default function AdminDashboard() {
               icon={TrendingUp}
               change={stats?.revenueChange}
               iconBg="#eef5e8"
-              iconColor="#2f4a23"
+              iconColor="hsl(var(--primary))"
             />
             <StatCard
               label={`Số Đơn Hàng (${periodLabel})`}
@@ -332,7 +332,7 @@ export default function AdminDashboard() {
             <div className="overflow-hidden rounded-md border border-gray-200 bg-white shadow-sm lg:col-span-3">
               <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
                 <div className="flex items-center gap-2">
-                  <ShoppingCart className="w-4 h-4 text-[#2f4a23]" />
+                  <ShoppingCart className="w-4 h-4 text-primary" />
                   <h3 className="font-bold text-gray-800 text-base">Đơn Hàng Gần Đây</h3>
                 </div>
                 <Link
@@ -353,7 +353,7 @@ export default function AdminDashboard() {
                       className="group flex items-center justify-between px-6 py-4 transition-colors hover:bg-gray-50"
                     >
                       <div className="min-w-0 flex-1">
-                        <p className="font-bold text-gray-800 text-sm truncate group-hover:text-[#2f4a23] transition-colors">
+                        <p className="font-bold text-gray-800 text-sm truncate group-hover:text-primary transition-colors">
                           {order.orderNumber}
                         </p>
                         <p className="text-xs text-gray-400 truncate mt-0.5">
@@ -413,7 +413,7 @@ export default function AdminDashboard() {
                       <p className="text-xs text-gray-800 flex-1 min-w-0 truncate font-semibold">
                         {product.name}
                       </p>
-                      <span className="text-xs font-extrabold text-[#2f4a23] bg-[#eef5e8] px-2.5 py-1 rounded-full shrink-0">
+                      <span className="text-xs font-extrabold text-primary bg-primary-soft px-2.5 py-1 rounded-full shrink-0">
                         {product.totalSold} đã bán
                       </span>
                     </div>
@@ -426,7 +426,7 @@ export default function AdminDashboard() {
           {/* ── Quick Actions ── */}
           <div className="rounded-md border border-gray-200 bg-white p-6 shadow-sm">
             <h3 className="font-bold text-gray-800 text-base mb-4 flex items-center gap-2">
-              <Layers className="w-4 h-4 text-[#2f4a23]" />
+              <Layers className="w-4 h-4 text-primary" />
               Hành Động Nhanh
             </h3>
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
@@ -448,7 +448,7 @@ export default function AdminDashboard() {
                   >
                     <Icon className="w-5 h-5" style={{ color }} />
                   </div>
-                  <span className="text-xs font-semibold text-gray-600 group-hover:text-[#2f4a23] text-center transition-colors">
+                  <span className="text-xs font-semibold text-gray-600 group-hover:text-primary text-center transition-colors">
                     {label}
                   </span>
                 </Link>

@@ -154,6 +154,15 @@
     border-radius: 4px;
   }
 
+  @media (pointer: coarse), (max-width: 640px) {
+    button,
+    [data-ui="button"],
+    a[aria-label] {
+      min-width: 44px;
+      min-height: 44px;
+    }
+  }
+
   @media (max-width: 640px) {
     input,
     select,

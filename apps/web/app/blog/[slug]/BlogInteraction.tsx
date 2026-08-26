@@ -250,13 +250,13 @@ export default function BlogInteraction({ postId, slug }: BlogInteractionProps) 
               placeholder="Chia sẻ cảm nghĩ của bạn về bài viết này..."
               required
               rows={3}
-              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-1 focus:ring-[#425733] focus:border-[#425733] focus:outline-none bg-white text-sm transition-all"
+              className="w-full rounded-input border border-border bg-white px-4 py-3 text-sm transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
             />
             <div className="flex justify-end">
               <button
                 type="submit"
                 disabled={submittingComment || !commentContent.trim()}
-                className="flex min-h-11 items-center gap-2 rounded-md border border-[#425733] bg-[#425733] px-5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#364a29] active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-gray-300"
+                className="flex min-h-11 items-center gap-2 rounded-control border border-primary bg-primary px-5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-primary/50 active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-disabled"
               >
                 {submittingComment ? (
                   <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -272,7 +272,7 @@ export default function BlogInteraction({ postId, slug }: BlogInteractionProps) 
             <p className="text-sm text-gray-500 mb-3">Vui lòng đăng nhập để gửi bình luận và tương tác!</p>
             <Link
               href="/auth/login"
-              className="inline-flex min-h-11 items-center rounded-md border border-[#425733] bg-[#425733] px-6 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#364a29] active:scale-[0.98]"
+              className="inline-flex min-h-11 items-center rounded-control border border-primary bg-primary px-6 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-primary/50 active:scale-[0.98]"
             >
               Đăng nhập ngay
             </Link>
@@ -300,7 +300,7 @@ export default function BlogInteraction({ postId, slug }: BlogInteractionProps) 
                 {/* Parent Comment */}
                 <div className="flex gap-3">
                   {/* Avatar fallback */}
-                  <div className="w-8.5 h-8.5 rounded-full bg-emerald-50 text-[#425733] font-bold flex items-center justify-center text-sm shrink-0 shadow-sm border border-emerald-100">
+                  <div className="flex h-8.5 w-8.5 shrink-0 items-center justify-center rounded-full border border-primary-border bg-primary-soft text-sm font-bold text-primary shadow-sm">
                     {comment.customer?.name ? comment.customer.name.slice(0, 1).toUpperCase() : "?"}
                   </div>
                   <div className="space-y-1">
@@ -327,7 +327,7 @@ export default function BlogInteraction({ postId, slug }: BlogInteractionProps) 
                               setReplyContent("");
                             }
                           }}
-                          className="text-xs font-semibold text-[#425733] hover:underline"
+                          className="text-xs font-semibold text-primary hover:underline"
                         >
                           Phản hồi
                         </button>
@@ -346,7 +346,7 @@ export default function BlogInteraction({ postId, slug }: BlogInteractionProps) 
                           <div className="flex items-center gap-2 flex-wrap">
                             <span className="font-semibold text-xs text-gray-800">{reply.user?.name}</span>
                             {reply.isAdmin && (
-                              <span className="inline-flex items-center gap-0.5 text-[8.5px] bg-[#e3ebdd] text-[#425733] font-bold px-1.5 py-0.5 rounded-full border border-[#c2d6b0]">
+                              <span className="inline-flex items-center gap-0.5 rounded-full border border-primary-border bg-primary-soft px-1.5 py-0.5 text-[8.5px] font-bold text-primary">
                                 <ShieldCheck className="w-2.5 h-2.5" /> Quản trị viên
                               </span>
                             )}
@@ -372,13 +372,13 @@ export default function BlogInteraction({ postId, slug }: BlogInteractionProps) 
                       value={replyContent}
                       onChange={(e) => setReplyContent(e.target.value)}
                       placeholder={`Phản hồi bình luận của ${comment.customer?.name}...`}
-                      className="flex-1 px-4 py-2 border rounded-full text-xs focus:ring-1 focus:ring-[#425733] focus:border-[#425733] focus:outline-none transition-all"
+                      className="flex-1 rounded-input border px-4 py-2 text-xs transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                     />
                     <button
                       type="button"
                       onClick={() => handleReplySubmit(comment.id)}
                       disabled={submittingReply || !replyContent.trim()}
-                      className="min-h-11 shrink-0 rounded-md border border-[#425733] bg-[#425733] px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#364a29] active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-gray-300"
+                      className="min-h-11 shrink-0 rounded-control border border-primary bg-primary px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-primary/50 active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-disabled"
                     >
                       {submittingReply ? "Đang gửi..." : "Gửi"}
                     </button>

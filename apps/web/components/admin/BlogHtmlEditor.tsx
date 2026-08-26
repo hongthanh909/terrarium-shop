@@ -51,7 +51,7 @@ export function BlogHtmlEditor({
             key={item.label}
             type="button"
             onClick={() => wrapSelection(item.before, item.after)}
-            className="rounded-md border border-gray-200 bg-white px-2.5 py-1 text-xs font-semibold text-gray-600 hover:border-[#425733]/40 hover:text-[#425733]"
+            className="rounded-md border border-gray-200 bg-white px-2.5 py-1 text-xs font-semibold text-gray-600 hover:border-primary/40 hover:text-primary"
           >
             {item.label}
           </button>
@@ -59,7 +59,7 @@ export function BlogHtmlEditor({
         <button
           type="button"
           onClick={() => setShowPreview((v) => !v)}
-          className="ml-auto rounded-md border border-[#daebd0] bg-[#f0f5ec] px-2.5 py-1 text-xs font-semibold text-[#425733] hover:bg-[#e3ebdd]"
+          className="ml-auto rounded-md border border-[#daebd0] bg-primary-soft px-2.5 py-1 text-xs font-semibold text-primary hover:bg-primary-soft"
         >
           {showPreview ? "Sửa HTML" : "Xem trước"}
         </button>

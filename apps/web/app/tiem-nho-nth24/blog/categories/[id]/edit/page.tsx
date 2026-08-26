@@ -61,7 +61,7 @@ export default function CreateBlogCategoryPage() {
       <div className="mb-6">
         <Link
           href="/tiem-nho-nth24/blog"
-          className="inline-flex items-center text-[#425733] hover:text-[#425733] mb-4"
+          className="inline-flex items-center text-primary hover:text-primary mb-4"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
           Quay lại Blog
@@ -105,7 +105,7 @@ export default function CreateBlogCategoryPage() {
           <button
             type="submit"
             disabled={saving}
-            className="flex min-h-12 items-center gap-2 rounded-md border border-[#425733] bg-[#425733] px-6 py-3 font-semibold text-white shadow-sm transition-colors hover:bg-[#364a29] active:scale-[0.98] disabled:bg-gray-400"
+            className="flex min-h-12 items-center gap-2 rounded-md border border-primary bg-primary px-6 py-3 font-semibold text-white shadow-sm transition-colors hover:bg-primary-hover active:scale-[0.98] disabled:bg-gray-400"
           >
             <Save className="w-5 h-5" />
             {saving ? "Đang lưu..." : "Lưu Danh Mục"}

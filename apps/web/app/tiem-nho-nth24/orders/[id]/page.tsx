@@ -60,7 +60,7 @@ export default function AdminOrderDetailPage() {
       CONFIRMED:  "bg-blue-50 text-blue-700 border-blue-200 focus:ring-blue-500/20",
       PROCESSING: "bg-purple-50 text-purple-700 border-purple-200 focus:ring-purple-500/20",
       SHIPPING:   "bg-indigo-50 text-indigo-700 border-indigo-200 focus:ring-indigo-500/20",
-      DELIVERED:  "bg-[#e3ebdd] text-[#364a29] border-[#c2d6b0] focus:ring-[#364a29]/20",
+      DELIVERED:  "bg-primary-soft text-primary border-primary-border focus:ring-primary/20",
       CANCELLED:  "bg-red-50 text-red-700 border-red-200 focus:ring-red-500/20",
     };
     return styles[status] || "bg-gray-100 text-gray-600 border-gray-200";
@@ -72,7 +72,7 @@ export default function AdminOrderDetailPage() {
       CONFIRMED:  "bg-blue-500",
       PROCESSING: "bg-purple-500",
       SHIPPING:   "bg-indigo-500",
-      DELIVERED:  "bg-[#364a29]",
+      DELIVERED:  "bg-primary-hover",
       CANCELLED:  "bg-red-500",
     };
     return dots[status] || "bg-gray-500";
@@ -81,7 +81,7 @@ export default function AdminOrderDetailPage() {
   const getPaymentStatusStyles = (status: string) => {
     const styles: Record<string, string> = {
       PENDING:    "bg-amber-50 text-amber-700 border-amber-200 focus:ring-amber-500/20",
-      PAID:       "bg-[#e3ebdd] text-[#364a29] border-[#c2d6b0] focus:ring-[#364a29]/20",
+      PAID:       "bg-primary-soft text-primary border-primary-border focus:ring-primary/20",
       REFUNDED:   "bg-orange-50 text-orange-700 border-orange-200 focus:ring-orange-500/20",
     };
     return styles[status] || "bg-gray-100 text-gray-600 border-gray-200";
@@ -90,7 +90,7 @@ export default function AdminOrderDetailPage() {
   const getPaymentStatusDot = (status: string) => {
     const dots: Record<string, string> = {
       PENDING:    "bg-amber-500",
-      PAID:       "bg-[#364a29]",
+      PAID:       "bg-primary-hover",
       REFUNDED:   "bg-orange-500",
     };
     return dots[status] || "bg-gray-500";
@@ -208,7 +208,7 @@ export default function AdminOrderDetailPage() {
       <div className="mb-6">
         <Link
           href="/tiem-nho-nth24/orders"
-          className="inline-flex items-center text-[#425733] hover:text-[#364a29] mb-4 gap-1 text-sm"
+          className="mb-4 inline-flex items-center gap-1 text-sm text-primary hover:text-primary-hover"
         >
           <ArrowLeft className="w-4 h-4" />
           Quay lại đơn hàng
@@ -229,7 +229,7 @@ export default function AdminOrderDetailPage() {
               <p className="font-semibold">Đơn ngoài khu vực TP.HCM - cần trao đổi phí vận chuyển</p>
               <p className="mt-1 text-xs leading-5">Mức phí hiện tại chưa phải phí cuối cùng. Hãy nhắn cho khách trước khi giao hàng.</p>
             </div>
-            <button type="button" onClick={openShippingChat} disabled={chatLoading} className="inline-flex min-h-10 shrink-0 items-center justify-center gap-2 rounded-lg bg-[#425733] px-4 py-2 text-sm font-semibold text-white hover:bg-[#364a29] disabled:opacity-60">
+            <button type="button" onClick={openShippingChat} disabled={chatLoading} className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary-hover disabled:opacity-60">
               <MessageCircle className="h-4 w-4" />
               {chatLoading ? "Đang mở..." : "Nhắn với khách"}
             </button>
@@ -299,14 +299,14 @@ export default function AdminOrderDetailPage() {
                 <span>{shippingQuoteRequired ? "Trao đổi riêng" : `${order.shippingFee.toLocaleString("vi-VN")}₫`}</span>
               </div>
               {order.discount > 0 && (
-                <div className="flex justify-between text-[#425733] font-medium">
+                <div className="flex justify-between text-primary font-medium">
                   <span>Giảm giá</span>
                   <span>-{order.discount.toLocaleString("vi-VN")}₫</span>
                 </div>
               )}
               <div className="flex justify-between font-bold text-base pt-2 border-t text-gray-800">
                 <span>Tổng tiền</span>
-                <span className="text-[#425733]">{order.total.toLocaleString("vi-VN")}₫</span>
+                <span className="text-primary">{order.total.toLocaleString("vi-VN")}₫</span>
               </div>
             </div>
           </div>

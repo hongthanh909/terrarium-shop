@@ -116,7 +116,7 @@ export default function OrderDetailPage() {
       CONFIRMED:  "bg-blue-100 text-blue-800 border-blue-200",
       PROCESSING: "bg-purple-100 text-purple-800 border-purple-200",
       SHIPPING:   "bg-indigo-100 text-indigo-800 border-indigo-200",
-      DELIVERED:  "bg-[#e3ebdd] text-[#364a29] border-[#c8d5be]",
+      DELIVERED:  "bg-primary-soft text-primary border-primary-border",
       CANCELLED:  "bg-red-100 text-red-800 border-red-200",
     };
     return badges[status] || "bg-gray-100 text-gray-800 border-gray-200";
@@ -125,7 +125,7 @@ export default function OrderDetailPage() {
   const getPaymentBadge = (status: string) => {
     const badges: Record<string, string> = {
       PENDING:  "bg-yellow-100 text-yellow-800",
-      PAID:     "bg-[#e3ebdd] text-[#364a29]",
+      PAID:     "bg-primary-soft text-primary",
       REFUNDED: "bg-red-100 text-red-800",
     };
     return badges[status] || "bg-gray-100 text-gray-800";
@@ -135,7 +135,7 @@ export default function OrderDetailPage() {
     <main className="min-h-[100dvh] bg-white pb-28 pt-4 sm:py-8">
       <div className="max-w-3xl mx-auto px-6">
         {/* Back */}
-        <Link href="/orders" className="inline-flex items-center text-gray-500 hover:text-[#425733] mb-6 text-sm">
+        <Link href="/orders" className="inline-flex items-center text-gray-500 hover:text-primary mb-6 text-sm">
           <ArrowLeft className="w-4 h-4 mr-1" /> Quay lại đơn hàng
         </Link>
 
@@ -198,7 +198,7 @@ export default function OrderDetailPage() {
                       }`}>
                         <step.icon className="w-4 h-4" />
                     </div>
-                    <span className={`mt-1 w-full px-0.5 text-center text-xs leading-tight ${done ? "font-medium text-[#425733]" : "text-gray-400"}`}>
+                    <span className={`mt-1 w-full px-0.5 text-center text-xs leading-tight ${done ? "font-medium text-primary" : "text-gray-400"}`}>
                       {step.label}
                     </span>
                   </div>
@@ -279,14 +279,14 @@ export default function OrderDetailPage() {
               <span>{shippingQuoteRequired ? "Trao đổi riêng" : `${order.shippingFee.toLocaleString("vi-VN")}₫`}</span>
             </div>
             {order.discount > 0 && (
-              <div className="flex justify-between text-[#425733]">
+              <div className="flex justify-between text-primary">
                 <span>Giảm giá</span>
                 <span>-{order.discount.toLocaleString("vi-VN")}₫</span>
               </div>
             )}
             <div className="flex justify-between font-bold text-base pt-2 border-t">
               <span>Tổng cộng</span>
-              <span className="text-[#425733]">{order.total.toLocaleString("vi-VN")}₫</span>
+              <span className="text-primary">{order.total.toLocaleString("vi-VN")}₫</span>
             </div>
           </div>
         </div>

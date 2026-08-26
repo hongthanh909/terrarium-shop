@@ -34,7 +34,7 @@ export default async function AdminMarketplaceProductsPage() {
                 </div>
                 <p className="mt-1 text-sm text-gray-500">
                   {money(product.price)} · shop{" "}
-                  <Link href={`/tiem-nho-nth24/shops/${product.shop.id}`} className="font-semibold text-[#2f4a23]">
+                  <Link href={`/tiem-nho-nth24/shops/${product.shop.id}`} className="font-semibold text-primary">
                     {product.shop.name}
                   </Link>
                 </p>

@@ -24,6 +24,8 @@ const buttonVariants = cva(
           "text-primary underline-offset-4 hover:underline",
         soft:
           "border border-primary-border bg-primary-soft text-primary hover:bg-primary-soft/70",
+        brand:
+          "border border-border-strong bg-white text-foreground shadow-sm hover:border-muted-foreground/50 hover:bg-muted",
       },
       size: {
         default: "h-12 px-4 text-sm",

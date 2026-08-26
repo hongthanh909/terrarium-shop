@@ -71,7 +71,7 @@ export function SuggestionInput({
             placeholder={placeholder}
             rows={rows}
             onFocus={() => setIsOpen(true)}
-            className="w-full pl-4 pr-16 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#425733]/50 focus:ring-2 focus:ring-[#425733]/10 transition-all resize-y"
+            className="w-full pl-4 pr-16 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-primary/50 focus:ring-2 focus:ring-primary/10 transition-all resize-y"
           />
         ) : (
           <input
@@ -80,7 +80,7 @@ export function SuggestionInput({
             onChange={(e) => onChange(e.target.value)}
             placeholder={placeholder}
             onFocus={() => setIsOpen(true)}
-            className="w-full pl-4 pr-16 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#425733]/50 focus:ring-2 focus:ring-[#425733]/10 transition-all"
+            className="w-full pl-4 pr-16 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-primary/50 focus:ring-2 focus:ring-primary/10 transition-all"
           />
         )}
 
@@ -122,7 +122,7 @@ export function SuggestionInput({
               key={idx}
               type="button"
               onClick={() => handleSelect(s)}
-              className="w-full text-left px-4 py-2 text-xs hover:bg-[#f0f4ee] hover:text-[#425733] transition-colors truncate block"
+              className="w-full text-left px-4 py-2 text-xs hover:bg-primary-soft hover:text-primary transition-colors truncate block"
               title={s}
             >
               {s}

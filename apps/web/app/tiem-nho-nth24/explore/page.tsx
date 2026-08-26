@@ -190,7 +190,7 @@ export default function AdminExplorePage() {
           </Link>
           <Button
             size="sm"
-            className="gap-1.5 bg-[#425733] hover:bg-[#364a29]"
+            className="gap-1.5 bg-primary hover:bg-primary-hover"
             onClick={() => setShowProductPicker(true)}
           >
             <Plus className="w-4 h-4" />
@@ -202,7 +202,7 @@ export default function AdminExplorePage() {
       {/* ── Hero Background Settings ───────────────────────────── */}
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
         <div className="px-5 py-3.5 border-b border-gray-100 flex items-center gap-2">
-          <ImageIcon className="w-4 h-4 text-[#425733]" />
+          <ImageIcon className="w-4 h-4 text-primary" />
           <h3 className="font-semibold text-gray-700">Cài đặt ảnh nền Hero</h3>
         </div>
         <div className="p-5 space-y-4">
@@ -241,7 +241,7 @@ export default function AdminExplorePage() {
                 value={heroBgUrl}
                 onChange={(e) => setHeroBgUrl(e.target.value)}
                 placeholder="hoặc dán URL ảnh vào đây"
-                className="flex-1 text-sm border border-gray-200 rounded-xl px-3 py-2 focus:outline-none focus:border-[#425733] transition-colors"
+                className="flex-1 text-sm border border-gray-200 rounded-xl px-3 py-2 focus:outline-none focus:border-primary transition-colors"
               />
 
               {/* Clear */}
@@ -261,13 +261,13 @@ export default function AdminExplorePage() {
           {/* Blur slider */}
           <div>
             <label className="block text-xs font-medium text-gray-500 mb-2">
-              Độ mờ nền (blur): <span className="font-bold text-[#425733]">{heroBgBlur}px</span>
+              Độ mờ nền (blur): <span className="font-bold text-primary">{heroBgBlur}px</span>
             </label>
             <input
               type="range" min={0} max={20} step={1}
               value={heroBgBlur}
               onChange={(e) => setHeroBgBlur(Number(e.target.value))}
-              className="w-full accent-[#425733] h-1.5 rounded-full cursor-pointer"
+              className="w-full accent-primary h-1.5 rounded-full cursor-pointer"
             />
             <div className="flex justify-between text-[11px] text-gray-400 mt-1">
               <span>0 (sắc nét)</span><span>20 (mờ hoàn toàn)</span>
@@ -277,13 +277,13 @@ export default function AdminExplorePage() {
           {/* Opacity slider */}
           <div>
             <label className="block text-xs font-medium text-gray-500 mb-2">
-              Độ tối phủ (overlay): <span className="font-bold text-[#425733]">{heroBgOpacity}%</span>
+              Độ tối phủ (overlay): <span className="font-bold text-primary">{heroBgOpacity}%</span>
             </label>
             <input
               type="range" min={0} max={100} step={5}
               value={heroBgOpacity}
               onChange={(e) => setHeroBgOpacity(Number(e.target.value))}
-              className="w-full accent-[#425733] h-1.5 rounded-full cursor-pointer"
+              className="h-1.5 w-full cursor-pointer rounded-full accent-primary"
             />
             <div className="flex justify-between text-[11px] text-gray-400 mt-1">
               <span>0% (trong suốt)</span><span>100% (tối hoàn toàn)</span>
@@ -317,7 +317,7 @@ export default function AdminExplorePage() {
           <Button
             onClick={saveHeroBg}
             disabled={bgSaving || bgUploading}
-            className="gap-1.5 bg-[#425733] hover:bg-[#364a29] w-full sm:w-auto"
+            className="gap-1.5 bg-primary hover:bg-primary-hover w-full sm:w-auto"
             size="sm"
           >
             <Save className="w-3.5 h-3.5" />
@@ -363,7 +363,7 @@ export default function AdminExplorePage() {
                     {item.product.category.name} · {Number(item.product.basePrice).toLocaleString("vi-VN")}₫
                   </p>
                   {item.reason && (
-                    <p className="text-xs text-[#425733] mt-0.5 font-medium truncate">Tiêu đề: &ldquo;{item.reason}&rdquo;</p>
+                    <p className="text-xs text-primary mt-0.5 font-medium truncate">Tiêu đề: &ldquo;{item.reason}&rdquo;</p>
                   )}
                 </div>
                 <div className="text-xs text-gray-400 bg-gray-100 px-2 py-1 rounded-lg whitespace-nowrap hidden sm:block">
@@ -412,7 +412,7 @@ export default function AdminExplorePage() {
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
                 placeholder="Mặc định: Featured của tuần"
-                className="mt-1 w-full text-sm border border-gray-200 rounded-xl px-3 py-2 focus:outline-none focus:border-[#425733]"
+                className="mt-1 w-full text-sm border border-gray-200 rounded-xl px-3 py-2 focus:outline-none focus:border-primary"
               />
             </div>
 
@@ -425,7 +425,7 @@ export default function AdminExplorePage() {
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder="Tìm sản phẩm..."
-                  className="w-full text-sm border border-gray-200 rounded-xl pl-9 pr-3 py-2 focus:outline-none focus:border-[#425733]"
+                  className="w-full text-sm border border-gray-200 rounded-xl pl-9 pr-3 py-2 focus:outline-none focus:border-primary"
                 />
               </div>
             </div>
@@ -442,7 +442,7 @@ export default function AdminExplorePage() {
                 unpinnedProducts.map((p) => (
                   <button
                     key={p.id}
-                    className="w-full flex items-center gap-3 px-5 py-3 hover:bg-[#f0f4ec] transition-colors text-left"
+                    className="w-full flex items-center gap-3 px-5 py-3 hover:bg-primary-soft transition-colors text-left"
                     onClick={() => handlePin(p.id)}
                     disabled={pinning === p.id}
                   >
@@ -466,9 +466,9 @@ export default function AdminExplorePage() {
                       </p>
                     </div>
                     {pinning === p.id ? (
-                      <span className="text-xs text-[#425733]">Đang ghim...</span>
+                      <span className="text-xs text-primary">Đang ghim...</span>
                     ) : (
-                      <Plus className="w-4 h-4 text-[#425733] flex-shrink-0" />
+                      <Plus className="w-4 h-4 text-primary flex-shrink-0" />
                     )}
                   </button>
                 ))

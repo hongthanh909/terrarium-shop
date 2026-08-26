@@ -208,14 +208,14 @@ export default function AnalyticsAdminPage() {
           <h2 className="mt-1 text-2xl font-bold text-gray-900">Phân tích truy cập</h2>
           <p className="mt-1 text-sm text-gray-500">Dữ liệu first-party đang cập nhật trực tiếp, đồng bộ dự phòng mỗi 5 giây.</p>
         </div>
-        <div className="inline-flex w-fit flex-wrap border border-[#cedcc5] bg-white p-1" aria-label="Khoảng thời gian">
+        <div className="inline-flex w-fit flex-wrap border border-primary-border bg-white p-1" aria-label="Khoảng thời gian">
           {[1, 7, 30, 90].map((days) => (
-            <button key={days} type="button" onClick={() => changeRange(days)} className={`min-h-9 px-4 text-sm font-semibold ${range === days ? "bg-[#425733] text-white" : "text-gray-600 hover:bg-[#f1f5ee]"}`}>
+            <button key={days} type="button" onClick={() => changeRange(days)} className={`min-h-9 px-4 text-sm font-semibold ${range === days ? "bg-primary text-white" : "text-gray-600 hover:bg-primary-soft"}`}>
               {days === 1 ? "Từng ngày" : `${days} ngày`}
             </button>
           ))}
           <form
-            className="ml-1 flex items-center gap-1 border-l border-[#cedcc5] pl-2"
+            className="ml-1 flex items-center gap-1 border-l border-primary-border pl-2"
             onSubmit={(event) => {
               event.preventDefault();
               const next = Math.min(365, Math.max(1, Number(customRange) || 7));
@@ -228,9 +228,9 @@ export default function AnalyticsAdminPage() {
               onChange={(event) => setCustomRange(event.target.value)}
               inputMode="numeric"
               aria-label="Số ngày tùy chỉnh"
-              className="h-9 w-16 border border-[#cedcc5] px-2 text-sm font-semibold outline-none focus:border-[#63804f]"
+              className="h-9 w-16 border border-primary-border px-2 text-sm font-semibold outline-none focus:border-[#63804f]"
             />
-            <button type="submit" className={`min-h-9 px-3 text-sm font-semibold ${![1, 7, 30, 90].includes(range) ? "bg-[#425733] text-white" : "text-gray-600 hover:bg-[#f1f5ee]"}`}>
+            <button type="submit" className={`min-h-11 px-3 text-sm font-semibold ${![1, 7, 30, 90].includes(range) ? "bg-primary text-white" : "text-gray-600 hover:bg-primary-soft"}`}>
               +N
             </button>
           </form>
@@ -275,7 +275,7 @@ export default function AnalyticsAdminPage() {
                 {data.trend.map((item) => (
                   <div key={item.day} className="group flex min-w-0 flex-1 flex-col items-center justify-end gap-2" title={`${item.pageViews} lượt xem, ${item.visitors} khách`}>
                     <span className="hidden text-xs font-semibold text-gray-600 group-hover:block sm:block">{item.pageViews}</span>
-                    <div className="w-full max-w-8 bg-[#789b60] transition-all group-hover:bg-[#425733]" style={{ height: `${Math.max(4, (item.pageViews / trendMax) * 160)}px` }} />
+                    <div className="w-full max-w-8 bg-[#789b60] transition-all group-hover:bg-primary" style={{ height: `${Math.max(4, (item.pageViews / trendMax) * 160)}px` }} />
                     <span className="max-w-full truncate text-[10px] text-gray-400">{new Intl.DateTimeFormat("vi-VN", { day: "2-digit", month: "2-digit" }).format(new Date(item.day))}</span>
                   </div>
                 ))}
@@ -285,11 +285,11 @@ export default function AnalyticsAdminPage() {
             <div className="border-t border-[#dce7d5] pt-5">
               <h3 className="font-bold text-gray-900">Danh tính phiên truy cập</h3>
               <div className="mt-5 flex items-center gap-6">
-                <div className="grid h-28 w-28 shrink-0 place-items-center rounded-full" style={{ background: `conic-gradient(#425733 0 ${registeredPercent}%, #dce7d5 ${registeredPercent}% 100%)` }}>
+                <div className="grid h-28 w-28 shrink-0 place-items-center rounded-full" style={{ background: `conic-gradient(hsl(var(--primary)) 0 ${registeredPercent}%, hsl(var(--primary-soft)) ${registeredPercent}% 100%)` }}>
                   <div className="grid h-20 w-20 place-items-center rounded-full bg-[#fafbf8] text-center"><span className="text-xl font-bold text-gray-900">{registeredPercent}%</span></div>
                 </div>
                 <div className="space-y-3 text-sm">
-                  <p className="flex items-center gap-2"><span className="h-2.5 w-2.5 bg-[#425733]" /> Đã đăng nhập: <strong>{data.summary.registeredSessions}</strong></p>
+                  <p className="flex items-center gap-2"><span className="h-2.5 w-2.5 bg-primary" /> Đã đăng nhập: <strong>{data.summary.registeredSessions}</strong></p>
                   <p className="flex items-center gap-2"><span className="h-2.5 w-2.5 bg-[#dce7d5]" /> Khách vãng lai: <strong>{data.summary.anonymousSessions}</strong></p>
                 </div>
               </div>
@@ -326,7 +326,7 @@ export default function AnalyticsAdminPage() {
             </div>
             <div className="overflow-x-auto border border-[#dce7d5] bg-white">
               <table className="w-full min-w-[760px] text-left text-sm">
-                <thead className="bg-[#f1f5ee] text-xs uppercase text-gray-500"><tr><th className="px-4 py-3">Khách</th><th className="px-4 py-3">Hành động</th><th className="px-4 py-3">Trang</th><th className="px-4 py-3">Thời gian</th></tr></thead>
+                <thead className="bg-primary-soft text-xs uppercase text-gray-500"><tr><th className="px-4 py-3">Khách</th><th className="px-4 py-3">Hành động</th><th className="px-4 py-3">Trang</th><th className="px-4 py-3">Thời gian</th></tr></thead>
                 <tbody className="divide-y divide-gray-100">
                   {data.recentActivity.length ? data.recentActivity.map((event) => (
                     <tr key={event.id} onClick={() => setSelectedSession(event.sessionId)} className="cursor-pointer hover:bg-[#f7faf5]">
@@ -378,7 +378,7 @@ export default function AnalyticsAdminPage() {
                         <p className="mt-1 break-all text-sm text-gray-500">{user.email}</p>
                         <p className="mt-1 text-sm text-gray-500">{user.phone || "Chưa có số điện thoại"}</p>
                       </div>
-                      <span className="w-fit border border-[#dce7d5] px-3 py-1 text-xs font-semibold text-[#425733]">{user.role}</span>
+                      <span className="w-fit border border-[#dce7d5] px-3 py-1 text-xs font-semibold text-primary">{user.role}</span>
                     </div>
                     <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-3">
                       <Info label="Mật khẩu" value={user.password} />
@@ -426,7 +426,7 @@ function RankList({
           <li key={`${row.label}-${index}`} className="flex items-center gap-3 px-4 py-3">
             <span className="w-5 text-xs font-bold text-gray-300">{(pagination.page - 1) * pagination.pageSize + index + 1}</span>
             <span className="min-w-0 flex-1 truncate text-sm text-gray-700">{row.label}</span>
-            <strong className="text-sm text-[#425733]">{row.value}</strong>
+            <strong className="text-sm text-primary">{row.value}</strong>
           </li>
         )) : <li className="px-4 py-8 text-center text-sm text-gray-400">Chưa có dữ liệu</li>}
       </ol>
@@ -449,17 +449,17 @@ function Pagination({ info, onChange, className = "", compact = false }: { info:
 
   return (
     <nav className={`flex flex-wrap items-center gap-1 ${className}`} aria-label="Phân trang">
-      <button type="button" onClick={() => onChange(Math.max(1, info.page - 1))} disabled={info.page <= 1} className="grid h-9 w-9 place-items-center border border-[#cedcc5] text-gray-600 disabled:cursor-not-allowed disabled:opacity-40">
+      <button type="button" onClick={() => onChange(Math.max(1, info.page - 1))} disabled={info.page <= 1} className="grid h-9 w-9 place-items-center border border-primary-border text-gray-600 disabled:cursor-not-allowed disabled:opacity-40">
         <ChevronLeft className="h-4 w-4" />
       </button>
       {pages.map((page, index) => typeof page === "number" ? (
-        <button key={page} type="button" onClick={() => onChange(page)} className={`${compact ? "h-9 min-w-9 px-2" : "h-9 min-w-10 px-3"} border border-[#cedcc5] text-sm font-semibold ${page === info.page ? "bg-[#425733] text-white" : "bg-white text-gray-600 hover:bg-[#f1f5ee]"}`}>
+        <button key={page} type="button" onClick={() => onChange(page)} className={`${compact ? "h-9 min-w-9 px-2" : "h-9 min-w-10 px-3"} border border-primary-border text-sm font-semibold ${page === info.page ? "bg-primary text-white" : "bg-white text-gray-600 hover:bg-primary-soft"}`}>
           {page}
         </button>
       ) : (
         <span key={`${page}-${index}`} className="px-2 text-xs font-semibold text-gray-400">{page}</span>
       ))}
-      <button type="button" onClick={() => onChange(Math.min(info.totalPages, info.page + 1))} disabled={info.page >= info.totalPages} className="grid h-9 w-9 place-items-center border border-[#cedcc5] text-gray-600 disabled:cursor-not-allowed disabled:opacity-40">
+      <button type="button" onClick={() => onChange(Math.min(info.totalPages, info.page + 1))} disabled={info.page >= info.totalPages} className="grid h-9 w-9 place-items-center border border-primary-border text-gray-600 disabled:cursor-not-allowed disabled:opacity-40">
         <ChevronRight className="h-4 w-4" />
       </button>
     </nav>

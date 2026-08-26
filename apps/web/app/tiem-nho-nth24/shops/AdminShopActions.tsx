@@ -20,7 +20,7 @@ export function ApplicationActions({ id }: { id: string }) {
 
   return (
     <div className="flex gap-2">
-      <button disabled={loading} onClick={() => run("approve")} className="rounded-full bg-[#2f4a23] px-3 py-1.5 text-xs font-semibold text-white disabled:opacity-60">
+      <button disabled={loading} onClick={() => run("approve")} className="rounded-full bg-primary px-3 py-1.5 text-xs font-semibold text-white disabled:opacity-60">
         Duyệt
       </button>
       <button disabled={loading} onClick={() => run("reject")} className="rounded-full border border-red-200 px-3 py-1.5 text-xs font-semibold text-red-700 disabled:opacity-60">
@@ -50,7 +50,7 @@ export function ShopRiskActions({ id }: { id: string }) {
   }
 
   return (
-    <button disabled={loading} onClick={suspend} className="rounded-full border border-amber-200 px-3 py-1.5 text-xs font-semibold text-amber-700 disabled:opacity-60">
+    <button disabled={loading} onClick={suspend} className="min-h-11 rounded-full border border-amber-200 px-3 py-1.5 text-xs font-semibold text-amber-700 disabled:opacity-60">
       Tạm khóa
     </button>
   );

@@ -123,7 +123,7 @@ export default function AdminCategoryEditPage() {
     return (
       <div className="text-center py-24 text-gray-500">
         <p className="mb-4">Không tìm thấy danh mục.</p>
-        <Link href="/tiem-nho-nth24/categories" className="text-[#425733] underline">
+        <Link href="/tiem-nho-nth24/categories" className="text-primary underline">
           ← Quay lại Danh Mục
         </Link>
       </div>
@@ -136,7 +136,7 @@ export default function AdminCategoryEditPage() {
       <div className="flex items-center gap-4 mb-8">
         <Link
           href="/tiem-nho-nth24/categories"
-          className="w-9 h-9 rounded-xl flex items-center justify-center border border-gray-200 text-gray-400 hover:text-[#425733] hover:border-[#425733]/40 hover:bg-[#f0f4ee] transition-all"
+          className="w-9 h-9 rounded-xl flex items-center justify-center border border-gray-200 text-gray-400 hover:text-primary hover:border-primary/40 hover:bg-primary-soft transition-all"
         >
           <ArrowLeft className="w-4 h-4" />
         </Link>
@@ -160,7 +160,7 @@ export default function AdminCategoryEditPage() {
               onChange={(e) => handleNameChange(e.target.value)}
               required
               placeholder="VD: Bể Cây Nhỏ"
-              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#425733]/50 focus:ring-1 focus:ring-[#425733]/30"
+              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/30"
             />
           </div>
 
@@ -175,7 +175,7 @@ export default function AdminCategoryEditPage() {
               onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
               required
               placeholder="be-cay-nho"
-              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm font-mono focus:outline-none focus:border-[#425733]/50 focus:ring-1 focus:ring-[#425733]/30"
+              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm font-mono focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/30"
             />
             <p className="text-xs text-gray-400 mt-1">
               URL sẽ là: /products?category={formData.slug || "..."}
@@ -190,7 +190,7 @@ export default function AdminCategoryEditPage() {
             <select
               value={formData.parentId}
               onChange={(e) => setFormData({ ...formData, parentId: e.target.value })}
-              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#425733]/50"
+              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-primary/50"
             >
               <option value="">Không (Danh mục gốc)</option>
               {parentCategories.map((c) => (
@@ -207,7 +207,7 @@ export default function AdminCategoryEditPage() {
             <select
               value={formData.status}
               onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#425733]/50"
+              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-primary/50"
             >
               <option value="ACTIVE">Đang hiện</option>
               <option value="INACTIVE">Ẩn</option>
@@ -224,7 +224,7 @@ export default function AdminCategoryEditPage() {
               onChange={(e) => setFormData({ ...formData, metaDescription: e.target.value })}
               rows={3}
               placeholder="Mô tả ngắn gọn về danh mục này..."
-              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#425733]/50 resize-none"
+              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-primary/50 resize-none"
             />
           </div>
 
@@ -239,7 +239,7 @@ export default function AdminCategoryEditPage() {
             <button
               type="submit"
               disabled={submitting}
-              className="flex min-h-11 items-center gap-2 rounded-md border border-[#425733] bg-[#425733] px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#364a29] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
+              className="flex min-h-11 items-center gap-2 rounded-md border border-primary bg-primary px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-primary-hover active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
             >
               {submitting ? (
                 <><Loader2 className="w-4 h-4 animate-spin" /> Đang lưu...</>

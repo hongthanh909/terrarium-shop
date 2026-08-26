@@ -100,7 +100,7 @@ export function SearchPalette({ open, onClose }: SearchPaletteProps) {
               {/* Input */}
               <form onSubmit={handleSubmit} className="flex items-center gap-3 px-5 py-4 border-b border-gray-100">
                 {loading ? (
-                  <div className="w-4 h-4 border-2 border-[#425733] border-t-transparent rounded-full animate-spin flex-shrink-0" />
+                  <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin flex-shrink-0" />
                 ) : (
                   <Search className="w-5 h-5 text-gray-400 flex-shrink-0" />
                 )}
@@ -148,7 +148,7 @@ export function SearchPalette({ open, onClose }: SearchPaletteProps) {
                     {results!.products.length > 0 && (
                       <div>
                         <div className="px-5 py-2 flex items-center gap-2">
-                          <Package className="w-3.5 h-3.5 text-[#425733]" />
+                          <Package className="w-3.5 h-3.5 text-primary" />
                           <span className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Sản phẩm</span>
                         </div>
                         {results!.products.map((p) => (
@@ -156,7 +156,7 @@ export function SearchPalette({ open, onClose }: SearchPaletteProps) {
                             key={p.id}
                             href={`/products/${p.slug}`}
                             onClick={onClose}
-                            className="flex items-center gap-3 px-5 py-3 hover:bg-[#f5f7f4] transition-colors group"
+                            className="flex items-center gap-3 px-5 py-3 hover:bg-primary-soft transition-colors group"
                           >
                             <div className="w-10 h-10 rounded-xl overflow-hidden bg-gray-100 flex-shrink-0 border border-gray-100">
                               {p.images[0] ? (
@@ -169,7 +169,7 @@ export function SearchPalette({ open, onClose }: SearchPaletteProps) {
                               <p className="text-gray-800 text-sm font-medium truncate">{p.name}</p>
                               <p className="text-gray-400 text-xs">{p.category?.name} · {Number(p.basePrice).toLocaleString("vi-VN")}₫</p>
                             </div>
-                            <ArrowRight className="w-4 h-4 text-gray-200 group-hover:text-[#425733] group-hover:translate-x-0.5 transition-all flex-shrink-0" />
+                            <ArrowRight className="w-4 h-4 text-gray-200 group-hover:text-primary group-hover:translate-x-0.5 transition-all flex-shrink-0" />
                           </Link>
                         ))}
                       </div>
@@ -179,7 +179,7 @@ export function SearchPalette({ open, onClose }: SearchPaletteProps) {
                     {results!.posts.length > 0 && (
                       <div className={results!.products.length > 0 ? "border-t border-gray-100 mt-1 pt-1" : ""}>
                         <div className="px-5 py-2 flex items-center gap-2">
-                          <FileText className="w-3.5 h-3.5 text-[#425733]" />
+                          <FileText className="w-3.5 h-3.5 text-primary" />
                           <span className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Bài viết</span>
                         </div>
                         {results!.posts.map((post) => (
@@ -189,8 +189,8 @@ export function SearchPalette({ open, onClose }: SearchPaletteProps) {
                             onClick={onClose}
                             className="flex items-center gap-3 px-5 py-3 hover:bg-[#f5f7f4] transition-colors group"
                           >
-                            <div className="w-10 h-10 rounded-xl bg-[#e3ebdd] flex items-center justify-center flex-shrink-0">
-                              <FileText className="w-4 h-4 text-[#425733]" />
+                            <div className="w-10 h-10 rounded-xl bg-primary-soft flex items-center justify-center flex-shrink-0">
+                              <FileText className="w-4 h-4 text-primary" />
                             </div>
                             <div className="flex-1 min-w-0">
                               <p className="text-gray-800 text-sm font-medium truncate">{post.title}</p>
@@ -198,7 +198,7 @@ export function SearchPalette({ open, onClose }: SearchPaletteProps) {
                                 <p className="text-gray-400 text-xs">{new Date(post.publishedAt).toLocaleDateString("vi-VN")}</p>
                               )}
                             </div>
-                            <ArrowRight className="w-4 h-4 text-gray-200 group-hover:text-[#425733] transition-all flex-shrink-0" />
+                            <ArrowRight className="w-4 h-4 text-gray-200 group-hover:text-primary transition-all flex-shrink-0" />
                           </Link>
                         ))}
                       </div>
@@ -210,7 +210,7 @@ export function SearchPalette({ open, onClose }: SearchPaletteProps) {
                         <Link
                           href={`/products?search=${encodeURIComponent(query)}`}
                           onClick={onClose}
-                          className="flex items-center justify-center gap-2 w-full py-2 text-sm text-[#425733] hover:text-[#364a29] font-medium transition-colors"
+                          className="flex w-full items-center justify-center gap-2 py-2 text-sm font-medium text-primary transition-colors hover:text-primary-hover"
                         >
                           <Search className="w-4 h-4" />
                           Xem tất cả kết quả cho &ldquo;{query}&rdquo;
@@ -225,7 +225,7 @@ export function SearchPalette({ open, onClose }: SearchPaletteProps) {
               <div className="px-5 py-2.5 border-t border-gray-100 flex items-center gap-4 text-[11px] text-gray-300">
                 <span><kbd className="font-mono text-gray-400">↵</kbd> mở</span>
                 <span><kbd className="font-mono text-gray-400">ESC</kbd> đóng</span>
-                <span className="ml-auto text-[#425733]/50 font-medium" style={{ fontFamily: "'Dancing Script', cursive" }}>tiệm Rêu Décor</span>
+                <span className="ml-auto text-primary/50 font-medium" style={{ fontFamily: "'Dancing Script', cursive" }}>tiệm Rêu Décor</span>
               </div>
             </div>
           </motion.div>
@@ -244,7 +244,7 @@ export function SearchTrigger({ onClick, light = false }: { onClick: () => void;
       className={`hidden md:flex items-center justify-center w-9 h-9 rounded-full transition-all duration-200 ${
         light
           ? "bg-white/15 hover:bg-white/25 text-white/70 hover:text-white"
-          : "bg-black/5 hover:bg-[#e3ebdd]/80 text-gray-400 hover:text-[#425733]"
+          : "bg-black/5 hover:bg-primary-soft/80 text-gray-400 hover:text-primary"
       }`}
     >
       <Search className="w-4 h-4" />

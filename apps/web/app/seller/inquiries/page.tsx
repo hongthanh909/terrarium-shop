@@ -30,10 +30,10 @@ export default async function SellerInquiriesPage() {
             <div key={item.id} className="p-4">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <p className="font-semibold text-[#203018]">{item.name}</p>
-                <span className="rounded-full bg-[#eef5e8] px-3 py-1 text-xs font-semibold text-[#3d5f2d]">{item.status}</span>
+                <span className="rounded-full bg-primary-soft px-3 py-1 text-xs font-semibold text-primary">{item.status}</span>
               </div>
               <p className="mt-1 text-sm text-[#526248]">{item.product.title}</p>
-              {item.offerPrice && <p className="mt-2 text-sm font-bold text-[#2f4a23]">Trả giá: {money(item.offerPrice)}</p>}
+              {item.offerPrice && <p className="mt-2 text-sm font-bold text-primary">Trả giá: {money(item.offerPrice)}</p>}
               <p className="mt-2 text-sm text-[#203018]">{item.message}</p>
               <p className="mt-2 text-xs text-[#6f7f66]">{item.phone || "Chưa có số điện thoại"} · {item.email || "Chưa có email"}</p>
             </div>

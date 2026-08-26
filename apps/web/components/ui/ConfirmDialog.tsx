@@ -52,7 +52,7 @@ export function ConfirmDialog({
       ? "bg-red-600 hover:bg-red-700 focus:ring-red-500 text-white"
       : variant === "warning"
       ? "bg-yellow-600 hover:bg-yellow-700 focus:ring-yellow-500 text-white"
-      : "bg-[#425733] hover:bg-[#364a29] focus:ring-[#425733] text-white";
+      : "bg-primary hover:bg-primary-hover focus:ring-primary text-white";
 
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
@@ -65,7 +65,7 @@ export function ConfirmDialog({
                   ? "bg-red-100"
                   : variant === "warning"
                   ? "bg-yellow-100"
-                  : "bg-[#e3ebdd]"
+                  : "bg-primary-soft"
               }`}
             >
               <AlertTriangle
@@ -74,7 +74,7 @@ export function ConfirmDialog({
                     ? "text-red-600"
                     : variant === "warning"
                     ? "text-yellow-600"
-                    : "text-[#425733]"
+                    : "text-primary"
                 }`}
               />
             </div>

@@ -198,7 +198,7 @@ function AiKnowledgeManager() {
         </div>
         <button
           onClick={() => { resetForm(); setShowForm(true); }}
-          className="flex items-center gap-2 px-4 py-2.5 bg-[#425733] text-white rounded-xl hover:bg-[#364a29] transition-colors font-medium text-sm"
+          className="flex items-center gap-2 px-4 py-2.5 bg-primary text-white rounded-xl hover:bg-primary-hover transition-colors font-medium text-sm"
         >
           <Plus className="w-4 h-4" /> Thêm kiến thức
         </button>
@@ -208,7 +208,7 @@ function AiKnowledgeManager() {
         <button
           onClick={seedDefaultKnowledge}
           disabled={seeding}
-          className="flex items-center gap-2 px-4 py-2.5 border border-[#c8d5be] text-[#425733] rounded-xl hover:bg-[#f0f7ea] transition-colors font-medium text-sm disabled:opacity-60"
+          className="flex items-center gap-2 px-4 py-2.5 border border-primary-border text-primary rounded-xl hover:bg-primary-soft transition-colors font-medium text-sm disabled:opacity-60"
         >
           <Sparkles className="w-4 h-4" /> {seeding ? "Đang nạp..." : "Nạp KB mẫu"}
         </button>
@@ -303,7 +303,7 @@ function AiKnowledgeManager() {
                   type="checkbox"
                   checked={form.isActive}
                   onChange={(e) => setForm({ ...form, isActive: e.target.checked })}
-                  className="w-4 h-4 rounded border-gray-300 text-[#425733] focus:ring-[#6d8c5a]"
+                  className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-[#6d8c5a]"
                 />
                 <span className="text-sm">Kích hoạt</span>
               </label>
@@ -314,7 +314,7 @@ function AiKnowledgeManager() {
                 <button
                   type="submit"
                   disabled={saving}
-                  className="flex items-center gap-2 px-4 py-2 bg-[#425733] text-white rounded-xl hover:bg-[#364a29] disabled:bg-gray-300 text-sm font-medium"
+                  className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-xl hover:bg-primary-hover disabled:bg-gray-300 text-sm font-medium"
                 >
                   <Save className="w-4 h-4" /> {saving ? "Đang lưu..." : editingId ? "Cập nhật" : "Thêm mới"}
                 </button>

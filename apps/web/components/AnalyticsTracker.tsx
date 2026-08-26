@@ -62,7 +62,7 @@ export function AnalyticsTracker() {
         <button type="button" onClick={() => setAnalyticsConsent(false)} className="min-h-11 rounded-md border border-border px-3 text-sm font-semibold text-foreground hover:bg-muted sm:px-4">
           Chỉ cần thiết
         </button>
-        <button type="button" onClick={() => setAnalyticsConsent(true)} className="min-h-11 rounded-md bg-foreground px-3 text-sm font-semibold text-white hover:bg-foreground/85 sm:px-4">
+        <button type="button" onClick={() => setAnalyticsConsent(true)} className="min-h-11 rounded-control bg-primary px-3 text-sm font-semibold text-white transition-colors hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-primary/50 sm:px-4">
           Cho phép thống kê
         </button>
       </div>

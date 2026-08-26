@@ -9,6 +9,7 @@ import { ArrowLeft, Mail, Lock, User, Phone, Eye, EyeOff, ShieldCheck } from "lu
 import { motion, AnimatePresence } from "framer-motion";
 import { Label } from "@/components/ui/label";
 import { ShimmerButton } from "@/components/ui/shimmer-button";
+import { Button } from "@/components/ui/button";
 import { trackEvent } from "@/lib/analytics-client";
 
 export default function AuthPageWrapper() {
@@ -395,11 +396,12 @@ function GoogleLoginButton({ loading, disabled, onClick }: {
   onClick: () => void;
 }) {
   return (
-    <button
+    <Button
+      variant="brand"
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className="relative flex min-h-12 w-full items-center justify-center rounded-control border border-gray-300 bg-white px-4 text-sm font-semibold text-gray-800 shadow-sm transition-[background-color,border-color,transform] hover:border-gray-400 hover:bg-gray-50 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
+      className="relative w-full px-4"
     >
       <span className="absolute left-4 flex h-5 w-5 items-center justify-center">
         {loading ? (
@@ -415,7 +417,7 @@ function GoogleLoginButton({ loading, disabled, onClick }: {
         )}
       </span>
       <span>{loading ? "Đang kết nối..." : "Tiếp tục với Google"}</span>
-    </button>
+    </Button>
   );
 }
 

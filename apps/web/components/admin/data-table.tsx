@@ -254,7 +254,7 @@ export function Pagination({ page, totalPages, total, pageSize, onPageChange }: 
                 "h-11 w-11 rounded-md text-sm font-medium transition-colors",
                 totalPages > 3 && p !== page && "hidden min-[420px]:inline-flex min-[420px]:items-center min-[420px]:justify-center",
                 p === page
-                  ? "bg-gray-950 text-white shadow-sm"
+                  ? "bg-primary text-white shadow-sm"
                   : "border border-gray-200 text-gray-600 hover:border-gray-400 hover:text-gray-950"
               )}
             >

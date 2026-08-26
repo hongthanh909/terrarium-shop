@@ -121,7 +121,7 @@ export function HeroCarousel({ products }: HeroCarouselProps) {
               onClick={() => setCurrentIndex(idx)}
               className={`h-2 rounded-full transition-all duration-300 ${
                 idx === currentIndex
-                  ? "bg-[#425733] w-6"
+                  ? "bg-primary w-6"
                   : "bg-gray-300 w-2 hover:bg-gray-400"
               }`}
               aria-label={`Slide ${idx + 1}`}
@@ -283,7 +283,7 @@ function ProductCardHero({
 
         {/* Product name */}
         <Link href={getLinkHref(product.slug)} className="block mb-2">
-          <h3 className="font-bold text-gray-900 line-clamp-1 hover:text-[#425733] transition-colors leading-snug text-lg">
+          <h3 className="font-bold text-gray-900 line-clamp-1 hover:text-primary transition-colors leading-snug text-lg">
             {product.name}
           </h3>
         </Link>

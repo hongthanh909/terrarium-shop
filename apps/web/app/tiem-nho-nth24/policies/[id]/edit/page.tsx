@@ -72,7 +72,7 @@ export default function CreatePolicyPage() {
               onChange={(e) => {
                 setFormData({ ...formData, title: e.target.value, slug: generateSlug(e.target.value) });
               }}
-              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#425733]/50"
+              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-primary/50"
               placeholder="VD: Chính sách bảo hành"
             />
           </div>
@@ -83,7 +83,7 @@ export default function CreatePolicyPage() {
               required
               value={formData.slug}
               onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
-              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#425733]/50"
+              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-primary/50"
             />
           </div>
         </div>
@@ -94,7 +94,7 @@ export default function CreatePolicyPage() {
             <select
               value={formData.type}
               onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#425733]/50"
+              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-primary/50"
             >
               <option value="policy">Chính sách chung</option>
               <option value="warranty">Bảo hành</option>
@@ -110,7 +110,7 @@ export default function CreatePolicyPage() {
               type="number"
               value={formData.order}
               onChange={(e) => setFormData({ ...formData, order: parseInt(e.target.value) })}
-              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#425733]/50"
+              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-primary/50"
             />
           </div>
           <div className="flex items-center space-x-3 pt-8">
@@ -119,7 +119,7 @@ export default function CreatePolicyPage() {
               id="isActive"
               checked={formData.isActive}
               onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
-              className="w-4 h-4 rounded border-gray-300 text-[#425733] focus:ring-[#425733]"
+              className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
             />
             <label htmlFor="isActive" className="text-sm font-medium text-gray-700 cursor-pointer">
               Hiển thị trên website
@@ -134,7 +134,7 @@ export default function CreatePolicyPage() {
             rows={15}
             value={formData.content}
             onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-            className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#425733]/50 font-mono"
+            className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-primary/50 font-mono"
             placeholder="<p>Nhập nội dung HTML tại đây...</p>"
           />
         </div>
@@ -143,7 +143,7 @@ export default function CreatePolicyPage() {
           <Button
             type="submit"
             disabled={loading}
-            className="bg-[#425733] hover:bg-[#364a29] min-w-[120px]"
+            className="bg-primary hover:bg-primary-hover min-w-[120px]"
           >
             {loading ? "Đang lưu..." : <><Save className="w-4 h-4 mr-2" /> Lưu Chính Sách</>}
           </Button>

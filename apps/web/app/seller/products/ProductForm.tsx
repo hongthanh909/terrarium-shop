@@ -141,7 +141,7 @@ export default function ProductForm({
               key={category.id}
               className={`flex min-h-11 items-center gap-2 rounded-xl border px-3 py-2 text-sm transition ${
                 selectedCategoryIds.includes(category.id)
-                  ? "border-[#2f4a23] bg-[#eef5e8] font-semibold text-[#2f4a23]"
+                  ? "border-primary bg-primary-soft font-semibold text-primary"
                   : "border-[#d6e2ce] text-[#526248]"
               }`}
             >
@@ -172,7 +172,7 @@ export default function ProductForm({
           <input name="priceNote" defaultValue={initialProduct?.priceNote || ""} className="rounded-xl border border-[#d6e2ce] px-3 py-2" />
         </label>
       </div>
-      <button disabled={loading} className="w-fit rounded-full bg-[#2f4a23] px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-60">
+      <button disabled={loading} className="min-h-11 w-fit rounded-control bg-primary px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-primary-hover disabled:opacity-60">
         {loading ? "Đang gửi..." : initialProduct ? "Lưu và gửi duyệt lại" : "Tạo và gửi duyệt"}
       </button>
       {message && <p className="text-sm font-medium text-red-600">{message}</p>}

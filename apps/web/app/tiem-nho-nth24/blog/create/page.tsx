@@ -183,7 +183,7 @@ export default function CreateBlogPostPage() {
   return (
     <div className="max-w-4xl mx-auto">
       <div className="mb-6">
-        <Link href="/tiem-nho-nth24/blog" className="inline-flex items-center text-[#425733] hover:text-[#364a29] mb-4 gap-1 text-sm font-semibold transition-colors">
+        <Link href="/tiem-nho-nth24/blog" className="mb-4 inline-flex items-center gap-1 text-sm font-semibold text-primary transition-colors hover:text-primary-hover">
           <ArrowLeft className="w-4 h-4" /> Quay lại Blog
         </Link>
         <div className="flex items-center justify-between">
@@ -192,7 +192,7 @@ export default function CreateBlogPostPage() {
             <p className="text-sm text-gray-500">Phân chia cấu trúc bài viết rõ ràng và trực quan</p>
           </div>
           <div className="flex items-center gap-2 bg-gray-50 px-4 py-2 rounded-xl border border-gray-100">
-            <Clock className="w-4 h-4 text-[#425733]" />
+            <Clock className="w-4 h-4 text-primary" />
             <span className="text-xs font-medium text-gray-600">{formatTime(currentTime)}</span>
           </div>
         </div>
@@ -206,7 +206,7 @@ export default function CreateBlogPostPage() {
               Tiêu đề bài viết <span className="text-red-500">*</span>
             </label>
             <input type="text" value={formData.title} onChange={handleTitleChange} required
-              className="w-full px-4 py-2 border rounded-xl focus:ring-1 focus:ring-[#425733] focus:border-[#425733] focus:outline-none transition-all"
+              className="w-full px-4 py-2 border rounded-xl focus:ring-1 focus:ring-primary focus:border-primary focus:outline-none transition-all"
               placeholder="Nhập tiêu đề bài viết..." />
           </div>
 
@@ -218,7 +218,7 @@ export default function CreateBlogPostPage() {
               </label>
               <input type="text" value={formData.slug}
                 onChange={(e) => setFormData((prev) => ({ ...prev, slug: e.target.value }))} required
-                className="w-full px-4 py-2 border rounded-xl focus:ring-1 focus:ring-[#425733] focus:border-[#425733] focus:outline-none font-mono text-sm transition-all"
+                className="w-full px-4 py-2 border rounded-xl focus:ring-1 focus:ring-primary focus:border-primary focus:outline-none font-mono text-sm transition-all"
                 placeholder="tieu-de-bai-viet" />
               <p className="text-xs text-gray-400 mt-1">Tự động tạo: /blog/{formData.slug || "..."}</p>
             </div>
@@ -226,7 +226,7 @@ export default function CreateBlogPostPage() {
               <label className="block text-sm font-semibold text-gray-700 mb-1">Danh mục</label>
               <select value={formData.categoryId}
                 onChange={(e) => setFormData((prev) => ({ ...prev, categoryId: e.target.value }))}
-                className="w-full px-4 py-2 border rounded-xl focus:ring-1 focus:ring-[#425733] focus:border-[#425733] focus:outline-none bg-white transition-all">
+                className="w-full px-4 py-2 border rounded-xl focus:ring-1 focus:ring-primary focus:border-primary focus:outline-none bg-white transition-all">
                 <option value="">-- Chọn danh mục --</option>
                 {categories.map((cat) => (
                   <option key={cat.id} value={cat.id}>{cat.name}</option>
@@ -312,7 +312,7 @@ export default function CreateBlogPostPage() {
                 <label className="text-sm font-semibold text-gray-700">1. Mở bài (Introduction)</label>
                 <button type="button" onClick={() => introImageRef.current?.click()}
                   disabled={uploadingSection === "intro"}
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-[#425733] bg-[#f0f5ec] hover:bg-[#e3ebdd] rounded-lg border border-[#daebd0] transition-colors disabled:opacity-50">
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-primary bg-primary-soft hover:bg-primary-soft rounded-lg border border-[#daebd0] transition-colors disabled:opacity-50">
                   <ImagePlus className="w-3.5 h-3.5" />
                   {uploadingSection === "intro" ? "Đang tải..." : "📷 Chèn ảnh"}
                 </button>
@@ -330,7 +330,7 @@ export default function CreateBlogPostPage() {
                 <label className="text-sm font-semibold text-gray-700">2. Thân bài (Body Content)</label>
                 <button type="button" onClick={() => bodyImageRef.current?.click()}
                   disabled={uploadingSection === "body"}
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-[#425733] bg-[#f0f5ec] hover:bg-[#e3ebdd] rounded-lg border border-[#daebd0] transition-colors disabled:opacity-50">
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-primary bg-[#f0f5ec] hover:bg-[#e3ebdd] rounded-lg border border-[#daebd0] transition-colors disabled:opacity-50">
                   <ImagePlus className="w-3.5 h-3.5" />
                   {uploadingSection === "body" ? "Đang tải..." : "📷 Chèn ảnh"}
                 </button>
@@ -348,7 +348,7 @@ export default function CreateBlogPostPage() {
                 <label className="text-sm font-semibold text-gray-700">3. Kết bài (Conclusion)</label>
                 <button type="button" onClick={() => conclusionImageRef.current?.click()}
                   disabled={uploadingSection === "conclusion"}
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-[#425733] bg-[#f0f5ec] hover:bg-[#e3ebdd] rounded-lg border border-[#daebd0] transition-colors disabled:opacity-50">
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-primary bg-[#f0f5ec] hover:bg-[#e3ebdd] rounded-lg border border-[#daebd0] transition-colors disabled:opacity-50">
                   <ImagePlus className="w-3.5 h-3.5" />
                   {uploadingSection === "conclusion" ? "Đang tải..." : "📷 Chèn ảnh"}
                 </button>
@@ -364,11 +364,11 @@ export default function CreateBlogPostPage() {
           {/* Trạng thái xuất bản */}
           <div
             className={`flex items-center gap-3 p-4 rounded-2xl border cursor-pointer transition-colors ${
-              formData.published ? "border-[#425733]/40 bg-[#f8faf6]" : "border-gray-200 bg-gray-50/50"
+              formData.published ? "border-primary/40 bg-[#f8faf6]" : "border-gray-200 bg-gray-50/50"
             }`}
             onClick={() => setFormData((prev) => ({ ...prev, published: !prev.published }))}
           >
-            {formData.published ? <Eye className="w-5 h-5 text-[#425733]" /> : <EyeOff className="w-5 h-5 text-gray-400" />}
+            {formData.published ? <Eye className="w-5 h-5 text-primary" /> : <EyeOff className="w-5 h-5 text-gray-400" />}
             <div className="flex-1">
               <p className="font-semibold text-sm text-gray-800">
                 {formData.published ? "Xuất bản ngay" : "Lưu bản nháp"}
@@ -381,7 +381,7 @@ export default function CreateBlogPostPage() {
             </div>
             <input type="checkbox" checked={formData.published}
               onChange={(e) => setFormData((prev) => ({ ...prev, published: e.target.checked }))}
-              className="ml-auto w-4.5 h-4.5 accent-[#425733]" onClick={(e) => e.stopPropagation()} />
+              className="ml-auto w-4.5 h-4.5 accent-primary" onClick={(e) => e.stopPropagation()} />
           </div>
         </div>
 
@@ -392,7 +392,7 @@ export default function CreateBlogPostPage() {
             Hủy
           </Link>
           <button type="submit" disabled={saving}
-            className="flex min-h-11 items-center gap-2 rounded-md border border-[#425733] bg-[#425733] px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#364a29] active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-gray-400">
+            className="flex min-h-11 items-center gap-2 rounded-md border border-primary bg-primary px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-primary-hover active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-gray-400">
             <Save className="w-4 h-4" />
             {saving ? "Đang lưu..." : formData.published ? "Xuất Bản Bài Viết" : "Lưu Bản Nháp"}
           </button>

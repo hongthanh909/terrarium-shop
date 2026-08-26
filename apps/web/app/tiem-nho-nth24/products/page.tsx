@@ -300,7 +300,7 @@ export default function AdminProductsPage() {
         </div>
         <Link
           href="/tiem-nho-nth24/products/create"
-          className="flex items-center gap-2 rounded-md bg-gray-950 px-6 py-3 font-semibold text-white shadow-sm transition-colors hover:bg-gray-700"
+          className="flex items-center gap-2 rounded-md bg-primary px-6 py-3 font-semibold text-white shadow-sm transition-colors hover:bg-primary-hover"
         >
           <Plus className="w-5 h-5" />
           Thêm Sản Phẩm Mới
@@ -392,7 +392,7 @@ export default function AdminProductsPage() {
                     checked={selectedIds.length === filteredProducts.length && filteredProducts.length > 0}
                     onChange={handleSelectAll}
                     disabled={actionLoading}
-                    className="w-4 h-4 rounded border-gray-300 text-[#425733] focus:ring-[#425733] disabled:opacity-50"
+                    className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary disabled:opacity-50"
                   />
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -427,7 +427,7 @@ export default function AdminProductsPage() {
                       checked={selectedIds.includes(product.id)}
                       onChange={() => handleSelect(product.id)}
                       disabled={actionLoading}
-                      className="w-4 h-4 rounded border-gray-300 text-[#425733] focus:ring-[#425733] disabled:opacity-50"
+                      className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary disabled:opacity-50"
                     />
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -524,7 +524,7 @@ export default function AdminProductsPage() {
                       <button
                         onClick={() => handlePin(product.id, !!product.pinnedUntil && new Date(product.pinnedUntil) > new Date())}
                         disabled={actionLoading}
-                        className={`p-1 disabled:opacity-30 disabled:cursor-not-allowed ${!!product.pinnedUntil && new Date(product.pinnedUntil) > new Date() ? 'text-[#425733] fill-[#425733]' : 'text-gray-400 hover:text-[#425733]'}`}
+                        className={`p-1 disabled:cursor-not-allowed disabled:opacity-30 ${!!product.pinnedUntil && new Date(product.pinnedUntil) > new Date() ? 'fill-primary text-primary' : 'text-gray-400 hover:text-primary'}`}
                         title={!!product.pinnedUntil && new Date(product.pinnedUntil) > new Date() ? "Bỏ ghim" : "Ghim 7 ngày"}
                       >
                         <Pin className="w-4 h-4" />

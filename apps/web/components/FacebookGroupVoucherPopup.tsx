@@ -62,14 +62,14 @@ function StepIndicator({ joined, complete }: { joined: boolean; complete: boolea
   return (
     <div className="grid grid-cols-[1fr_2.5rem_1fr] items-start" aria-label="Quy trình nhận voucher">
       <div className="flex flex-col items-center text-center">
-        <span className={`grid h-8 w-8 place-items-center rounded-full border text-xs font-bold ${firstComplete ? "border-gray-950 bg-gray-950 text-white" : "border-gray-300 bg-white text-gray-950"}`}>
+        <span className={`grid h-8 w-8 place-items-center rounded-full border text-xs font-bold ${firstComplete ? "border-primary bg-primary text-white" : "border-border-strong bg-white text-foreground"}`}>
           {firstComplete ? <Check className="h-4 w-4" aria-hidden="true" /> : "1"}
         </span>
         <span className="mt-2 text-xs font-semibold text-gray-900">Vào nhóm Facebook</span>
       </div>
-      <div className={`mt-4 h-px ${firstComplete ? "bg-gray-950" : "bg-gray-200"}`} />
+      <div className={`mt-4 h-px ${firstComplete ? "bg-primary" : "bg-border"}`} />
       <div className="flex flex-col items-center text-center">
-        <span className={`grid h-8 w-8 place-items-center rounded-full border text-xs font-bold ${complete ? "border-gray-950 bg-gray-950 text-white" : joined ? "border-gray-950 bg-white text-gray-950" : "border-gray-200 bg-white text-gray-400"}`}>
+        <span className={`grid h-8 w-8 place-items-center rounded-full border text-xs font-bold ${complete ? "border-primary bg-primary text-white" : joined ? "border-primary bg-white text-primary" : "border-border bg-white text-muted-foreground"}`}>
           {complete ? <Check className="h-4 w-4" aria-hidden="true" /> : "2"}
         </span>
         <span className={`mt-2 text-xs font-semibold ${joined || complete ? "text-gray-900" : "text-gray-500"}`}>Nhận voucher</span>
@@ -189,9 +189,9 @@ export function FacebookGroupVoucherPopup({ initialPromo }: { initialPromo?: Fac
     <Dialog open={open} onOpenChange={rememberDismissal}>
       <DialogContent
         overlayClassName="!z-[10000] !bg-black/65 backdrop-blur-[2px]"
-        className="!z-[10001] w-[calc(100%-1.5rem)] max-w-[32rem] gap-0 overflow-hidden rounded-lg border border-white/70 bg-white p-0 shadow-[0_28px_90px_rgba(0,0,0,0.28)] [&>button]:right-3 [&>button]:top-3 [&>button]:z-20 [&>button]:grid [&>button]:h-11 [&>button]:w-11 [&>button]:place-items-center [&>button]:rounded-full [&>button]:bg-black/45 [&>button]:text-white [&>button]:opacity-100 [&>button]:backdrop-blur-sm [&>button]:hover:bg-black/60 [&>button_svg]:h-5 [&>button_svg]:w-5"
+        className="!z-[10001] max-h-[calc(100dvh-1rem)] w-[calc(100%-1.5rem)] max-w-[32rem] gap-0 overflow-x-hidden overflow-y-auto overscroll-contain rounded-lg border border-white/70 bg-white p-0 shadow-[0_28px_90px_rgba(0,0,0,0.28)] [scrollbar-width:thin] [&>button]:right-3 [&>button]:top-3 [&>button]:z-20 [&>button]:grid [&>button]:h-11 [&>button]:w-11 [&>button]:place-items-center [&>button]:rounded-full [&>button]:bg-black/45 [&>button]:text-white [&>button]:opacity-100 [&>button]:backdrop-blur-sm [&>button]:hover:bg-black/60 [&>button_svg]:h-5 [&>button_svg]:w-5"
       >
-        <div className="relative h-36 overflow-hidden sm:h-40">
+        <div className="relative h-28 shrink-0 overflow-hidden sm:h-40">
           <Image
             src="/home-hero-full-banner.png"
             alt="Terrarium thủ công của Tiệm Rêu Décor"
@@ -206,9 +206,9 @@ export function FacebookGroupVoucherPopup({ initialPromo }: { initialPromo?: Fac
           </div>
         </div>
 
-        <div className="px-5 pb-1 pt-5 sm:px-7 sm:pt-6">
+        <div className="px-5 pb-1 pt-4 sm:px-7 sm:pt-6">
           <DialogHeader className="text-left">
-            <DialogTitle className="font-serif text-[1.75rem] font-semibold leading-[1.18] text-gray-950 [text-wrap:balance]">
+            <DialogTitle className="font-serif text-2xl font-semibold leading-[1.18] text-gray-950 [text-wrap:balance] sm:text-[1.75rem]">
               {approved ? "Voucher của bạn đã sẵn sàng" : promo.title}
             </DialogTitle>
             <DialogDescription className="mt-2 max-w-[44ch] text-[0.9375rem] leading-6 text-gray-600">
@@ -217,7 +217,7 @@ export function FacebookGroupVoucherPopup({ initialPromo }: { initialPromo?: Fac
           </DialogHeader>
         </div>
 
-        <div className="mx-5 mt-4 flex items-center justify-between gap-3 border-y border-dashed border-gray-300 bg-gray-50 px-3 py-3.5 sm:mx-7 sm:gap-4 sm:px-4">
+        <div className="mx-5 mt-3 flex items-center justify-between gap-3 border-y border-dashed border-gray-300 bg-gray-50 px-3 py-3 sm:mx-7 sm:mt-4 sm:gap-4 sm:px-4 sm:py-3.5">
           <div className="flex min-w-0 items-center gap-2.5 sm:gap-3">
             <span className="grid h-10 w-10 shrink-0 place-items-center rounded-md bg-white text-gray-950 shadow-sm sm:h-11 sm:w-11">
               <TicketPercent className="h-5 w-5" aria-hidden="true" />
@@ -230,7 +230,7 @@ export function FacebookGroupVoucherPopup({ initialPromo }: { initialPromo?: Fac
           <p className="shrink-0 text-right text-xl font-extrabold tabular-nums text-gray-950 sm:text-2xl">100.000đ</p>
         </div>
 
-        <div className="px-5 pb-6 pt-5 sm:px-7 sm:pb-7">
+        <div className="px-5 pb-4 pt-4 sm:px-7 sm:pb-7 sm:pt-5">
           {!approved && !pending && <StepIndicator joined={joined} complete={false} />}
 
           <div className={`${!approved && !pending ? "mt-5" : ""} space-y-3`}>
@@ -246,7 +246,7 @@ export function FacebookGroupVoucherPopup({ initialPromo }: { initialPromo?: Fac
                     await navigator.clipboard.writeText(promo.claim?.voucherCode ?? "");
                     setCopied(true);
                   }}
-                  className="flex min-h-12 w-full cursor-pointer items-center justify-between rounded-md border border-[#9eb691] bg-white px-4 text-left font-bold tracking-wide text-[#29491f] transition-colors hover:bg-[#f4f8f1] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#315a29] focus-visible:ring-offset-2"
+                  className="flex min-h-12 w-full cursor-pointer items-center justify-between rounded-md border border-[#9eb691] bg-white px-4 text-left font-bold tracking-wide text-primary transition-colors hover:bg-[#f4f8f1] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#315a29] focus-visible:ring-offset-2"
                 >
                   {promo.claim.voucherCode}
                   <span className="flex items-center gap-1.5 text-xs font-semibold">
@@ -282,7 +282,7 @@ export function FacebookGroupVoucherPopup({ initialPromo }: { initialPromo?: Fac
                 </p>
               </>
             ) : sessionStatus === "loading" ? (
-              <button type="button" disabled className="min-h-12 w-full rounded-md bg-[#dce5d7] px-4 text-sm font-semibold text-[#64705f]">
+              <button type="button" disabled className="min-h-12 w-full rounded-control bg-muted px-4 text-sm font-semibold text-muted-foreground">
                 Đang kiểm tra tài khoản...
               </button>
             ) : sessionStatus !== "authenticated" ? (
@@ -293,7 +293,7 @@ export function FacebookGroupVoucherPopup({ initialPromo }: { initialPromo?: Fac
                 </div>
                 <a
                   href={loginHref}
-                  className="flex min-h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-md bg-gray-950 px-4 text-sm font-bold text-white transition-colors hover:bg-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-950/40 focus-visible:ring-offset-2"
+                  className="flex min-h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-control bg-primary px-4 text-sm font-bold text-white transition-colors hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-primary/50 focus-visible:ring-offset-1"
                 >
                   Đăng nhập để nhận voucher
                   <ArrowRight className="h-4 w-4" aria-hidden="true" />
@@ -351,7 +351,7 @@ export function FacebookGroupVoucherPopup({ initialPromo }: { initialPromo?: Fac
                   type="button"
                   disabled={submitting || facebookName.trim().length < 2}
                   onClick={submitClaim}
-                  className="min-h-12 w-full cursor-pointer rounded-md bg-gray-950 px-4 text-sm font-bold text-white transition-colors hover:bg-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-950/40 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="min-h-12 w-full cursor-pointer rounded-control bg-primary px-4 text-sm font-bold text-white transition-colors hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-primary/50 focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {submitting ? "Đang gửi..." : "Gửi yêu cầu duyệt voucher"}
                 </button>

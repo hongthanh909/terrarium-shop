@@ -36,10 +36,10 @@ export default async function SellerDashboardPage() {
         </div>
       </div>
       <div className="flex flex-wrap gap-3">
-        <Link href="/seller/products/new" className="rounded-full bg-[#2f4a23] px-5 py-2.5 text-sm font-semibold text-white">
+        <Link href="/seller/products/new" className="inline-flex min-h-11 items-center rounded-control bg-primary px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-primary-hover">
           Đăng sản phẩm
         </Link>
-        <Link href={`/marketplace/shops/${seller.shop.slug}`} className="rounded-full border border-[#c6d8ba] px-5 py-2.5 text-sm font-semibold text-[#3d5f2d]">
+        <Link href={`/marketplace/shops/${seller.shop.slug}`} className="inline-flex min-h-11 items-center rounded-control border border-primary-border bg-white px-5 py-2.5 text-sm font-semibold text-primary transition-colors hover:bg-primary-soft">
           Xem trang shop
         </Link>
       </div>
