@@ -122,14 +122,14 @@ export function ProductCard({
         <button
           onClick={(e) => { e.preventDefault(); onToggleWishlist?.(); }}
           className={cn(
-            "absolute left-2 top-2 z-10 flex h-11 w-11 items-center justify-center rounded-full border border-white/70 shadow-sm backdrop-blur-sm transition-[background-color,color,transform] duration-150",
+            "absolute left-2 top-2 z-10 flex h-11 w-11 items-center justify-center transition-[color,transform] duration-150 hover:scale-110 active:scale-95",
             wished
-              ? "bg-favorite text-white"
-              : "bg-white/90 text-muted-foreground hover:text-favorite active:scale-95"
+              ? "text-favorite"
+              : "text-white hover:text-favorite"
           )}
           aria-label={wished ? `Bỏ ${name} khỏi yêu thích` : `Thêm ${name} vào yêu thích`}
         >
-          <Heart className={cn("w-4 h-4 transition-colors", wished && "fill-white text-white")} />
+          <Heart className={cn("h-5 w-5 drop-shadow-[0_1px_2px_rgba(0,0,0,0.75)] transition-colors", wished && "fill-current")} />
         </button>
       </Link>
 

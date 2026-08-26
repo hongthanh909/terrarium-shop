@@ -30,7 +30,7 @@ function AuthPage() {
 
   const [isLogin, setIsLogin] = useState(true);
   const [loading, setLoading] = useState(false);
-  const [socialLoading, setSocialLoading] = useState<"google" | "facebook" | null>(null);
+  const [socialLoading, setSocialLoading] = useState<"google" | null>(null);
   const [availableSocialProviders, setAvailableSocialProviders] = useState<Set<string>>(new Set());
   const [error, setError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
@@ -47,7 +47,7 @@ function AuthPage() {
       .then((providers) => {
         if (!active) return;
         const providerIds = Object.keys(providers || {}).filter(
-          (providerId) => providerId === "google" || providerId === "facebook"
+          (providerId) => providerId === "google"
         );
         setAvailableSocialProviders(new Set(providerIds));
       })
@@ -153,12 +153,12 @@ function AuthPage() {
     }
   };
 
-  const handleSocialSignIn = async (provider: "google" | "facebook") => {
-    const providerName = provider === "google" ? "Google" : "Facebook";
+  const handleGoogleSignIn = async () => {
+    const provider = "google";
     setError(null);
 
     if (!availableSocialProviders.has(provider)) {
-      setError(`Đăng nhập bằng ${providerName} đang chờ cấu hình ứng dụng OAuth.`);
+      setError("Đăng nhập bằng Google đang chờ cấu hình ứng dụng OAuth.");
       return;
     }
 
@@ -166,7 +166,7 @@ function AuthPage() {
     try {
       await signIn(provider, { callbackUrl });
     } catch {
-      setError(`Không thể kết nối với ${providerName}. Vui lòng thử lại.`);
+      setError("Không thể kết nối với Google. Vui lòng thử lại.");
       setSocialLoading(null);
     }
   };
@@ -237,30 +237,6 @@ function AuthPage() {
           </div>
 
           <div className="px-5 py-6 sm:px-8">
-            {!isVerifyingRegistration && (
-              <div className="mb-5 space-y-3">
-                <SocialLoginButton
-                  provider="google"
-                  label="Tiếp tục với Google"
-                  loading={socialLoading === "google"}
-                  disabled={Boolean(socialLoading)}
-                  onClick={() => handleSocialSignIn("google")}
-                />
-                <SocialLoginButton
-                  provider="facebook"
-                  label="Tiếp tục với Facebook"
-                  loading={socialLoading === "facebook"}
-                  disabled={Boolean(socialLoading)}
-                  onClick={() => handleSocialSignIn("facebook")}
-                />
-                <div className="flex items-center gap-3 pt-1" aria-hidden="true">
-                  <div className="h-px flex-1 bg-gray-200" />
-                  <span className="text-xs text-gray-400">Hoặc tiếp tục bằng email</span>
-                  <div className="h-px flex-1 bg-gray-200" />
-                </div>
-              </div>
-            )}
-
             <form onSubmit={handleSubmit} className="space-y-4">
               <AnimatePresence>
                 {error && (
@@ -379,6 +355,21 @@ function AuthPage() {
               </ShimmerButton>
             </form>
 
+            {!isVerifyingRegistration && (
+              <div className="mt-6 space-y-3">
+                <div className="flex items-center gap-3" aria-hidden="true">
+                  <div className="h-px flex-1 bg-gray-200" />
+                  <span className="text-xs text-gray-400">Hoặc tiếp tục với Google</span>
+                  <div className="h-px flex-1 bg-gray-200" />
+                </div>
+                <GoogleLoginButton
+                  loading={socialLoading === "google"}
+                  disabled={Boolean(socialLoading)}
+                  onClick={handleGoogleSignIn}
+                />
+              </div>
+            )}
+
             <div className="mt-6 text-center text-sm">
               <span className="text-gray-400">
                 {isLogin ? "Chưa có tài khoản?" : isVerifyingRegistration ? "Sai email?" : "Đã có tài khoản?"}
@@ -398,9 +389,7 @@ function AuthPage() {
   );
 }
 
-function SocialLoginButton({ provider, label, loading, disabled, onClick }: {
-  provider: "google" | "facebook";
-  label: string;
+function GoogleLoginButton({ loading, disabled, onClick }: {
   loading: boolean;
   disabled: boolean;
   onClick: () => void;
@@ -410,26 +399,22 @@ function SocialLoginButton({ provider, label, loading, disabled, onClick }: {
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className={`relative flex min-h-12 w-full items-center justify-center rounded-control border px-4 text-sm font-semibold shadow-sm transition-[background-color,border-color,transform] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60 ${
-        provider === "facebook"
-          ? "border-[#0866ff] bg-[#0866ff] text-white hover:border-[#075de5] hover:bg-[#075de5]"
-          : "border-gray-300 bg-white text-gray-800 hover:border-gray-400 hover:bg-gray-50"
-      }`}
+      className="relative flex min-h-12 w-full items-center justify-center rounded-control border border-gray-300 bg-white px-4 text-sm font-semibold text-gray-800 shadow-sm transition-[background-color,border-color,transform] hover:border-gray-400 hover:bg-gray-50 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
     >
       <span className="absolute left-4 flex h-5 w-5 items-center justify-center">
         {loading ? (
           <span className="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-foreground" />
         ) : (
           <Image
-            src={`/brands/${provider}.svg`}
+            src="/brands/google.svg"
             alt=""
             width={20}
             height={20}
-            className={`h-5 w-5 object-contain ${provider === "facebook" ? "brightness-0 invert" : ""}`}
+            className="h-5 w-5 object-contain"
           />
         )}
       </span>
-      <span>{loading ? "Đang kết nối..." : label}</span>
+      <span>{loading ? "Đang kết nối..." : "Tiếp tục với Google"}</span>
     </button>
   );
 }
