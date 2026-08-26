@@ -525,7 +525,7 @@ export function ProductDetailClient({
   const dbVariants = (product.variantOptions || []).filter((v: any) => v.variantType !== LAMP_VARIANT_TYPE);
 
   return (
-    <div className="min-h-[100dvh] scroll-pb-40 bg-background pb-40 lg:scroll-pb-0 lg:pb-0">
+    <div className="min-h-[100dvh] scroll-pb-40 bg-white pb-40 lg:scroll-pb-0 lg:pb-0">
 
       {/* ── Lightbox ──────────────────────────────────────────────────────── */}
       {lightboxOpen && product?.images && (
@@ -584,12 +584,12 @@ export function ProductDetailClient({
 
       {/* ── Cart Sheet ────────────────────────────────────────────────────── */}
       <Sheet open={cartOpen} onOpenChange={setCartOpen}>
-        <SheetContent className="sm:max-w-md">
+        <SheetContent side="responsive" className="flex flex-col sm:max-w-none">
           <SheetHeader>
             <SheetTitle>Giỏ hàng ({getCartCount()})</SheetTitle>
             <SheetDescription>Xem lại sản phẩm và tiến hành thanh toán</SheetDescription>
           </SheetHeader>
-          <div className="flex-1 overflow-y-auto mt-4">
+          <div className="mt-4 min-h-0 flex-1 overflow-y-auto pr-1">
             {items.length === 0 ? (
               <div className="text-center py-12"><ShoppingBag className="w-16 h-16 mx-auto text-muted-foreground/40 mb-4" /><p className="text-muted-foreground">Giỏ hàng trống</p></div>
             ) : (
@@ -599,7 +599,7 @@ export function ProductDetailClient({
                   <label htmlFor="selectAll" className="text-sm font-medium cursor-pointer">Chọn tất cả</label>
                 </div>
                 {items.map((item: CartItem) => (
-                  <Card key={item.id} className={item.selected ? "border-foreground bg-muted/40" : "opacity-80"}>
+                  <Card key={item.id} className={item.selected ? "border-primary-border bg-primary-soft/50" : "opacity-80"}>
                     <CardContent className="p-4">
                       <div className="flex items-start gap-4">
                         <input type="checkbox" className="mt-2 w-4 h-4 rounded border-gray-300" checked={item.selected || false} onChange={() => toggleSelectItem(item.id)} />
@@ -618,9 +618,9 @@ export function ProductDetailClient({
                           )}
                           <p className="text-primary font-bold mt-1">{(item.price * item.quantity).toLocaleString("vi-VN")}₫</p>
                           <div className="flex items-center gap-2 mt-2">
-                            <Button variant="outline" size="icon" className="h-11 w-11 shrink-0 rounded-full" onClick={() => updateQuantity(item.productId, item.quantity - 1, item.variants)} aria-label={`Giảm số lượng ${item.productName}`}><Minus className="w-4 h-4" /></Button>
+                            <Button variant="outline" size="icon" className="h-11 w-11 shrink-0 rounded-control" onClick={() => updateQuantity(item.productId, item.quantity - 1, item.variants)} aria-label={`Giảm số lượng ${item.productName}`}><Minus className="w-4 h-4" /></Button>
                             <span className="w-8 text-center font-medium">{item.quantity}</span>
-                            <Button variant="outline" size="icon" className="h-11 w-11 shrink-0 rounded-full" onClick={() => updateQuantity(item.productId, item.quantity + 1, item.variants)} aria-label={`Tăng số lượng ${item.productName}`}><Plus className="w-4 h-4" /></Button>
+                            <Button variant="outline" size="icon" className="h-11 w-11 shrink-0 rounded-control" onClick={() => updateQuantity(item.productId, item.quantity + 1, item.variants)} aria-label={`Tăng số lượng ${item.productName}`}><Plus className="w-4 h-4" /></Button>
                             <Button variant="ghost" size="sm" className="ml-auto min-h-11 px-3 text-destructive text-sm" onClick={() => removeItem(item.productId, item.variants)} aria-label={`Xóa ${item.productName} khỏi giỏ hàng`}>Xóa</Button>
                           </div>
                         </div>
@@ -643,7 +643,7 @@ export function ProductDetailClient({
       </Sheet>
 
       {/* ── Back ──────────────────────────────────────────────────────────── */}
-      <div className="mx-auto max-w-7xl px-4 py-2 sm:px-6 sm:py-5">
+      <div className="product-detail-back mx-auto max-w-7xl px-4 py-1 sm:px-6 sm:py-5">
         <Link href="/products" className="inline-flex min-h-11 items-center text-sm text-muted-foreground transition-colors hover:text-primary">
           <ArrowLeft className="w-4 h-4 mr-2" /> Quay lại sản phẩm
         </Link>
@@ -651,7 +651,7 @@ export function ProductDetailClient({
 
       {/* ── Product Layout ────────────────────────────────────────────────── */}
       <div className="mx-auto max-w-7xl px-4 pb-12 sm:px-6">
-        <div className="mb-10 grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1.08fr)_minmax(420px,0.92fr)] lg:gap-12 xl:gap-16">
+        <div className="mb-8 grid grid-cols-1 gap-5 lg:mb-10 lg:grid-cols-[minmax(0,1.08fr)_minmax(420px,0.92fr)] lg:gap-12 xl:gap-16">
 
           {/* ── LEFT: Gallery ── */}
           <div className="flex flex-col gap-4">
@@ -659,7 +659,7 @@ export function ProductDetailClient({
             <div className="w-full">
               {galleryMedia.length > 0 ? (
                 <div
-                  className={`group relative aspect-[16/11] max-h-[34dvh] w-full overflow-hidden rounded-lg border border-border bg-muted/30 shadow-sm sm:aspect-square sm:max-h-[550px] ${galleryMedia[currentMediaIndex]?.type === "image" ? "cursor-zoom-in" : ""}`}
+                   className={`product-main-media group relative aspect-[16/11] max-h-[34dvh] w-full overflow-hidden rounded-tile border border-border bg-muted/30 shadow-sm sm:aspect-square sm:max-h-[550px] ${galleryMedia[currentMediaIndex]?.type === "image" ? "cursor-zoom-in" : ""}`}
                   onClick={() => {
                     if (galleryMedia[currentMediaIndex]?.type === "image") {
                       handleOpenLightbox(currentMediaIndex);
@@ -741,15 +741,15 @@ export function ProductDetailClient({
 
             {/* Horizontal thumbnail strip */}
             {galleryMedia.length > 1 && (
-              <div className="flex snap-x gap-2 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
+              <div className="product-thumb-strip flex snap-x gap-2 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
                 {galleryMedia.map((media, i: number) => (
                   <button
                     key={`${media.type}-${media.url}`}
                     onClick={() => setCurrentMediaIndex(i)}
                     className={`relative h-14 w-14 flex-shrink-0 snap-start overflow-hidden rounded-md border transition-[opacity,border-color,box-shadow] duration-200 sm:h-[70px] sm:w-[70px] ${
                       i === currentMediaIndex
-                        ? "border-foreground bg-white shadow-sm"
-                        : "border-border bg-white opacity-60 hover:border-foreground/40 hover:opacity-100"
+                         ? "border-primary bg-white shadow-sm"
+                         : "border-border bg-white opacity-60 hover:border-primary-border hover:opacity-100"
                     }`}
                     aria-label={media.type === "video" ? "Xem video sản phẩm" : `Xem ảnh sản phẩm ${i + 1}`}
                   >
@@ -777,14 +777,14 @@ export function ProductDetailClient({
             <div className="flex flex-col lg:sticky lg:top-28 lg:self-start">
 
             {/* Top Row: Badges & Wishlist */}
-            <div className="flex justify-between items-center mb-3">
+            <div className="mb-2.5 flex items-center justify-between">
               <div className="flex flex-wrap items-center gap-2">
-                <span className="border border-border bg-muted px-3 py-1 text-xs font-semibold text-foreground">
+                <span className="rounded-full border border-border bg-muted px-3 py-1 text-xs font-semibold text-foreground">
                   {product.category.name}
                 </span>
                 {product.inventory > 0 ? (
-                  <span className="flex items-center gap-1.5 text-xs font-medium text-green-700 bg-green-50 px-2.5 py-1 rounded-full border border-green-200">
-                    <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />Còn hàng
+                  <span className="flex items-center gap-1.5 rounded-full border border-primary-border bg-primary-soft px-2.5 py-1 text-xs font-medium text-primary">
+                    <span className="h-2 w-2 rounded-full bg-presence" />Còn hàng
                   </span>
                 ) : (
                   <span className="flex items-center gap-1.5 text-xs font-medium text-red-600 bg-red-50 px-2.5 py-1 rounded-full border border-red-200">
@@ -821,17 +821,17 @@ export function ProductDetailClient({
             </div>
 
             {/* Title */}
-            <h1 className="mb-3 text-[28px] font-extrabold leading-[1.2] text-foreground sm:text-4xl lg:text-[42px]">
+            <h1 className="mb-2 text-2xl font-extrabold leading-tight text-foreground sm:text-4xl lg:text-[40px]">
               {product.name}
             </h1>
 
             {/* Short Description */}
-            <p className="mb-5 line-clamp-3 text-[15px] leading-relaxed text-gray-600 sm:line-clamp-none">
+            <p className="mb-4 line-clamp-3 text-sm leading-6 text-muted-foreground sm:line-clamp-none sm:text-[15px]">
               {product.description || "Terrarium thủ công với cây sống và tiểu cảnh thiên nhiên thu nhỏ, phù hợp trang trí không gian hoặc làm quà tặng."}
             </p>
 
             {/* Price section */}
-            <div className="mb-5 flex flex-wrap items-baseline gap-3 border-y border-border py-4 sm:mb-6 sm:py-5">
+            <div className="mb-4 flex flex-wrap items-baseline gap-x-3 gap-y-1 border-y border-border py-3 sm:mb-6 sm:py-5">
               {/* Old price */}
               {(isSale || hasPriceVoucher) && (
                 <span className="text-base text-red-500 font-semibold line-through">
@@ -840,9 +840,7 @@ export function ProductDetailClient({
               )}
               
               {/* Main Price */}
-              <span className={`text-[28px] font-extrabold sm:text-4xl ${
-                hasPriceVoucher ? "text-emerald-700" : "text-foreground"
-              }`}>
+              <span className="text-[28px] font-extrabold tabular-nums text-primary sm:text-4xl">
                 {priceAfterVoucher.toLocaleString("vi-VN")}₫
               </span>
 
@@ -868,8 +866,8 @@ export function ProductDetailClient({
             {/* 3-tier Package selector */}
             {isBểProduct && (
               <div className="mb-5">
-                <p className="mb-2.5 text-xs font-bold uppercase text-gray-500">Chọn phiên bản</p>
-                <div className="grid grid-cols-1 gap-2 sm:grid-cols-3" role="radiogroup" aria-label="Chọn phiên bản sản phẩm">
+                <p className="mb-2.5 text-xs font-bold text-muted-foreground">Chọn phiên bản</p>
+                <div className="grid grid-cols-3 gap-2" role="radiogroup" aria-label="Chọn phiên bản sản phẩm">
                   {PACKAGES.map((pkg) => {
                     const isSelected = selectedPackage === pkg.key;
                     return (
@@ -879,17 +877,16 @@ export function ProductDetailClient({
                         onClick={() => setSelectedPackage(pkg.key)}
                         role="radio"
                         aria-checked={isSelected}
-                        className={`flex min-h-16 items-center justify-between gap-3 rounded-lg border px-4 py-3 text-sm font-semibold transition-colors duration-200 sm:flex-col sm:justify-center sm:px-3 sm:text-xs ${
+                        className={`flex min-h-16 min-w-0 flex-col items-center justify-center rounded-control border px-1.5 py-2 text-center text-xs font-semibold transition-colors duration-150 sm:px-3 ${
                           isSelected
-                            ? "border-foreground bg-foreground text-white shadow-sm"
-                            : "border-border bg-white text-gray-600 hover:border-foreground/60 hover:bg-muted/40"
+                            ? "border-primary bg-primary text-white shadow-sm"
+                            : "border-border bg-white text-muted-foreground hover:border-primary-border hover:bg-primary-soft"
                         }`}
                       >
-                        <span className="min-w-0 text-left sm:text-center">
+                        <span className="min-w-0 text-center">
                           <span className="block font-bold leading-tight">{pkg.label}</span>
-                          <span className={`mt-1 block text-xs font-medium leading-tight ${isSelected ? "text-white/75" : "text-gray-500"}`}>{pkg.sub}</span>
+                          <span className={`mt-1 hidden text-[10px] font-medium leading-tight min-[360px]:block ${isSelected ? "text-white/80" : "text-muted-foreground"}`}>{pkg.sub}</span>
                         </span>
-                        {isSelected && <CheckCircle2 className="h-5 w-5 shrink-0 sm:hidden" aria-hidden="true" />}
                       </button>
                     );
                   })}
@@ -913,8 +910,8 @@ export function ProductDetailClient({
                             onClick={() => setSelectedVariants((prev) => ({ ...prev, [option.variantType]: opt }))}
                             role="radio"
                             aria-checked={isSelected}
-                            className={`min-h-11 rounded-lg border px-4 py-2 text-sm font-medium transition-colors ${
-                              isSelected ? "border-foreground bg-foreground text-white shadow-sm" : "border-border bg-white text-gray-700 hover:border-foreground/50 hover:bg-muted/40"
+                            className={`min-h-11 rounded-control border px-4 py-2 text-sm font-medium transition-colors ${
+                              isSelected ? "border-primary bg-primary text-white shadow-sm" : "border-border bg-white text-gray-700 hover:border-primary-border hover:bg-primary-soft"
                             }`}
                           >
                             {opt}
@@ -927,8 +924,8 @@ export function ProductDetailClient({
               </div>
             )}
 
-            <div className="mb-5 flex items-start gap-3 rounded-lg border border-border bg-muted/30 p-4">
-              <Truck className="mt-0.5 h-5 w-5 shrink-0 text-foreground" aria-hidden="true" />
+            <div className="mb-4 flex items-start gap-3 rounded-input border border-primary-border bg-primary-soft/55 p-3.5 sm:mb-5 sm:p-4">
+              <Truck className="mt-0.5 h-5 w-5 shrink-0 text-primary" aria-hidden="true" />
               <div>
                 <p className="text-sm font-bold text-foreground">Thông tin giao hàng</p>
                 <p className="mt-1 text-sm leading-relaxed text-gray-600">
@@ -938,10 +935,10 @@ export function ProductDetailClient({
             </div>
 
             {/* Voucher Section */}
-            <div id="product-vouchers" className="mb-6 scroll-mt-24 overflow-hidden rounded-lg border border-border bg-white">
+            <div id="product-vouchers" className="mb-5 scroll-mt-24 overflow-hidden rounded-tile border border-primary-border bg-white">
               {/* Header */}
-              <div className="flex items-center gap-2 border-b border-border bg-muted/35 px-4 py-3">
-                <Tag className="h-4 w-4 flex-shrink-0 text-foreground" />
+              <div className="flex items-center gap-2 border-b border-primary-border bg-primary-soft/55 px-4 py-3">
+                <Tag className="h-4 w-4 flex-shrink-0 text-primary" />
                 <span className="text-sm font-bold text-foreground">Ưu đãi & Voucher</span>
                 {(() => {
                   const best = getBestVoucher(finalPrice);
@@ -963,12 +960,12 @@ export function ProductDetailClient({
                   onKeyDown={e => e.key === "Enter" && handleApplyVoucher()}
                   placeholder="Nhập mã giảm giá"
                   aria-label="Mã giảm giá"
-                  className="min-h-12 min-w-0 rounded-lg border border-border px-3 py-2 text-base outline-none transition-colors focus:border-foreground focus:ring-1 focus:ring-foreground/20 sm:text-sm"
+                  className="min-h-12 min-w-0 rounded-input border border-border px-3 py-2 text-base outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary/20 sm:text-sm"
                 />
                 <button
                   onClick={() => handleApplyVoucher()}
                   disabled={voucherLoading || !voucherInput.trim()}
-                  className="min-h-12 rounded-lg bg-foreground px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-foreground/85 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="min-h-12 rounded-control bg-primary px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {voucherLoading ? "..." : "Áp dụng"}
                 </button>
@@ -1097,7 +1094,7 @@ export function ProductDetailClient({
             </div>
 
             {/* Quantity Selector & CTAs */}
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 mb-5">
+              <div className="mb-5 hidden items-stretch gap-3 lg:flex lg:flex-row lg:items-center">
               {/* Qty stepper */}
               <div className="flex h-12 flex-shrink-0 items-center justify-between rounded-lg border border-border bg-white px-2 sm:justify-start">
                 <button type="button" onClick={() => setQuantity(Math.max(1, quantity - 1))} className="flex h-11 w-11 items-center justify-center text-gray-500 transition-colors hover:bg-muted hover:text-foreground" aria-label="Giảm số lượng"><Minus className="w-4 h-4" /></button>
@@ -1107,7 +1104,7 @@ export function ProductDetailClient({
               <Button 
                 size="lg" 
                 variant="outline" 
-                className="h-12 w-full rounded-lg border-foreground text-sm font-bold text-foreground hover:bg-muted sm:flex-1"
+                 className="h-12 w-full rounded-control border-primary text-sm font-bold text-primary hover:bg-primary-soft sm:flex-1"
                 onClick={handleAddToCart} 
                 disabled={product.inventory <= 0}
               >
@@ -1115,7 +1112,7 @@ export function ProductDetailClient({
               </Button>
               <Button 
                 size="lg" 
-                className="h-12 w-full rounded-lg bg-foreground text-sm font-bold text-white shadow-sm transition-colors hover:bg-foreground/85 sm:flex-1"
+                 className="h-12 w-full rounded-control bg-primary text-sm font-bold text-white shadow-primary-floating transition-colors hover:bg-primary-hover sm:flex-1"
                 onClick={handleBuyNow} 
                 disabled={product.inventory <= 0}
               >
@@ -1155,7 +1152,7 @@ export function ProductDetailClient({
         </div>
 
         {/* ─── Tabs & Review Column Layout ──────────────────────────────────── */}
-        <div className="mt-10 grid grid-cols-1 gap-8 lg:mt-12 lg:grid-cols-12">
+        <div className="mt-8 grid grid-cols-1 gap-6 lg:mt-12 lg:grid-cols-12 lg:gap-8">
           {/* Cột trái: Tabs Content (8/12) */}
           <div className="lg:col-span-8">
             <div className="mb-0 flex snap-x overflow-x-auto border-b border-border" role="tablist" aria-label="Thông tin sản phẩm">
@@ -1176,7 +1173,7 @@ export function ProductDetailClient({
                     aria-selected={activeTab === tab}
                     aria-controls={`product-tabpanel-${tab}`}
                     onClick={() => setActiveTab(tab)}
-                    className={`-mb-px flex min-h-12 shrink-0 snap-start items-center gap-2 border-b-2 px-4 py-3 text-sm font-semibold transition-colors sm:px-6 ${activeTab === tab ? "border-foreground text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"}`}
+                    className={`-mb-px flex min-h-12 shrink-0 snap-start items-center gap-2 border-b-2 px-4 py-3 text-sm font-semibold transition-colors sm:px-6 ${activeTab === tab ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground"}`}
                   >
                     {icons[tab]}{labels[tab]}
                   </button>
@@ -1395,9 +1392,9 @@ export function ProductDetailClient({
 
         {/* Related Products — using unified ProductCard */}
         {relatedProducts.length > 0 && (
-          <div className="mt-14 sm:mt-16">
-            <h2 className="mb-6 text-2xl font-bold sm:mb-8 sm:text-center sm:text-3xl">Sản phẩm liên quan</h2>
-            <div className="-mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-3 sm:mx-0 sm:grid sm:grid-cols-2 sm:overflow-visible sm:px-0 lg:grid-cols-4 sm:gap-6">
+          <div className="mt-10 sm:mt-16">
+            <h2 className="mb-5 text-xl font-bold sm:mb-7 sm:text-3xl">Sản phẩm liên quan</h2>
+            <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4 lg:gap-5">
               {relatedProducts.map((rel: any) => {
                 const relRatingSummary = getProductRatingSummary(rel);
                 return (
@@ -1413,8 +1410,7 @@ export function ProductDetailClient({
                   category={rel.category}
                   rating={relRatingSummary.rating}
                   reviewCount={relRatingSummary.reviewCount}
-                  className="w-[78vw] max-w-[300px] shrink-0 snap-start sm:w-auto sm:max-w-none"
-                  imageSizes="(max-width: 639px) 78vw, (max-width: 1023px) 50vw, 25vw"
+                  imageSizes="(max-width: 639px) 50vw, (max-width: 1023px) 50vw, 25vw"
                   onAddToCart={(pkg, qty) => {
                     if (!session) {
                       showToast.warning("Vui lòng đăng nhập để thêm sản phẩm");
@@ -1450,12 +1446,12 @@ export function ProductDetailClient({
         )}
       </div>
 
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-white/97 px-3 pt-2 pb-[calc(env(safe-area-inset-bottom)+0.55rem)] shadow-[0_-10px_28px_rgba(15,23,12,0.12)] backdrop-blur lg:hidden">
-        <div className="mx-auto max-w-7xl space-y-2">
+      <div className="mobile-fixed-shell fixed bottom-0 z-40 rounded-t-tile border border-b-0 border-border bg-white/97 px-3 pt-2 pb-[calc(env(safe-area-inset-bottom)+0.55rem)] shadow-bottom-nav backdrop-blur lg:hidden">
+        <div className="mx-auto space-y-2">
           <div className="flex min-h-8 items-center justify-between gap-2">
             <div className="flex min-w-0 items-baseline gap-2">
               <span className="sr-only">Giá sản phẩm</span>
-              <p className={`whitespace-nowrap text-xl font-extrabold leading-none ${hasPriceVoucher ? "text-emerald-700" : "text-foreground"}`}>
+              <p className="whitespace-nowrap text-xl font-extrabold leading-none tabular-nums text-primary">
                 {priceAfterVoucher.toLocaleString("vi-VN")}₫
               </p>
             </div>
@@ -1463,9 +1459,9 @@ export function ProductDetailClient({
             <button
               type="button"
               onClick={focusVoucherSection}
-              className={`flex min-h-8 min-w-0 max-w-[52%] items-center gap-1 rounded-md border px-2 text-xs font-semibold transition-colors ${
+              className={`flex min-h-8 min-w-0 max-w-[52%] items-center gap-1 rounded-control border px-2 text-xs font-semibold transition-colors ${
                 appliedVoucher
-                  ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                  ? "border-primary-border bg-primary-soft text-primary"
                   : "border-border bg-muted/45 text-foreground hover:bg-muted"
               }`}
               aria-label={`${mobileVoucherLabel}. Bấm để xem ưu đãi và voucher`}
@@ -1482,12 +1478,12 @@ export function ProductDetailClient({
               productId={product.id}
               productName={product.name}
               productImage={product.images?.[0]}
-              buttonClassName="h-11 w-11 rounded-lg"
+              buttonClassName="h-11 w-11 rounded-control"
               compact
             />
             <Button
               variant="outline"
-              className="h-11 min-w-0 rounded-lg border-foreground px-2 text-[13px] font-bold text-foreground hover:bg-muted min-[360px]:text-sm"
+              className="h-11 min-w-0 rounded-control border-primary px-2 text-[13px] font-bold text-primary hover:bg-primary-soft min-[360px]:text-sm"
               onClick={handleAddToCart}
               disabled={product.inventory <= 0}
             >
@@ -1495,7 +1491,7 @@ export function ProductDetailClient({
               <span>Thêm giỏ</span>
             </Button>
             <Button
-              className="h-11 min-w-0 rounded-lg bg-foreground px-2 text-[13px] font-bold text-white hover:bg-foreground/85 min-[360px]:text-sm"
+              className="h-11 min-w-0 rounded-control bg-primary px-2 text-[13px] font-bold text-white shadow-primary-floating hover:bg-primary-hover min-[360px]:text-sm"
               onClick={handleBuyNow}
               disabled={product.inventory <= 0}
             >

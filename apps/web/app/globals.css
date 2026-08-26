@@ -207,6 +207,17 @@
   transform: translateX(-50%);
 }
 
+@media (max-width: 767px) and (max-height: 700px) {
+  .product-detail-back,
+  .product-thumb-strip {
+    display: none;
+  }
+
+  .product-main-media {
+    max-height: 29dvh;
+  }
+}
+
 body:has([role="dialog"][data-state="open"]) .cw-floating-launcher,
 body:has([role="dialog"][data-state="open"]) [data-analytics-consent] {
   opacity: 0 !important;
