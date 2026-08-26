@@ -16,48 +16,63 @@
 
   :root {
     --background: 0 0% 100%;
-    --foreground: 120 6% 10%;
+    --foreground: 0 0% 15%;
     --card: 0 0% 100%;
-    --card-foreground: 120 6% 10%;
+    --card-foreground: 0 0% 15%;
     --popover: 0 0% 100%;
-    --popover-foreground: 120 6% 10%;
-    --primary: 120 6% 10%;
+    --popover-foreground: 0 0% 15%;
+    --primary: 163 94% 24%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 90 6% 96%;
-    --secondary-foreground: 120 6% 16%;
-    --muted: 90 5% 96%;
-    --muted-foreground: 120 4% 42%;
-    --accent: 90 6% 94%;
-    --accent-foreground: 120 6% 14%;
-    --accent-warm: 26 38% 50%;
-    --destructive: 0 75% 60%;
+    --primary-hover: 163 88% 20%;
+    --primary-soft: 152 81% 96%;
+    --primary-border: 156 72% 67%;
+    --secondary: 0 0% 96%;
+    --secondary-foreground: 0 0% 15%;
+    --muted: 0 0% 96%;
+    --muted-foreground: 0 0% 45%;
+    --accent: 0 0% 96%;
+    --accent-foreground: 0 0% 15%;
+    --destructive: 0 74% 42%;
     --destructive-foreground: 0 0% 98%;
-    --border: 100 6% 90%;
-    --input: 100 6% 90%;
-    --ring: 120 6% 20%;
-    --radius: 0.5rem;
+    --border: 0 0% 86%;
+    --border-strong: 0 0% 78%;
+    --input: 0 0% 86%;
+    --disabled: 0 0% 66%;
+    --ring: 163 94% 24%;
+    --favorite: 0 84% 60%;
+    --favorite-hover: 0 72% 51%;
+    --rating: 36 71% 42%;
+    --verified: 214 89% 52%;
+    --presence: 134 54% 41%;
+    --info: 200 98% 39%;
+    --radius: 0.625rem;
   }
 
   .dark {
-    --background: 220 10% 12%;
-    --foreground: 210 20% 95%;
-    --card: 220 10% 14%;
-    --card-foreground: 210 20% 95%;
-    --popover: 220 10% 14%;
-    --popover-foreground: 210 20% 95%;
-    --primary: 95 30% 40%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 95 15% 22%;
-    --secondary-foreground: 94 25% 85%;
-    --muted: 215 15% 20%;
-    --muted-foreground: 215 10% 65%;
-    --accent: 95 30% 40%;
-    --accent-foreground: 0 0% 100%;
-    --destructive: 0 65% 55%;
+    --background: 153 35% 10%;
+    --foreground: 42 39% 94%;
+    --card: 155 29% 13%;
+    --card-foreground: 42 39% 94%;
+    --popover: 155 29% 13%;
+    --popover-foreground: 42 39% 94%;
+    --primary: 156 72% 67%;
+    --primary-foreground: 158 70% 11%;
+    --primary-hover: 156 64% 58%;
+    --primary-soft: 150 22% 18%;
+    --primary-border: 157 24% 25%;
+    --secondary: 150 22% 18%;
+    --secondary-foreground: 42 39% 94%;
+    --muted: 150 22% 18%;
+    --muted-foreground: 135 9% 75%;
+    --accent: 150 22% 18%;
+    --accent-foreground: 42 39% 94%;
+    --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 98%;
-    --border: 215 15% 22%;
-    --input: 215 15% 22%;
-    --ring: 95 30% 40%;
+    --border: 157 24% 25%;
+    --border-strong: 135 9% 45%;
+    --input: 157 24% 25%;
+    --disabled: 135 9% 55%;
+    --ring: 38 49% 66%;
   }
 }
 
@@ -67,9 +82,9 @@
   }
   body {
     @apply bg-background text-foreground;
-    font-family: var(--font-be-vietnam-pro), "Segoe UI", Arial, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     font-size: 16px;
-    line-height: 1.6;
+    line-height: 1.5;
     min-width: 280px;
     min-height: 100dvh;
     overflow-x: hidden;
@@ -80,7 +95,7 @@
     font-family: var(--font-dancing), 'Dancing Script', cursive;
   }
   h1, h2, h3, h4, h5, h6 {
-    font-family: var(--font-be-vietnam-pro), "Segoe UI", Arial, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     font-weight: 700;
     letter-spacing: 0;
     line-height: 1.25;
@@ -93,13 +108,13 @@
 
 @layer utilities {
   .shadow-soft {
-    box-shadow: 0 2px 8px rgba(25, 28, 24, 0.04), 0 4px 16px rgba(25, 28, 24, 0.03);
+    box-shadow: 0 1px 2px rgb(38 38 38 / 0.05);
   }
   .shadow-soft-lg {
-    box-shadow: 0 4px 12px rgba(25, 28, 24, 0.06), 0 8px 24px rgba(25, 28, 24, 0.04);
+    box-shadow: 0 8px 24px rgb(38 38 38 / 0.12);
   }
   .shadow-soft-xl {
-    box-shadow: 0 8px 16px rgba(25, 28, 24, 0.08), 0 16px 32px rgba(25, 28, 24, 0.05);
+    box-shadow: 0 12px 32px rgb(38 38 38 / 0.14);
   }
 
   /* === CARD UNIFORM SIZE === */
@@ -149,7 +164,7 @@
 
     main p,
     article p {
-      line-height: 1.7;
+      line-height: 1.5;
     }
 
     body:has([data-analytics-consent]) .cw-floating-launcher {

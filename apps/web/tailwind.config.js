@@ -22,13 +22,21 @@ module.exports = {
   	extend: {
 		fontFamily: {
 			sans: [
-				'var(--font-be-vietnam-pro)',
+				'-apple-system',
+				'BlinkMacSystemFont',
 				'"Segoe UI"',
+				'Roboto',
+				'"Helvetica Neue"',
+				'Arial',
 				'sans-serif'
 			],
 			serif: [
-				'var(--font-be-vietnam-pro)',
+				'-apple-system',
+				'BlinkMacSystemFont',
 				'"Segoe UI"',
+				'Roboto',
+				'"Helvetica Neue"',
+				'Arial',
 				'sans-serif'
   			]
   		},
@@ -38,10 +46,23 @@ module.exports = {
   			ring: 'hsl(var(--ring))',
   			background: 'hsl(var(--background))',
   			foreground: 'hsl(var(--foreground))',
-  			primary: {
-  				DEFAULT: 'hsl(var(--primary))',
-  				foreground: 'hsl(var(--primary-foreground))'
-  			},
+			primary: {
+				DEFAULT: 'hsl(var(--primary))',
+				hover: 'hsl(var(--primary-hover))',
+				soft: 'hsl(var(--primary-soft))',
+				border: 'hsl(var(--primary-border))',
+				foreground: 'hsl(var(--primary-foreground))'
+			},
+			'border-strong': 'hsl(var(--border-strong))',
+			disabled: 'hsl(var(--disabled))',
+			favorite: {
+				DEFAULT: 'hsl(var(--favorite))',
+				hover: 'hsl(var(--favorite-hover))'
+			},
+			rating: 'hsl(var(--rating))',
+			verified: 'hsl(var(--verified))',
+			presence: 'hsl(var(--presence))',
+			info: 'hsl(var(--info))',
   			secondary: {
   				DEFAULT: 'hsl(var(--secondary))',
   				foreground: 'hsl(var(--secondary-foreground))'
@@ -67,13 +88,23 @@ module.exports = {
   				foreground: 'hsl(var(--card-foreground))'
   			}
   		},
-  		borderRadius: {
-  			lg: 'calc(var(--radius) + 2px)',
-  			md: 'var(--radius)',
-  			sm: 'calc(var(--radius) - 4px)',
-  			xl: 'calc(var(--radius) + 6px)',
-  			'2xl': 'calc(var(--radius) + 10px)'
-  		},
+		borderRadius: {
+			control: '10px',
+			input: '12px',
+			tile: '16.8px',
+			card: '21.6px',
+			nav: '26px',
+			lg: '12px',
+			md: 'var(--radius)',
+			sm: '7.2px',
+			xl: '16.8px',
+			'2xl': '21.6px'
+		},
+		boxShadow: {
+			floating: '0 8px 24px rgb(38 38 38 / 12%)',
+			'primary-floating': '0 6px 18px rgb(4 120 87 / 24%)',
+			'bottom-nav': '0 4px 25px rgb(0 0 0 / 8%)'
+		},
   		keyframes: {
   			'accordion-down': {
   				from: {

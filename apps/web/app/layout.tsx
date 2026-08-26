@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Be_Vietnam_Pro, Dancing_Script } from "next/font/google";
+import { Dancing_Script } from "next/font/google";
 import { Suspense } from "react";
 import "./globals.css";
 import Header from "@/components/Header";
@@ -12,13 +12,6 @@ import { NavigationProgress } from "@/components/ui/navigation-progress";
 import { ChatWidgetClient } from "@/components/ChatWidgetClient";
 import { AnalyticsTracker } from "@/components/AnalyticsTracker";
 import { FacebookGroupVoucherPopup } from "@/components/FacebookGroupVoucherPopup";
-
-const beVietnamPro = Be_Vietnam_Pro({
-  subsets: ["latin", "vietnamese"],
-  variable: "--font-be-vietnam-pro",
-  display: "swap",
-  weight: ["300", "400", "500", "600", "700", "800"],
-});
 
 const dancingScript = Dancing_Script({
   subsets: ["latin"],
@@ -103,9 +96,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="vi" className={`${beVietnamPro.variable} ${dancingScript.variable}`}>
+    <html lang="vi" className={dancingScript.variable}>
       <body
-        className={`${beVietnamPro.className} antialiased min-h-[100dvh] flex flex-col`}
+        className="flex min-h-[100dvh] flex-col antialiased"
       >
         <AuthProvider>
           <QueryProvider>
