@@ -49,8 +49,8 @@ export default function PointsHistoryPage() {
 
   if (status === "loading" || (loading && !data)) {
     return (
-      <main className="min-h-[100dvh] flex items-center justify-center bg-gray-50">
-        <div className="w-10 h-10 border-4 border-[#425733] border-t-transparent rounded-full animate-spin" />
+      <main className="flex min-h-[100dvh] items-center justify-center bg-white">
+        <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent" />
       </main>
     );
   }
@@ -74,13 +74,13 @@ export default function PointsHistoryPage() {
   };
 
   return (
-    <main className="min-h-[100dvh] bg-gray-50 py-8">
+    <main className="min-h-[100dvh] bg-white pb-28 pt-4 sm:py-8">
       <div className="max-w-3xl mx-auto px-4">
-        <Link href="/profile" className="inline-flex items-center text-gray-500 hover:text-[#425733] mb-6 text-sm">
+        <Link href="/profile" className="mb-4 inline-flex min-h-11 items-center text-sm text-muted-foreground hover:text-primary sm:mb-6">
           <ArrowLeft className="w-4 h-4 mr-1" /> Quay lại tài khoản
         </Link>
 
-        <div className="relative mb-8 overflow-hidden rounded-lg bg-gradient-to-br from-[#425733] to-[#2d3d22] p-5 text-white shadow-lg sm:p-8">
+        <div className="relative mb-6 overflow-hidden rounded-card bg-primary p-5 text-white shadow-primary-floating sm:mb-8 sm:p-8">
           <div className="relative z-10 flex items-center justify-between">
             <div>
               <p className="text-white/80 font-medium mb-1">Điểm tích lũy hiện tại</p>
@@ -92,9 +92,9 @@ export default function PointsHistoryPage() {
           </div>
         </div>
 
-        <div className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm">
+        <div className="overflow-hidden rounded-card border border-border bg-white shadow-sm">
           <div className="p-6 border-b border-gray-100 flex items-center gap-2">
-            <Clock className="w-5 h-5 text-[#425733]" />
+            <Clock className="h-5 w-5 text-primary" />
             <h2 className="text-lg font-semibold text-gray-800">Lịch sử giao dịch điểm</h2>
           </div>
 
@@ -108,9 +108,9 @@ export default function PointsHistoryPage() {
               {data?.history.map((item) => {
                 const isPositive = item.points > 0;
                 return (
-                  <div key={item.id} className="p-6 flex items-center justify-between hover:bg-gray-50 transition-colors">
+                  <div key={item.id} className="flex items-center justify-between gap-3 p-4 transition-colors hover:bg-primary-soft sm:p-6">
                     <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
+                      <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-primary-soft">
                         {getSourceIcon(item.source)}
                       </div>
                       <div>
@@ -137,7 +137,7 @@ export default function PointsHistoryPage() {
               <button
                 disabled={page === 1}
                 onClick={() => setPage(page - 1)}
-                className="px-4 py-2 border rounded-lg hover:bg-gray-50 disabled:opacity-50"
+                className="min-h-11 rounded-control border px-4 py-2 hover:bg-primary-soft disabled:opacity-50"
               >
                 Trước
               </button>
@@ -147,7 +147,7 @@ export default function PointsHistoryPage() {
               <button
                 disabled={page === data.pagination.totalPages}
                 onClick={() => setPage(page + 1)}
-                className="px-4 py-2 border rounded-lg hover:bg-gray-50 disabled:opacity-50"
+                className="min-h-11 rounded-control border px-4 py-2 hover:bg-primary-soft disabled:opacity-50"
               >
                 Sau
               </button>

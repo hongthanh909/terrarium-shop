@@ -72,17 +72,17 @@ export default function FavoritesPage() {
   };
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
+    <div className="mx-auto min-h-[100dvh] max-w-6xl px-4 pb-28 pt-4 sm:px-6 sm:py-10">
       {/* Header */}
-      <div className="flex items-center gap-4 mb-8">
+      <div className="mb-6 flex items-center gap-3 sm:mb-8 sm:gap-4">
         <Link
           href="/profile"
-          className="p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+          className="flex h-11 w-11 items-center justify-center rounded-control text-muted-foreground transition-colors hover:bg-primary-soft hover:text-primary"
         >
           <ArrowLeft className="w-5 h-5" />
         </Link>
         <div>
-          <h1 className="flex items-center gap-2 font-serif text-3xl font-semibold leading-tight text-gray-900 sm:text-4xl">
+          <h1 className="flex items-center gap-2 text-2xl font-bold leading-tight text-foreground sm:text-4xl">
             <Heart className="w-6 h-6 fill-red-500 text-red-500" />
             Sản phẩm yêu thích
           </h1>
@@ -122,7 +122,7 @@ export default function FavoritesPage() {
           {products.map((product) => (
             <div
               key={product.id}
-              className="group overflow-hidden border border-border bg-white transition-shadow duration-300 hover:shadow-lg"
+          className="group overflow-hidden rounded-card border border-border bg-white shadow-sm transition-[border-color,box-shadow] duration-200 hover:border-primary-border hover:shadow-floating"
             >
               {/* Image */}
               <Link href={`/products/${product.slug}`} className="block relative aspect-square bg-white">
@@ -143,7 +143,7 @@ export default function FavoritesPage() {
                 {/* Unvote button */}
                 <button
                   onClick={(e) => { e.preventDefault(); handleUnvote(product.id); }}
-                  className="absolute top-2 right-2 p-2 bg-white/80 backdrop-blur rounded-full shadow hover:bg-white transition-colors"
+                   className="absolute right-2 top-2 flex h-11 w-11 items-center justify-center rounded-full bg-white/90 shadow-sm backdrop-blur transition-colors hover:bg-white"
                   title="Bỏ yêu thích"
                 >
                   <Heart className="w-4 h-4 fill-red-500 text-red-500" />
@@ -158,14 +158,14 @@ export default function FavoritesPage() {
                     {product.name}
                   </h3>
                 </Link>
-                <p className="mt-1 text-sm font-bold text-foreground">
+                <p className="mt-1 text-sm font-extrabold tabular-nums text-primary">
                   {product.basePrice.toLocaleString("vi-VN")}₫
                 </p>
 
                 {/* Add to cart */}
                 <button
                   onClick={() => handleAddToCart(product)}
-                  className="mt-3 flex min-h-11 w-full items-center justify-center gap-1.5 bg-foreground py-2 text-xs font-semibold text-white transition-colors hover:bg-foreground/85"
+                  className="mt-3 flex min-h-11 w-full items-center justify-center gap-1.5 rounded-control border border-primary-border bg-primary-soft py-2 text-xs font-semibold text-primary transition-colors hover:bg-primary/10"
                 >
                   <ShoppingBag className="w-3.5 h-3.5" />
                   Thêm vào giỏ

@@ -193,14 +193,14 @@ export function CustomerMessagesClient() {
   };
 
   return (
-    <div className={cn("min-h-[calc(100dvh-4rem)] bg-white px-3 py-6 sm:px-5 sm:py-10", selectedId && "px-0 py-0 sm:px-5 sm:py-10")}>
+    <div className={cn("min-h-[calc(100dvh-57px)] bg-white px-4 py-5 sm:px-5 sm:py-10", selectedId && "px-0 py-0 sm:px-5 sm:py-10")}>
       <div className="mx-auto max-w-[1400px]">
         <header className={cn("mb-5 flex items-end justify-between gap-4 border-b border-border pb-5", selectedId && "hidden lg:flex")}>
           <div>
             <Link href="/profile" className="inline-flex min-h-11 items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground">
               <ArrowLeft className="h-3.5 w-3.5" /> Tài khoản
             </Link>
-            <h1 className="mt-2 font-serif text-3xl font-semibold leading-tight text-foreground sm:text-5xl">Tin nhắn với admin</h1>
+            <h1 className="mt-1 text-2xl font-bold leading-tight text-foreground sm:mt-2 sm:text-4xl">Tin nhắn với admin</h1>
             <p className="mt-2 text-sm text-muted-foreground">Xem lại tư vấn và tiếp tục trao đổi theo từng sản phẩm.</p>
           </div>
           <div className="hidden h-11 w-11 place-items-center border border-border bg-muted text-foreground sm:grid">
@@ -208,8 +208,8 @@ export function CustomerMessagesClient() {
           </div>
         </header>
 
-        <div className={cn("overflow-hidden border border-border bg-white shadow-[0_10px_32px_rgba(0,0,0,0.06)] lg:grid lg:h-[calc(100dvh-14rem)] lg:min-h-[620px] lg:grid-cols-[350px_minmax(0,1fr)]", selectedId ? "h-[calc(100dvh-4rem)] border-x-0 sm:border-x" : "min-h-[480px]")}>
-          <aside className={cn("h-full border-r border-border bg-gray-50/60 lg:min-h-0", selectedId && "hidden lg:flex lg:flex-col")}>
+        <div className={cn("overflow-hidden border border-border bg-white shadow-floating sm:rounded-card lg:grid lg:h-[calc(100dvh-14rem)] lg:min-h-[620px] lg:grid-cols-[350px_minmax(0,1fr)]", selectedId ? "h-[calc(100dvh-57px)] border-x-0 sm:h-[calc(100dvh-14rem)] sm:border-x" : "min-h-[480px]")}>
+          <aside className={cn("h-full border-r border-border bg-muted/35 lg:min-h-0", selectedId && "hidden lg:flex lg:flex-col")}>
             <div className="border-b border-border px-4 py-4">
               <h2 className="text-sm font-bold text-foreground">Các cuộc trò chuyện</h2>
               <p className="mt-1 text-xs text-muted-foreground">Lịch sử được lưu theo tài khoản của bạn</p>
@@ -224,15 +224,15 @@ export function CustomerMessagesClient() {
                   <MessageCircle className="mx-auto h-8 w-8 text-gray-400" />
                   <p className="mt-3 text-sm font-bold text-foreground">Bạn chưa có cuộc trò chuyện</p>
                   <p className="mt-1 text-xs leading-5 text-muted-foreground">Mở một sản phẩm và chọn “Chat với admin” để bắt đầu.</p>
-                  <Link href="/products" className="mt-5 inline-flex min-h-11 items-center gap-2 bg-foreground px-4 py-2 text-sm font-semibold text-white hover:bg-foreground/85">
+                  <Link href="/products" className="mt-5 inline-flex min-h-11 items-center gap-2 rounded-control bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary-hover">
                     <ShoppingBag className="h-4 w-4" /> Xem sản phẩm
                   </Link>
                 </div>
               ) : conversations.map((conversation) => {
                 const last = conversation.messages[0];
                 return (
-                  <button key={conversation.id} type="button" onClick={() => { setError(""); setSelectedId(conversation.id); }} className={cn("flex w-full gap-3 border-b border-border px-4 py-3.5 text-left transition-colors hover:bg-muted", selectedId === conversation.id && "bg-gray-200/70")}>
-                    <div className="grid h-12 w-12 shrink-0 place-items-center overflow-hidden border border-border bg-white text-foreground">
+                  <button key={conversation.id} type="button" onClick={() => { setError(""); setSelectedId(conversation.id); }} className={cn("flex min-h-20 w-full gap-3 border-b border-border px-4 py-3.5 text-left transition-colors hover:bg-primary-soft", selectedId === conversation.id && "bg-primary-soft")}>
+                    <div className="grid h-12 w-12 shrink-0 place-items-center overflow-hidden rounded-tile border border-border bg-white text-primary">
                       {conversation.product?.image ? <img src={conversation.product.image} alt="" className="h-full w-full object-cover" /> : <MessageCircle className="h-5 w-5" />}
                     </div>
                     <div className="min-w-0 flex-1">
@@ -263,12 +263,12 @@ export function CustomerMessagesClient() {
               <>
                 <header className="flex min-h-16 items-center gap-3 border-b border-border px-3 py-2.5 sm:px-4">
                   <button type="button" onClick={() => setSelectedId(null)} className="grid h-11 w-11 shrink-0 place-items-center text-muted-foreground hover:bg-muted lg:hidden" aria-label="Quay lại danh sách"><ArrowLeft className="h-4.5 w-4.5" /></button>
-                  <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-[#e5ece0]">{selected.product?.image ? <img src={selected.product.image} alt="" className="h-full w-full object-cover" /> : <div className="grid h-full place-items-center"><MessageCircle className="h-4 w-4 text-[#617058]" /></div>}</div>
-                  <div className="min-w-0 flex-1"><p className="truncate text-sm font-bold text-[#26361f]">{selected.order ? `Đơn hàng #${selected.order.orderNumber}` : selected.product?.name || "Sản phẩm không còn tồn tại"}</p><p className="truncate text-xs text-[#73806d]">{selected.order ? "Trao đổi phí vận chuyển với admin" : "Tư vấn trực tiếp với admin"}</p></div>
-                  {selected.product && <Link href={selected.product.href} className="grid h-11 w-11 shrink-0 place-items-center rounded-md border border-border text-foreground hover:bg-muted" aria-label="Mở sản phẩm" title="Mở sản phẩm"><ExternalLink className="h-4 w-4" /></Link>}
+                   <div className="h-10 w-10 shrink-0 overflow-hidden rounded-control bg-primary-soft">{selected.product?.image ? <img src={selected.product.image} alt="" className="h-full w-full object-cover" /> : <div className="grid h-full place-items-center"><MessageCircle className="h-4 w-4 text-primary" /></div>}</div>
+                   <div className="min-w-0 flex-1"><p className="truncate text-sm font-bold text-foreground">{selected.order ? `Đơn hàng #${selected.order.orderNumber}` : selected.product?.name || "Sản phẩm không còn tồn tại"}</p><p className="truncate text-xs text-muted-foreground">{selected.order ? "Trao đổi phí vận chuyển với admin" : "Tư vấn trực tiếp với admin"}</p></div>
+                   {selected.product && <Link href={selected.product.href} className="grid h-11 w-11 shrink-0 place-items-center rounded-control border border-border text-foreground hover:bg-primary-soft hover:text-primary" aria-label="Mở sản phẩm" title="Mở sản phẩm"><ExternalLink className="h-4 w-4" /></Link>}
                 </header>
 
-                <div ref={messagesViewportRef} style={{ overflowAnchor: "none" }} className="min-h-0 flex-1 overflow-y-auto bg-gray-50/40 px-3 py-4 sm:px-5" aria-live="polite">
+                <div ref={messagesViewportRef} style={{ overflowAnchor: "none" }} className="min-h-0 flex-1 overflow-y-auto bg-muted/25 px-3 py-4 sm:px-5" aria-live="polite">
                   {loadingMessages ? (
                     <div className="flex h-full items-center justify-center gap-2 text-sm text-[#718069]"><Loader2 className="h-4 w-4 animate-spin" /> Đang tải tin nhắn</div>
                   ) : messages.length === 0 ? (
@@ -276,19 +276,19 @@ export function CustomerMessagesClient() {
                   ) : (
                     <div className="space-y-3">{messages.map((message) => {
                       const mine = message.senderType === "CUSTOMER";
-                      return <div key={message.id} className={cn("flex", mine ? "justify-end" : "justify-start")}><div className="max-w-[84%]"><div className={cn("overflow-hidden border text-sm leading-6", mine ? "border-foreground bg-foreground text-white" : "border-border bg-white text-foreground")}>{message.imageUrl && <a href={message.imageUrl} target="_blank" rel="noreferrer" className="block bg-black/5"><img src={message.imageUrl} alt="Ảnh trong cuộc trò chuyện" className="max-h-80 w-full object-contain" /></a>}{message.content && <p className="whitespace-pre-wrap break-words px-3.5 py-2.5">{message.content}</p>}</div><p className={cn("mt-1 px-1 text-xs text-muted-foreground", mine && "text-right")}>{mine ? "Bạn" : "Admin"} · {messageTime(message.createdAt)}</p></div></div>;
+                       return <div key={message.id} className={cn("flex", mine ? "justify-end" : "justify-start")}><div className="max-w-[84%]"><div className={cn("overflow-hidden rounded-tile border text-sm leading-6", mine ? "border-primary bg-primary text-white" : "border-border bg-white text-foreground")}>{message.imageUrl && <a href={message.imageUrl} target="_blank" rel="noreferrer" className="block bg-black/5"><img src={message.imageUrl} alt="Ảnh trong cuộc trò chuyện" className="max-h-80 w-full object-contain" /></a>}{message.content && <p className="whitespace-pre-wrap break-words px-3.5 py-2.5">{message.content}</p>}</div><p className={cn("mt-1 px-1 text-xs text-muted-foreground", mine && "text-right")}>{mine ? "Bạn" : "Admin"} · {messageTime(message.createdAt)}</p></div></div>;
                     })}</div>
                   )}
                 </div>
 
-                <footer className="border-t border-[#e4eadf] bg-white p-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)]">
+                 <footer className="border-t border-border bg-white p-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)]">
                   {imagePreview && <div className="relative mb-2 h-24 w-24 overflow-hidden rounded-md border border-border"><img src={imagePreview} alt="Ảnh chuẩn bị gửi" className="h-full w-full object-cover" /><button type="button" onClick={clearImage} className="absolute right-1 top-1 grid h-11 w-11 place-items-center rounded-full bg-black/75 text-white" aria-label="Bỏ ảnh"><X className="h-4 w-4" /></button></div>}
                   {error && <p className="mb-2 text-xs font-medium text-red-700">{error}</p>}
                   <div className="flex items-end gap-2">
                     <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp,image/gif" className="hidden" onChange={(event) => chooseImage(event.target.files?.[0])} />
-                    <button type="button" onClick={() => fileInputRef.current?.click()} disabled={sending || loadingMessages} className="grid h-12 w-12 shrink-0 place-items-center rounded-md border border-border text-foreground hover:bg-muted disabled:opacity-50" aria-label="Gửi ảnh" title="Gửi ảnh"><ImagePlus className="h-5 w-5" /></button>
-                    <textarea value={content} onChange={(event) => setContent(event.target.value.slice(0, 2000))} onKeyDown={(event) => { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); void sendMessage(); } }} rows={1} placeholder={selected.status === "CLOSED" ? "Gửi tin để mở lại hội thoại..." : "Nhập câu hỏi cho admin..."} className="min-h-12 max-h-28 flex-1 resize-none rounded-md border border-border bg-white px-3 py-2.5 text-base outline-none placeholder:text-muted-foreground focus:border-foreground focus:ring-2 focus:ring-foreground/10" />
-                    <button type="button" onClick={() => void sendMessage()} disabled={sending || (!content.trim() && !selectedImage)} className="grid h-12 w-12 shrink-0 place-items-center bg-foreground text-white hover:bg-foreground/85 disabled:bg-gray-300" aria-label="Gửi tin nhắn" title="Gửi tin nhắn">{sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}</button>
+                     <button type="button" onClick={() => fileInputRef.current?.click()} disabled={sending || loadingMessages} className="grid h-12 w-12 shrink-0 place-items-center rounded-control border border-border text-foreground hover:bg-primary-soft hover:text-primary disabled:opacity-50" aria-label="Gửi ảnh" title="Gửi ảnh"><ImagePlus className="h-5 w-5" /></button>
+                     <textarea value={content} onChange={(event) => setContent(event.target.value.slice(0, 2000))} onKeyDown={(event) => { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); void sendMessage(); } }} rows={1} placeholder={selected.status === "CLOSED" ? "Gửi tin để mở lại hội thoại..." : "Nhập câu hỏi cho admin..."} className="min-h-12 max-h-28 flex-1 resize-none rounded-input border border-border bg-white px-3 py-2.5 text-base outline-none placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary/20" />
+                     <button type="button" onClick={() => void sendMessage()} disabled={sending || (!content.trim() && !selectedImage)} className="grid h-12 w-12 shrink-0 place-items-center rounded-control bg-primary text-white hover:bg-primary-hover disabled:bg-disabled" aria-label="Gửi tin nhắn" title="Gửi tin nhắn">{sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}</button>
                   </div>
                 </footer>
               </>

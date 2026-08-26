@@ -162,7 +162,7 @@ export default function MyOrdersPage() {
 
   return (
     <div className="min-h-[100dvh] bg-white">
-      <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
+      <div className="mx-auto max-w-6xl px-4 pb-28 pt-4 sm:px-6 sm:py-10">
         <div className="mb-6">
           <Link
             href="/"
@@ -171,23 +171,24 @@ export default function MyOrdersPage() {
             <ArrowLeft className="w-4 h-4 mr-2" />
             Trang chủ
           </Link>
-          <h1 className="font-serif text-3xl font-semibold leading-tight text-gray-900 sm:text-5xl">Đơn hàng của tôi</h1>
+          <p className="mb-1.5 text-xs font-semibold text-primary">Lịch sử mua hàng</p>
+          <h1 className="text-2xl font-bold leading-tight text-foreground sm:text-4xl">Đơn hàng của tôi</h1>
         </div>
 
         {/* Stats */}
         <div className="mb-8 grid grid-cols-2 gap-3 sm:gap-6">
-          <div className="border border-border bg-white p-4 shadow-sm sm:p-6">
+          <div className="rounded-tile border border-border bg-white p-4 shadow-sm sm:p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-gray-500 text-sm mb-1">Tổng đơn hàng</p>
                 <p className="text-2xl font-bold text-gray-800 sm:text-3xl">{orders.length}</p>
               </div>
-              <div className="hidden rounded-full bg-blue-100 p-3 min-[390px]:block">
-                <Package className="h-5 w-5 text-blue-600 sm:h-6 sm:w-6" />
+              <div className="hidden rounded-full bg-primary-soft p-3 min-[390px]:block">
+                <Package className="h-5 w-5 text-primary sm:h-6 sm:w-6" />
               </div>
             </div>
           </div>
-          <div className="border border-border bg-white p-4 shadow-sm sm:p-6">
+          <div className="rounded-tile border border-border bg-white p-4 shadow-sm sm:p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-gray-500 text-sm mb-1">Tổng chi tiêu</p>
@@ -196,7 +197,7 @@ export default function MyOrdersPage() {
                 </p>
               </div>
               <div className="hidden bg-muted p-3 min-[390px]:block">
-                <TrendingUp className="h-6 w-6 text-foreground" />
+                <TrendingUp className="h-6 w-6 text-primary" />
               </div>
             </div>
           </div>
@@ -212,7 +213,7 @@ export default function MyOrdersPage() {
             <Package className="w-16 h-16 mx-auto text-gray-300 mb-4" />
             <h2 className="text-xl font-semibold text-gray-700 mb-2">Chưa Có Đơn Hàng</h2>
             <p className="text-gray-500 mb-4">Bạn chưa có đơn hàng nào.</p>
-            <Link href="/products" className="inline-block bg-foreground px-6 py-3 text-white hover:bg-foreground/85">
+            <Link href="/products" className="inline-flex min-h-12 items-center rounded-control bg-primary px-6 py-3 text-white hover:bg-primary-hover">
               Mua Sắm Ngay
             </Link>
           </div>
@@ -225,7 +226,7 @@ export default function MyOrdersPage() {
                 placeholder="Tìm kiếm theo mã đơn, tên, email, SĐT..."
                 value={searchTerm}
                 onChange={e => setSearchTerm(e.target.value)}
-                className="min-h-12 min-w-0 flex-1 border px-4 py-2 text-base transition focus:outline-none focus:ring-2 focus:ring-foreground/15"
+                className="min-h-12 min-w-0 flex-1 rounded-input border border-border px-4 py-2 text-base transition focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
               />
               <button
                 onClick={() => setSearchTerm("")}
@@ -240,7 +241,7 @@ export default function MyOrdersPage() {
               const isCancelled = order.status === "CANCELLED";
               const isExpanded = selectedOrder?.id === order.id;
               return (
-                <div key={order.id} className="border border-border bg-white shadow-sm transition-shadow hover:shadow-md">
+                <div key={order.id} className="overflow-hidden rounded-card border border-border bg-white shadow-sm transition-[border-color,box-shadow] hover:border-primary-border hover:shadow-floating">
                   {/* Order Header — clickable */}
                   <div className="p-4 sm:p-6">
                     <div className="mb-3 flex flex-col gap-2 min-[380px]:flex-row min-[380px]:items-start min-[380px]:justify-between">
@@ -292,11 +293,11 @@ export default function MyOrdersPage() {
                           return (
                             <div key={step.key} className="relative flex min-w-0 flex-col items-center">
                               {index > 0 && (
-                                <div className={`absolute right-1/2 top-3.5 h-0.5 w-full ${index <= currentStep ? "bg-gray-600" : "bg-gray-200"}`} />
+                                <div className={`absolute right-1/2 top-3.5 h-0.5 w-full ${index <= currentStep ? "bg-primary" : "bg-gray-200"}`} />
                               )}
                               <div className={`relative z-10 flex h-7 w-7 items-center justify-center rounded-full text-xs transition-all ${
-                                  active ? "bg-foreground text-white ring-2 ring-foreground/20 ring-offset-2" :
-                                  done ? "bg-gray-600 text-white" : "bg-gray-100 text-gray-400"
+                                  active ? "bg-primary text-white ring-2 ring-primary/20 ring-offset-2" :
+                                  done ? "bg-primary/70 text-white" : "bg-gray-100 text-gray-400"
                                 }`}>
                                   <step.icon className="w-3.5 h-3.5" />
                               </div>
@@ -319,7 +320,7 @@ export default function MyOrdersPage() {
                     {/* Product items list - always visible */}
                     <div className="space-y-2 mt-4">
                       {order.items.map((item: any) => (
-                        <div key={item.id} className="grid grid-cols-[3.5rem_minmax(0,1fr)] gap-3 border border-gray-100 bg-gray-50 p-3 min-[420px]:grid-cols-[3.5rem_minmax(0,1fr)_auto]">
+                        <div key={item.id} className="grid grid-cols-[3.5rem_minmax(0,1fr)] gap-3 rounded-input border border-border bg-muted/40 p-3 min-[420px]:grid-cols-[3.5rem_minmax(0,1fr)_auto]">
                           <div className="w-14 h-14 bg-white border border-gray-100 rounded-lg overflow-hidden flex-shrink-0">
                             {item.productImage ? (
                               <ImageWrapper src={item.productImage} alt={item.productName} width={56} height={56} className="w-full h-full object-cover" />
@@ -350,7 +351,7 @@ export default function MyOrdersPage() {
                   {isExpanded && (
                     <div className="border-t bg-gray-50 px-4 py-5 sm:px-6">
                       {/* Order total breakdown */}
-                      <div className="bg-white rounded-lg p-4 space-y-2 text-sm">
+                      <div className="space-y-2 rounded-input bg-white p-4 text-sm">
                         <div className="flex justify-between text-gray-600">
                           <span>Tạm tính</span>
                           <span>{order.subtotal.toLocaleString("vi-VN")}₫</span>

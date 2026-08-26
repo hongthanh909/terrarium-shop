@@ -59,9 +59,9 @@ export default function OrderDetailPage() {
 
   if (sessionStatus === "loading" || isLoading) {
     return (
-      <main className="min-h-[100dvh] flex items-center justify-center bg-gray-50">
+      <main className="flex min-h-[100dvh] items-center justify-center bg-white">
         <div className="text-center">
-          <div className="w-10 h-10 border-4 border-[#425733] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+          <div className="mx-auto mb-3 h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent" />
           <p className="text-gray-500">Đang tải đơn hàng...</p>
         </div>
       </main>
@@ -75,12 +75,12 @@ export default function OrderDetailPage() {
 
   if (error || !order) {
     return (
-      <main className="min-h-[100dvh] bg-gray-50 py-8 px-6">
+      <main className="min-h-[100dvh] bg-white px-4 py-8 sm:px-6">
         <div className="max-w-3xl mx-auto text-center">
           <Package className="w-16 h-16 mx-auto text-gray-300 mb-4" />
           <h2 className="text-xl font-semibold text-gray-700 mb-2">Không tìm thấy đơn hàng</h2>
           <p className="text-gray-500 mb-4">Đơn hàng không tồn tại hoặc bạn không có quyền xem.</p>
-          <Link href="/orders" className="inline-block bg-[#425733] text-white px-6 py-3 rounded-lg hover:bg-[#364a29]">
+          <Link href="/orders" className="inline-flex min-h-12 items-center rounded-control bg-primary px-6 py-3 text-white hover:bg-primary-hover">
             Quay lại đơn hàng
           </Link>
         </div>
@@ -132,7 +132,7 @@ export default function OrderDetailPage() {
   };
 
   return (
-    <main className="min-h-[100dvh] bg-gray-50 py-8">
+    <main className="min-h-[100dvh] bg-white pb-28 pt-4 sm:py-8">
       <div className="max-w-3xl mx-auto px-6">
         {/* Back */}
         <Link href="/orders" className="inline-flex items-center text-gray-500 hover:text-[#425733] mb-6 text-sm">
@@ -140,7 +140,7 @@ export default function OrderDetailPage() {
         </Link>
 
         {/* Header */}
-        <div className="bg-white rounded-2xl shadow-sm border p-6 mb-6">
+        <div className="mb-5 rounded-card border bg-white p-4 shadow-sm sm:mb-6 sm:p-6">
           <div className="flex justify-between items-start mb-4">
             <div>
               <p className="font-mono text-sm text-gray-500">#{order.orderNumber}</p>
@@ -174,7 +174,7 @@ export default function OrderDetailPage() {
                 <p className="font-semibold">Phí vận chuyển sẽ được trao đổi lại</p>
                 <p className="mt-1 text-xs leading-5">Shop sẽ nhắn tin báo phí theo địa chỉ giao hàng trước khi chốt đơn.</p>
               </div>
-              <button type="button" onClick={openShippingChat} disabled={chatLoading} className="inline-flex min-h-10 shrink-0 items-center justify-center gap-2 rounded-lg bg-[#425733] px-4 py-2 text-sm font-semibold text-white hover:bg-[#364a29] disabled:opacity-60">
+              <button type="button" onClick={openShippingChat} disabled={chatLoading} className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-control bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary-hover disabled:opacity-60">
                 <MessageCircle className="h-4 w-4" />
                 {chatLoading ? "Đang mở..." : "Trao đổi với shop"}
               </button>
@@ -190,11 +190,11 @@ export default function OrderDetailPage() {
                 return (
                   <div key={step.key} className="relative flex min-w-0 flex-col items-center">
                     {index > 0 && (
-                      <div className={`absolute right-1/2 top-4 h-0.5 w-full ${index <= currentStepIndex ? "bg-[#6d8c5a]" : "bg-gray-200"}`} />
+                      <div className={`absolute right-1/2 top-4 h-0.5 w-full ${index <= currentStepIndex ? "bg-primary" : "bg-gray-200"}`} />
                     )}
                     <div className={`relative z-10 flex h-8 w-8 items-center justify-center rounded-full text-xs transition-all ${
-                        active ? "bg-[#425733] text-white ring-2 ring-[#6d8c5a] ring-offset-1" :
-                        done ? "bg-[#6d8c5a] text-white" : "bg-gray-100 text-gray-400"
+                        active ? "bg-primary text-white ring-2 ring-primary/25 ring-offset-1" :
+                        done ? "bg-primary/70 text-white" : "bg-gray-100 text-gray-400"
                       }`}>
                         <step.icon className="w-4 h-4" />
                     </div>
@@ -226,11 +226,11 @@ export default function OrderDetailPage() {
         </div>
 
         {/* Items */}
-        <div className="bg-white rounded-2xl shadow-sm border p-6 mb-6">
+        <div className="mb-5 rounded-card border bg-white p-4 shadow-sm sm:mb-6 sm:p-6">
           <h3 className="font-semibold text-gray-800 mb-4">Sản Phẩm Đã Đặt</h3>
           <div className="space-y-3">
             {order.items?.map((item: any) => (
-              <div key={item.id} className="flex gap-4 bg-gray-50 rounded-lg p-3">
+              <div key={item.id} className="flex gap-3 rounded-input bg-muted/40 p-3 sm:gap-4">
                 <div className="w-16 h-16 bg-gray-100 rounded overflow-hidden flex-shrink-0">
                   {item.productImage ? (
                     <ImageWrapper src={item.productImage} alt={item.productName} width={64} height={64} className="w-full h-full object-cover" />
@@ -267,7 +267,7 @@ export default function OrderDetailPage() {
         </div>
 
         {/* Order Summary */}
-        <div className="bg-white rounded-2xl shadow-sm border p-6 mb-6">
+        <div className="mb-5 rounded-card border bg-white p-4 shadow-sm sm:mb-6 sm:p-6">
           <h3 className="font-semibold text-gray-800 mb-4">Tổng Đơn Hàng</h3>
           <div className="space-y-2 text-sm">
             <div className="flex justify-between text-gray-600">
@@ -293,7 +293,7 @@ export default function OrderDetailPage() {
 
         {/* Shipping Info */}
         {order.shippingInfo && (
-          <div className="bg-white rounded-2xl shadow-sm border p-6 mb-6">
+          <div className="mb-5 rounded-card border bg-white p-4 shadow-sm sm:mb-6 sm:p-6">
             <h3 className="font-semibold text-gray-800 mb-4">Thông Tin Giao Hàng</h3>
             <div className="space-y-2 text-sm text-gray-600">
               <div className="flex justify-between">

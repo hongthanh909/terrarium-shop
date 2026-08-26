@@ -252,9 +252,9 @@ export default function CheckoutPage() {
 
   if (itemsToCheckout.length === 0) {
     return (
-      <div className="min-h-[70dvh] bg-background px-4 py-16 sm:px-6">
+      <div className="min-h-[70dvh] bg-white px-4 py-16 sm:px-6">
         <div className="max-w-2xl mx-auto text-center">
-          <h1 className="mb-4 font-serif text-3xl font-semibold sm:text-4xl">Giỏ hàng trống</h1>
+          <h1 className="mb-4 text-2xl font-bold sm:text-4xl">Giỏ hàng trống</h1>
           <p className="text-muted-foreground mb-8">Hãy thêm sản phẩm vào giỏ hàng trước!</p>
           <Button asChild>
             <Link href="/products">Xem Sản Phẩm</Link>
@@ -265,20 +265,20 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="min-h-[100dvh] bg-background px-4 pb-28 pt-6 sm:px-6 sm:py-10 lg:pb-12">
+    <div className="min-h-[100dvh] bg-white px-4 pb-28 pt-4 sm:px-6 sm:py-10 lg:pb-12">
       <div className="max-w-6xl mx-auto">
-        <div className="mb-6">
+        <div className="mb-3 sm:mb-6">
           <Link href="/products" className="inline-flex min-h-11 items-center text-muted-foreground hover:text-primary">
             <ArrowLeft className="w-4 h-4 mr-2" />
             Quay lại Sản Phẩm
           </Link>
         </div>
 
-        <div className="mb-8 border-b border-border pb-6">
-          <p className="mb-2 text-xs font-semibold uppercase text-muted-foreground">Hoàn tất đơn hàng</p>
-          <h1 className="font-serif text-3xl font-semibold sm:text-5xl">Thanh toán</h1>
-          <ol className="mt-6 grid max-w-2xl grid-cols-3 gap-3 text-xs font-semibold text-muted-foreground" aria-label="Tiến trình thanh toán">
-            <li className="border-t-2 border-foreground pt-2 text-foreground">1. Thông tin</li>
+        <div className="mb-6 border-b border-border pb-5 sm:mb-8 sm:pb-6">
+          <p className="mb-1.5 text-xs font-semibold text-primary">Hoàn tất đơn hàng</p>
+          <h1 className="text-2xl font-bold sm:text-4xl">Thanh toán</h1>
+          <ol className="mt-5 grid max-w-2xl grid-cols-3 gap-3 text-[11px] font-semibold text-muted-foreground sm:mt-6 sm:text-xs" aria-label="Tiến trình thanh toán">
+            <li className="border-t-2 border-primary pt-2 text-primary">1. Thông tin</li>
             <li className="border-t-2 border-border pt-2">2. Xác nhận</li>
             <li className="border-t-2 border-border pt-2">3. Hoàn tất</li>
           </ol>
@@ -287,9 +287,9 @@ export default function CheckoutPage() {
         <form onSubmit={handleSubmit}>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
           <div className="lg:col-span-2 space-y-5 sm:space-y-6">
-            <Card className="border-border shadow-none">
+            <Card className="rounded-card border-border shadow-none">
               <CardHeader>
-                <CardTitle className="font-serif text-2xl font-semibold">Thông tin khách hàng</CardTitle>
+                <CardTitle className="text-lg font-bold sm:text-xl">Thông tin khách hàng</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2 [&_input]:min-h-12 [&_input]:text-base [&_label]:mb-1.5 [&_label]:block">
@@ -309,10 +309,10 @@ export default function CheckoutPage() {
               </CardContent>
             </Card>
 
-            <Card className="border-border shadow-none">
+            <Card className="rounded-card border-border shadow-none">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2 font-serif text-2xl font-semibold">
-                  <Truck className="w-5 h-5" />
+                <CardTitle className="flex items-center gap-2 text-lg font-bold sm:text-xl">
+                  <Truck className="h-5 w-5 text-primary" />
                   Địa chỉ giao hàng
                 </CardTitle>
               </CardHeader>
@@ -343,9 +343,9 @@ export default function CheckoutPage() {
               </CardContent>
             </Card>
 
-            <Card className="border-border shadow-none">
+            <Card className="rounded-card border-border shadow-none">
               <CardHeader>
-                <CardTitle className="font-serif text-2xl font-semibold">Phương thức vận chuyển</CardTitle>
+                <CardTitle className="text-lg font-bold sm:text-xl">Phương thức vận chuyển</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 {shippingQuoteRequired ? (
@@ -362,9 +362,9 @@ export default function CheckoutPage() {
                   </div>
                 ) : (
                   <>
-                    <label className="flex min-h-20 cursor-pointer items-center justify-between gap-3 border p-4 hover:bg-muted/50">
+                    <label className="flex min-h-20 cursor-pointer items-center justify-between gap-3 rounded-input border p-4 transition-colors hover:bg-primary-soft has-[:checked]:border-primary has-[:checked]:bg-primary-soft">
                       <div className="flex items-center gap-3">
-                        <input type="radio" name="shippingMethod" value="GHN_STANDARD" checked={formData.shippingMethod === "GHN_STANDARD"} onChange={handleInputChange} className="h-4 w-4" />
+                        <input type="radio" name="shippingMethod" value="GHN_STANDARD" checked={formData.shippingMethod === "GHN_STANDARD"} onChange={handleInputChange} className="h-4 w-4 accent-primary" />
                         <div>
                           <p className="font-semibold">Giao Hàng Tiêu Chuẩn</p>
                           <p className="text-sm text-muted-foreground">3-5 ngày làm việc</p>
@@ -372,9 +372,9 @@ export default function CheckoutPage() {
                       </div>
                       <p className="font-semibold">30.000₫</p>
                     </label>
-                    <label className="flex min-h-20 cursor-pointer items-center justify-between gap-3 border p-4 hover:bg-muted/50">
+                    <label className="flex min-h-20 cursor-pointer items-center justify-between gap-3 rounded-input border p-4 transition-colors hover:bg-primary-soft has-[:checked]:border-primary has-[:checked]:bg-primary-soft">
                       <div className="flex items-center gap-3">
-                        <input type="radio" name="shippingMethod" value="GHN_EXPRESS" checked={formData.shippingMethod === "GHN_EXPRESS"} onChange={handleInputChange} className="h-4 w-4" />
+                        <input type="radio" name="shippingMethod" value="GHN_EXPRESS" checked={formData.shippingMethod === "GHN_EXPRESS"} onChange={handleInputChange} className="h-4 w-4 accent-primary" />
                         <div>
                           <p className="font-semibold">Giao Hàng Nhanh</p>
                           <p className="text-sm text-muted-foreground">1-2 ngày làm việc</p>
@@ -387,16 +387,16 @@ export default function CheckoutPage() {
               </CardContent>
             </Card>
 
-            <Card className="border-border shadow-none">
+            <Card className="rounded-card border-border shadow-none">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2 font-serif text-2xl font-semibold">
-                  <CreditCard className="w-5 h-5" />
+                <CardTitle className="flex items-center gap-2 text-lg font-bold sm:text-xl">
+                  <CreditCard className="h-5 w-5 text-primary" />
                   Phương thức thanh toán
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                <label className="flex min-h-20 cursor-pointer items-start border p-4 hover:bg-muted/50">
-                  <input type="radio" name="paymentMethod" value="COD" checked={formData.paymentMethod === "COD"} onChange={handleInputChange} className="mt-1 mr-3 h-4 w-4" />
+                <label className="flex min-h-20 cursor-pointer items-start rounded-input border p-4 transition-colors hover:bg-primary-soft has-[:checked]:border-primary has-[:checked]:bg-primary-soft">
+                  <input type="radio" name="paymentMethod" value="COD" checked={formData.paymentMethod === "COD"} onChange={handleInputChange} className="mr-3 mt-1 h-4 w-4 accent-primary" />
                   <div>
                     <p className="font-semibold">Thanh Toán Khi Nhận Hàng (COD)</p>
                     <p className="text-sm text-muted-foreground">Thanh toán khi nhận được đơn hàng</p>
@@ -406,9 +406,9 @@ export default function CheckoutPage() {
               </CardContent>
             </Card>
 
-            <Card className="border-border shadow-none">
+            <Card className="rounded-card border-border shadow-none">
               <CardHeader>
-                <CardTitle className="font-serif text-2xl font-semibold">Mã giảm giá</CardTitle>
+                <CardTitle className="text-lg font-bold sm:text-xl">Mã giảm giá</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
@@ -448,7 +448,7 @@ export default function CheckoutPage() {
             <Button
               type="submit"
               size="lg"
-              className="hidden w-full lg:flex"
+              className="hidden w-full lg:flex lg:h-12"
               disabled={
                 loading ||
                 voucherChecking ||
@@ -460,9 +460,9 @@ export default function CheckoutPage() {
           </div>
 
           <div className="order-first lg:order-none lg:col-span-1">
-            <Card className="sticky top-24 border-foreground shadow-none">
+            <Card className="sticky top-24 rounded-card border-primary-border shadow-none">
               <CardHeader>
-                <CardTitle className="font-serif text-2xl font-semibold">Tóm tắt đơn hàng</CardTitle>
+                <CardTitle className="text-lg font-bold sm:text-xl">Tóm tắt đơn hàng</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4 mb-6 max-h-56 lg:max-h-64 overflow-y-auto">
@@ -504,18 +504,18 @@ export default function CheckoutPage() {
                   <Separator />
                   <div className="flex justify-between font-bold text-lg pt-2">
                     <span>{shippingQuoteRequired ? "Tạm tính" : "Tổng cộng"}</span>
-                    <span className="text-primary">{total.toLocaleString("vi-VN")}₫</span>
+                    <span className="tabular-nums text-primary">{total.toLocaleString("vi-VN")}₫</span>
                   </div>
                 </div>
               </CardContent>
             </Card>
           </div>
         </div>
-        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-white/95 px-4 py-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] shadow-[0_-12px_30px_rgba(0,0,0,0.08)] backdrop-blur lg:hidden">
-          <div className="mx-auto flex max-w-6xl items-center gap-3">
+        <div className="mobile-fixed-shell fixed bottom-0 z-40 rounded-t-tile border border-b-0 border-border bg-white/95 px-4 py-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] shadow-bottom-nav backdrop-blur lg:hidden">
+          <div className="mx-auto flex items-center gap-3">
             <div className="min-w-0 flex-1">
               <p className="text-xs font-semibold text-muted-foreground">{shippingQuoteRequired ? "Tạm tính" : "Tổng thanh toán"}</p>
-              <p className="text-lg font-extrabold text-foreground">{total.toLocaleString("vi-VN")}₫</p>
+              <p className="text-lg font-extrabold tabular-nums text-primary">{total.toLocaleString("vi-VN")}₫</p>
             </div>
             <Button
               type="submit"
