@@ -1448,7 +1448,7 @@ export function ProductDetailClient({
 
       <div className="mobile-fixed-shell fixed bottom-0 z-40 rounded-t-tile border border-b-0 border-border bg-white/97 px-3 pt-2 pb-[calc(env(safe-area-inset-bottom)+0.55rem)] shadow-bottom-nav backdrop-blur lg:hidden">
         <div className="mx-auto space-y-2">
-          <div className="flex min-h-8 items-center justify-between gap-2">
+          <div className="flex min-h-10 items-center justify-between gap-2">
             <div className="flex min-w-0 items-baseline gap-2">
               <span className="sr-only">Giá sản phẩm</span>
               <p className="whitespace-nowrap text-xl font-extrabold leading-none tabular-nums text-primary">
@@ -1459,7 +1459,7 @@ export function ProductDetailClient({
             <button
               type="button"
               onClick={focusVoucherSection}
-              className={`flex min-h-8 min-w-0 max-w-[52%] items-center gap-1 rounded-control border px-2 text-xs font-semibold transition-colors ${
+              className={`flex min-h-10 min-w-0 max-w-[52%] items-center gap-1 rounded-control border px-2 text-xs font-semibold transition-colors ${
                 appliedVoucher
                   ? "border-primary-border bg-primary-soft text-primary"
                   : "border-border bg-muted/45 text-foreground hover:bg-muted"
