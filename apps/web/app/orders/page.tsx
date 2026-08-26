@@ -286,7 +286,7 @@ export default function MyOrdersPage() {
 
                     {/* Progress Timeline (horizontal) */}
                     {!isCancelled && (
-                    <div className="mb-4 grid w-full grid-cols-4">
+                    <div className="mb-4 grid w-full grid-cols-5">
                       {ORDER_STATUS_STEPS.map((step, index) => {
                           const done = index <= currentStep;
                           const active = index === currentStep;
