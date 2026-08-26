@@ -181,22 +181,26 @@ export function ProductsClient({
               <div className="h-px flex-1 bg-border" />
             </div>
 
-            <div className="-mx-4 flex flex-nowrap gap-2 overflow-x-auto px-4 scrollbar-none sm:mx-0 sm:flex-wrap sm:px-0">
+            <div className="grid grid-cols-4 auto-rows-fr gap-2 sm:flex sm:flex-wrap">
               <button
+                type="button"
                 onClick={() => handleCategoryChange(null)}
-                className={`min-h-11 whitespace-nowrap rounded-control border px-4 py-2 text-sm font-semibold transition-colors duration-150 ${
+                aria-pressed={selectedCategory === null}
+                className={`flex min-h-14 min-w-0 items-center justify-center whitespace-normal break-words rounded-control border px-1.5 py-2 text-center text-xs font-semibold leading-4 transition-colors duration-150 sm:min-h-11 sm:whitespace-nowrap sm:px-4 sm:text-sm ${
                   selectedCategory === null
                     ? "border-primary bg-primary text-white"
                     : "border-border bg-white text-muted-foreground hover:border-primary-border hover:bg-primary-soft hover:text-primary"
                 }`}
               >
-                Tất Cả
+                Tất cả
               </button>
               {categories.map((cat) => (
                 <button
+                  type="button"
                   key={cat.id}
                   onClick={() => handleCategoryChange(cat.id)}
-                  className={`min-h-11 whitespace-nowrap rounded-control border px-4 py-2 text-sm font-semibold transition-colors duration-150 ${
+                  aria-pressed={selectedCategory === cat.id}
+                  className={`flex min-h-14 min-w-0 items-center justify-center whitespace-normal break-words rounded-control border px-1.5 py-2 text-center text-xs font-semibold leading-4 transition-colors duration-150 sm:min-h-11 sm:whitespace-nowrap sm:px-4 sm:text-sm ${
                     selectedCategory === cat.id
                       ? "border-primary bg-primary text-white"
                       : "border-border bg-white text-muted-foreground hover:border-primary-border hover:bg-primary-soft hover:text-primary"

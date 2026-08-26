@@ -161,7 +161,7 @@ export function ProductCard({
           )}
         </div>
 
-        <div className="mt-auto flex min-w-0 items-end justify-between gap-2 border-t border-border pt-2.5">
+        <div className="mt-auto grid min-w-0 gap-2 border-t border-border pt-2.5 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
           <div className="min-w-0">
             <span className="block whitespace-nowrap text-sm font-extrabold tabular-nums text-primary sm:text-base">
               {displayPrice.toLocaleString("vi-VN")}₫
@@ -176,11 +176,11 @@ export function ProductCard({
           {isBểProduct ? (
             <Link
               href={`/products/${slug}`}
-              className="flex h-11 min-w-11 shrink-0 items-center justify-center gap-1.5 rounded-control border border-primary-border bg-primary-soft px-3 text-xs font-semibold text-primary transition-colors hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              className="flex h-10 w-full min-w-0 items-center justify-center gap-1.5 rounded-control border border-primary-border bg-primary-soft px-2.5 text-xs font-semibold text-primary transition-colors hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:h-11 sm:w-auto sm:min-w-11 sm:px-3"
               aria-label={`Chọn phiên bản cho ${name}`}
             >
               <SlidersHorizontal className="h-4 w-4" />
-              <span className="hidden min-[390px]:inline">Tùy chọn</span>
+              <span>Tùy chọn</span>
             </Link>
           ) : (
             <button
@@ -192,7 +192,7 @@ export function ProductCard({
               }}
               disabled={isOutOfStock}
               className={cn(
-                "flex h-11 min-w-11 shrink-0 items-center justify-center gap-1.5 rounded-control border px-3 text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+                "flex h-10 w-full min-w-0 items-center justify-center gap-1.5 rounded-control border px-2.5 text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:h-11 sm:w-auto sm:min-w-11 sm:px-3",
                 isOutOfStock
                   ? "cursor-not-allowed border-border bg-disabled text-muted-foreground"
                   : "border-primary-border bg-primary-soft text-primary hover:bg-primary/10 active:scale-[0.97]"
@@ -200,7 +200,7 @@ export function ProductCard({
               aria-label={isOutOfStock ? `${name} đã hết hàng` : `Thêm ${name} vào giỏ`}
             >
               <ShoppingBag className="h-4 w-4" />
-              <span className="hidden min-[390px]:inline">Thêm</span>
+              <span>Thêm</span>
             </button>
           )}
         </div>
