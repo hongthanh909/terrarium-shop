@@ -201,6 +201,12 @@
   min-height: 44px;
 }
 
+.mobile-fixed-shell {
+  left: 50%;
+  width: min(100%, 512px);
+  transform: translateX(-50%);
+}
+
 body:has([role="dialog"][data-state="open"]) .cw-floating-launcher,
 body:has([role="dialog"][data-state="open"]) [data-analytics-consent] {
   opacity: 0 !important;

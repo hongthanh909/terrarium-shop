@@ -60,7 +60,6 @@ export default function Header() {
   const [cartOpen, setCartOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [chatUnread, setChatUnread] = useState(0);
   const [sellerStatus, setSellerStatus] = useState<{
@@ -81,9 +80,6 @@ export default function Header() {
   useEffect(() => {
     useCartStore.persist.rehydrate();
     setMounted(true);
-    const handleScroll = () => setScrolled(window.scrollY > 20);
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
@@ -167,26 +163,22 @@ export default function Header() {
   return (
     <>
       <motion.header
-        className={`sticky top-0 z-40 w-full transition-colors duration-300 ${
-          scrolled
-            ? "border-b border-border bg-white/96 shadow-[0_1px_14px_rgba(25,28,24,0.06)] backdrop-blur-xl"
-            : "border-b border-border/80 bg-white/96 backdrop-blur-md"
-        }`}
+        className="sticky top-0 z-40 w-full border-b border-border bg-white/95 backdrop-blur-md"
       >
-        <div className="flex items-center justify-between px-3 py-2.5 sm:px-6 sm:py-3 max-w-7xl mx-auto">
-          {/* Left section: Hamburger (mobile) + Logo */}
-          <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+        <div className="mx-auto grid h-14 max-w-[512px] grid-cols-[44px_minmax(0,1fr)_88px] items-center px-2 md:flex md:h-auto md:max-w-7xl md:px-6 md:py-3">
+          {/* Left section: mobile menu, desktop logo */}
+          <div className="flex min-w-0 items-center md:flex-1">
             {/* Hamburger — chỉ hiện trên mobile */}
             <button
-              className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground md:hidden"
+              className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-control text-muted-foreground transition-colors hover:bg-muted hover:text-foreground active:scale-95 md:hidden"
               onClick={() => setMobileMenuOpen(true)}
               aria-label="Mở menu"
             >
               <Menu className="w-5 h-5" />
             </button>
 
-            {/* Logo — nằm bên trái */}
-            <Link href="/" className="group flex min-h-11 flex-shrink-0 flex-col items-start justify-center">
+            {/* Desktop logo */}
+            <Link href="/" className="group hidden min-h-11 flex-shrink-0 flex-col items-start justify-center md:flex">
               <span
                 className="whitespace-nowrap text-lg leading-tight text-foreground transition-colors group-hover:text-foreground/75 sm:text-xl"
                 style={{ fontFamily: "'Dancing Script', cursive", fontWeight: 600 }}
@@ -206,6 +198,16 @@ export default function Header() {
             </Link>
           </div>
 
+          {/* Mobile logo */}
+          <Link
+            href="/"
+            className="min-w-0 justify-self-center whitespace-nowrap px-2 text-lg leading-none text-foreground md:hidden"
+            style={{ fontFamily: "'Dancing Script', cursive", fontWeight: 600 }}
+            aria-label="Tiệm Rêu Décor - Trang chủ"
+          >
+            tiệm Rêu Décor
+          </Link>
+
           {/* Center section: Desktop Navigation Links */}
           <nav className="hidden md:flex items-center justify-center gap-1 flex-1 min-w-0">
             {NAV_LINKS.map((link) => (
@@ -215,7 +217,7 @@ export default function Header() {
           </nav>
 
           {/* Right section: Action Icons */}
-          <div className="flex items-center justify-end gap-1 sm:gap-1.5 flex-1 min-w-0">
+          <div className="flex min-w-0 items-center justify-self-end md:flex-1 md:justify-end md:gap-1.5">
             {/* Search trigger — desktop */}
             <button
               className="hidden h-10 w-10 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground md:flex"
@@ -227,7 +229,7 @@ export default function Header() {
 
             {/* Search — mobile */}
             <button
-              className="flex h-11 w-11 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground md:hidden"
+              className="flex h-11 w-11 items-center justify-center rounded-control text-muted-foreground transition-colors hover:bg-muted hover:text-foreground active:scale-95 md:hidden"
               onClick={() => setSearchOpen(true)}
               aria-label="Mở tìm kiếm"
             >
@@ -255,7 +257,7 @@ export default function Header() {
 
             {/* Cart */}
             <button
-              className="relative flex h-11 w-11 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground md:h-10 md:w-10"
+              className="relative flex h-11 w-11 items-center justify-center rounded-control text-muted-foreground transition-colors hover:bg-muted hover:text-foreground active:scale-95 md:h-10 md:w-10"
               onClick={() => {
                 if (!session) {
                   window.location.href = "/login?callbackUrl=/";
@@ -275,7 +277,7 @@ export default function Header() {
                     animate={{ scale: 1 }}
                     exit={{ scale: 0 }}
                     transition={{ type: "spring", stiffness: 500, damping: 15 }}
-                    className="absolute -right-0.5 -top-0.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-foreground px-0.5 text-[10px] font-bold text-white shadow"
+                    className="absolute -right-0.5 -top-0.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-primary px-0.5 text-[10px] font-bold text-white shadow"
                   >
                     {cartCount}
                   </motion.span>
@@ -377,7 +379,7 @@ export default function Header() {
           </div>
         </div>
 
-        <div className="hidden w-full border-t border-border bg-[#f7f8f6] sm:block">
+        <div className="hidden w-full border-t border-border bg-[#fafafa] md:block">
           <div className="mx-auto flex max-w-7xl items-center justify-center gap-6 overflow-hidden px-6 py-2 text-[11px] font-medium text-muted-foreground lg:gap-10">
             <span className="inline-flex shrink-0 items-center gap-1.5">
               <MapPin className="h-3.5 w-3.5" aria-hidden="true" />

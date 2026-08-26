@@ -48,8 +48,12 @@ export default function ShopLayout({
         Bỏ qua đến nội dung chính
       </a>
       {header}
-      <main id="main-content" className="flex-1" tabIndex={-1}>{children}</main>
-      {footer}
+      <main id="main-content" className="min-w-0 flex-1" tabIndex={-1}>
+        <div className="mx-auto min-h-full w-full max-w-[512px] min-[513px]:border-x min-[513px]:border-border/70 md:max-w-none md:border-x-0">
+          {children}
+        </div>
+      </main>
+      <div className="hidden md:block">{footer}</div>
       <MobileBottomNav />
       {chat}
     </>

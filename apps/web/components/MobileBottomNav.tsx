@@ -45,13 +45,13 @@ export function MobileBottomNav() {
     <>
       <div
         aria-hidden="true"
-        className="h-[calc(4.5rem+env(safe-area-inset-bottom))] md:hidden"
+        className="h-[calc(6rem+env(safe-area-inset-bottom))] md:hidden"
       />
       <nav
         aria-label="Điều hướng chính trên điện thoại"
-        className="fixed inset-x-0 bottom-0 z-40 border-t border-border/90 bg-white/95 pb-[env(safe-area-inset-bottom)] shadow-[0_-6px_22px_rgba(15,23,42,0.08)] backdrop-blur-md md:hidden"
+        className="fixed bottom-[max(0.75rem,env(safe-area-inset-bottom))] left-1/2 z-40 w-[calc(100%-1.5rem)] max-w-[512px] -translate-x-1/2 rounded-nav border border-border bg-white/95 shadow-bottom-nav backdrop-blur-md md:hidden"
       >
-        <div className="mx-auto grid h-[4.5rem] max-w-lg grid-cols-5 px-1">
+        <div className="mx-auto grid h-16 grid-cols-5 gap-1 px-2">
           {NAV_ITEMS.map((item) => {
             const Icon = item.icon;
             const href = item.requiresAuth && !session
@@ -70,19 +70,12 @@ export function MobileBottomNav() {
                 href={href}
                 aria-current={isActive ? "page" : undefined}
                 className={cn(
-                  "relative flex min-h-0 min-w-0 flex-col items-center justify-center gap-1 px-0.5 text-[10.5px] font-semibold leading-none text-muted-foreground transition-colors",
-                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-foreground",
-                  isActive && "text-foreground"
+                  "my-2 flex min-h-11 min-w-0 flex-col items-center justify-center gap-1 rounded-2xl px-0.5 text-[11px] font-medium leading-[14px] text-muted-foreground transition-[background-color,color,transform] duration-150 active:scale-95",
+                  "focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-primary/40",
+                  isActive && "bg-[#e5e5e5] font-bold text-foreground"
                 )}
               >
-                <span
-                  aria-hidden="true"
-                  className={cn(
-                    "absolute inset-x-3 top-0 h-0.5 rounded-b-full bg-transparent",
-                    isActive && "bg-foreground"
-                  )}
-                />
-                <Icon className={cn("h-5 w-5", isActive && "stroke-[2.4]")} />
+                <Icon aria-hidden="true" className={cn("h-5 w-5 stroke-[1.8]", isActive && "stroke-[2.4]")} />
                 <span className="w-full truncate text-center">{item.label}</span>
               </Link>
             );
