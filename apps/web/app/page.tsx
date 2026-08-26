@@ -313,17 +313,17 @@ export default async function Home() {
         id="about"
         className="relative overflow-hidden bg-white"
       >
-        <div className="relative min-h-[520px] w-full sm:min-h-[calc(100dvh-96px)] sm:max-h-[780px]">
+        <div className="relative h-[clamp(430px,calc(100dvh-138px),520px)] w-full sm:h-auto sm:min-h-[calc(100dvh-96px)] sm:max-h-[780px]">
           <Image
             src="/home-hero-full-banner.png"
             alt="Banner terrarium Tiệm Rêu Décor với sản phẩm rêu decor và lời giới thiệu"
             fill
             priority
             sizes="100vw"
-            className="select-none object-cover object-[61%_center] sm:object-center"
+            className="select-none object-cover object-[56%_center] min-[360px]:object-[61%_center] sm:object-center"
           />
           <div className="absolute left-4 right-4 top-[10%] z-10 sm:left-[5.8%] sm:right-auto sm:top-[19%] sm:w-[39%] lg:w-[36%]">
-            <h1 className="max-w-[11ch] text-[2rem] font-bold leading-[1.1] text-foreground drop-shadow-[0_1px_0_rgba(255,255,255,0.65)] sm:text-5xl lg:text-6xl">
+            <h1 className="max-w-[11ch] text-[1.85rem] font-bold leading-[1.1] text-foreground drop-shadow-[0_1px_0_rgba(255,255,255,0.65)] min-[360px]:text-[2rem] sm:text-5xl lg:text-6xl">
               Một chút rêu - một chút xanh
             </h1>
             <p className="mt-3 max-w-[24rem] text-sm font-medium leading-relaxed text-foreground/80 sm:mt-4 sm:max-w-xl sm:text-lg lg:text-xl">
@@ -332,15 +332,16 @@ export default async function Home() {
             <div className="mt-5 flex max-w-full items-center gap-2.5 sm:mt-8 sm:gap-3">
               <Link
                 href="/products"
-                className="group relative flex h-12 min-w-[112px] items-center justify-center overflow-hidden rounded-control bg-primary px-5 text-sm font-semibold text-white shadow-primary-floating transition-[background-color,transform] duration-150 hover:bg-primary-hover active:scale-[0.98] sm:min-w-[148px] sm:px-8"
+                className="group relative flex h-11 min-w-[108px] items-center justify-center overflow-hidden rounded-control bg-primary px-4 text-sm font-semibold text-white shadow-primary-floating transition-[background-color,transform] duration-150 hover:bg-primary-hover active:scale-[0.98] sm:h-12 sm:min-w-[148px] sm:px-8"
               >
                 <span className="relative">Mua ngay</span>
               </Link>
               <Link
                 href="/explore"
-                className="group flex h-12 min-w-0 flex-1 items-center justify-center rounded-control border border-primary-border bg-white/92 px-3 text-[13px] font-semibold text-primary shadow-sm backdrop-blur-sm transition-[background-color,border-color,transform] duration-150 hover:bg-primary-soft active:scale-[0.98] sm:min-w-[216px] sm:flex-none sm:px-7 sm:text-sm"
+                className="group flex h-11 min-w-0 flex-1 items-center justify-center rounded-control border border-primary-border bg-white px-2 text-xs font-semibold text-primary shadow-sm transition-[background-color,border-color,transform] duration-150 hover:bg-primary-soft active:scale-[0.98] min-[360px]:w-[196px] min-[360px]:flex-none min-[360px]:text-[13px] sm:h-12 sm:min-w-[216px] sm:w-auto sm:px-7 sm:text-sm"
               >
-                Khám phá bộ sưu tập
+                <span className="min-[310px]:hidden">Khám phá</span>
+                <span className="hidden min-[310px]:inline">Khám phá bộ sưu tập</span>
                 <ArrowRight className="ml-2 h-4 w-4 stroke-[1.8] transition-transform duration-300 group-hover:translate-x-1" />
               </Link>
             </div>
