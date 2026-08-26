@@ -54,9 +54,9 @@ function AccordionItem({ policy, index }: { policy: Policy; index: number }) {
         aria-expanded={open}
         aria-controls={contentId}
         onClick={() => setOpen((current) => !current)}
-        className="group flex min-h-20 w-full items-center gap-4 px-4 py-5 text-left transition-colors hover:bg-muted/70 sm:px-6"
+        className="group flex min-h-20 w-full items-center gap-3 px-4 py-4 text-left transition-colors hover:bg-primary-soft sm:gap-4 sm:px-6 sm:py-5"
       >
-        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-border bg-white text-foreground">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-control bg-primary-soft text-primary">
           <Icon className="h-5 w-5" />
         </span>
         <span className="min-w-0 flex-1 text-base font-semibold text-foreground sm:text-lg">
@@ -87,7 +87,7 @@ function AccordionItem({ policy, index }: { policy: Policy; index: number }) {
           />
           <Link
             href={`/policies/${policy.slug}`}
-            className="mt-6 inline-flex min-h-11 items-center gap-2 rounded-md border border-border bg-white px-4 text-sm font-semibold text-foreground transition-colors hover:border-foreground/30 hover:bg-muted"
+            className="mt-6 inline-flex min-h-11 items-center gap-2 rounded-control border border-primary-border bg-primary-soft px-4 text-sm font-semibold text-primary transition-colors hover:bg-primary/10"
           >
             Mở trang chính sách
             <ArrowRight className="h-4 w-4" />
@@ -112,18 +112,18 @@ export function PoliciesClient({ policies }: { policies: Policy[] }) {
 
   return (
     <motion.div
-      className="min-h-[100dvh] bg-white px-4 pb-20 pt-10 sm:px-6 sm:pb-24 sm:pt-14"
+      className="min-h-[100dvh] bg-white px-4 pb-28 pt-5 sm:px-6 sm:pb-24 sm:pt-12"
       initial={prefersReducedMotion ? false : { opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
     >
       <div className="mx-auto max-w-5xl">
-        <header className="mb-10 grid gap-6 border-b border-border pb-9 md:grid-cols-[1fr_0.7fr] md:items-end sm:mb-12 sm:pb-11">
+        <header className="mb-6 grid gap-3 border-b border-border pb-5 sm:mb-10 sm:gap-5 sm:pb-8 md:grid-cols-[1fr_0.7fr] md:items-end">
           <div>
-            <p className="mb-3 text-xs font-semibold uppercase text-muted-foreground">
+            <p className="mb-1.5 text-xs font-semibold text-primary">
               Thông tin mua hàng
             </p>
-            <h1 className="max-w-2xl font-serif text-3xl font-semibold leading-tight text-foreground sm:text-5xl">
+            <h1 className="max-w-2xl text-2xl font-bold leading-tight text-foreground sm:text-4xl">
               Chính sách rõ ràng cho từng đơn hàng
             </h1>
           </div>
@@ -143,19 +143,19 @@ export function PoliciesClient({ policies }: { policies: Policy[] }) {
             </p>
           </div>
         ) : (
-          <section aria-label="Danh sách chính sách" className="overflow-hidden rounded-lg border border-border bg-white">
+          <section aria-label="Danh sách chính sách" className="overflow-hidden rounded-card border border-border bg-white shadow-sm">
             {sortedPolicies.map((policy, index) => (
               <AccordionItem key={policy.id} policy={policy} index={index} />
             ))}
           </section>
         )}
 
-        <section className="mt-12 grid overflow-hidden rounded-lg border border-border bg-[#f7f8f6] sm:grid-cols-[1fr_auto] sm:items-center">
+        <section className="mt-8 grid overflow-hidden rounded-card border border-primary-border bg-primary-soft/45 sm:mt-12 sm:grid-cols-[1fr_auto] sm:items-center">
           <div className="p-6 sm:p-8">
-            <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-md border border-border bg-white text-foreground">
+            <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-control bg-white text-primary">
               <MessageCircle className="h-5 w-5" />
             </div>
-            <h2 className="font-serif text-2xl font-semibold text-foreground">Cần hỗ trợ thêm?</h2>
+            <h2 className="text-xl font-bold text-foreground sm:text-2xl">Cần hỗ trợ thêm?</h2>
             <p className="mt-2 max-w-xl text-sm leading-6 text-muted-foreground">
               Đội ngũ Tiệm Rêu sẽ giải đáp các trường hợp chưa được đề cập trong chính sách.
             </p>
@@ -163,7 +163,7 @@ export function PoliciesClient({ policies }: { policies: Policy[] }) {
           <div className="border-t border-border p-6 sm:border-l sm:border-t-0 sm:p-8">
             <Link
               href="/contact"
-              className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-md bg-foreground px-5 text-sm font-semibold text-white transition-colors hover:bg-foreground/85 sm:w-auto"
+              className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-control bg-primary px-5 text-sm font-semibold text-white transition-colors hover:bg-primary-hover sm:w-auto"
             >
               Liên hệ Tiệm Rêu
               <ArrowRight className="h-4 w-4" />

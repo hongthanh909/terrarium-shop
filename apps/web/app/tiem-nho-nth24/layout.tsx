@@ -65,7 +65,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   };
 
   return (
-    <div className="min-h-[100dvh] bg-gray-50/60">
+    <div className="min-h-[100dvh] bg-muted/35">
 
 
       {/* Sidebar */}
@@ -103,7 +103,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                 aria-current={active ? "page" : undefined}
                 className={`flex min-h-11 items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/30 focus-visible:ring-offset-2 ${
                   active
-                    ? "bg-gray-950 text-white shadow-sm"
+                    ? "bg-primary text-white shadow-sm"
                     : "text-gray-600 hover:bg-gray-100 hover:text-gray-950"
                 }`}
               >
@@ -149,13 +149,13 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           <div className="flex min-w-0 items-center gap-3">
             <Sheet open={mobileNavOpen} onOpenChange={setMobileNavOpen}>
               <SheetTrigger asChild>
-                <button type="button" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md border border-gray-200 text-gray-700 hover:bg-gray-100 lg:hidden" aria-label="Mở menu quản trị">
+                <button type="button" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-control border border-border text-foreground hover:bg-primary-soft hover:text-primary lg:hidden" aria-label="Mở menu quản trị">
                   <Menu className="h-5 w-5" />
                 </button>
               </SheetTrigger>
               <SheetContent side="left" className="flex w-[min(88vw,340px)] flex-col p-0" aria-describedby="admin-mobile-nav-description">
                 <SheetHeader className="border-b border-gray-200 px-5 py-5 text-left">
-                  <SheetTitle className="font-serif text-xl font-semibold">Tiệm Rêu Admin</SheetTitle>
+                  <SheetTitle className="text-xl font-bold">Tiệm Rêu Admin</SheetTitle>
                   <SheetDescription id="admin-mobile-nav-description">Điều hướng hệ thống quản lý</SheetDescription>
                 </SheetHeader>
                 <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]" aria-label="Menu quản trị">
@@ -167,7 +167,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                         href={item.href}
                         onClick={() => setMobileNavOpen(false)}
                         aria-current={active ? "page" : undefined}
-                        className={`flex min-h-12 items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-colors ${active ? "bg-gray-950 text-white" : "text-gray-600 hover:bg-gray-100 hover:text-gray-950"}`}
+                        className={`flex min-h-12 items-center gap-3 rounded-control px-3 py-2.5 text-sm font-medium transition-colors ${active ? "bg-primary text-white" : "text-gray-600 hover:bg-primary-soft hover:text-primary"}`}
                       >
                         <item.icon className="h-[18px] w-[18px] shrink-0" />
                         <span>{item.label}</span>

@@ -41,21 +41,21 @@ export function BlogClient({
 
   return (
     <PageTransition>
-      <div className="min-h-[100dvh] bg-white px-4 py-8 sm:px-6 sm:py-12">
+      <div className="min-h-[100dvh] bg-white px-4 pb-28 pt-5 sm:px-6 sm:py-12">
         <div className="max-w-7xl mx-auto">
 
           {/* Hero */}
           <motion.div
-            className="mb-8 text-center sm:mb-12"
+            className="mb-6 text-left sm:mb-10 sm:text-center"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <div className="mb-4 inline-flex items-center gap-2 border border-border bg-muted px-4 py-2 text-sm font-medium text-foreground">
+            <div className="mb-3 inline-flex items-center gap-2 rounded-control bg-primary-soft px-3 py-2 text-sm font-medium text-primary">
               <BookOpen className="w-4 h-4" />
               <span>Kiến thức terrarium</span>
             </div>
-            <h1 className="mb-4 font-serif text-3xl font-semibold leading-tight text-foreground sm:text-6xl">Nhật ký Tiệm Rêu</h1>
+            <h1 className="mb-2 text-2xl font-bold leading-tight text-foreground sm:mb-4 sm:text-5xl">Nhật ký Tiệm Rêu</h1>
             <p className="text-gray-500 max-w-2xl mx-auto">
               Mẹo chăm sóc cây, hướng dẫn và cảm hứng từ thế giới terrarium
             </p>
@@ -70,10 +70,10 @@ export function BlogClient({
           >
             <button
               onClick={() => setSelectedCategory(null)}
-              className={`min-h-11 shrink-0 whitespace-nowrap border px-5 py-2 text-sm font-semibold transition-colors duration-200 ${
+              className={`min-h-11 shrink-0 whitespace-nowrap rounded-control border px-5 py-2 text-sm font-semibold transition-colors duration-150 ${
                 selectedCategory === null
-                  ? "border-foreground bg-foreground text-white"
-                  : "border-border bg-white text-gray-500 hover:border-foreground hover:text-foreground"
+                  ? "border-primary bg-primary text-white"
+                  : "border-border bg-white text-gray-500 hover:border-primary-border hover:bg-primary-soft hover:text-primary"
               }`}
             >
               Tất Cả
@@ -82,10 +82,10 @@ export function BlogClient({
               <button
                 key={cat.id}
                 onClick={() => setSelectedCategory(cat.id)}
-                className={`min-h-11 shrink-0 whitespace-nowrap border px-5 py-2 text-sm font-semibold transition-colors duration-200 ${
+                className={`min-h-11 shrink-0 whitespace-nowrap rounded-control border px-5 py-2 text-sm font-semibold transition-colors duration-150 ${
                   selectedCategory === cat.id
-                    ? "border-foreground bg-foreground text-white"
-                    : "border-border bg-white text-gray-500 hover:border-foreground hover:text-foreground"
+                    ? "border-primary bg-primary text-white"
+                    : "border-border bg-white text-gray-500 hover:border-primary-border hover:bg-primary-soft hover:text-primary"
                 }`}
               >
                 {cat.name}
@@ -100,7 +100,7 @@ export function BlogClient({
               <p className="text-gray-400">Chưa có bài viết nào.</p>
             </motion.div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6">
               {filteredPosts.map((post, i) => (
                 <motion.div
                   key={post.id}
@@ -111,7 +111,7 @@ export function BlogClient({
                   whileHover={prefersReducedMotion ? undefined : { y: -4 }}
                 >
                   <Link href={`/blog/${post.slug}`} className="block h-full">
-                    <article className="group h-full overflow-hidden border border-border bg-white shadow-sm transition-shadow duration-300 hover:shadow-lg">
+                    <article className="group h-full overflow-hidden rounded-card border border-border bg-white shadow-sm transition-[border-color,box-shadow] duration-200 hover:border-primary-border hover:shadow-floating">
                       
                       {/* Thumbnail Image */}
                       <div className="relative aspect-[16/9] w-full overflow-hidden bg-muted">
@@ -133,7 +133,7 @@ export function BlogClient({
                         )}
                         {/* Category overlay badge */}
                         {post.category && (
-                          <span className="absolute left-3 top-3 inline-flex items-center gap-1 border border-white/50 bg-white/90 px-2.5 py-1 text-xs font-bold uppercase text-foreground shadow-sm backdrop-blur-sm">
+                          <span className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full border border-white/50 bg-white/90 px-2.5 py-1 text-xs font-bold text-primary shadow-sm backdrop-blur-sm">
                             <Tag className="w-3 h-3" />
                             {post.category.name}
                           </span>
@@ -142,7 +142,7 @@ export function BlogClient({
 
                       {/* Content */}
                       <div className="p-5">
-                        <h3 className="mb-2 line-clamp-2 font-serif text-xl font-semibold leading-snug text-foreground transition-colors group-hover:text-foreground/70">
+                        <h3 className="mb-2 line-clamp-2 text-lg font-bold leading-snug text-foreground transition-colors group-hover:text-primary">
                           {post.title}
                         </h3>
                         <p className="text-gray-500 text-sm line-clamp-2 mb-4 leading-relaxed">
@@ -155,7 +155,7 @@ export function BlogClient({
                               {new Date(post.publishedAt).toLocaleDateString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh" })}
                             </div>
                           )}
-                          <span className="text-xs font-semibold text-foreground group-hover:underline">
+                          <span className="text-xs font-semibold text-primary group-hover:underline">
                             Đọc thêm
                           </span>
                         </div>

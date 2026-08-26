@@ -179,7 +179,7 @@ function AuthPage() {
   };
 
   return (
-    <div className="flex min-h-[calc(100dvh-7rem)] items-center justify-center bg-white py-8 sm:py-10">
+    <div className="flex min-h-[calc(100dvh-57px)] items-center justify-center bg-white py-4 sm:py-10">
       <div className="w-full max-w-md px-4">
         <Link
           href="/"
@@ -193,7 +193,7 @@ function AuthPage() {
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: "easeOut" }}
-          className="relative overflow-hidden border border-border bg-white shadow-[0_18px_50px_rgba(0,0,0,0.08)]"
+          className="relative overflow-hidden rounded-card border border-border bg-white shadow-floating"
         >
           <div className="border-b border-gray-100 px-5 pb-6 pt-7 text-center sm:px-8 sm:pt-8">
             <Link href="/" className="inline-flex flex-col items-center group mb-4">
@@ -222,7 +222,7 @@ function AuthPage() {
                 exit={{ opacity: 0, y: -6 }}
                 transition={{ duration: 0.2 }}
               >
-                <h1 className="mb-1 font-serif text-2xl font-semibold text-gray-900">
+                <h1 className="mb-1 text-2xl font-bold text-foreground">
                   {isLogin ? "Chào mừng trở lại" : isVerifyingRegistration ? "Xác minh email" : "Tạo tài khoản mới"}
                 </h1>
                 <p className="text-gray-400 text-sm">
@@ -268,7 +268,7 @@ function AuthPage() {
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: "auto" }}
                     exit={{ opacity: 0, height: 0 }}
-                    className="border border-red-200 bg-red-50 p-3 text-center text-sm text-red-600"
+                    className="rounded-input border border-red-200 bg-red-50 p-3 text-center text-sm text-red-600"
                   >
                     {error}
                   </motion.div>
@@ -347,7 +347,7 @@ function AuthPage() {
                           required
                           minLength={isLogin ? 1 : 6}
                           autoComplete={isLogin ? "current-password" : "new-password"}
-                          className="min-h-12 w-full border border-gray-200 bg-gray-50 py-2.5 pl-10 pr-12 text-base text-gray-800 transition-all placeholder:text-gray-400 focus:border-foreground focus:outline-none focus:ring-2 focus:ring-foreground/10"
+                          className="min-h-12 w-full rounded-input border border-border bg-white py-2.5 pl-10 pr-12 text-base text-foreground transition-all placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                         />
                         <button
                           type="button"
@@ -410,7 +410,7 @@ function SocialLoginButton({ provider, label, loading, disabled, onClick }: {
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className={`relative flex min-h-12 w-full items-center justify-center rounded-md border px-4 text-sm font-semibold shadow-sm transition-[background-color,border-color,transform] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60 ${
+      className={`relative flex min-h-12 w-full items-center justify-center rounded-control border px-4 text-sm font-semibold shadow-sm transition-[background-color,border-color,transform] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60 ${
         provider === "facebook"
           ? "border-[#0866ff] bg-[#0866ff] text-white hover:border-[#075de5] hover:bg-[#075de5]"
           : "border-gray-300 bg-white text-gray-800 hover:border-gray-400 hover:bg-gray-50"
@@ -448,7 +448,7 @@ function LightField({ icon, label, id, ...inputProps }: {
         <input
           id={id}
           {...inputProps}
-          className="min-h-12 w-full border border-gray-200 bg-gray-50 py-2.5 pl-10 pr-4 text-base text-gray-800 transition-all placeholder:text-gray-400 focus:border-foreground focus:outline-none focus:ring-2 focus:ring-foreground/10"
+          className="min-h-12 w-full rounded-input border border-border bg-white py-2.5 pl-10 pr-4 text-base text-foreground transition-all placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
         />
       </div>
     </div>

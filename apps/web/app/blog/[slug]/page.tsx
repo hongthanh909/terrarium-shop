@@ -59,7 +59,7 @@ export default async function BlogPostPage({ params }: Props) {
                 {post.category.name}
               </Badge>
             )}
-            <h1 className="mb-4 font-serif text-3xl font-semibold leading-tight text-gray-950 sm:text-5xl">
+            <h1 className="mb-4 text-2xl font-bold leading-tight text-foreground sm:text-4xl">
               {post.title}
             </h1>
             {post.publishedAt && (
@@ -157,7 +157,7 @@ export default async function BlogPostPage({ params }: Props) {
           <p className="text-sm text-gray-500 mb-4 font-semibold">
             Thích bài viết này? Khám phá thêm tại
           </p>
-          <Button asChild variant="outline" className="border-[#c8d5be] hover:bg-[#f0f4ec] rounded-full font-semibold px-6">
+          <Button asChild variant="soft" className="px-6 font-semibold">
             <Link href="/blog">Xem Tất Cả Bài Viết</Link>
           </Button>
         </div>

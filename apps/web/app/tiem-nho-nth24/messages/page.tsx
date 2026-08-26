@@ -203,8 +203,8 @@ export default function AdminMessagesPage() {
   };
 
   return (
-    <div className="overflow-hidden rounded-lg border border-[#dfe7da] bg-white shadow-[0_8px_28px_rgba(42,66,31,0.08)] lg:grid lg:h-[calc(100dvh-9.5rem)] lg:min-h-[620px] lg:grid-cols-[360px_minmax(0,1fr)]">
-      <aside className={cn("min-h-[620px] border-r border-[#e4eadf] bg-[#fbfcfa] lg:min-h-0", selectedId && "hidden lg:flex lg:flex-col")}>
+    <div className={cn("overflow-hidden rounded-card border border-border bg-white shadow-floating lg:grid lg:h-[calc(100dvh-9.5rem)] lg:min-h-[620px] lg:grid-cols-[360px_minmax(0,1fr)]", selectedId ? "h-[calc(100dvh-81px)]" : "min-h-[520px]")}>
+      <aside className={cn("h-full border-r border-border bg-muted/35 lg:min-h-0", selectedId && "hidden lg:flex lg:flex-col")}>
         <div className="border-b border-[#e4eadf] p-4">
           <div className="flex items-center justify-between gap-3">
             <div>
@@ -231,7 +231,7 @@ export default function AdminMessagesPage() {
           ) : conversations.map((conversation) => {
             const last = conversation.messages[0];
             return (
-              <button key={conversation.id} type="button" onClick={() => setSelectedId(conversation.id)} className={cn("flex w-full gap-3 border-b border-[#edf1ea] px-4 py-3.5 text-left transition-colors hover:bg-[#f2f7ef]", selectedId === conversation.id && "bg-[#edf5e8]")}>
+              <button key={conversation.id} type="button" onClick={() => setSelectedId(conversation.id)} className={cn("flex min-h-20 w-full gap-3 border-b border-border px-4 py-3.5 text-left transition-colors hover:bg-primary-soft", selectedId === conversation.id && "bg-primary-soft")}>
                 <div className="grid h-11 w-11 shrink-0 place-items-center overflow-hidden rounded-lg bg-[#e3eadf] text-sm font-bold text-[#425733]">
                   {conversation.product?.image ? <img src={conversation.product.image} alt="" className="h-full w-full object-cover" /> : (conversation.customer.name || conversation.customer.email).slice(0, 1).toUpperCase()}
                 </div>
@@ -263,10 +263,10 @@ export default function AdminMessagesPage() {
               <div className="min-w-0"><p className="truncate text-xs font-bold text-[#33452b]">{selected.product?.name || "Sản phẩm không còn tồn tại"}</p><p className="mt-0.5 text-[11px] text-[#788472]">{selected.product?.type === "MARKETPLACE" ? "Marketplace" : "Sản phẩm cửa hàng"}</p></div>
             </div>
 
-            <div ref={messagesViewportRef} style={{ overflowAnchor: "none" }} className="min-h-0 flex-1 overflow-y-auto bg-[#fcfdfb] px-3 py-4 sm:px-5">
+            <div ref={messagesViewportRef} style={{ overflowAnchor: "none" }} className="min-h-0 flex-1 overflow-y-auto bg-muted/25 px-3 py-4 sm:px-5">
               {loadingMessages ? <div className="flex h-full items-center justify-center gap-2 text-sm text-[#718069]"><Loader2 className="h-4 w-4 animate-spin" /> Đang tải tin nhắn</div> : messages.length === 0 ? <div className="grid h-full place-items-center text-sm text-[#84907e]">Khách chưa gửi tin nhắn đầu tiên.</div> : <div className="space-y-3">{messages.map((message) => {
                 const mine = message.senderType === "ADMIN";
-                return <div key={message.id} className={cn("flex", mine ? "justify-end" : "justify-start")}><div className="max-w-[82%]"><div className={cn("overflow-hidden rounded-lg border text-sm leading-6", mine ? "border-[#425733] bg-[#425733] text-white" : "border-[#dde6d7] bg-white text-[#273520]")}>{message.imageUrl && <a href={message.imageUrl} target="_blank" rel="noreferrer" className="block bg-black/5"><img src={message.imageUrl} alt="Ảnh trong cuộc trò chuyện" className="max-h-80 w-full object-contain" /></a>}{message.content && <p className="whitespace-pre-wrap break-words px-3.5 py-2.5">{message.content}</p>}</div><p className={cn("mt-1 px-1 text-[11px] text-[#84907e]", mine && "text-right")}>{mine ? "Admin" : selected.customer.name || "Khách"} · {messageTime(message.createdAt)}</p></div></div>;
+                return <div key={message.id} className={cn("flex", mine ? "justify-end" : "justify-start")}><div className="max-w-[82%]"><div className={cn("overflow-hidden rounded-tile border text-sm leading-6", mine ? "border-primary bg-primary text-white" : "border-border bg-white text-foreground")}>{message.imageUrl && <a href={message.imageUrl} target="_blank" rel="noreferrer" className="block bg-black/5"><img src={message.imageUrl} alt="Ảnh trong cuộc trò chuyện" className="max-h-80 w-full object-contain" /></a>}{message.content && <p className="whitespace-pre-wrap break-words px-3.5 py-2.5">{message.content}</p>}</div><p className={cn("mt-1 px-1 text-[11px] text-muted-foreground", mine && "text-right")}>{mine ? "Admin" : selected.customer.name || "Khách"} · {messageTime(message.createdAt)}</p></div></div>;
               })}</div>}
             </div>
 
@@ -277,7 +277,7 @@ export default function AdminMessagesPage() {
                 <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp,image/gif" className="hidden" onChange={(event) => chooseImage(event.target.files?.[0])} />
                 <button type="button" onClick={() => fileInputRef.current?.click()} disabled={sending} className="grid h-12 w-12 shrink-0 place-items-center rounded-md border border-[#d7e0d1] text-[#4d6342] hover:bg-[#f0f5ed] disabled:opacity-50" aria-label="Gửi ảnh" title="Gửi ảnh"><ImagePlus className="h-5 w-5" /></button>
                 <textarea value={content} onChange={(event) => setContent(event.target.value.slice(0, 2000))} onKeyDown={(event) => { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); void sendMessage(); } }} rows={1} placeholder={selected.status === "CLOSED" ? "Trả lời để mở lại hội thoại..." : "Nhập nội dung trả lời..."} className="min-h-12 max-h-28 flex-1 resize-none rounded-md border border-[#d7e0d1] bg-white px-3 py-2.5 text-base outline-none focus:border-[#799768] focus:ring-2 focus:ring-[#e2ecdc]" />
-                <button type="button" onClick={() => void sendMessage()} disabled={sending || (!content.trim() && !selectedImage)} className="grid h-12 w-12 shrink-0 place-items-center rounded-md bg-[#425733] text-white hover:bg-[#33452a] disabled:bg-[#b7c2b1]" aria-label="Gửi tin nhắn" title="Gửi tin nhắn">{sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}</button>
+                <button type="button" onClick={() => void sendMessage()} disabled={sending || (!content.trim() && !selectedImage)} className="grid h-12 w-12 shrink-0 place-items-center rounded-control bg-primary text-white hover:bg-primary-hover disabled:bg-disabled" aria-label="Gửi tin nhắn" title="Gửi tin nhắn">{sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}</button>
               </div>
             </footer>
           </>

@@ -62,7 +62,7 @@ export default async function PolicyDetailPage({ params }: Props) {
 
         <article className="grid gap-10 lg:grid-cols-[220px_minmax(0,1fr)] lg:gap-16">
           <aside className="lg:sticky lg:top-32 lg:self-start">
-            <div className="flex h-11 w-11 items-center justify-center rounded-md border border-border bg-[#f7f8f6] text-foreground">
+            <div className="flex h-11 w-11 items-center justify-center rounded-control bg-primary-soft text-primary">
               <FileText className="h-5 w-5" />
             </div>
             <p className="mt-5 text-xs font-semibold uppercase text-muted-foreground">Chính sách Tiệm Rêu</p>
@@ -73,7 +73,7 @@ export default async function PolicyDetailPage({ params }: Props) {
 
           <div className="min-w-0">
             <header className="border-b border-border pb-8 sm:pb-10">
-              <h1 className="font-serif text-3xl font-semibold leading-tight text-foreground sm:text-5xl">
+              <h1 className="text-2xl font-bold leading-tight text-foreground sm:text-4xl">
                 {policy.title}
               </h1>
               <p className="mt-4 text-sm text-muted-foreground">
@@ -86,12 +86,12 @@ export default async function PolicyDetailPage({ params }: Props) {
             </header>
 
             <div
-              className="prose prose-neutral mt-9 max-w-none text-muted-foreground prose-headings:font-serif prose-headings:font-semibold prose-headings:text-foreground prose-a:text-foreground prose-strong:text-foreground prose-li:marker:text-muted-foreground sm:mt-11"
+              className="prose prose-neutral mt-7 max-w-none text-muted-foreground prose-headings:font-bold prose-headings:text-foreground prose-a:text-primary prose-strong:text-foreground prose-li:marker:text-primary sm:mt-10"
               dangerouslySetInnerHTML={{ __html: safeContent }}
             />
 
             <section className="mt-12 border-t border-border pt-8">
-              <div className="flex flex-col gap-5 rounded-lg border border-border bg-[#f7f8f6] p-6 sm:flex-row sm:items-center sm:justify-between sm:p-7">
+              <div className="flex flex-col gap-5 rounded-card border border-primary-border bg-primary-soft/45 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-7">
                 <div>
                   <div className="flex items-center gap-2 font-semibold text-foreground">
                     <MessageCircle className="h-5 w-5" />
@@ -103,7 +103,7 @@ export default async function PolicyDetailPage({ params }: Props) {
                 </div>
                 <Link
                   href="/contact"
-                  className="inline-flex min-h-12 shrink-0 items-center justify-center gap-2 rounded-md bg-foreground px-5 text-sm font-semibold text-white transition-colors hover:bg-foreground/85"
+                  className="inline-flex min-h-12 shrink-0 items-center justify-center gap-2 rounded-control bg-primary px-5 text-sm font-semibold text-white transition-colors hover:bg-primary-hover"
                 >
                   Liên hệ hỗ trợ
                   <ArrowRight className="h-4 w-4" />

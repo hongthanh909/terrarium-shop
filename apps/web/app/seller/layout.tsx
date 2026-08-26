@@ -10,14 +10,14 @@ const nav = [
 
 export default function SellerLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-[100dvh] bg-[#f7faf4]">
-      <header className="border-b border-[#dfe8d7] bg-white">
+    <div className="min-h-[100dvh] bg-white">
+      <header className="border-b border-border bg-white">
         <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between gap-4">
-            <Link href="/" className="text-sm font-semibold text-[#2f4a23]">
+            <Link href="/" className="text-sm font-semibold text-primary">
               Tiệm Rêu Décor
             </Link>
-            <Link href="/forum" className="rounded-full border border-[#c6d8ba] px-3 py-2 text-xs font-semibold text-[#3d5f2d]">
+            <Link href="/forum" className="rounded-control border border-primary-border bg-primary-soft px-3 py-2 text-xs font-semibold text-primary">
               Xem diễn đàn
             </Link>
           </div>
@@ -26,7 +26,7 @@ export default function SellerLayout({ children }: { children: React.ReactNode }
               <Link
                 key={item.href}
                 href={item.href}
-                className="flex min-h-10 shrink-0 items-center gap-2 rounded-full border border-[#dfe8d7] bg-white px-3 py-2 text-sm font-medium text-[#526248] hover:border-[#9fbe8d] hover:text-[#2f4a23]"
+                className="flex min-h-11 shrink-0 items-center gap-2 rounded-control border border-border bg-white px-3 py-2 text-sm font-medium text-muted-foreground hover:border-primary-border hover:bg-primary-soft hover:text-primary"
               >
                 <item.icon className="h-4 w-4" />
                 {item.label}
