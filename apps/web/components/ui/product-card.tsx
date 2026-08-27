@@ -15,6 +15,7 @@ export interface ProductCardProps {
   basePrice: number;
   salePrice?: number | null;
   saleEndDate?: string | null;
+  packageOptionsEnabled?: boolean | null;
   inventory?: number;
   images: string[];
   category?: { name: string };
@@ -36,6 +37,7 @@ export function ProductCard({
   basePrice,
   salePrice,
   saleEndDate,
+  packageOptionsEnabled,
   inventory,
   images,
   category,
@@ -55,10 +57,7 @@ export function ProductCard({
   const usableImages = sanitizeProductImages(images);
   const activeImage = usableImages[imageIndex];
 
-  const isBểProduct =
-    category?.name?.toLowerCase().includes("bể") ||
-    name?.toLowerCase().includes("bể") ||
-    slug?.toLowerCase().includes("be");
+  const hasPackageOptions = packageOptionsEnabled !== false;
 
   const isOnSale =
     salePrice != null &&
@@ -173,7 +172,7 @@ export function ProductCard({
             )}
           </div>
 
-          {isBểProduct ? (
+          {hasPackageOptions ? (
             <Link
               href={`/products/${slug}`}
               className="flex h-10 w-full min-w-0 items-center justify-center gap-1.5 rounded-control border border-primary-border bg-primary-soft px-2.5 text-xs font-semibold text-primary transition-colors hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:h-11 sm:w-auto sm:min-w-11 sm:px-3"

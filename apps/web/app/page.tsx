@@ -156,6 +156,9 @@ async function FeaturedProductsSection() {
                     basePrice={Number(product.basePrice.toString())}
                     salePrice={product.salePrice != null ? Number(product.salePrice.toString()) : null}
                     saleEndDate={product.saleEndDate ? product.saleEndDate.toISOString() : null}
+                    packageOptionsEnabled={product.packageOptionsEnabled}
+                    standardPackageAdjustment={Number(product.standardPackageAdjustment)}
+                    advancedPackageAdjustment={Number(product.advancedPackageAdjustment)}
                     inventory={product.inventory}
                     images={product.images}
                     category={product.category ? { name: product.category.name } : undefined}

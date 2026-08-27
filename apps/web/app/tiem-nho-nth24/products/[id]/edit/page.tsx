@@ -41,6 +41,9 @@ const toVNDatetimeLocal = (dateStr: string | null | undefined): string => {
   return `${vnDate.getFullYear()}-${pad(vnDate.getMonth() + 1)}-${pad(vnDate.getDate())}T${pad(vnDate.getHours())}:${pad(vnDate.getMinutes())}`;
 };
 
+const parseVND = (value: string | number) =>
+  Number(String(value ?? "").replace(/\D/g, "")) || 0;
+
 const SETUP_STATUS_OPTIONS = [
   { label: "Chưa phân loại", value: "" },
   { label: "Đã setup sẵn", value: "READY_TO_DISPLAY" },
@@ -94,6 +97,9 @@ export default function EditProductPage() {
     basePrice: "",
     salePrice: "",
     saleEndDate: "",
+    packageOptionsEnabled: true,
+    standardPackageAdjustment: "100.000",
+    advancedPackageAdjustment: "120.000",
     type: "PRODUCT",
     categoryId: "",
     status: "DRAFT",
@@ -194,6 +200,9 @@ export default function EditProductPage() {
           basePrice: formatVND(product.basePrice?.toString() || "0"),
           salePrice: product.salePrice ? formatVND(product.salePrice.toString()) : "",
           saleEndDate: toVNDatetimeLocal(product.saleEndDate),
+          packageOptionsEnabled: product.packageOptionsEnabled !== false,
+          standardPackageAdjustment: formatVND(product.standardPackageAdjustment ?? 100000),
+          advancedPackageAdjustment: formatVND(product.advancedPackageAdjustment ?? 120000),
           type: product.type || "PRODUCT",
           categoryId: product.categoryId || "",
           status: product.status || "DRAFT",
@@ -424,6 +433,9 @@ export default function EditProductPage() {
         saleEndDate: formData.saleEndDate
           ? new Date(formData.saleEndDate + ":00+07:00").toISOString()
           : null,
+        packageOptionsEnabled: formData.packageOptionsEnabled,
+        standardPackageAdjustment: cleanPrice(formData.standardPackageAdjustment),
+        advancedPackageAdjustment: cleanPrice(formData.advancedPackageAdjustment),
         displayRating: displayRatingVal,
         displayReviewCount: displayReviewCountVal,
         images: allImages,
@@ -591,6 +603,57 @@ export default function EditProductPage() {
                 Sản phẩm nổi bật (Featured) 🔥
               </label>
             </div>
+          </div>
+        </div>
+
+        <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+          <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <h3 className="text-base font-semibold text-gray-900">Gói sản phẩm & giá combo</h3>
+              <p className="mt-1 text-sm text-gray-500">Quản lý lựa chọn không đèn, có đèn và bộ đầy đủ cho sản phẩm này.</p>
+            </div>
+            <label className="flex min-h-11 cursor-pointer items-center gap-3 rounded-md border border-gray-200 px-3 py-2 text-sm font-semibold text-gray-800">
+              <input
+                type="checkbox"
+                checked={formData.packageOptionsEnabled}
+                onChange={(event) => setFormData({ ...formData, packageOptionsEnabled: event.target.checked })}
+                className="h-4 w-4 rounded border-gray-300 text-gray-950 focus:ring-gray-950"
+              />
+              Hiển thị lựa chọn gói
+            </label>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-3">
+            {[
+              { label: "Gói cơ bản", description: "Không kèm đèn", adjustment: 0, field: null },
+              { label: "Gói tiêu chuẩn", description: "Đèn + đế", adjustment: parseVND(formData.standardPackageAdjustment), field: "standardPackageAdjustment" as const },
+              { label: "Gói nâng cao", description: "Đèn + đế + dụng cụ", adjustment: parseVND(formData.advancedPackageAdjustment), field: "advancedPackageAdjustment" as const },
+            ].map((item) => {
+              const activeBase = parseVND(formData.salePrice) || parseVND(formData.basePrice);
+              return (
+                <div key={item.label} className="rounded-md border border-gray-200 p-4">
+                  <p className="font-semibold text-gray-900">{item.label}</p>
+                  <p className="mt-0.5 text-xs text-gray-500">{item.description}</p>
+                  {item.field ? (
+                    <label className="mt-4 block text-xs font-semibold text-gray-600">
+                      Phụ thu (VNĐ)
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        value={formData[item.field]}
+                        onChange={(event) => setFormData({ ...formData, [item.field!]: formatVND(event.target.value) })}
+                        className="mt-1 min-h-11 w-full rounded-md border border-gray-300 px-3 text-sm font-semibold focus:border-gray-950 focus:outline-none"
+                      />
+                    </label>
+                  ) : (
+                    <p className="mt-4 text-xs font-semibold text-gray-500">Không phụ thu</p>
+                  )}
+                  <p className="mt-3 border-t border-gray-100 pt-3 text-sm text-gray-600">
+                    Giá hiển thị: <strong className="tabular-nums text-gray-950">{formatVND(activeBase + item.adjustment)}đ</strong>
+                  </p>
+                </div>
+              );
+            })}
           </div>
         </div>
 

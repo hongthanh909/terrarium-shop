@@ -3,7 +3,11 @@ import { getServerSession } from "next-auth";
 import { prisma } from "@/lib/prisma";
 import { authOptions } from "@/lib/auth";
 import { verifyAdminRequest } from "@/lib/admin-auth";
-import { getProductPackagePriceAdjustment } from "@/lib/product-packages";
+import {
+  getProductPackageKey,
+  getProductPackagePriceAdjustment,
+  isProductPackageEnabled,
+} from "@/lib/product-packages";
 
 export const PAYMENT_TIMEOUT_MINUTES = 30;
 
@@ -107,25 +111,12 @@ function normalizeText(value: unknown) {
 }
 
 function inferPackageAdjustment(product: any, variants: Record<string, unknown>) {
-  const productText = normalizeText(
-    `${product.name} ${product.slug} ${product.category?.name ?? ""} ${product.category?.slug ?? ""}`
-  );
-  const variantText = normalizeText(Object.values(variants).join(" "));
-  const looksLikeTank =
-    productText.includes(" be") ||
-    productText.includes("be ") ||
-    productText.includes("be-") ||
-    productText.includes("bể") ||
-    productText.includes("tank");
+  if (!isProductPackageEnabled(product)) return 0;
 
-  if (!looksLikeTank) return 0;
-  if (variantText.includes("advanced") || variantText.includes("nang cao")) {
-    return getProductPackagePriceAdjustment("advanced");
-  }
-  if (variantText.includes("standard") || variantText.includes("tieu chuan")) {
-    return getProductPackagePriceAdjustment("standard");
-  }
-  return 0;
+  const variantText = normalizeText(Object.values(variants).join(" "));
+  if (!variantText.includes("goi") && !variantText.includes("package")) return 0;
+
+  return getProductPackagePriceAdjustment(getProductPackageKey(variantText), product);
 }
 
 export function calculateProductUnitPrice(

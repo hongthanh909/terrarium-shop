@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { ImageWrapper } from "@/components/ui/ImageWrapper";
-import { Plus, Edit, Trash2, Eye, Search, Filter, Pin, Star, Flame, Zap } from "lucide-react";
+import { Plus, Edit, Trash2, Eye, Search, Filter, Pin, Star, Flame, Zap, RefreshCw } from "lucide-react";
 import { showToast } from "@/components/ui/custom-toast";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 
@@ -17,6 +17,9 @@ interface Product {
   };
   salePrice?: { toString: () => string } | string | number | null;
   saleEndDate?: string | null;
+  packageOptionsEnabled?: boolean | null;
+  standardPackageAdjustment?: number | string | null;
+  advancedPackageAdjustment?: number | string | null;
   status: string;
   inventory: number;
   category: {
@@ -30,6 +33,11 @@ interface Product {
 }
 
 const formatPrice = (value: number) => `${value.toLocaleString("vi-VN")}đ`;
+const formatPriceInput = (value: string | number) => {
+  const digits = String(value ?? "").replace(/\D/g, "");
+  return digits ? Number(digits).toLocaleString("vi-VN") : "";
+};
+const parsePriceInput = (value: string) => Number(value.replace(/\D/g, "")) || 0;
 
 const toNumber = (value: Product["salePrice"] | Product["basePrice"]) => {
   if (value == null) return null;
@@ -76,6 +84,35 @@ export default function AdminProductsPage() {
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [confirmBulkDelete, setConfirmBulkDelete] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
+  const [standardPackageAdjustment, setStandardPackageAdjustment] = useState("100.000");
+  const [advancedPackageAdjustment, setAdvancedPackageAdjustment] = useState("120.000");
+  const [enablePackagesForAll, setEnablePackagesForAll] = useState(true);
+  const [confirmPackageSync, setConfirmPackageSync] = useState(false);
+
+  const syncPackagePricing = async () => {
+    setConfirmPackageSync(false);
+    setActionLoading(true);
+    try {
+      const response = await fetch("/api/admin/products/package-pricing", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          standardPackageAdjustment: parsePriceInput(standardPackageAdjustment),
+          advancedPackageAdjustment: parsePriceInput(advancedPackageAdjustment),
+          packageOptionsEnabled: enablePackagesForAll,
+        }),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data.error || "Không thể đồng bộ giá gói");
+
+      await queryClient.invalidateQueries({ queryKey: ["admin-products"] });
+      showToast.success(`Đã đồng bộ giá gói cho ${data.updatedProducts || 0} sản phẩm`);
+    } catch (error) {
+      showToast.error(error instanceof Error ? error.message : "Không thể đồng bộ giá gói");
+    } finally {
+      setActionLoading(false);
+    }
+  };
 
   const handleDelete = async (id: string) => {
     setConfirmDeleteId(id);
@@ -307,6 +344,57 @@ export default function AdminProductsPage() {
         </Link>
       </div>
 
+      <section className="mb-6 rounded-lg border border-gray-200 bg-white p-5 shadow-sm">
+        <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
+          <div className="max-w-xl">
+            <h3 className="text-base font-semibold text-gray-900">Đồng bộ giá combo toàn bộ sản phẩm</h3>
+            <p className="mt-1 text-sm text-gray-500">Thiết lập phụ thu chung cho gói có đèn và gói đầy đủ. Giá gốc, flash sale và voucher của từng sản phẩm vẫn được giữ nguyên.</p>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-[180px_180px_auto] xl:items-end">
+            <label className="text-xs font-semibold text-gray-600">
+              Gói tiêu chuẩn
+              <input
+                type="text"
+                inputMode="numeric"
+                value={standardPackageAdjustment}
+                onChange={(event) => setStandardPackageAdjustment(formatPriceInput(event.target.value))}
+                className="mt-1 min-h-11 w-full rounded-md border border-gray-300 px-3 text-sm font-semibold focus:border-gray-950 focus:outline-none"
+                aria-label="Phụ thu gói tiêu chuẩn"
+              />
+            </label>
+            <label className="text-xs font-semibold text-gray-600">
+              Gói nâng cao
+              <input
+                type="text"
+                inputMode="numeric"
+                value={advancedPackageAdjustment}
+                onChange={(event) => setAdvancedPackageAdjustment(formatPriceInput(event.target.value))}
+                className="mt-1 min-h-11 w-full rounded-md border border-gray-300 px-3 text-sm font-semibold focus:border-gray-950 focus:outline-none"
+                aria-label="Phụ thu gói nâng cao"
+              />
+            </label>
+            <button
+              type="button"
+              onClick={() => setConfirmPackageSync(true)}
+              disabled={actionLoading}
+              className="flex min-h-11 items-center justify-center gap-2 rounded-md bg-gray-950 px-4 text-sm font-semibold text-white transition-colors hover:bg-gray-800 disabled:opacity-50"
+            >
+              <RefreshCw className="h-4 w-4" />
+              Đồng bộ tất cả
+            </button>
+          </div>
+        </div>
+        <label className="mt-4 flex cursor-pointer items-center gap-2 text-sm text-gray-700">
+          <input
+            type="checkbox"
+            checked={enablePackagesForAll}
+            onChange={(event) => setEnablePackagesForAll(event.target.checked)}
+            className="h-4 w-4 rounded border-gray-300 text-gray-950 focus:ring-gray-950"
+          />
+          Hiển thị lựa chọn gói cho toàn bộ sản phẩm sau khi đồng bộ
+        </label>
+      </section>
+
       {/* Filters */}
       <div className="bg-white rounded-lg shadow p-4 mb-6">
         <div className="flex gap-4">
@@ -480,6 +568,12 @@ export default function AdminProductsPage() {
                               </span>
                             </div>
                           )}
+                          {product.packageOptionsEnabled !== false && (
+                            <div className="mt-1 text-[11px] leading-4 text-gray-500">
+                              <span className="block">Có đèn +{formatPrice(Number(product.standardPackageAdjustment ?? 100000))}</span>
+                              <span className="block">Đầy đủ +{formatPrice(Number(product.advancedPackageAdjustment ?? 120000))}</span>
+                            </div>
+                          )}
                         </div>
                       );
                     })()}
@@ -567,6 +661,16 @@ export default function AdminProductsPage() {
       </div>
 
       {/* Confirm delete single */}
+      <ConfirmDialog
+        open={confirmPackageSync}
+        onOpenChange={setConfirmPackageSync}
+        title="Đồng bộ giá combo"
+        description={`Áp dụng phụ thu ${standardPackageAdjustment || "0"}đ cho gói tiêu chuẩn và ${advancedPackageAdjustment || "0"}đ cho gói nâng cao lên toàn bộ ${products.length} sản phẩm? Giá tùy chỉnh hiện tại sẽ bị ghi đè.`}
+        confirmLabel="Đồng bộ"
+        variant="default"
+        onConfirm={syncPackagePricing}
+      />
+
       <ConfirmDialog
         open={!!confirmDeleteId}
         onOpenChange={(open) => !open && setConfirmDeleteId(null)}

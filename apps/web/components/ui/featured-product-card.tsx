@@ -4,7 +4,7 @@ import { ProductCard } from "@/components/ui/product-card";
 import { useCartStore } from "@/lib/store/cartStore";
 import { useWishlist } from "@/lib/hooks/useWishlist";
 import { showToast } from "@/components/ui/custom-toast";
-import { getProductPackagePriceAdjustment } from "@/lib/product-packages";
+import { getProductPackagePriceAdjustment, isProductPackageEnabled, PRODUCT_PACKAGE_LABELS } from "@/lib/product-packages";
 import { getPrimaryProductImage, sanitizeProductImages } from "@/lib/product-images";
 
 interface FeaturedProductCardProps {
@@ -14,6 +14,9 @@ interface FeaturedProductCardProps {
   basePrice: number;
   salePrice?: number | null;
   saleEndDate?: string | null;
+  packageOptionsEnabled?: boolean | null;
+  standardPackageAdjustment?: number | string | null;
+  advancedPackageAdjustment?: number | string | null;
   inventory?: number;
   images: string[];
   category?: { name: string };
@@ -42,21 +45,17 @@ export function FeaturedProductCard(props: FeaturedProductCardProps) {
       ? props.salePrice
       : props.basePrice;
 
-    const isBể = 
-      props.category?.name?.toLowerCase().includes("bể") ||
-      props.name?.toLowerCase().includes("bể") ||
-      props.slug?.toLowerCase().includes("be");
+    const hasPackageOptions = isProductPackageEnabled(props);
 
-    const pkgPriceAdjustment = isBể
-      ? getProductPackagePriceAdjustment(selectedPackage)
+    const pkgPriceAdjustment = hasPackageOptions
+      ? getProductPackagePriceAdjustment(selectedPackage, props)
       : 0;
 
     const price = base + pkgPriceAdjustment;
 
     const variants: Record<string, string> = {};
-    if (isBể) {
-      variants["Phân loại"] = selectedPackage === "standard" ? "Gói tiêu chuẩn" :
-                              selectedPackage === "advanced" ? "Gói nâng cao" : "Gói cơ bản";
+    if (hasPackageOptions) {
+      variants["Phân loại"] = PRODUCT_PACKAGE_LABELS[selectedPackage as keyof typeof PRODUCT_PACKAGE_LABELS] || PRODUCT_PACKAGE_LABELS.basic;
     }
 
     addItem({

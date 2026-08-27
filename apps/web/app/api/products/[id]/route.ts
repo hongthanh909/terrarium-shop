@@ -114,6 +114,9 @@ export async function PUT(
       shortConsultNote,
       displayRating,
       displayReviewCount,
+      packageOptionsEnabled,
+      standardPackageAdjustment,
+      advancedPackageAdjustment,
     } = validatedData;
 
     // Extract sale fields from body
@@ -168,6 +171,9 @@ export async function PUT(
           shortConsultNote: shortConsultNote !== undefined ? shortConsultNote : undefined,
           displayRating: displayRating !== undefined ? displayRating : undefined,
           displayReviewCount: displayReviewCount !== undefined ? displayReviewCount : undefined,
+          packageOptionsEnabled: packageOptionsEnabled !== undefined ? packageOptionsEnabled : undefined,
+          standardPackageAdjustment: standardPackageAdjustment !== undefined ? standardPackageAdjustment : undefined,
+          advancedPackageAdjustment: advancedPackageAdjustment !== undefined ? advancedPackageAdjustment : undefined,
         } as any,
       });
 

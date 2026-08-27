@@ -13,7 +13,7 @@ import { useSession } from "next-auth/react";
 import { showToast } from "@/components/ui/custom-toast";
 import { motion, useReducedMotion } from "framer-motion";
 import { getProductRatingSummary } from "@/lib/product-rating";
-import { getProductPackagePriceAdjustment } from "@/lib/product-packages";
+import { getProductPackagePriceAdjustment, isProductPackageEnabled, PRODUCT_PACKAGE_LABELS } from "@/lib/product-packages";
 import { trackEvent } from "@/lib/analytics-client";
 import { getPrimaryProductImage } from "@/lib/product-images";
 
@@ -24,6 +24,9 @@ interface Product {
   basePrice: { toString: () => string };
   salePrice?: { toString: () => string } | null;
   saleEndDate?: string | null;
+  packageOptionsEnabled?: boolean | null;
+  standardPackageAdjustment?: number | string | null;
+  advancedPackageAdjustment?: number | string | null;
   inventory: number;
   images: string[];
   category: { id: string; name: string };
@@ -88,21 +91,17 @@ export function ProductsClient({
       (!product.saleEndDate || new Date(product.saleEndDate) > new Date());
     const base = saleIsValid ? salePrice : basePrice;
 
-    const isBể = 
-      product.category?.name?.toLowerCase().includes("bể") ||
-      product.name?.toLowerCase().includes("bể") ||
-      product.slug?.toLowerCase().includes("be");
+    const hasPackageOptions = isProductPackageEnabled(product);
 
-    const pkgPriceAdjustment = isBể
-      ? getProductPackagePriceAdjustment(selectedPackage)
+    const pkgPriceAdjustment = hasPackageOptions
+      ? getProductPackagePriceAdjustment(selectedPackage, product)
       : 0;
 
     const price = base + pkgPriceAdjustment;
 
     const variants: Record<string, string> = {};
-    if (isBể) {
-      variants["Phân loại"] = selectedPackage === "standard" ? "Gói tiêu chuẩn" :
-                              selectedPackage === "advanced" ? "Gói nâng cao" : "Gói cơ bản";
+    if (hasPackageOptions) {
+      variants["Phân loại"] = PRODUCT_PACKAGE_LABELS[selectedPackage as keyof typeof PRODUCT_PACKAGE_LABELS] || PRODUCT_PACKAGE_LABELS.basic;
     }
 
     addItem({
@@ -269,6 +268,7 @@ export function ProductsClient({
                         basePrice={parseFloat(product.basePrice.toString())}
                         salePrice={product.salePrice ? parseFloat(product.salePrice.toString()) : null}
                         saleEndDate={product.saleEndDate ?? null}
+                        packageOptionsEnabled={product.packageOptionsEnabled}
                         inventory={product.inventory}
                         images={product.images}
                         imagePriority={groupIndex === 0 && productIndex < 2}
@@ -298,6 +298,7 @@ export function ProductsClient({
                   basePrice={parseFloat(product.basePrice.toString())}
                   salePrice={product.salePrice ? parseFloat(product.salePrice.toString()) : null}
                   saleEndDate={product.saleEndDate ?? null}
+                  packageOptionsEnabled={product.packageOptionsEnabled}
                   inventory={product.inventory}
                   images={product.images}
                   imagePriority={productIndex < 2}

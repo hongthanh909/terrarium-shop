@@ -18,7 +18,7 @@ import { showToast } from "@/components/ui/custom-toast";
 import { useCartStore } from "@/lib/store/cartStore";
 import { useWishlist } from "@/lib/hooks/useWishlist";
 import { getProductRatingSummary } from "@/lib/product-rating";
-import { getProductPackagePriceAdjustment } from "@/lib/product-packages";
+import { getProductPackagePriceAdjustment, isProductPackageEnabled, PRODUCT_PACKAGE_LABELS } from "@/lib/product-packages";
 import { sanitizeProductImages } from "@/lib/product-images";
 
 interface Product {
@@ -28,6 +28,9 @@ interface Product {
   basePrice: { toString: () => string };
   salePrice?: { toString: () => string } | null;
   saleEndDate?: string | null;
+  packageOptionsEnabled?: boolean | null;
+  standardPackageAdjustment?: number | string | null;
+  advancedPackageAdjustment?: number | string | null;
   inventory?: number;
   images: string[];
   category: { id: string; name: string };
@@ -76,22 +79,14 @@ function useAddToCart() {
 
   return (product: Product, selectedPackage = "basic", quantity = 1) => {
     const itemPrice = getCurrentPrice(product);
-    const isTank =
-      product.category?.name?.toLowerCase().includes("bể") ||
-      product.name?.toLowerCase().includes("bể") ||
-      product.slug?.toLowerCase().includes("be");
-    const packageAdjustment = isTank
-      ? getProductPackagePriceAdjustment(selectedPackage)
+    const hasPackageOptions = isProductPackageEnabled(product);
+    const packageAdjustment = hasPackageOptions
+      ? getProductPackagePriceAdjustment(selectedPackage, product)
       : 0;
     const variants: Record<string, string> = {};
 
-    if (isTank) {
-      variants["Phân loại"] =
-        selectedPackage === "standard"
-          ? "Gói tiêu chuẩn"
-          : selectedPackage === "advanced"
-            ? "Gói nâng cao"
-            : "Gói cơ bản";
+    if (hasPackageOptions) {
+      variants["Phân loại"] = PRODUCT_PACKAGE_LABELS[selectedPackage as keyof typeof PRODUCT_PACKAGE_LABELS] || PRODUCT_PACKAGE_LABELS.basic;
     }
 
     addItem({
@@ -150,6 +145,7 @@ export function ExploreClient({
         basePrice={Number(product.basePrice.toString())}
         salePrice={product.salePrice ? Number(product.salePrice.toString()) : null}
         saleEndDate={product.saleEndDate ?? null}
+        packageOptionsEnabled={product.packageOptionsEnabled}
         inventory={product.inventory}
         images={product.images}
         category={product.category}

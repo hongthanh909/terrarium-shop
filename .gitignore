@@ -80,5 +80,7 @@ packages/database/prisma/migrations/*
 !packages/database/prisma/migrations/20260814090000_add_discount_campaign_deleted_at/migration.sql
 !packages/database/prisma/migrations/20260814090000_add_discount_codes/
 !packages/database/prisma/migrations/20260814090000_add_discount_codes/migration.sql
+!packages/database/prisma/migrations/20260827120000_add_product_package_pricing/
+!packages/database/prisma/migrations/20260827120000_add_product_package_pricing/migration.sql
 # Turbo cache (large binary files)
 .turbo/cache/

@@ -21,7 +21,11 @@ import { ProductCard } from "@/components/ui/product-card";
 import { ImageWrapper } from "@/components/ui/ImageWrapper";
 import { useWishlist } from "@/lib/hooks/useWishlist";
 import { getPositiveRatingBreakdown, getProductRatingSummary } from "@/lib/product-rating";
-import { getProductPackagePriceAdjustment } from "@/lib/product-packages";
+import {
+  getProductPackagePriceAdjustment,
+  isProductPackageEnabled,
+  PRODUCT_PACKAGE_LABELS,
+} from "@/lib/product-packages";
 import { trackEvent } from "@/lib/analytics-client";
 import { ProductAdminChat } from "@/components/chat/ProductAdminChat";
 
@@ -30,31 +34,6 @@ const LAMP_VARIANT_TYPE = "Đèn";
 const LAMP_COMBO_OPTION = "Combo bể + đèn";
 const LAMP_NONE_OPTION = "Không kèm đèn";
 const LAMP_PRICE_ADJUSTMENT = 100000;
-
-// 3-tier package selection for Bể products
-const PACKAGES = [
-  {
-    key: "basic",
-    label: "Gói cơ bản",
-    sub: "Không kèm đèn",
-    priceAdj: 0,
-    icon: "🪴",
-  },
-  {
-    key: "standard",
-    label: "Gói tiêu chuẩn",
-    sub: "Đèn + đế",
-    priceAdj: getProductPackagePriceAdjustment("standard"),
-    icon: "💡",
-  },
-  {
-    key: "advanced",
-    label: "Gói nâng cao",
-    sub: "Đèn + đế + dụng cụ",
-    priceAdj: getProductPackagePriceAdjustment("advanced"),
-    icon: "🔧",
-  },
-];
 
 type VoucherData = {
   id: string;
@@ -93,15 +72,28 @@ export function ProductDetailClient({
     }
   }, [initialProduct?.id, initialProduct?.slug]);
 
-  const isBểProduct = initialProduct?.category?.name?.toLowerCase().includes("bể") || 
-                       initialProduct?.category?.slug?.toLowerCase().includes("be") ||
-                       initialProduct?.name?.toLowerCase().includes("bể");
+  const hasPackageOptions = isProductPackageEnabled(initialProduct);
+  const packages = [
+    { key: "basic", label: PRODUCT_PACKAGE_LABELS.basic, sub: "Không kèm đèn", priceAdj: 0 },
+    {
+      key: "standard",
+      label: PRODUCT_PACKAGE_LABELS.standard,
+      sub: "Đèn + đế",
+      priceAdj: getProductPackagePriceAdjustment("standard", initialProduct),
+    },
+    {
+      key: "advanced",
+      label: PRODUCT_PACKAGE_LABELS.advanced,
+      sub: "Đèn + đế + dụng cụ",
+      priceAdj: getProductPackagePriceAdjustment("advanced", initialProduct),
+    },
+  ];
 
   // 3-tier package selection (replaces old 2-button lamp selector)
   const [selectedPackage, setSelectedPackage] = useState<string>("basic");
 
   const [selectedVariants, setSelectedVariants] = useState<Record<string, string>>(() => {
-    if (isBểProduct) {
+    if (hasPackageOptions) {
       return { [LAMP_VARIANT_TYPE]: LAMP_NONE_OPTION } as Record<string, string>;
     }
     return {} as Record<string, string>;
@@ -401,9 +393,8 @@ export function ProductDetailClient({
     if (isSaleValid) { currentBase = parseFloat(product.salePrice.toString()); isSale = true; }
     let price = currentBase;
 
-    // Package adjustment for Bể products (replaces old lamp toggle)
-    if (isBểProduct) {
-      const pkg = PACKAGES.find(p => p.key === selectedPackage);
+    if (hasPackageOptions) {
+      const pkg = packages.find(p => p.key === selectedPackage);
       if (pkg) {
         price += pkg.priceAdj;
         base += pkg.priceAdj;
@@ -430,9 +421,8 @@ export function ProductDetailClient({
     if (!session) { showToast.warning("Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng"); router.push(`/login?callbackUrl=/products/${product.slug}`); return; }
     const { price } = getPriceWithVariants();
     const cartVariants = { ...selectedVariants };
-    if (isBểProduct) {
-      const pkgLabel = selectedPackage === "standard" ? "Gói tiêu chuẩn" :
-                       selectedPackage === "advanced" ? "Gói nâng cao" : "Gói cơ bản";
+    if (hasPackageOptions) {
+      const pkgLabel = PRODUCT_PACKAGE_LABELS[selectedPackage as keyof typeof PRODUCT_PACKAGE_LABELS] || PRODUCT_PACKAGE_LABELS.basic;
       cartVariants["Phân loại"] = pkgLabel;
     }
     delete cartVariants[LAMP_VARIANT_TYPE];
@@ -453,9 +443,8 @@ export function ProductDetailClient({
     if (!session) { showToast.error("Vui lòng đăng nhập để mua hàng"); router.push(`/login?callbackUrl=/products/${product.slug}`); return; }
     const { price } = getPriceWithVariants();
     const cartVariants = { ...selectedVariants };
-    if (isBểProduct) {
-      const pkgLabel = selectedPackage === "standard" ? "Gói tiêu chuẩn" :
-                       selectedPackage === "advanced" ? "Gói nâng cao" : "Gói cơ bản";
+    if (hasPackageOptions) {
+      const pkgLabel = PRODUCT_PACKAGE_LABELS[selectedPackage as keyof typeof PRODUCT_PACKAGE_LABELS] || PRODUCT_PACKAGE_LABELS.basic;
       cartVariants["Phân loại"] = pkgLabel;
     }
     delete cartVariants[LAMP_VARIANT_TYPE];
@@ -864,11 +853,11 @@ export function ProductDetailClient({
             </div>
 
             {/* 3-tier Package selector */}
-            {isBểProduct && (
+            {hasPackageOptions && (
               <div className="mb-5">
                 <p className="mb-2.5 text-xs font-bold text-muted-foreground">Chọn phiên bản</p>
                 <div className="grid grid-cols-3 gap-2" role="radiogroup" aria-label="Chọn phiên bản sản phẩm">
-                  {PACKAGES.map((pkg) => {
+                  {packages.map((pkg) => {
                     const isSelected = selectedPackage === pkg.key;
                     return (
                       <button
@@ -886,6 +875,9 @@ export function ProductDetailClient({
                         <span className="min-w-0 text-center">
                           <span className="block font-bold leading-tight">{pkg.label}</span>
                           <span className={`mt-1 hidden text-[10px] font-medium leading-tight min-[360px]:block ${isSelected ? "text-white/80" : "text-muted-foreground"}`}>{pkg.sub}</span>
+                          <span className={`mt-1 block text-[10px] font-bold tabular-nums ${isSelected ? "text-white" : "text-foreground"}`}>
+                            {(Number(isSale ? product.salePrice : product.basePrice) + pkg.priceAdj).toLocaleString("vi-VN")}₫
+                          </span>
                         </span>
                       </button>
                     );
@@ -1408,6 +1400,7 @@ export function ProductDetailClient({
                   basePrice={Number(rel.basePrice.toString())}
                   salePrice={rel.salePrice ? Number(rel.salePrice.toString()) : null}
                   saleEndDate={rel.saleEndDate ?? null}
+                  packageOptionsEnabled={rel.packageOptionsEnabled}
                   images={rel.images}
                   category={rel.category}
                   rating={relRatingSummary.rating}
@@ -1426,8 +1419,8 @@ export function ProductDetailClient({
                       relSalePrice < relBasePrice &&
                       (!rel.saleEndDate || new Date(rel.saleEndDate) > new Date());
                     const base = relSaleValid ? relSalePrice : relBasePrice;
-                    const price = base + getProductPackagePriceAdjustment(pkg);
-                    const pkgLabel = pkg === "standard" ? "Gói tiêu chuẩn" : pkg === "advanced" ? "Gói nâng cao" : "Gói cơ bản";
+                    const price = base + getProductPackagePriceAdjustment(pkg, rel);
+                    const pkgLabel = PRODUCT_PACKAGE_LABELS[pkg as keyof typeof PRODUCT_PACKAGE_LABELS] || PRODUCT_PACKAGE_LABELS.basic;
                     addItem({
                       productId: rel.id,
                       productName: rel.name,

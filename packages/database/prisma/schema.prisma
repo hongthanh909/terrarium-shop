@@ -254,6 +254,9 @@ model Product {
   basePrice          Decimal       @db.Decimal(10, 2)
   salePrice          Decimal?      @db.Decimal(10, 2) // Giá khuyến mãi (flash sale)
   saleEndDate        DateTime? // Thời gian kết thúc flash sale
+  packageOptionsEnabled Boolean @default(true)
+  standardPackageAdjustment Decimal @default(100000) @db.Decimal(10, 2)
+  advancedPackageAdjustment Decimal @default(120000) @db.Decimal(10, 2)
   type               ProductType   @default(PRODUCT)
   inventory          Int           @default(0)
   featured           Boolean       @default(false)
