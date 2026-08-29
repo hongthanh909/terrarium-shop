@@ -6,6 +6,7 @@ import {
   remainingPaymentSeconds,
   restoreOrderInventory,
 } from "@/lib/order-security";
+import { dispatchOrderEmail, queueOrderEmail } from "@/lib/order-notifications";
 
 export const dynamic = "force-dynamic";
 
@@ -56,7 +57,7 @@ export async function GET(
 
     const expired = isExpiredBankTransfer(order);
     if (expired) {
-      await prisma.$transaction(async (tx) => {
+      const eventKey = await prisma.$transaction(async (tx) => {
         const updated = await tx.order.updateMany({
           where: {
             id: order.id,
@@ -69,15 +70,28 @@ export async function GET(
 
         if (updated.count === 1) {
           await restoreOrderInventory(tx, order.items);
-          await tx.orderStatusLog.create({
+          const statusLog = await tx.orderStatusLog.create({
             data: {
               orderId: order.id,
               status: "CANCELLED",
               note: "Đơn chuyển khoản tự hủy do quá hạn thanh toán",
             },
           });
+
+          const queuedEventKey = `order:${order.id}:status:${statusLog.id}`;
+          await queueOrderEmail(tx, {
+            orderId: order.id,
+            eventKey: queuedEventKey,
+            eventType: "ORDER_STATUS_CHANGED",
+            payload: { status: "CANCELLED" },
+          });
+          return queuedEventKey;
         }
+
+        return null;
       });
+
+      if (eventKey) await dispatchOrderEmail(eventKey);
     }
     const serializedItems = order.items.map((item) => ({
       ...item,

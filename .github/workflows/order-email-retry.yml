@@ -1,0 +1,20 @@
+name: Retry order emails
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+
+jobs:
+  retry:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dispatch pending order emails
+        env:
+          ORDER_EMAIL_CRON_SECRET: ${{ secrets.ORDER_EMAIL_CRON_SECRET || secrets.ANALYTICS_CRON_SECRET }}
+        run: |
+          test -n "$ORDER_EMAIL_CRON_SECRET"
+          curl --fail-with-body --silent --show-error \
+            --request POST \
+            --header "Authorization: Bearer $ORDER_EMAIL_CRON_SECRET" \
+            https://tiemreudecor.com/api/internal/order-emails/retry

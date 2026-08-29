@@ -83,6 +83,20 @@ enum PaymentStatus {
   REFUNDED
 }
 
+enum OrderEmailEvent {
+  ORDER_CREATED
+  ORDER_STATUS_CHANGED
+  PAYMENT_STATUS_CHANGED
+  PAYMENT_CONFIRMED
+}
+
+enum EmailDeliveryStatus {
+  PENDING
+  SENDING
+  SENT
+  FAILED
+}
+
 enum ShippingMethod {
   GHN_STANDARD
   GHN_EXPRESS
@@ -511,6 +525,7 @@ model Order {
   items                OrderItem[]
   shippingInfo         ShippingInfo?
   statusLogs           OrderStatusLog[]
+  emailNotifications   OrderEmailNotification[]
   discounts            OrderDiscount[]
   shippingTracking     ShippingTracking?
   facebookVoucherClaim FacebookVoucherClaim?
@@ -571,6 +586,29 @@ model OrderStatusLog {
   order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
 
   @@map("order_status_logs")
+}
+
+model OrderEmailNotification {
+  id                String              @id @default(cuid())
+  orderId           String
+  eventKey          String              @unique
+  eventType         OrderEmailEvent
+  recipient         String
+  payload           Json?
+  status            EmailDeliveryStatus @default(PENDING)
+  providerMessageId String?
+  attempts          Int                 @default(0)
+  lastError         String?
+  lastAttemptAt     DateTime?
+  sentAt            DateTime?
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([status, createdAt])
+  @@index([orderId, createdAt])
+  @@map("order_email_notifications")
 }
 
 // ============================================

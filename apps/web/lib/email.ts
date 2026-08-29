@@ -9,13 +9,45 @@ const DEFAULT_FROM = process.env.RESEND_FROM_EMAIL || 'Tiệm Rêu Decor <no-rep
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://tiemreudecor.com';
 
-function escapeEmailHtml(value: string) {
+export function escapeEmailHtml(value: string) {
   return value
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#039;");
+}
+
+export async function sendTransactionalEmail(input: {
+  to: string;
+  subject: string;
+  html: string;
+  replyTo?: string;
+}) {
+  if (!resend) {
+    return { success: false as const, error: "RESEND_API_KEY is not configured" };
+  }
+
+  const subject = input.subject.replace(/[\r\n]/g, " ").trim().slice(0, 180);
+
+  try {
+    const { data, error } = await resend.emails.send({
+      from: DEFAULT_FROM,
+      to: input.to,
+      subject,
+      html: input.html,
+      ...(input.replyTo ? { replyTo: input.replyTo } : {}),
+    });
+
+    if (error) {
+      return { success: false as const, error: error.message };
+    }
+
+    return { success: true as const, id: data?.id ?? null };
+  } catch (error) {
+    console.error("Failed to send transactional email:", error);
+    return { success: false as const, error: "Lỗi nội bộ khi gửi email" };
+  }
 }
 
 function getPasswordResetEmailHTML(resetLink: string): string {

@@ -8,6 +8,7 @@ import {
   getProductPackagePriceAdjustment,
   isProductPackageEnabled,
 } from "@/lib/product-packages";
+import { dispatchOrderEmail, queueOrderEmail } from "@/lib/order-notifications";
 
 export const PAYMENT_TIMEOUT_MINUTES = 30;
 
@@ -158,13 +159,14 @@ export async function getPayOSClient() {
 }
 
 export async function markOrderPaid(orderId: string, note: string) {
-  await prisma.$transaction(async (tx) => {
+  const eventKey = `order:${orderId}:payment:PAID:${crypto.randomUUID()}`;
+  const queuedEventKey = await prisma.$transaction(async (tx) => {
     const order = await tx.order.findUnique({
       where: { id: orderId },
       select: { id: true, paymentStatus: true, status: true },
     });
 
-    if (!order || order.paymentStatus === "PAID") return;
+    if (!order || order.paymentStatus === "PAID") return null;
 
     await tx.order.update({
       where: { id: orderId },
@@ -183,5 +185,16 @@ export async function markOrderPaid(orderId: string, note: string) {
         },
       });
     }
+
+    await queueOrderEmail(tx, {
+      orderId,
+      eventKey,
+      eventType: "PAYMENT_CONFIRMED",
+      payload: { paymentStatus: "PAID" },
+    });
+
+    return eventKey;
   });
+
+  if (queuedEventKey) await dispatchOrderEmail(queuedEventKey);
 }

@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { recordPurchaseEvent } from "@/lib/analytics-server";
 import { requiresShippingQuote } from "@/lib/shipping-coverage";
+import { dispatchOrderEmail, queueOrderEmail } from "@/lib/order-notifications";
 
 const serializeOrder = (order: any) => ({
   ...order,
@@ -63,6 +64,12 @@ export async function POST(request: NextRequest) {
     const currentCustomerId = await getCurrentCustomerId();
     if (validated.data.customerId && validated.data.customerId !== currentCustomerId) {
       return NextResponse.json({ error: "Invalid customer" }, { status: 403 });
+    }
+    if (!currentCustomerId && !validated.data.shippingInfo?.email) {
+      return NextResponse.json(
+        { error: "Vui lòng nhập email để nhận thông báo đơn hàng" },
+        { status: 400 }
+      );
     }
 
     const requestedItems = validated.data.items;
@@ -318,6 +325,12 @@ export async function POST(request: NextRequest) {
         if (claimed.count !== 1) throw new Error("Voucher đã được sử dụng hoặc không còn hiệu lực");
       }
 
+      await queueOrderEmail(tx, {
+        orderId: newOrder.id,
+        eventKey: `order:${newOrder.id}:created`,
+        eventType: "ORDER_CREATED",
+      });
+
       return tx.order.findUnique({
         where: { id: newOrder.id },
         include: {
@@ -330,6 +343,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (order) {
+      await dispatchOrderEmail(`order:${order.id}:created`);
       await recordPurchaseEvent({
         ...validated.data.analytics,
         customerId: currentCustomerId,

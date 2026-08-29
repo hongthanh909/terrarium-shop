@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
 import { prisma } from "@/lib/prisma";
 import { restoreOrderInventory } from "@/lib/order-security";
+import { dispatchOrderEmail, queueOrderEmail } from "@/lib/order-notifications";
 
 export const dynamic = "force-dynamic";
 
@@ -59,13 +60,13 @@ export async function PATCH(
     }
 
     // Cập nhật trạng thái sang CANCELLED, hoàn voucher (nếu có) — trong 1 transaction
-    const updated = await prisma.$transaction(async (tx) => {
+    const result = await prisma.$transaction(async (tx) => {
       const updatedOrder = await tx.order.update({
         where: { id: orderId },
         data: { status: "CANCELLED", updatedAt: new Date() },
       });
 
-      await tx.orderStatusLog.create({
+      const statusLog = await tx.orderStatusLog.create({
         data: {
           orderId,
           status: "CANCELLED",
@@ -110,10 +111,20 @@ export async function PATCH(
         });
       }
 
-      return updatedOrder;
+      const eventKey = `order:${orderId}:status:${statusLog.id}`;
+      await queueOrderEmail(tx, {
+        orderId,
+        eventKey,
+        eventType: "ORDER_STATUS_CHANGED",
+        payload: { status: "CANCELLED" },
+      });
+
+      return { updatedOrder, eventKey };
     });
 
-    return NextResponse.json({ success: true, status: updated.status });
+    await dispatchOrderEmail(result.eventKey);
+
+    return NextResponse.json({ success: true, status: result.updatedOrder.status });
   } catch (error) {
     console.error("Error cancelling order:", error);
     return NextResponse.json({ error: "Lỗi server" }, { status: 500 });

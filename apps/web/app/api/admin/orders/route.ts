@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { verifyAdminRequest, unauthorizedResponse } from "@/lib/admin-auth";
 import { maskEmail, maskPhone } from "@/lib/privacy";
 import { reserveOrderInventory, restoreOrderInventory } from "@/lib/order-security";
+import { dispatchOrderEmail, queueOrderEmail } from "@/lib/order-notifications";
 
 export const dynamic = "force-dynamic";
 
@@ -95,6 +96,7 @@ export async function PATCH(request: NextRequest) {
       where: { id: orderId },
       select: {
         status: true,
+        paymentStatus: true,
         total: true,
         customerId: true,
         items: {
@@ -109,16 +111,22 @@ export async function PATCH(request: NextRequest) {
     const updateData: any = { updatedAt: new Date() };
     if (status) updateData.status = status;
     if (paymentStatus) updateData.paymentStatus = paymentStatus;
+    const statusChanged = Boolean(status && currentOrder?.status !== status);
+    const paymentChanged = Boolean(paymentStatus && currentOrder?.paymentStatus !== paymentStatus);
+    const paymentEventKey = paymentChanged
+      ? `order:${orderId}:payment:${paymentStatus}:${crypto.randomUUID()}`
+      : null;
 
     // Dùng transaction để đảm bảo tính toàn vẹn dữ liệu
-    const [order] = await prisma.$transaction(async (tx) => {
+    const result = await prisma.$transaction(async (tx) => {
+      const emailEventKeys: string[] = [];
       const updatedOrder = await tx.order.update({
         where: { id: orderId },
         data: updateData,
         include: { items: true, shippingInfo: true, customer: { select: { id: true, name: true, email: true } } },
       });
 
-      if (status && currentOrder && currentOrder.status !== status) {
+      if (statusChanged && currentOrder) {
         if (status === "CANCELLED") {
           await restoreOrderInventory(tx, currentOrder.items);
         } else if (currentOrder.status === "CANCELLED") {
@@ -127,14 +135,36 @@ export async function PATCH(request: NextRequest) {
       }
 
       // Ghi log thay đổi trạng thái
-      if (status) {
-        await tx.orderStatusLog.create({
+      if (statusChanged && status) {
+        const statusLog = await tx.orderStatusLog.create({
           data: {
             orderId,
             status,
             note: note || `Trạng thái cập nhật thành ${status}`,
           },
         });
+
+        const combinedPaymentConfirmation = paymentChanged && paymentStatus === "PAID" && status === "CONFIRMED";
+        if (!combinedPaymentConfirmation) {
+          const eventKey = `order:${orderId}:status:${statusLog.id}`;
+          await queueOrderEmail(tx, {
+            orderId,
+            eventKey,
+            eventType: "ORDER_STATUS_CHANGED",
+            payload: { status },
+          });
+          emailEventKeys.push(eventKey);
+        }
+      }
+
+      if (paymentChanged && paymentStatus && paymentEventKey) {
+        await queueOrderEmail(tx, {
+          orderId,
+          eventKey: paymentEventKey,
+          eventType: paymentStatus === "PAID" ? "PAYMENT_CONFIRMED" : "PAYMENT_STATUS_CHANGED",
+          payload: { paymentStatus },
+        });
+        emailEventKeys.push(paymentEventKey);
       }
 
       // Cộng điểm thưởng khi đơn hàng chuyển sang DELIVERED
@@ -155,10 +185,14 @@ export async function PATCH(request: NextRequest) {
         }
       }
 
-      return [updatedOrder];
+      return { order: updatedOrder, emailEventKeys };
     });
 
-    return NextResponse.json(serializeOrder(order));
+    for (const eventKey of result.emailEventKeys) {
+      await dispatchOrderEmail(eventKey);
+    }
+
+    return NextResponse.json(serializeOrder(result.order));
   } catch (error) {
     console.error("Error updating order:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

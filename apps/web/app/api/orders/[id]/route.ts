@@ -4,6 +4,7 @@ import { verifyAdminRequest, unauthorizedResponse } from "@/lib/admin-auth";
 import { logAdminAction } from "@/lib/audit";
 import { canAccessOrder, reserveOrderInventory, restoreOrderInventory } from "@/lib/order-security";
 import { z } from "zod";
+import { dispatchOrderEmail, queueOrderEmail } from "@/lib/order-notifications";
 
 const updateOrderSchema = z.object({
   status: z.enum(["PENDING", "CONFIRMED", "PROCESSING", "SHIPPING", "SHIPPED", "DELIVERED", "CANCELLED", "REFUNDED"]).optional(),
@@ -85,6 +86,7 @@ export async function PATCH(
       where: { id },
       select: {
         status: true,
+        paymentStatus: true,
         items: {
           select: {
             productId: true,
@@ -94,7 +96,14 @@ export async function PATCH(
       },
     });
 
-    const order = await prisma.$transaction(async (tx) => {
+    const statusChanged = Boolean(status && currentOrder?.status !== status);
+    const paymentChanged = Boolean(paymentStatus && currentOrder?.paymentStatus !== paymentStatus);
+    const paymentEventKey = paymentChanged
+      ? `order:${id}:payment:${paymentStatus}:${crypto.randomUUID()}`
+      : null;
+
+    const result = await prisma.$transaction(async (tx) => {
+      const emailEventKeys: string[] = [];
       const updatedOrder = await tx.order.update({
         where: { id },
         data: updateData,
@@ -105,7 +114,7 @@ export async function PATCH(
         },
       });
 
-      if (status && currentOrder && currentOrder.status !== status) {
+      if (statusChanged && currentOrder) {
         if (status === "CANCELLED") {
           await restoreOrderInventory(tx, currentOrder.items);
         } else if (currentOrder.status === "CANCELLED") {
@@ -113,18 +122,44 @@ export async function PATCH(
         }
       }
 
-      if (status) {
-        await tx.orderStatusLog.create({
+      if (statusChanged && status) {
+        const statusLog = await tx.orderStatusLog.create({
           data: {
             orderId: id,
             status,
             note: status === "CANCELLED" ? "Admin đã huỷ đơn hàng" : undefined,
           },
         });
+
+        const combinedPaymentConfirmation = paymentChanged && paymentStatus === "PAID" && status === "CONFIRMED";
+        if (!combinedPaymentConfirmation) {
+          const eventKey = `order:${id}:status:${statusLog.id}`;
+          await queueOrderEmail(tx, {
+            orderId: id,
+            eventKey,
+            eventType: "ORDER_STATUS_CHANGED",
+            payload: { status },
+          });
+          emailEventKeys.push(eventKey);
+        }
       }
 
-      return updatedOrder;
+      if (paymentChanged && paymentStatus && paymentEventKey) {
+        await queueOrderEmail(tx, {
+          orderId: id,
+          eventKey: paymentEventKey,
+          eventType: paymentStatus === "PAID" ? "PAYMENT_CONFIRMED" : "PAYMENT_STATUS_CHANGED",
+          payload: { paymentStatus },
+        });
+        emailEventKeys.push(paymentEventKey);
+      }
+
+      return { order: updatedOrder, emailEventKeys };
     });
+    for (const eventKey of result.emailEventKeys) {
+      await dispatchOrderEmail(eventKey);
+    }
+    const order = result.order;
     await logAdminAction(admin.id, "UPDATE", "Order", id, {
       orderNumber: order.orderNumber,
       ...(status && { newStatus: status }),
