@@ -43,12 +43,14 @@ jobs:
         env:
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          ORDER_EMAIL_CRON_SECRET: ${{ secrets.ORDER_EMAIL_CRON_SECRET }}
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           port: ${{ secrets.VPS_PORT }}
-          envs: GOOGLE_CLIENT_ID,GOOGLE_CLIENT_SECRET
+          envs: GOOGLE_CLIENT_ID,GOOGLE_CLIENT_SECRET,RESEND_API_KEY,ORDER_EMAIL_CRON_SECRET
           command_timeout: 30m
           timeout: 60s
           script: |
@@ -119,6 +121,36 @@ jobs:
             }
             fs.writeFileSync(envPath, `${retained.join("\n")}\n`);
             console.log("Google OAuth env updated.");
+            NODE
+
+            echo "Updating transactional email env..."
+            node <<'NODE'
+            const fs = require("fs");
+            const envPath = ".env";
+            const candidates = {
+              RESEND_API_KEY: process.env.RESEND_API_KEY || "",
+              ORDER_EMAIL_CRON_SECRET: process.env.ORDER_EMAIL_CRON_SECRET || "",
+            };
+            const updates = Object.fromEntries(
+              Object.entries(candidates).filter(([, value]) => value)
+            );
+
+            if (Object.keys(updates).length === 0) {
+              console.log("Email secrets are not configured; keeping the existing VPS configuration.");
+              process.exit(0);
+            }
+
+            const current = fs.existsSync(envPath) ? fs.readFileSync(envPath, "utf8") : "";
+            const retained = current
+              .split(/\r?\n/)
+              .filter((line) => !Object.keys(updates).some((key) => line.startsWith(`${key}=`)))
+              .filter(Boolean);
+
+            for (const [key, value] of Object.entries(updates)) {
+              retained.push(`${key}=${value}`);
+            }
+            fs.writeFileSync(envPath, `${retained.join("\n")}\n`);
+            console.log(`Transactional email env updated: ${Object.keys(updates).join(", ")}`);
             NODE
 
             # ── Giữ AI tắt ở cả client và server ─────────────────────────────
