@@ -119,7 +119,8 @@ export function SearchPalette({ open, onClose }: SearchPaletteProps) {
                     <button
                       type="button"
                       onClick={() => { setQuery(""); setResults(null); inputRef.current?.focus(); }}
-                      className="text-gray-300 hover:text-gray-500 transition-colors"
+                      aria-label="Xóa nội dung tìm kiếm"
+                      className="flex h-11 w-11 items-center justify-center rounded-control text-gray-300 transition-colors hover:bg-muted hover:text-foreground"
                     >
                       <X className="w-4 h-4" />
                     </button>

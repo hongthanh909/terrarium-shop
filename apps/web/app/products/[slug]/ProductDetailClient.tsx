@@ -1004,28 +1004,29 @@ export function ProductDetailClient({
                     const expDate = new Date(v.expiresAt).toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric" });
                     const discountAmt = getVoucherDiscountAmount(v, finalPrice);
                     return (
-                      <label
+                      <div
                         key={v.id}
-                        className={`grid min-h-20 cursor-pointer grid-cols-[auto_minmax(0,1fr)] items-center gap-3 rounded-lg border p-3 transition-all sm:grid-cols-[auto_minmax(0,1fr)_auto] ${
+                        className={`grid min-w-0 gap-2 rounded-lg border p-3 transition-[border-color,background-color] sm:grid-cols-[minmax(0,1fr)_auto] ${
                           isApplied
                             ? "border-foreground bg-muted/35 shadow-sm"
                             : isBest
-                            ? "border-orange-300 bg-orange-50/50 hover:border-orange-400"
+                            ? "border-primary-border bg-primary-soft hover:border-foreground/40"
                             : meetsMin
                             ? "border-border bg-white hover:border-foreground/40 hover:bg-muted/35"
                             : "border-gray-100 bg-gray-50 opacity-60 cursor-not-allowed"
                         }`}
-                        onClick={(e) => {
-                          if (!meetsMin) {
-                            e.preventDefault();
-                            showToast.warning(`Đơn hàng tối thiểu ${Number(v.minOrderAmount).toLocaleString("vi-VN")}₫`);
-                          }
-                        }}
                       >
+                        <label className={`grid min-h-11 min-w-0 grid-cols-[20px_minmax(0,1fr)] items-center gap-3 ${meetsMin ? "cursor-pointer" : "cursor-not-allowed"}`}>
                         <input
                           type="radio"
                           name="voucher-select"
                           checked={isApplied}
+                          onClick={(event) => {
+                            if (!meetsMin) {
+                              event.preventDefault();
+                              showToast.warning(`Đơn hàng tối thiểu ${(Number(v.minOrderAmount) / 1000).toFixed(0)}k₫ để dùng mã này.`);
+                            }
+                          }}
                           onChange={() => {
                             if (meetsMin) {
                               if (isApplied) {
@@ -1036,12 +1037,12 @@ export function ProductDetailClient({
                               }
                             }
                           }}
-                          disabled={!meetsMin}
-                          className="h-4 w-4 flex-shrink-0 border-gray-300 accent-foreground focus:ring-foreground"
+                          aria-disabled={!meetsMin}
+                          className="h-4 w-4 shrink-0 border-border-strong accent-foreground focus:ring-foreground"
                         />
 
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2">
+                          <div className="flex flex-wrap items-center gap-2">
                             <span className={`text-sm font-bold ${isApplied ? "text-foreground" : "text-gray-800"}`}>
                               {isFreeShip
                                 ? `Miễn phí ship ${Number(v.value) === 50000 ? "nhanh" : "tiêu chuẩn"}`
@@ -1049,12 +1050,12 @@ export function ProductDetailClient({
                                 ? `Giảm ${v.value}%`
                                 : `Giảm ${(Number(v.value) / 1000).toFixed(0)}K`}
                             </span>
-                            <span className="rounded bg-gray-100 px-1.5 py-0.5 font-mono text-xs text-gray-500">{v.code}</span>
+                            <span className="max-w-full break-all rounded bg-muted px-1.5 py-0.5 font-mono text-xs text-muted-foreground">{v.code}</span>
                             {isBest && !isApplied && (
-                              <span className="rounded bg-orange-500 px-1.5 py-0.5 text-xs font-bold text-white">Tốt nhất</span>
+                              <span className="rounded bg-primary px-1.5 py-0.5 text-xs font-bold text-primary-foreground">Tốt nhất</span>
                             )}
                           </div>
-                          <div className="flex items-center gap-3 mt-0.5">
+                          <div className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-1">
                             {v.minOrderAmount && (
                               <span className="text-xs text-gray-500">Đơn từ {(Number(v.minOrderAmount) / 1000).toFixed(0)}k₫</span>
                             )}
@@ -1062,7 +1063,8 @@ export function ProductDetailClient({
                           </div>
                         </div>
 
-                        <div className="col-start-2 flex min-w-0 items-center justify-between gap-3 sm:col-start-auto sm:flex-col sm:items-end">
+                        </label>
+                        <div className="flex min-w-0 items-center justify-between gap-3 pl-8 sm:flex-col sm:items-end sm:gap-1 sm:pl-0">
                           {meetsMin ? (
                             <span className={`text-sm font-bold ${isApplied ? "text-emerald-700" : "text-foreground"}`}>
                               {isFreeShip ? "Miễn phí" : `-${discountAmt.toLocaleString("vi-VN")}₫`}
@@ -1071,14 +1073,16 @@ export function ProductDetailClient({
                             <span className="text-xs text-red-500">Chưa đủ điều kiện</span>
                           )}
                           <button
-                            onClick={(e) => { e.preventDefault(); e.stopPropagation(); copyCode(v.code); }}
+                            type="button"
+                            onClick={() => copyCode(v.code)}
+                            aria-label={`Sao chép mã ${v.code}`}
                             className="flex min-h-11 items-center gap-1 px-2 text-xs text-gray-600 hover:text-foreground sm:-mr-2 sm:px-2"
                           >
                             {copiedCode === v.code ? <CheckIcon className="w-3 h-3 text-green-500" /> : <Copy className="w-3 h-3" />}
                             Sao chép
                           </button>
                         </div>
-                      </label>
+                      </div>
                     );
                   })}
                 </div>
@@ -1441,7 +1445,7 @@ export function ProductDetailClient({
         )}
       </div>
 
-      <div className="mobile-fixed-shell fixed bottom-0 z-40 rounded-t-tile border border-b-0 border-border bg-white/97 px-3 pt-2 pb-[calc(env(safe-area-inset-bottom)+0.55rem)] shadow-bottom-nav backdrop-blur lg:hidden">
+      <div className="mobile-fixed-shell mobile-purchase-bar fixed bottom-0 z-40 rounded-t-tile border border-b-0 border-border bg-white/97 px-3 pt-2 pb-[calc(env(safe-area-inset-bottom)+0.55rem)] shadow-bottom-nav backdrop-blur lg:hidden">
         <div className="mx-auto space-y-2">
           <div className="flex min-h-10 items-center justify-between gap-2">
             <div className="flex min-w-0 items-baseline gap-2">
@@ -1454,7 +1458,7 @@ export function ProductDetailClient({
             <button
               type="button"
               onClick={focusVoucherSection}
-              className={`flex min-h-10 min-w-0 max-w-[52%] items-center gap-1 rounded-control border px-2 text-xs font-semibold transition-colors ${
+              className={`flex min-h-11 min-w-0 max-w-[52%] items-center gap-1 rounded-control border px-2 text-xs font-semibold transition-colors ${
                 appliedVoucher
                   ? "border-primary-border bg-primary-soft text-primary"
                   : "border-border bg-muted/45 text-foreground hover:bg-muted"

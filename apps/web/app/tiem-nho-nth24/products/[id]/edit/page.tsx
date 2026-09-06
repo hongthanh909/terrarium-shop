@@ -744,16 +744,16 @@ export default function EditProductPage() {
               </span>
             </div>
 
-            <div className="grid grid-cols-4 sm:grid-cols-6 gap-3 mb-3">
+            <div className="mb-3 grid grid-cols-2 gap-3 sm:grid-cols-6">
               {subImages.map((img, idx) => (
                 <div key={idx} className="relative aspect-square rounded-xl overflow-hidden border border-gray-200 group">
                   <ImageWrapper src={img} alt={`Ảnh phụ ${idx + 1}`} fill noRound className="object-cover" />
-                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center gap-2">
-                    <label className="opacity-0 group-hover:opacity-100 cursor-pointer w-7 h-7 rounded-full bg-white/90 flex items-center justify-center shadow hover:bg-white transition-all" title="Crop lại ảnh này">
+                  <div className="absolute inset-0 flex items-center justify-center gap-2 bg-black/15 transition-colors md:bg-black/0 md:group-hover:bg-black/30">
+                    <label className="flex h-11 w-11 cursor-pointer items-center justify-center rounded-full bg-white/90 shadow transition-all hover:bg-white md:opacity-0 md:group-hover:opacity-100" title="Crop lại ảnh này" aria-label={`Crop lại ảnh phụ ${idx + 1}`}>
                       <Crop className="w-3.5 h-3.5 text-primary" />
                       <input type="file" accept="image/*" className="hidden" onChange={(e) => handleReCropSelect(e, idx)} />
                     </label>
-                    <button type="button" onClick={() => setSubImages((prev) => prev.filter((_, i) => i !== idx))} className="opacity-0 group-hover:opacity-100 w-7 h-7 bg-red-500 text-white rounded-full flex items-center justify-center shadow transition-all" title="Xóa ảnh này">
+                    <button type="button" onClick={() => setSubImages((prev) => prev.filter((_, i) => i !== idx))} className="flex h-11 w-11 items-center justify-center rounded-full bg-red-500 text-white shadow transition-all md:opacity-0 md:group-hover:opacity-100" title="Xóa ảnh này" aria-label={`Xóa ảnh phụ ${idx + 1}`}>
                       <X className="w-3 h-3" />
                     </button>
                   </div>

@@ -188,8 +188,8 @@ export function FacebookGroupVoucherPopup({ initialPromo }: { initialPromo?: Fac
   return (
     <Dialog open={open} onOpenChange={rememberDismissal}>
       <DialogContent
-        overlayClassName="!z-[10000] !bg-black/65 backdrop-blur-[2px]"
-        className="!z-[10001] max-h-[calc(100dvh-1rem)] w-[calc(100%-1.5rem)] max-w-[32rem] gap-0 overflow-x-hidden overflow-y-auto overscroll-contain rounded-lg border border-white/70 bg-white p-0 shadow-[0_28px_90px_rgba(0,0,0,0.28)] [scrollbar-width:thin] [&>button]:right-3 [&>button]:top-3 [&>button]:z-20 [&>button]:grid [&>button]:h-11 [&>button]:w-11 [&>button]:place-items-center [&>button]:rounded-full [&>button]:bg-black/45 [&>button]:text-white [&>button]:opacity-100 [&>button]:backdrop-blur-sm [&>button]:hover:bg-black/60 [&>button_svg]:h-5 [&>button_svg]:w-5"
+        overlayClassName="!z-overlay !bg-black/60 backdrop-blur-[2px]"
+        className="mobile-promo-dialog !z-dialog max-h-[calc(100dvh-1rem)] w-[calc(100%-1.5rem)] max-w-[32rem] gap-0 overflow-x-hidden overflow-y-auto overscroll-contain rounded-lg border border-border bg-background p-0 shadow-floating [scrollbar-width:thin] [&>button]:right-3 [&>button]:top-3 [&>button]:z-20 [&>button]:grid [&>button]:h-11 [&>button]:w-11 [&>button]:place-items-center [&>button]:rounded-full [&>button]:bg-foreground/75 [&>button]:text-background [&>button]:opacity-100 [&>button]:backdrop-blur-sm [&>button]:hover:bg-foreground [&>button_svg]:h-5 [&>button_svg]:w-5"
       >
         <div className="relative h-28 shrink-0 overflow-hidden sm:h-40">
           <Image

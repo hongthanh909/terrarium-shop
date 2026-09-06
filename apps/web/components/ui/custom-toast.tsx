@@ -114,7 +114,7 @@ function ToastItem({
   return (
     <div
       className={`
-        relative w-[360px] max-w-[calc(100vw-2rem)] bg-white rounded-xl shadow-lg border border-gray-100
+        relative w-[360px] max-w-[calc(100vw-2rem)] rounded-xl border border-border bg-background shadow-floating
         transition-[opacity,transform] duration-260 ease-out overflow-hidden
         ${exiting ? "opacity-0 translate-x-6 scale-95" : "opacity-100 translate-x-0 scale-100"}
       `}
@@ -147,17 +147,18 @@ function ToastItem({
           <p className="mb-0.5 text-xs font-semibold uppercase tracking-wide" style={{ color: config.bar }}>
             {config.label}
           </p>
-          <p className="text-sm font-semibold text-gray-900 leading-snug">{toast.title}</p>
+          <p className="text-sm font-semibold leading-snug text-foreground">{toast.title}</p>
           {toast.description && (
-            <p className="text-[13px] text-gray-500 mt-1 leading-relaxed">{toast.description}</p>
+            <p className="mt-1 text-[13px] leading-relaxed text-muted-foreground">{toast.description}</p>
           )}
         </div>
 
         {/* Close button */}
         <button
           onClick={handleClose}
-          className="flex-shrink-0 -mt-0.5 -mr-1 p-1.5 rounded-lg text-gray-300 hover:text-gray-500 hover:bg-gray-50 transition-colors"
+          className="flex h-11 w-11 shrink-0 -mr-2 -mt-1 items-center justify-center rounded-control text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
           title="Đóng"
+          aria-label="Đóng thông báo"
         >
           <X className="w-3.5 h-3.5" strokeWidth={2} />
         </button>
@@ -203,7 +204,7 @@ export function CustomToastContainer() {
           }
         }
       `}</style>
-      <div className="fixed top-4 right-4 z-[9999] flex flex-col gap-2.5 pointer-events-none">
+      <div className="pointer-events-none fixed right-4 top-[max(1rem,env(safe-area-inset-top))] z-toast flex flex-col gap-2.5">
         {toasts.map((t) => (
           <div key={t.id} className="pointer-events-auto">
             <ToastItem toast={t} onRemove={removeToast} />

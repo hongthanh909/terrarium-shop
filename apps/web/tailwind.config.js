@@ -20,6 +20,12 @@ module.exports = {
   		}
   	},
   	extend: {
+		zIndex: {
+			overlay: 'var(--z-overlay)',
+			dialog: 'var(--z-dialog)',
+			popover: 'var(--z-popover)',
+			toast: 'var(--z-toast)',
+		},
 		fontFamily: {
 			sans: [
 				'-apple-system',
@@ -63,6 +69,7 @@ module.exports = {
 			verified: 'hsl(var(--verified))',
 			presence: 'hsl(var(--presence))',
 			info: 'hsl(var(--info))',
+			warning: 'hsl(var(--warning))',
   			secondary: {
   				DEFAULT: 'hsl(var(--secondary))',
   				foreground: 'hsl(var(--secondary-foreground))'
@@ -102,7 +109,7 @@ module.exports = {
 		},
 		boxShadow: {
 			floating: '0 8px 24px rgb(38 38 38 / 12%)',
-			'primary-floating': '0 6px 18px rgb(4 120 87 / 24%)',
+			'primary-floating': '0 4px 12px rgb(23 23 23 / 12%)',
 			'bottom-nav': '0 4px 25px rgb(0 0 0 / 8%)'
 		},
   		keyframes: {

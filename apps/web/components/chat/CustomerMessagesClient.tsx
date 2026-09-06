@@ -193,7 +193,7 @@ export function CustomerMessagesClient() {
   };
 
   return (
-    <div className={cn("min-h-[calc(100dvh-57px)] bg-white px-4 py-5 sm:px-5 sm:py-10", selectedId && "px-0 py-0 sm:px-5 sm:py-10")}>
+    <div className={cn("min-h-[calc(100dvh-57px)] bg-background px-4 py-5 sm:px-5 sm:py-10", selectedId && "mobile-conversation px-0 py-0 sm:px-5 sm:py-10")}>
       <div className="mx-auto max-w-[1400px]">
         <header className={cn("mb-5 flex items-end justify-between gap-4 border-b border-border pb-5", selectedId && "hidden lg:flex")}>
           <div>

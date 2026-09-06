@@ -198,12 +198,12 @@ export function ProductAdminChat({
       </Button>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="flex h-[min(720px,calc(100dvh-1rem))] w-[calc(100%-1rem)] max-w-xl flex-col gap-0 overflow-hidden rounded-xl border-[#cad8c1] bg-white p-0 shadow-[0_24px_80px_rgba(32,48,24,0.24)] sm:h-[min(720px,calc(100dvh-3rem))]">
+        <DialogContent className="mobile-chat-dialog flex h-[min(720px,calc(100dvh-1rem))] w-[calc(100%-1rem)] max-w-xl flex-col gap-0 overflow-hidden rounded-xl border-border bg-background p-0 shadow-floating sm:h-[min(720px,calc(100dvh-3rem))]">
           <DialogTitle className="sr-only">Chat với admin về {productName}</DialogTitle>
           <DialogDescription className="sr-only">Trao đổi trực tiếp với admin và gửi hình ảnh nếu cần.</DialogDescription>
 
-          <header className="flex shrink-0 items-center gap-3 border-b border-[#e1e9dc] bg-[#f7faf5] px-4 py-3 pr-12">
-            <div className="grid h-11 w-11 shrink-0 place-items-center overflow-hidden rounded-lg bg-[#e5eee0]">
+          <header className="flex shrink-0 items-center gap-3 border-b border-border bg-muted/35 px-4 py-3 pr-12">
+            <div className="grid h-11 w-11 shrink-0 place-items-center overflow-hidden rounded-lg bg-primary-soft">
               {productImage ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={productImage} alt="" className="h-full w-full object-cover" />
@@ -212,9 +212,9 @@ export function ProductAdminChat({
               )}
             </div>
             <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-bold text-[#203018]">{productName}</p>
-              <p className="mt-0.5 flex items-center gap-1.5 text-xs text-[#607057]">
-                <span className="h-2 w-2 rounded-full bg-[#4f8a3c]" />
+              <p className="truncate text-sm font-bold text-foreground">{productName}</p>
+              <p className="mt-0.5 flex items-center gap-1.5 text-xs text-muted-foreground">
+                <span className="h-2 w-2 rounded-full bg-presence" />
                 Chat trực tiếp với admin
               </p>
             </div>
@@ -228,12 +228,12 @@ export function ProductAdminChat({
                 <span className="hidden sm:inline">Lịch sử</span>
               </Link>
             )}
-            <ShieldCheck className="h-5 w-5 shrink-0 text-[#4f6f3e]" aria-hidden="true" />
+            <ShieldCheck className="h-5 w-5 shrink-0 text-muted-foreground" aria-hidden="true" />
           </header>
 
-          <div ref={messagesViewportRef} style={{ overflowAnchor: "none" }} className="min-h-0 flex-1 overflow-y-auto bg-[#fbfcfa] px-4 py-4" aria-live="polite">
+          <div ref={messagesViewportRef} style={{ overflowAnchor: "none" }} className="min-h-0 flex-1 overflow-y-auto bg-muted/25 px-4 py-4" aria-live="polite">
             {loading ? (
-              <div className="grid h-full place-items-center text-[#64735d]">
+              <div className="grid h-full place-items-center text-muted-foreground">
                 <div className="flex items-center gap-2 text-sm font-medium"><Loader2 className="h-4 w-4 animate-spin" /> Đang mở hội thoại</div>
               </div>
             ) : error && messages.length === 0 ? (
@@ -241,8 +241,8 @@ export function ProductAdminChat({
             ) : messages.length === 0 ? (
               <div className="mx-auto flex h-full max-w-sm flex-col items-center justify-center text-center">
                 <div className="grid h-12 w-12 place-items-center rounded-full bg-primary-soft text-primary"><MessageCircle className="h-5 w-5" /></div>
-                <p className="mt-4 font-bold text-[#203018]">Bạn cần biết thêm điều gì?</p>
-                <p className="mt-1 text-sm leading-6 text-[#64735d]">Admin sẽ tư vấn về sản phẩm, cách chăm sóc hoặc hỗ trợ bạn chọn phiên bản phù hợp.</p>
+                <p className="mt-4 font-bold text-foreground">Bạn cần biết thêm điều gì?</p>
+                <p className="mt-1 text-sm leading-6 text-muted-foreground">Admin sẽ tư vấn về sản phẩm, cách chăm sóc hoặc hỗ trợ bạn chọn phiên bản phù hợp.</p>
               </div>
             ) : (
               <div className="space-y-3">
@@ -253,7 +253,7 @@ export function ProductAdminChat({
                       <div className={cn("max-w-[82%]", mine ? "items-end" : "items-start")}>
                         <div className={cn(
                           "overflow-hidden rounded-xl border text-sm leading-6",
-                          mine ? "border-primary bg-primary text-white" : "border-[#dfe8d9] bg-white text-[#263420]",
+                          mine ? "border-primary bg-primary text-primary-foreground" : "border-border bg-background text-foreground",
                         )}>
                           {message.imageUrl && (
                             <a href={message.imageUrl} target="_blank" rel="noreferrer" className="block bg-black/5">
@@ -263,7 +263,7 @@ export function ProductAdminChat({
                           )}
                           {message.content && <p className="whitespace-pre-wrap break-words px-3.5 py-2.5">{message.content}</p>}
                         </div>
-                        <p className={cn("mt-1 px-1 text-xs text-[#6f7d69]", mine && "text-right")}>{mine ? "Bạn" : "Admin"} · {messageTime(message.createdAt)}</p>
+                        <p className={cn("mt-1 px-1 text-xs text-muted-foreground", mine && "text-right")}>{mine ? "Bạn" : "Admin"} · {messageTime(message.createdAt)}</p>
                       </div>
                     </div>
                   );
@@ -272,9 +272,9 @@ export function ProductAdminChat({
             )}
           </div>
 
-          <footer className="shrink-0 border-t border-[#e1e9dc] bg-white p-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)]">
+          <footer className="shrink-0 border-t border-border bg-background p-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)]">
             {imagePreview && (
-              <div className="relative mb-2 h-20 w-20 overflow-hidden rounded-lg border border-[#cbd9c3] bg-[#f5f7f3]">
+              <div className="relative mb-2 h-20 w-20 overflow-hidden rounded-lg border border-border bg-muted">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={imagePreview} alt="Ảnh chuẩn bị gửi" className="h-full w-full object-cover" />
                 <button type="button" onClick={clearImage} className="absolute right-1 top-1 grid h-11 w-11 place-items-center rounded-full bg-black/70 text-white transition-colors hover:bg-black/85" aria-label="Bỏ ảnh"><X className="h-4 w-4" /></button>
@@ -297,7 +297,7 @@ export function ProductAdminChat({
                 }}
                 rows={1}
                 placeholder="Nhập câu hỏi cho admin..."
-                className="min-h-11 max-h-28 flex-1 resize-none rounded-lg border border-[#d4dfcd] bg-[#fbfcfa] px-3 py-2.5 text-sm text-[#263420] outline-none placeholder:text-[#8a9684] focus:border-[#6d8c5a] focus:ring-2 focus:ring-[#dfead8]"
+                className="min-h-11 max-h-28 flex-1 resize-none rounded-input border border-input bg-background px-3 py-2.5 text-base text-foreground outline-none placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary/20"
                 disabled={loading || !conversationId}
               />
               <button type="button" onClick={() => void sendMessage()} disabled={sending || loading || !conversationId || (!content.trim() && !selectedImage)} className="grid h-11 w-11 shrink-0 place-items-center rounded-control bg-primary text-white transition-colors hover:bg-primary-hover disabled:bg-disabled" aria-label="Gửi tin nhắn" title="Gửi tin nhắn">

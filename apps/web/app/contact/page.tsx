@@ -93,8 +93,8 @@ export default function ContactPage() {
           </p>
         </header>
 
-        <div className="grid gap-12 lg:grid-cols-[1.1fr_0.9fr] lg:gap-16">
-          <section aria-labelledby="contact-form-title">
+        <div className="grid min-w-0 grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] lg:gap-16">
+          <section className="min-w-0" aria-labelledby="contact-form-title">
             <div className="mb-6 flex items-end justify-between gap-4">
               <div>
                 <p className="text-xs font-semibold uppercase text-muted-foreground">Gửi yêu cầu</p>
@@ -105,7 +105,7 @@ export default function ContactPage() {
               <Send className="hidden h-6 w-6 text-muted-foreground sm:block" aria-hidden="true" />
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-5 rounded-lg border border-border bg-[#f7f8f6] p-5 sm:p-7">
+            <form onSubmit={handleSubmit} className="min-w-0 space-y-5 border-y border-border py-5 sm:py-7">
               <div>
                 <label htmlFor="name" className="mb-1.5 block text-sm font-semibold text-foreground">
                   Họ và tên <span className="text-red-600">*</span>
@@ -195,7 +195,7 @@ export default function ContactPage() {
             </form>
           </section>
 
-          <aside aria-labelledby="contact-info-title">
+          <aside className="min-w-0" aria-labelledby="contact-info-title">
             <p className="text-xs font-semibold uppercase text-muted-foreground">Thông tin cửa hàng</p>
             <h2 id="contact-info-title" className="mt-2 font-serif text-3xl font-semibold text-foreground">
               Liên hệ trực tiếp
@@ -216,7 +216,7 @@ export default function ContactPage() {
                     const Icon = contactIcons[item.type as keyof typeof contactIcons] || Mail;
                     const href = item.type === "email" ? `mailto:${item.value}` : item.type === "phone" ? `tel:${item.value.replace(/\s/g, "")}` : null;
                     const value = href ? (
-                      <a href={href} className="inline-flex min-h-11 items-center text-sm text-muted-foreground hover:text-foreground">
+                      <a href={href} className="inline-flex min-h-11 max-w-full items-center break-all text-sm text-muted-foreground hover:text-foreground">
                         {item.value}
                       </a>
                     ) : (
@@ -228,8 +228,8 @@ export default function ContactPage() {
                         <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-border bg-white text-foreground">
                           <Icon className="h-5 w-5" aria-hidden="true" />
                         </span>
-                        <div className="min-w-0">
-                          <h3 className="font-semibold text-foreground">{item.label || "Thông tin"}</h3>
+                        <div className="min-w-0 [overflow-wrap:anywhere]">
+                          <h3 className="break-words font-semibold text-foreground">{item.label || "Thông tin"}</h3>
                           {value}
                         </div>
                       </div>

@@ -22,6 +22,7 @@ interface FeaturedProductCardProps {
   category?: { name: string };
   rating?: number;
   reviewCount?: number;
+  imagePriority?: boolean;
   isNew?: boolean;
   isBestseller?: boolean;
 }
@@ -73,6 +74,7 @@ export function FeaturedProductCard(props: FeaturedProductCardProps) {
     <ProductCard
       {...props}
       images={sanitizeProductImages(props.images)}
+      imagePriority={props.imagePriority}
       onAddToCart={handleAddToCart}
       wished={isWished(props.id)}
       onToggleWishlist={() => toggleWishlist(props.id, props.name)}

@@ -161,6 +161,7 @@ async function FeaturedProductsSection() {
                     advancedPackageAdjustment={Number(product.advancedPackageAdjustment)}
                     inventory={product.inventory}
                     images={product.images}
+                    imagePriority={index < 2}
                     category={product.category ? { name: product.category.name } : undefined}
                     rating={ratingSummary.rating}
                     reviewCount={ratingSummary.reviewCount}
@@ -307,6 +308,33 @@ function BlogSkeleton() {
 
 // ─── Main Page (SYNC — no DB fetches here) ────────────────────────────────────
 
+async function CustomerReviewsSection() {
+  try {
+    const reviews = await prisma.review.findMany({
+      where: { approved: true, product: { status: "ACTIVE" } },
+      orderBy: { createdAt: "desc" },
+      take: 6,
+      select: {
+        id: true, rating: true, content: true, verified: true,
+        customer: { select: { name: true } },
+        product: { select: { name: true, slug: true } },
+      },
+    });
+    return <ReviewMarquee reviews={reviews.map((review) => ({
+      id: review.id,
+      name: review.customer.name || "Khách hàng Tiệm Rêu",
+      productName: review.product.name,
+      productSlug: review.product.slug,
+      rating: review.rating,
+      content: review.content,
+      verified: review.verified,
+    }))} />;
+  } catch (error) {
+    console.error("CustomerReviewsSection: DB error", error);
+    return null;
+  }
+}
+
 export default async function Home() {
   return (
     <div className="min-h-[100dvh] bg-white">
@@ -343,9 +371,9 @@ export default async function Home() {
                 href="/explore"
                 className="group flex h-11 min-w-0 flex-1 items-center justify-center rounded-control border border-primary-border bg-white px-2 text-xs font-semibold text-primary shadow-sm transition-[background-color,border-color,transform] duration-150 hover:bg-primary-soft active:scale-[0.98] min-[360px]:w-[196px] min-[360px]:flex-none min-[360px]:text-[13px] sm:h-12 sm:min-w-[216px] sm:w-auto sm:px-7 sm:text-sm"
               >
-                <span className="min-[310px]:hidden">Khám phá</span>
-                <span className="hidden min-[310px]:inline">Khám phá bộ sưu tập</span>
-                <ArrowRight className="ml-2 h-4 w-4 stroke-[1.8] transition-transform duration-300 group-hover:translate-x-1" />
+                <span className="whitespace-nowrap min-[360px]:hidden">Khám phá</span>
+                <span className="hidden whitespace-nowrap min-[360px]:inline">Khám phá bộ sưu tập</span>
+                <ArrowRight className="ml-2 h-4 w-4 shrink-0 stroke-[1.8] transition-transform duration-300 group-hover:translate-x-1" />
               </Link>
             </div>
           </div>
@@ -393,8 +421,10 @@ export default async function Home() {
         <LatestBlogSection />
       </Suspense>
 
-      {/* Testimonial / Social Proof — Marquee (static, no DB) */}
-      <ReviewMarquee />
+      {/* Testimonial / Social Proof — approved customer reviews */}
+      <Suspense fallback={null}>
+        <CustomerReviewsSection />
+      </Suspense>
 
 
 

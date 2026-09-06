@@ -54,7 +54,7 @@ export function AnalyticsTracker() {
   if (consent !== null) return null;
 
   return (
-    <aside data-analytics-consent className="fixed inset-x-0 bottom-0 z-[10020] mx-auto border-x-0 border-b-0 border-t border-border bg-white px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-4 shadow-[0_-12px_36px_rgba(25,28,24,0.12)] sm:inset-x-3 sm:bottom-3 sm:max-w-2xl sm:rounded-lg sm:border sm:p-4 sm:shadow-[0_12px_36px_rgba(25,28,24,0.14)] md:flex md:items-center md:gap-4" aria-label="Tùy chọn thống kê truy cập">
+    <aside data-analytics-consent className="fixed inset-x-0 bottom-0 z-40 mx-auto border-x-0 border-b-0 border-t border-border bg-white px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-4 shadow-[0_-12px_36px_rgba(25,28,24,0.12)] sm:inset-x-3 sm:bottom-3 sm:max-w-2xl sm:rounded-lg sm:border sm:p-4 sm:shadow-[0_12px_36px_rgba(25,28,24,0.14)] md:flex md:items-center md:gap-4" aria-label="Tùy chọn thống kê truy cập">
       <p className="flex-1 text-[13px] leading-5 text-gray-700 sm:text-sm sm:leading-6">
         Tiệm Rêu dùng thống kê ẩn danh để cải thiện trải nghiệm. Không ghi nội dung chat, biểu mẫu hoặc thông tin thanh toán.
       </p>

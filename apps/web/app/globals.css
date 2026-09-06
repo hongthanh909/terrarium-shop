@@ -10,8 +10,8 @@
   }
 
   ::selection {
-    background: rgba(173, 122, 82, 0.18);
-    color: #191c18;
+    background: hsl(var(--foreground) / 0.15);
+    color: hsl(var(--foreground));
   }
 
   :root {
@@ -45,6 +45,11 @@
     --verified: 214 89% 52%;
     --presence: 134 54% 41%;
     --info: 200 98% 39%;
+    --warning: 36 90% 35%;
+    --z-overlay: 50;
+    --z-dialog: 60;
+    --z-popover: 70;
+    --z-toast: 80;
     --radius: 0.625rem;
   }
 
@@ -174,7 +179,7 @@
   }
 
   @media (max-width: 640px) {
-    input,
+    input:not([type="checkbox"]):not([type="radio"]),
     select,
     textarea {
       min-height: 44px;
@@ -224,6 +229,53 @@
   left: 50%;
   width: min(100%, 512px);
   transform: translateX(-50%);
+}
+
+@media (min-width: 768px) {
+  .mobile-fixed-shell {
+    width: 100%;
+  }
+}
+
+@media (max-width: 767px) {
+  html[data-mobile-keyboard="open"] .mobile-bottom-nav,
+  html[data-mobile-keyboard="open"] .mobile-purchase-bar {
+    display: none;
+  }
+
+  .mobile-chat-dialog {
+    top: var(--visual-viewport-top, 0px);
+    bottom: auto;
+    height: var(--visual-viewport-height, 100dvh);
+    max-height: var(--visual-viewport-height, 100dvh);
+    width: 100%;
+    max-width: 512px;
+    transform: translateX(-50%);
+    border-radius: 0;
+  }
+
+  .mobile-conversation {
+    position: fixed;
+    top: var(--visual-viewport-top, 0px);
+    left: 50%;
+    z-index: 45;
+    width: min(100%, 512px);
+    height: var(--visual-viewport-height, 100dvh);
+    transform: translateX(-50%);
+    border: 0;
+    border-radius: 0;
+  }
+
+  .mobile-promo-dialog {
+    top: auto;
+    bottom: 0;
+    width: 100%;
+    max-height: min(88dvh, var(--visual-viewport-height, 100dvh));
+    transform: translateX(-50%);
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
 }
 
 @media (max-width: 767px) and (max-height: 700px) {

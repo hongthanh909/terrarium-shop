@@ -49,9 +49,9 @@ export function MobileBottomNav() {
       />
       <nav
         aria-label="Điều hướng chính trên điện thoại"
-        className="fixed bottom-[max(0.75rem,env(safe-area-inset-bottom))] left-1/2 z-40 w-[calc(100%-1.5rem)] max-w-[512px] -translate-x-1/2 rounded-nav border border-border bg-white/95 shadow-bottom-nav backdrop-blur-md md:hidden"
+        className="mobile-bottom-nav fixed bottom-[max(0.5rem,env(safe-area-inset-bottom))] left-1/2 z-40 w-[calc(100%-1rem)] max-w-[496px] -translate-x-1/2 rounded-nav border border-border bg-background/95 shadow-bottom-nav backdrop-blur-md md:hidden"
       >
-        <div className="mx-auto grid h-16 grid-cols-5 gap-1 px-2">
+        <div className="mx-auto grid min-h-16 grid-cols-5 gap-0.5 px-1 min-[360px]:gap-1 min-[360px]:px-2">
           {NAV_ITEMS.map((item) => {
             const Icon = item.icon;
             const href = item.requiresAuth && !session
@@ -72,11 +72,11 @@ export function MobileBottomNav() {
                 className={cn(
                   "my-2 flex min-h-11 min-w-0 flex-col items-center justify-center gap-1 rounded-2xl px-0.5 text-[11px] font-medium leading-[14px] text-muted-foreground transition-[background-color,color,transform] duration-150 active:scale-95",
                   "focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-primary/40",
-                  isActive && "bg-[#e5e5e5] font-bold text-foreground"
+                  isActive && "bg-muted font-bold text-foreground"
                 )}
               >
                 <Icon aria-hidden="true" className={cn("h-5 w-5 stroke-[1.8]", isActive && "stroke-[2.4]")} />
-                <span className="w-full truncate text-center">{item.label}</span>
+                <span className="w-full whitespace-nowrap text-center">{item.label}</span>
               </Link>
             );
           })}

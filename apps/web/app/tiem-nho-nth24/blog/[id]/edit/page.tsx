@@ -270,13 +270,14 @@ export default function EditBlogPostPage() {
               <label className="block text-sm font-semibold text-gray-700 mb-2">
                 Thư viện ảnh phụ ({formData.images.length})
               </label>
-              <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
                 {formData.images.map((img, idx) => (
                   <div key={idx} className="relative border rounded-xl h-24 overflow-hidden bg-gray-100 group shadow-sm">
                     <img src={img} alt={`Gallery ${idx}`} className="w-full h-full object-cover" />
                     <button type="button" onClick={() => removeGalleryImage(idx)}
-                      className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-0.5 shadow hover:bg-red-600 transition-colors opacity-0 group-hover:opacity-100">
-                      <X className="w-3.5 h-3.5" />
+                      className="absolute right-1 top-1 flex h-11 w-11 items-center justify-center rounded-full bg-red-500 text-white shadow transition-colors hover:bg-red-600 md:opacity-0 md:group-hover:opacity-100"
+                      aria-label={`Xóa ảnh thư viện ${idx + 1}`}>
+                      <X className="h-4 w-4" />
                     </button>
                   </div>
                 ))}

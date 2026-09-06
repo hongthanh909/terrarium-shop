@@ -118,8 +118,10 @@ export function ProductCard({
             </span>
           )}
         </div>
-        <button
-          onClick={(e) => { e.preventDefault(); onToggleWishlist?.(); }}
+      </Link>
+      {onToggleWishlist && <button
+          type="button"
+          onClick={() => onToggleWishlist()}
           className={cn(
             "absolute left-2 top-2 z-10 flex h-11 w-11 items-center justify-center transition-[color,transform] duration-150 hover:scale-110 active:scale-95",
             wished
@@ -127,20 +129,20 @@ export function ProductCard({
               : "text-white hover:text-favorite"
           )}
           aria-label={wished ? `Bỏ ${name} khỏi yêu thích` : `Thêm ${name} vào yêu thích`}
+          aria-pressed={wished}
         >
           <Heart className={cn("h-5 w-5 drop-shadow-[0_1px_2px_rgba(0,0,0,0.75)] transition-colors", wished && "fill-current")} />
-        </button>
-      </Link>
+        </button>}
 
       <div className="flex flex-1 flex-col p-2.5 sm:p-3.5">
-        <div className="mb-1.5 flex min-w-0 items-center justify-between gap-2 text-[11px] leading-4 text-muted-foreground">
+        <div className="mb-1.5 flex min-w-0 flex-wrap items-center justify-between gap-x-2 gap-y-1 text-[11px] leading-4 text-muted-foreground">
           <span className="truncate font-medium">{category?.name || "Sản phẩm"}</span>
           <span className={cn("shrink-0", isOutOfStock ? "text-destructive" : "text-emerald-700")}>
             {isOutOfStock ? "Hết hàng" : "Còn hàng"}
           </span>
         </div>
 
-        <Link href={`/products/${slug}`} className="min-w-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
+        <Link href={`/products/${slug}`} className="min-h-11 min-w-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
           <h3 className="line-clamp-2 min-h-10 text-sm font-semibold leading-5 text-foreground transition-colors group-hover:text-primary sm:text-[15px]">
             {name}
           </h3>

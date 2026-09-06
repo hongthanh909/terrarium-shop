@@ -12,6 +12,7 @@ import { NavigationProgress } from "@/components/ui/navigation-progress";
 import { ChatWidgetClient } from "@/components/ChatWidgetClient";
 import { AnalyticsTracker } from "@/components/AnalyticsTracker";
 import { FacebookGroupVoucherPopup } from "@/components/FacebookGroupVoucherPopup";
+import { MobileViewport } from "@/components/MobileViewport";
 
 const dancingScript = Dancing_Script({
   subsets: ["latin"],
@@ -102,6 +103,7 @@ export default function RootLayout({
       >
         <AuthProvider>
           <QueryProvider>
+            <MobileViewport />
             <Suspense fallback={null}>
               <NavigationProgress />
             </Suspense>
